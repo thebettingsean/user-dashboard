@@ -9,9 +9,9 @@ export default function PropParlayTool() {
   const [filters, setFilters] = useState({
     legs: 2,
     minOdds: -600,
+    parlayMinOdds: 'highest',
     book: 'all',
     parlayType: 'all',
-    search: '',
     game: 'all'
   })
 
@@ -24,6 +24,7 @@ export default function PropParlayTool() {
   async function fetchData() {
     try {
       const res = await fetch('https://nfl-alt-prop-tool-database-production.up.railway.app')
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
       const json = await res.json()
       setData(json)
       setLoading(false)
@@ -52,14 +53,6 @@ export default function PropParlayTool() {
     
     let props = data.props
 
-    if (filters.search) {
-      const query = filters.search.toLowerCase()
-      props = props.filter((p: any) => 
-        p.player.toLowerCase().includes(query) ||
-        p.game.toLowerCase().includes(query)
-      )
-    }
-
     if (filters.game !== 'all') {
       props = props.filter((p: any) => p.game === filters.game)
     }
@@ -86,8 +79,11 @@ export default function PropParlayTool() {
     const isSGP = filters.parlayType === 'sgp'
     const isStandard = filters.parlayType === 'standard'
 
+    // Remove duplicate props from same player (keep best odds)
+    const deduplicatedProps = deduplicatePlayerProps(filteredProps)
+
     const byGame: Record<string, any[]> = {}
-    filteredProps.forEach((prop: any) => {
+    deduplicatedProps.forEach((prop: any) => {
       if (!byGame[prop.game]) byGame[prop.game] = []
       byGame[prop.game].push(prop)
     })
@@ -104,8 +100,8 @@ export default function PropParlayTool() {
       })
     }
 
-    if (!isSGP && filteredProps.length >= numLegs) {
-      generateCombos(filteredProps, numLegs).forEach(combo => {
+    if (!isSGP && deduplicatedProps.length >= numLegs) {
+      generateCombos(deduplicatedProps, numLegs).forEach(combo => {
         const uniqueGames = new Set(combo.map((l: any) => l.game))
         if (uniqueGames.size > 1) {
           combos.push({ 
@@ -117,14 +113,46 @@ export default function PropParlayTool() {
       })
     }
 
-    return combos.map(combo => {
+    let comboResults = combos.map(combo => {
       const totalOdds = calculateParlayOdds(combo.legs)
       const avgPercentAbove = combo.legs.reduce((sum: number, leg: any) => 
         sum + ((leg.season_avg - leg.line) / leg.line * 100), 0
       ) / combo.legs.length
       return { ...combo, totalOdds, avgPercentAbove }
-    }).sort((a, b) => b.totalOdds - a.totalOdds).slice(0, 50)
-  }, [filteredProps, filters.legs, filters.parlayType])
+    })
+
+    // Filter by parlay odds
+    if (filters.parlayMinOdds !== 'highest') {
+      const threshold = parseInt(filters.parlayMinOdds)
+      comboResults = comboResults.filter(c => c.totalOdds >= threshold)
+    }
+
+    // Sort by odds (highest first)
+    return comboResults.sort((a, b) => b.totalOdds - a.totalOdds).slice(0, 50)
+  }, [filteredProps, filters.legs, filters.parlayType, filters.parlayMinOdds])
+
+  function deduplicatePlayerProps(props: any[]) {
+    const playerMarketMap: Record<string, any> = {}
+    
+    props.forEach(prop => {
+      const marketType = prop.market.toLowerCase()
+      const key = `${prop.player}-${marketType}`
+      
+      if (!playerMarketMap[key]) {
+        playerMarketMap[key] = prop
+      } else {
+        // Keep the one with better odds (higher = better)
+        const existingBestOdds = Math.max(...playerMarketMap[key].bookmakers.map((b: any) => b.odds))
+        const newBestOdds = Math.max(...prop.bookmakers.map((b: any) => b.odds))
+        
+        if (newBestOdds > existingBestOdds) {
+          playerMarketMap[key] = prop
+        }
+      }
+    })
+    
+    return Object.values(playerMarketMap)
+  }
 
   function generateCombos(arr: any[], size: number) {
     const result: any[] = []
@@ -205,14 +233,6 @@ export default function PropParlayTool() {
         </div>
 
         <div style={styles.filters}>
-          <input 
-            type="search"
-            placeholder="Search player or game..."
-            value={filters.search}
-            onChange={(e) => setFilters({...filters, search: e.target.value})}
-            style={styles.searchLarge}
-          />
-
           {view === 'parlays' && (
             <>
               <select 
@@ -236,6 +256,19 @@ export default function PropParlayTool() {
                 <option value="sgp">Same Game Only</option>
                 <option value="standard">Multi-Game Only</option>
               </select>
+
+              <select 
+                value={filters.parlayMinOdds} 
+                onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
+                style={styles.filterSelect}
+              >
+                <option value="highest">Highest Odds</option>
+                <option value="-150">-150 or Better</option>
+                <option value="100">+100 or Better</option>
+                <option value="250">+250 or Better</option>
+                <option value="350">+350 or Better</option>
+                <option value="500">+500 or Better</option>
+              </select>
             </>
           )}
 
@@ -255,11 +288,10 @@ export default function PropParlayTool() {
             onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
             style={styles.filterSelect}
           >
-            <option value="-600">All Odds (-600 to -150)</option>
-            <option value="-150">-150 or better</option>
-            <option value="-200">-200 or better</option>
-            <option value="-300">-300 or better</option>
-            <option value="-400">-400 or better</option>
+            <option value="-600">Best Odds (All)</option>
+            <option value="-250">-150 to -250</option>
+            <option value="-400">-150 to -400</option>
+            <option value="-600">-150 to -600</option>
           </select>
 
           <select 
@@ -275,7 +307,7 @@ export default function PropParlayTool() {
         </div>
 
         {view === 'props' ? (
-          <PropsGrid props={filteredProps} filters={filters} />
+          <PropsTable props={filteredProps} filters={filters} />
         ) : (
           <ParlaysGrid combos={parlayCombo} filters={filters} />
         )}
@@ -284,86 +316,101 @@ export default function PropParlayTool() {
   )
 }
 
-function PropsGrid({ props, filters }: { props: any[], filters: any }) {
+function PropsTable({ props, filters }: { props: any[], filters: any }) {
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+
   if (!props.length) {
     return <div style={styles.empty}>No props match your filters</div>
   }
 
-  return (
-    <div style={styles.grid}>
-      {props.map((prop, idx) => (
-        <PropCard key={idx} prop={prop} filters={filters} />
-      ))}
-    </div>
-  )
-}
-
-function PropCard({ prop, filters }: { prop: any, filters: any }) {
-  const bookFilter = filters.book !== 'all' ? filters.book : null
-  const bookmakers = bookFilter 
-    ? prop.bookmakers.filter((b: any) => b.name === bookFilter)
-    : prop.bookmakers
-  
-  const bestOdds = Math.max(...bookmakers.map((b: any) => b.odds))
-  const percentAbove = ((prop.season_avg - prop.line) / prop.line * 100).toFixed(0)
+  function toggleRow(index: number) {
+    const newExpanded = new Set(expandedRows)
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index)
+    } else {
+      newExpanded.add(index)
+    }
+    setExpandedRows(newExpanded)
+  }
 
   return (
-    <div style={styles.card}>
-      <div style={styles.cardHeader}>
-        <div style={styles.playerInfo}>
-          <div style={styles.playerName}>{prop.player}</div>
-          <div style={styles.gameInfoText}>{prop.game}</div>
-          <div style={styles.timeText}>{prop.game_time}</div>
-        </div>
-        <div style={styles.edgeBadge}>
-          <div style={styles.edgeValue}>+{percentAbove}%</div>
-          <div style={styles.edgeText}>above line</div>
-        </div>
-      </div>
+    <div style={styles.table}>
+      {props.map((prop, idx) => {
+        const bookFilter = filters.book !== 'all' ? filters.book : null
+        const bookmakers = bookFilter 
+          ? prop.bookmakers.filter((b: any) => b.name === bookFilter)
+          : prop.bookmakers
+        
+        const bestOdds = Math.max(...bookmakers.map((b: any) => b.odds))
+        const percentAbove = ((prop.season_avg - prop.line) / prop.line * 100).toFixed(0)
+        const isExpanded = expandedRows.has(idx)
 
-      <div style={styles.propLine}>
-        <div>
-          <div style={styles.marketLabel}>{formatMarket(prop.market)}</div>
-          <div style={styles.lineValue}>Over {prop.line}</div>
-        </div>
-        <div style={styles.bestOdds}>{formatOdds(bestOdds)}</div>
-      </div>
-
-      <div style={styles.statsGrid}>
-        <div style={styles.statBox}>
-          <div style={styles.statBoxLabel}>Season Avg</div>
-          <div style={styles.statBoxValue}>{prop.season_avg}</div>
-        </div>
-        <div style={styles.statBox}>
-          <div style={styles.statBoxLabel}>Hit Rate</div>
-          <div style={styles.statBoxValue}>100%</div>
-        </div>
-        <div style={styles.statBox}>
-          <div style={styles.statBoxLabel}>Books</div>
-          <div style={styles.statBoxValue}>{bookmakers.length}</div>
-        </div>
-      </div>
-
-      <div style={styles.weeklyValues}>
-        <div style={styles.weeklyLabel}>Weekly: </div>
-        {prop.weekly_values.map((val: number, i: number) => (
-          <div key={i} style={styles.weeklyValue}>{val}</div>
-        ))}
-      </div>
-
-      <details style={styles.booksDetails}>
-        <summary style={styles.booksSummary}>
-          View all {bookmakers.length} book{bookmakers.length > 1 ? 's' : ''}
-        </summary>
-        <div style={styles.booksList}>
-          {bookmakers.map((book: any, i: number) => (
-            <div key={i} style={styles.bookItem}>
-              <span style={styles.bookNameText}>{formatBookName(book.name)}</span>
-              <span style={styles.bookOddsText}>{formatOdds(book.odds)}</span>
+        return (
+          <div key={idx} style={styles.tableRow}>
+            <div 
+              style={styles.tableRowHeader}
+              onClick={() => toggleRow(idx)}
+            >
+              <div style={styles.tableRowMain}>
+                <div style={styles.tablePlayerName}>{prop.player}</div>
+                <div style={styles.tableRowInfo}>
+                  <span style={styles.tableLine}>
+                    {formatMarket(prop.market)} O{prop.line}
+                  </span>
+                  <span style={styles.tableEdge}>+{percentAbove}% above</span>
+                </div>
+              </div>
+              <div style={styles.tableRowMeta}>
+                <div style={styles.tableTeam}>{prop.game}</div>
+                <div style={styles.tableTime}>{prop.game_time}</div>
+              </div>
+              <div style={styles.tableToggle}>
+                {isExpanded ? '▼' : '▶'}
+              </div>
             </div>
-          ))}
-        </div>
-      </details>
+
+            {isExpanded && (
+              <div style={styles.tableRowExpanded}>
+                <div style={styles.expandedGrid}>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Season Avg</div>
+                    <div style={styles.expandedValue}>{prop.season_avg}</div>
+                  </div>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Hit Rate</div>
+                    <div style={styles.expandedValue}>100%</div>
+                  </div>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Best Odds</div>
+                    <div style={styles.expandedValue}>{formatOdds(bestOdds)}</div>
+                  </div>
+                </div>
+
+                <div style={styles.weeklySection}>
+                  <div style={styles.expandedLabel}>Weekly Performance:</div>
+                  <div style={styles.weeklyGrid}>
+                    {prop.weekly_values.map((val: number, i: number) => (
+                      <div key={i} style={styles.weeklyBadge}>Wk{i+1}: {val}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={styles.booksSection}>
+                  <div style={styles.expandedLabel}>Available Books ({bookmakers.length}):</div>
+                  <div style={styles.booksGrid}>
+                    {bookmakers.map((book: any, i: number) => (
+                      <div key={i} style={styles.bookRow}>
+                        <span style={styles.bookNameExpanded}>{formatBookName(book.name)}</span>
+                        <span style={styles.bookOddsExpanded}>{formatOdds(book.odds)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -553,16 +600,6 @@ const styles = {
     gap: '0.75rem',
     marginBottom: '2rem'
   },
-  searchLarge: {
-    flex: '1 1 300px',
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    color: '#e5e7eb',
-    borderRadius: '10px',
-    padding: '0.75rem 1rem',
-    fontSize: '0.9rem',
-    outline: 'none'
-  },
   filterSelect: {
     flex: '1 1 180px',
     background: 'rgba(255,255,255,0.06)',
@@ -574,157 +611,126 @@ const styles = {
     outline: 'none',
     cursor: 'pointer'
   },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-    gap: '1rem'
+  table: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem'
   },
-  card: {
+  tableRow: {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(59,130,246,0.35)',
-    borderRadius: '14px',
-    padding: '1.25rem',
-    transition: 'all 0.25s'
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '1rem',
-    gap: '1rem'
-  },
-  playerInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  playerName: {
-    fontSize: '1.1rem',
-    fontWeight: '800',
-    marginBottom: '0.25rem',
-    whiteSpace: 'nowrap' as const,
+    borderRadius: '10px',
     overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    transition: 'all 0.2s'
   },
-  gameInfoText: {
-    fontSize: '0.8rem',
-    color: '#9ca3af',
-    marginBottom: '0.15rem'
-  },
-  timeText: {
-    fontSize: '0.75rem',
-    color: '#6b7280'
-  },
-  edgeBadge: {
-    background: 'rgba(22,163,74,0.12)',
-    border: '1px solid rgba(22,163,74,0.4)',
-    borderRadius: '8px',
-    padding: '0.5rem 0.75rem',
-    textAlign: 'center' as const
-  },
-  edgeValue: {
-    fontSize: '1rem',
-    fontWeight: '800',
-    color: '#16a34a',
-    marginBottom: '0.15rem'
-  },
-  edgeText: {
-    fontSize: '0.65rem',
-    color: '#9ca3af',
-    textTransform: 'uppercase' as const
-  },
-  propLine: {
+  tableRowHeader: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0.85rem 1rem',
-    background: 'rgba(0,0,0,0.25)',
-    borderRadius: '8px',
-    marginBottom: '1rem'
+    padding: '1rem 1.25rem',
+    cursor: 'pointer',
+    gap: '1rem',
+    transition: 'background 0.2s'
   },
-  marketLabel: {
-    fontSize: '0.8rem',
+  tableRowMain: {
+    flex: '1',
+    minWidth: '0'
+  },
+  tablePlayerName: {
+    fontSize: '1.05rem',
+    fontWeight: '700',
+    marginBottom: '0.35rem'
+  },
+  tableRowInfo: {
+    display: 'flex',
+    gap: '1rem',
+    fontSize: '0.85rem'
+  },
+  tableLine: {
+    color: '#9ca3af'
+  },
+  tableEdge: {
+    color: '#16a34a',
+    fontWeight: '700'
+  },
+  tableRowMeta: {
+    textAlign: 'right' as const,
+    minWidth: '200px'
+  },
+  tableTeam: {
+    fontSize: '0.85rem',
     color: '#9ca3af',
     marginBottom: '0.25rem'
   },
-  lineValue: {
-    fontSize: '1rem',
-    fontWeight: '700'
+  tableTime: {
+    fontSize: '0.75rem',
+    color: '#6b7280'
   },
-  bestOdds: {
-    fontSize: '1.25rem',
-    fontWeight: '800',
-    color: '#60a5fa'
+  tableToggle: {
+    fontSize: '0.85rem',
+    color: '#60a5fa',
+    marginLeft: '1rem'
   },
-  statsGrid: {
+  tableRowExpanded: {
+    padding: '1.25rem',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(0,0,0,0.15)'
+  },
+  expandedGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '0.75rem',
-    marginBottom: '1rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '1rem',
+    marginBottom: '1.25rem'
   },
-  statBox: {
-    background: 'rgba(0,0,0,0.2)',
-    padding: '0.65rem',
-    borderRadius: '8px',
-    textAlign: 'center' as const
-  },
-  statBoxLabel: {
-    fontSize: '0.7rem',
-    color: '#9ca3af',
-    marginBottom: '0.25rem',
-    textTransform: 'uppercase' as const
-  },
-  statBoxValue: {
-    fontSize: '0.95rem',
-    fontWeight: '700'
-  },
-  weeklyValues: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
+  expandedStat: {
+    background: 'rgba(255,255,255,0.05)',
     padding: '0.75rem',
-    background: 'rgba(0,0,0,0.15)',
-    borderRadius: '8px',
-    marginBottom: '0.75rem',
-    fontSize: '0.85rem'
+    borderRadius: '8px'
   },
-  weeklyLabel: {
+  expandedLabel: {
+    fontSize: '0.75rem',
     color: '#9ca3af',
+    marginBottom: '0.5rem',
     fontWeight: '600'
   },
-  weeklyValue: {
-    background: 'rgba(96,165,250,0.15)',
-    padding: '0.25rem 0.5rem',
-    borderRadius: '4px',
+  expandedValue: {
+    fontSize: '1.1rem',
     fontWeight: '700'
   },
-  booksDetails: {
-    marginTop: '0.75rem'
+  weeklySection: {
+    marginBottom: '1.25rem'
   },
-  booksSummary: {
-    color: '#60a5fa',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    listStyle: 'none'
-  },
-  booksList: {
-    marginTop: '0.75rem',
+  weeklyGrid: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.4rem'
+    gap: '0.5rem',
+    flexWrap: 'wrap' as const,
+    marginTop: '0.5rem'
   },
-  bookItem: {
+  weeklyBadge: {
+    background: 'rgba(96,165,250,0.15)',
+    padding: '0.35rem 0.65rem',
+    borderRadius: '6px',
+    fontSize: '0.8rem',
+    fontWeight: '600'
+  },
+  booksSection: {},
+  booksGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gap: '0.5rem',
+    marginTop: '0.5rem'
+  },
+  bookRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '0.5rem 0.65rem',
+    padding: '0.5rem 0.75rem',
     background: 'rgba(0,0,0,0.2)',
     borderRadius: '6px',
     fontSize: '0.85rem'
   },
-  bookNameText: {
+  bookNameExpanded: {
     color: '#9ca3af'
   },
-  bookOddsText: {
+  bookOddsExpanded: {
     fontWeight: '700'
   },
   parlayHeader: {
