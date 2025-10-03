@@ -2,10 +2,26 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 
+const BOOK_LOGOS: Record<string, string> = {
+  'draftkings': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a8e5ff0c6651eee22_1.svg',
+  'fanduel': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a95a286b5d70e3e1c_2.svg',
+  'bovada': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a6a628507419c6fe5_8.svg',
+  'betonlineag': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a9314f5693bb1bdfa_7.svg',
+  'betmgm': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a8a54f55c8a1f99c3_3.svg',
+  'fanatics': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a5683202c2c5d4dff_4.svg',
+  'betrivers': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a9c39a22f200bbee8_5.svg',
+  'williamhill_us': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a950f718415ee5ce7_6.svg'
+}
+
+const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e02d24e3982f4f0c182362_NEW%20BOOK%20LOGOS%20SVG.svg'
+const FILTER_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
+
 export default function PropParlayTool() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState<'props' | 'parlays'>('props')
+  const [showPropsFilter, setShowPropsFilter] = useState(false)
+  const [showParlaysFilter, setShowParlaysFilter] = useState(false)
   const [filters, setFilters] = useState({
     legs: 2,
     minOdds: -600,
@@ -36,7 +52,10 @@ export default function PropParlayTool() {
 
   const games = useMemo(() => {
     if (!data?.games) return []
-    return data.games
+    return data.games.map((g: any) => ({
+      ...g,
+      matchup: formatTeamNames(g.matchup)
+    }))
   }, [data])
 
   const bookmakers = useMemo(() => {
@@ -51,7 +70,10 @@ export default function PropParlayTool() {
   const filteredProps = useMemo(() => {
     if (!data?.props) return []
     
-    let props = data.props
+    let props = data.props.map((p: any) => ({
+      ...p,
+      game: formatTeamNames(p.game)
+    }))
 
     if (filters.game !== 'all') {
       props = props.filter((p: any) => p.game === filters.game)
@@ -69,6 +91,13 @@ export default function PropParlayTool() {
       return bestOdds >= threshold
     })
 
+    // Sort by best odds (closest to -150 first)
+    props.sort((a: any, b: any) => {
+      const aOdds = Math.max(...a.bookmakers.map((bm: any) => bm.odds))
+      const bOdds = Math.max(...b.bookmakers.map((bm: any) => bm.odds))
+      return bOdds - aOdds
+    })
+
     return props
   }, [data, filters])
 
@@ -79,7 +108,6 @@ export default function PropParlayTool() {
     const isSGP = filters.parlayType === 'sgp'
     const isStandard = filters.parlayType === 'standard'
 
-    // Remove duplicate props from same player (keep best odds)
     const deduplicatedProps = deduplicatePlayerProps(filteredProps)
 
     const byGame: Record<string, any[]> = {}
@@ -114,22 +142,54 @@ export default function PropParlayTool() {
     }
 
     let comboResults = combos.map(combo => {
-      const totalOdds = calculateParlayOdds(combo.legs)
+      const totalOdds = calculateParlayOdds(combo.legs, filters.book)
       const avgPercentAbove = combo.legs.reduce((sum: number, leg: any) => 
         sum + ((leg.season_avg - leg.line) / leg.line * 100), 0
       ) / combo.legs.length
       return { ...combo, totalOdds, avgPercentAbove }
     })
 
-    // Filter by parlay odds
     if (filters.parlayMinOdds !== 'highest') {
       const threshold = parseInt(filters.parlayMinOdds)
       comboResults = comboResults.filter(c => c.totalOdds >= threshold)
     }
 
-    // Sort by odds (highest first)
     return comboResults.sort((a, b) => b.totalOdds - a.totalOdds).slice(0, 50)
-  }, [filteredProps, filters.legs, filters.parlayType, filters.parlayMinOdds])
+  }, [filteredProps, filters.legs, filters.parlayType, filters.parlayMinOdds, filters.book])
+
+  function formatTeamNames(matchup: string) {
+    return matchup
+      .replace(/Minnesota /g, '')
+      .replace(/Cleveland /g, '')
+      .replace(/Houston /g, '')
+      .replace(/Baltimore /g, '')
+      .replace(/Miami /g, '')
+      .replace(/Carolina /g, '')
+      .replace(/Dallas /g, '')
+      .replace(/New York /g, '')
+      .replace(/Denver /g, '')
+      .replace(/Philadelphia /g, '')
+      .replace(/Las Vegas /g, '')
+      .replace(/Indianapolis /g, '')
+      .replace(/Tennessee /g, '')
+      .replace(/Arizona /g, '')
+      .replace(/Tampa Bay /g, '')
+      .replace(/Seattle /g, '')
+      .replace(/Detroit /g, '')
+      .replace(/Cincinnati /g, '')
+      .replace(/Washington /g, '')
+      .replace(/Los Angeles /g, '')
+      .replace(/New England /g, '')
+      .replace(/Buffalo /g, '')
+      .replace(/Kansas City /g, '')
+      .replace(/Jacksonville /g, '')
+      .replace(/San Francisco /g, '')
+      .replace(/Green Bay /g, '')
+      .replace(/Chicago /g, '')
+      .replace(/Pittsburgh /g, '')
+      .replace(/Atlanta /g, '')
+      .replace(/New Orleans /g, '')
+  }
 
   function deduplicatePlayerProps(props: any[]) {
     const playerMarketMap: Record<string, any> = {}
@@ -141,7 +201,6 @@ export default function PropParlayTool() {
       if (!playerMarketMap[key]) {
         playerMarketMap[key] = prop
       } else {
-        // Keep the one with better odds (higher = better)
         const existingBestOdds = Math.max(...playerMarketMap[key].bookmakers.map((b: any) => b.odds))
         const newBestOdds = Math.max(...prop.bookmakers.map((b: any) => b.odds))
         
@@ -170,14 +229,42 @@ export default function PropParlayTool() {
     return result.slice(0, 200)
   }
 
-  function calculateParlayOdds(legs: any[]) {
+  function calculateParlayOdds(legs: any[], selectedBook: string) {
     const decimalOdds = legs.map(leg => {
-      const bestOdds = Math.max(...leg.bookmakers.map((b: any) => b.odds))
+      let bestOdds
+      if (selectedBook === 'all') {
+        bestOdds = Math.max(...leg.bookmakers.map((b: any) => b.odds))
+      } else {
+        const bookOdds = leg.bookmakers.find((b: any) => b.name === selectedBook)
+        bestOdds = bookOdds ? bookOdds.odds : Math.max(...leg.bookmakers.map((b: any) => b.odds))
+      }
       return bestOdds < 0 ? (100 / Math.abs(bestOdds)) + 1 : (bestOdds / 100) + 1
     })
     const combined = decimalOdds.reduce((acc, odd) => acc * odd, 1)
     const american = combined >= 2 ? Math.round((combined - 1) * 100) : Math.round(-100 / (combined - 1))
     return american
+  }
+
+  function getPropsFilterText() {
+    const game = filters.game === 'all' ? 'All games' : filters.game
+    let odds = 'Best odds'
+    if (filters.minOdds === -250) odds = '-150 to -250'
+    else if (filters.minOdds === -400) odds = '-150 to -400'
+    else if (filters.minOdds === -600) odds = '-150 to -600'
+    return `${game}, ${odds}`
+  }
+
+  function getParlaysFilterText() {
+    const game = filters.game === 'all' ? 'All games' : filters.game
+    const parlayType = filters.parlayType === 'all' ? 'All parlay types' : 
+                       filters.parlayType === 'sgp' ? 'Same game' : 'Multi-game'
+    let odds = 'Highest odds'
+    if (filters.parlayMinOdds === '-150') odds = '-150 or better'
+    else if (filters.parlayMinOdds === '100') odds = '+100 or better'
+    else if (filters.parlayMinOdds === '250') odds = '+250 or better'
+    else if (filters.parlayMinOdds === '350') odds = '+350 or better'
+    else if (filters.parlayMinOdds === '500') odds = '+500 or better'
+    return `${game}, ${parlayType}, ${filters.legs}-legs, ${odds}`
   }
 
   if (loading) {
@@ -201,19 +288,18 @@ export default function PropParlayTool() {
             <h1 style={styles.title}>Prop Parlay Tool</h1>
             <p style={styles.subtitle}>100% Hit Rate Props • 20%+ Above Line This Season</p>
           </div>
-          <div style={styles.headerStats}>
-            <div style={styles.stat}>
-              <div style={styles.statLabel}>Total Props</div>
-              <div style={styles.statValue}>{data?.props?.length || 0}</div>
-            </div>
-            <div style={styles.stat}>
-              <div style={styles.statLabel}>Games</div>
-              <div style={styles.statValue}>{games.length}</div>
-            </div>
-            <div style={styles.stat}>
-              <div style={styles.statLabel}>Last Updated</div>
-              <div style={styles.statValue}>{data?.last_updated_formatted || '-'}</div>
-            </div>
+          <div style={styles.bookSelector}>
+            <label style={styles.bookLabel}>Choose your book</label>
+            <select 
+              value={filters.book} 
+              onChange={(e) => setFilters({...filters, book: e.target.value})}
+              style={styles.bookSelect}
+            >
+              <option value="all">All Sportsbooks</option>
+              {bookmakers.map(book => (
+                <option key={book} value={book}>{formatBookName(book)}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -232,91 +318,135 @@ export default function PropParlayTool() {
           </button>
         </div>
 
-        <div style={styles.filters}>
-          {view === 'parlays' && (
-            <>
-              <select 
-                value={filters.legs} 
-                onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
-                style={styles.filterSelect}
-              >
-                <option value="2">2-Leg Parlay</option>
-                <option value="3">3-Leg Parlay</option>
-                <option value="4">4-Leg Parlay</option>
-                <option value="5">5-Leg Parlay</option>
-                <option value="6">6-Leg Parlay</option>
-              </select>
-
-              <select 
-                value={filters.parlayType} 
-                onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
-                style={styles.filterSelect}
-              >
-                <option value="all">All Parlay Types</option>
-                <option value="sgp">Same Game Only</option>
-                <option value="standard">Multi-Game Only</option>
-              </select>
-
-              <select 
-                value={filters.parlayMinOdds} 
-                onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
-                style={styles.filterSelect}
-              >
-                <option value="highest">Highest Odds</option>
-                <option value="-150">-150 or Better</option>
-                <option value="100">+100 or Better</option>
-                <option value="250">+250 or Better</option>
-                <option value="350">+350 or Better</option>
-                <option value="500">+500 or Better</option>
-              </select>
-            </>
-          )}
-
-          <select 
-            value={filters.game} 
-            onChange={(e) => setFilters({...filters, game: e.target.value})}
-            style={styles.filterSelect}
-          >
-            <option value="all">All Games</option>
-            {games.map((g: any, i: number) => (
-              <option key={i} value={g.matchup}>{g.matchup}</option>
-            ))}
-          </select>
-
-          <select 
-            value={filters.minOdds} 
-            onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
-            style={styles.filterSelect}
-          >
-            <option value="-600">Best Odds (All)</option>
-            <option value="-250">-150 to -250</option>
-            <option value="-400">-150 to -400</option>
-            <option value="-600">-150 to -600</option>
-          </select>
-
-          <select 
-            value={filters.book} 
-            onChange={(e) => setFilters({...filters, book: e.target.value})}
-            style={styles.filterSelect}
-          >
-            <option value="all">All Sportsbooks</option>
-            {bookmakers.map(book => (
-              <option key={book} value={book}>{formatBookName(book)}</option>
-            ))}
-          </select>
-        </div>
-
         {view === 'props' ? (
-          <PropsTable props={filteredProps} filters={filters} />
+          <>
+            <div style={styles.filterRow}>
+              <button 
+                style={styles.filterButton}
+                onClick={() => setShowPropsFilter(!showPropsFilter)}
+              >
+                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                <span>{getPropsFilterText()}</span>
+              </button>
+            </div>
+
+            {showPropsFilter && (
+              <div style={styles.filterDropdown}>
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Games</div>
+                  <select 
+                    value={filters.game} 
+                    onChange={(e) => setFilters({...filters, game: e.target.value})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="all">All Games</option>
+                    {games.map((g: any, i: number) => (
+                      <option key={i} value={g.matchup}>{g.matchup}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Odds Range</div>
+                  <select 
+                    value={filters.minOdds} 
+                    onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="-600">Best Odds (All)</option>
+                    <option value="-250">-150 to -250</option>
+                    <option value="-400">-150 to -400</option>
+                    <option value="-600">-150 to -600</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <PropsTable props={filteredProps} selectedBook={filters.book} />
+          </>
         ) : (
-          <ParlaysGrid combos={parlayCombo} filters={filters} />
+          <>
+            <div style={styles.filterRow}>
+              <button 
+                style={styles.filterButton}
+                onClick={() => setShowParlaysFilter(!showParlaysFilter)}
+              >
+                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                <span>{getParlaysFilterText()}</span>
+              </button>
+            </div>
+
+            {showParlaysFilter && (
+              <div style={styles.filterDropdown}>
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Games</div>
+                  <select 
+                    value={filters.game} 
+                    onChange={(e) => setFilters({...filters, game: e.target.value})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="all">All Games</option>
+                    {games.map((g: any, i: number) => (
+                      <option key={i} value={g.matchup}>{g.matchup}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Parlay Type</div>
+                  <select 
+                    value={filters.parlayType} 
+                    onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="all">All Parlay Types</option>
+                    <option value="sgp">Same Game Only</option>
+                    <option value="standard">Multi-Game Only</option>
+                  </select>
+                </div>
+
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Number of Legs</div>
+                  <select 
+                    value={filters.legs} 
+                    onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="2">2-Leg Parlay</option>
+                    <option value="3">3-Leg Parlay</option>
+                    <option value="4">4-Leg Parlay</option>
+                    <option value="5">5-Leg Parlay</option>
+                    <option value="6">6-Leg Parlay</option>
+                  </select>
+                </div>
+
+                <div style={styles.filterSection}>
+                  <div style={styles.filterLabel}>Parlay Odds</div>
+                  <select 
+                    value={filters.parlayMinOdds} 
+                    onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
+                    style={styles.filterDropdownSelect}
+                  >
+                    <option value="highest">Highest Odds</option>
+                    <option value="-150">-150 or Better</option>
+                    <option value="100">+100 or Better</option>
+                    <option value="250">+250 or Better</option>
+                    <option value="350">+350 or Better</option>
+                    <option value="500">+500 or Better</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <ParlaysGrid combos={parlayCombo} selectedBook={filters.book} />
+          </>
         )}
       </div>
     </div>
   )
 }
 
-function PropsTable({ props, filters }: { props: any[], filters: any }) {
+function PropsTable({ props, selectedBook }: { props: any[], selectedBook: string }) {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
   if (!props.length) {
@@ -333,17 +463,21 @@ function PropsTable({ props, filters }: { props: any[], filters: any }) {
     setExpandedRows(newExpanded)
   }
 
+  function getBestOddsForBook(prop: any, book: string) {
+    if (book === 'all') {
+      return Math.max(...prop.bookmakers.map((b: any) => b.odds))
+    }
+    const bookmaker = prop.bookmakers.find((b: any) => b.name === book)
+    return bookmaker ? bookmaker.odds : null
+  }
+
   return (
     <div style={styles.table}>
       {props.map((prop, idx) => {
-        const bookFilter = filters.book !== 'all' ? filters.book : null
-        const bookmakers = bookFilter 
-          ? prop.bookmakers.filter((b: any) => b.name === bookFilter)
-          : prop.bookmakers
-        
-        const bestOdds = Math.max(...bookmakers.map((b: any) => b.odds))
         const percentAbove = ((prop.season_avg - prop.line) / prop.line * 100).toFixed(0)
         const isExpanded = expandedRows.has(idx)
+        const displayOdds = getBestOddsForBook(prop, selectedBook)
+        const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
 
         return (
           <div key={idx} style={styles.tableRow}>
@@ -364,6 +498,10 @@ function PropsTable({ props, filters }: { props: any[], filters: any }) {
                 <div style={styles.tableTeam}>{prop.game}</div>
                 <div style={styles.tableTime}>{prop.game_time}</div>
               </div>
+              <div style={styles.bookOddsCorner}>
+                {bookLogo && <img src={bookLogo} alt="Book" style={styles.bookLogoSmall} />}
+                {displayOdds && <div style={styles.cornerOdds}>{formatOdds(displayOdds)}</div>}
+              </div>
               <div style={styles.tableToggle}>
                 {isExpanded ? '▼' : '▶'}
               </div>
@@ -380,10 +518,6 @@ function PropsTable({ props, filters }: { props: any[], filters: any }) {
                     <div style={styles.expandedLabel}>Hit Rate</div>
                     <div style={styles.expandedValue}>100%</div>
                   </div>
-                  <div style={styles.expandedStat}>
-                    <div style={styles.expandedLabel}>Best Odds</div>
-                    <div style={styles.expandedValue}>{formatOdds(bestOdds)}</div>
-                  </div>
                 </div>
 
                 <div style={styles.weeklySection}>
@@ -396,12 +530,17 @@ function PropsTable({ props, filters }: { props: any[], filters: any }) {
                 </div>
 
                 <div style={styles.booksSection}>
-                  <div style={styles.expandedLabel}>Available Books ({bookmakers.length}):</div>
+                  <div style={styles.expandedLabel}>Available Books:</div>
                   <div style={styles.booksGrid}>
-                    {bookmakers.map((book: any, i: number) => (
-                      <div key={i} style={styles.bookRow}>
-                        <span style={styles.bookNameExpanded}>{formatBookName(book.name)}</span>
-                        <span style={styles.bookOddsExpanded}>{formatOdds(book.odds)}</span>
+                    {prop.bookmakers.map((book: any, i: number) => (
+                      <div key={i} style={styles.bookRowExpanded}>
+                        <img 
+                          src={BOOK_LOGOS[book.name]} 
+                          alt={book.name} 
+                          style={styles.bookLogoTiny}
+                        />
+                        <span style={styles.bookNameTiny}>{formatBookName(book.name)}</span>
+                        <span style={styles.bookOddsTiny}>{formatOdds(book.odds)}</span>
                       </div>
                     ))}
                   </div>
@@ -415,32 +554,23 @@ function PropsTable({ props, filters }: { props: any[], filters: any }) {
   )
 }
 
-function ParlaysGrid({ combos, filters }: { combos: any[], filters: any }) {
+function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: string }) {
   if (!combos.length) {
-    return (
-      <div style={styles.empty}>
-        No {filters.parlayType === 'sgp' ? 'same game' : filters.parlayType === 'standard' ? 'multi-game' : ''} 
-        {' '}parlays available with current filters. Try adjusting your filters.
-      </div>
-    )
+    return <div style={styles.empty}>No parlays available with current filters</div>
   }
 
+  const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
+
   return (
-    <div>
-      <div style={styles.parlayHeader}>
-        <h2 style={styles.parlayTitle}>Top {filters.legs}-Leg Parlay Combinations</h2>
-        <div style={styles.parlayCount}>{combos.length} combinations found</div>
-      </div>
-      <div style={styles.parlayGrid}>
-        {combos.map((combo, idx) => (
-          <ParlayCard key={idx} combo={combo} rank={idx + 1} />
-        ))}
-      </div>
+    <div style={styles.parlayGrid}>
+      {combos.map((combo, idx) => (
+        <ParlayCard key={idx} combo={combo} rank={idx + 1} bookLogo={bookLogo} />
+      ))}
     </div>
   )
 }
 
-function ParlayCard({ combo, rank }: { combo: any, rank: number }) {
+function ParlayCard({ combo, rank, bookLogo }: { combo: any, rank: number, bookLogo: string }) {
   return (
     <div style={styles.parlayCard}>
       <div style={styles.parlayCardHeader}>
@@ -451,19 +581,19 @@ function ParlayCard({ combo, rank }: { combo: any, rank: number }) {
           </div>
           <div style={styles.parlayGameText}>{combo.game}</div>
         </div>
-        <div style={styles.parlayOddsDisplay}>
-          <div style={styles.parlayOddsLabel}>Total Odds</div>
+        <div style={styles.parlayBookCorner}>
+          <img src={bookLogo} alt="Book" style={styles.bookLogoSmall} />
           <div style={styles.parlayOddsValue}>{formatOdds(combo.totalOdds)}</div>
         </div>
       </div>
 
       <div style={styles.parlayStats}>
         <div style={styles.parlayStat}>
-          <span style={styles.parlayStatLabel}>Avg % Above Line:</span>
+          <span style={styles.parlayStatLabel}>Avg % Above:</span>
           <span style={styles.parlayStatValue}>+{combo.avgPercentAbove.toFixed(1)}%</span>
         </div>
         <div style={styles.parlayStat}>
-          <span style={styles.parlayStatLabel}>All Hit Rate:</span>
+          <span style={styles.parlayStatLabel}>Hit Rate:</span>
           <span style={styles.parlayStatValue}>100%</span>
         </div>
       </div>
@@ -475,11 +605,8 @@ function ParlayCard({ combo, rank }: { combo: any, rank: number }) {
             <div style={styles.legInfo}>
               <div style={styles.legPlayerName}>{leg.player}</div>
               <div style={styles.legPropInfo}>
-                {formatMarket(leg.market)} Over {leg.line} • Avg: {leg.season_avg}
+                {formatMarket(leg.market)} O{leg.line}
               </div>
-            </div>
-            <div style={styles.legOddsValue}>
-              {formatOdds(Math.max(...leg.bookmakers.map((b: any) => b.odds)))}
             </div>
           </div>
         ))}
@@ -551,23 +678,27 @@ const styles = {
     letterSpacing: '0.1em',
     textTransform: 'uppercase' as const
   },
-  headerStats: {
-    display: 'flex',
-    gap: '2rem'
+  bookSelector: {
+    textAlign: 'right' as const
   },
-  stat: {
-    textAlign: 'center' as const
-  },
-  statLabel: {
-    fontSize: '0.7rem',
+  bookLabel: {
+    display: 'block',
+    fontSize: '0.75rem',
     color: '#9ca3af',
+    marginBottom: '0.5rem',
     textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-    marginBottom: '0.25rem'
+    letterSpacing: '0.05em'
   },
-  statValue: {
-    fontSize: '1.25rem',
-    fontWeight: '700'
+  bookSelect: {
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    color: '#e5e7eb',
+    borderRadius: '8px',
+    padding: '0.65rem 1rem',
+    fontSize: '0.9rem',
+    outline: 'none',
+    cursor: 'pointer',
+    minWidth: '200px'
   },
   viewToggle: {
     display: 'flex',
@@ -575,7 +706,7 @@ const styles = {
     marginBottom: '1.5rem',
     background: 'rgba(255,255,255,0.05)',
     padding: '0.35rem',
-    borderRadius: '10px',
+    borderRadius: '8px',
     border: '1px solid rgba(255,255,255,0.1)'
   },
   toggleBtn: {
@@ -586,7 +717,7 @@ const styles = {
     color: '#9ca3af',
     fontSize: '0.9rem',
     fontWeight: '600',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s'
   },
@@ -594,20 +725,55 @@ const styles = {
     background: 'rgba(96,165,250,0.15)',
     color: '#60a5fa'
   },
-  filters: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '0.75rem',
-    marginBottom: '2rem'
+  filterRow: {
+    marginBottom: '1.5rem'
   },
-  filterSelect: {
-    flex: '1 1 180px',
+  filterButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    color: '#e5e7eb',
+    borderRadius: '8px',
+    padding: '0.75rem 1.25rem',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  filterIcon: {
+    width: '18px',
+    height: '18px',
+    opacity: 0.7
+  },
+  filterDropdown: {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '8px',
+    padding: '1rem',
+    marginBottom: '1.5rem',
+    display: 'grid',
+    gap: '1rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
+  },
+  filterSection: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem'
+  },
+  filterLabel: {
+    fontSize: '0.75rem',
+    color: '#9ca3af',
+    fontWeight: '600',
+    textTransform: 'uppercase' as const
+  },
+  filterDropdownSelect: {
     background: 'rgba(255,255,255,0.06)',
     border: '1px solid rgba(255,255,255,0.12)',
     color: '#e5e7eb',
-    borderRadius: '10px',
-    padding: '0.75rem 1rem',
-    fontSize: '0.9rem',
+    borderRadius: '6px',
+    padding: '0.6rem 0.85rem',
+    fontSize: '0.85rem',
     outline: 'none',
     cursor: 'pointer'
   },
@@ -629,7 +795,8 @@ const styles = {
     padding: '1rem 1.25rem',
     cursor: 'pointer',
     gap: '1rem',
-    transition: 'background 0.2s'
+    transition: 'background 0.2s',
+    position: 'relative' as const
   },
   tableRowMain: {
     flex: '1',
@@ -664,6 +831,23 @@ const styles = {
   tableTime: {
     fontSize: '0.75rem',
     color: '#6b7280'
+  },
+  bookOddsCorner: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '0.25rem',
+    marginLeft: '1rem'
+  },
+  bookLogoSmall: {
+    width: '32px',
+    height: '32px',
+    objectFit: 'contain' as const
+  },
+  cornerOdds: {
+    fontSize: '0.9rem',
+    fontWeight: '700',
+    color: '#60a5fa'
   },
   tableToggle: {
     fontSize: '0.85rem',
@@ -715,39 +899,32 @@ const styles = {
   booksSection: {},
   booksGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: '0.5rem',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '0.4rem',
     marginTop: '0.5rem'
   },
-  bookRow: {
+  bookRowExpanded: {
     display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.5rem 0.75rem',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.4rem 0.6rem',
     background: 'rgba(0,0,0,0.2)',
     borderRadius: '6px',
-    fontSize: '0.85rem'
+    fontSize: '0.75rem'
   },
-  bookNameExpanded: {
-    color: '#9ca3af'
+  bookLogoTiny: {
+    width: '20px',
+    height: '20px',
+    objectFit: 'contain' as const
   },
-  bookOddsExpanded: {
-    fontWeight: '700'
+  bookNameTiny: {
+    flex: 1,
+    color: '#9ca3af',
+    fontSize: '0.75rem'
   },
-  parlayHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1.5rem',
-    paddingBottom: '1rem',
-    borderBottom: '1px solid rgba(255,255,255,0.1)'
-  },
-  parlayTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700'
-  },
-  parlayCount: {
-    fontSize: '0.85rem',
-    color: '#9ca3af'
+  bookOddsTiny: {
+    fontWeight: '700',
+    fontSize: '0.75rem'
   },
   parlayGrid: {
     display: 'flex',
@@ -796,17 +973,14 @@ const styles = {
     fontSize: '0.85rem',
     color: '#9ca3af'
   },
-  parlayOddsDisplay: {
-    textAlign: 'right' as const
-  },
-  parlayOddsLabel: {
-    fontSize: '0.7rem',
-    color: '#9ca3af',
-    textTransform: 'uppercase' as const,
-    marginBottom: '0.25rem'
+  parlayBookCorner: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '0.35rem'
   },
   parlayOddsValue: {
-    fontSize: '1.5rem',
+    fontSize: '1.1rem',
     fontWeight: '800',
     color: '#16a34a'
   },
@@ -873,11 +1047,6 @@ const styles = {
   legPropInfo: {
     fontSize: '0.8rem',
     color: '#9ca3af'
-  },
-  legOddsValue: {
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    flexShrink: 0
   },
   loading: {
     textAlign: 'center' as const,
