@@ -1,103 +1,150 @@
-import Image from "next/image";
+import PicksWidget from '../components/PicksWidget'
+import StatsWidget from '../components/StatsWidget'
+import FantasyWidget from '../components/FantasyWidget'
+import TDWidget from '../components/TDWidget'
+import NewsWidget from '../components/NewsWidget'
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '3rem' }}>
+        <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '0.35rem', fontWeight: '500' }}>
+          Welcome to a bettors paradise, friend
+        </p>
+        <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
+          Let's have ourselves a day!
+        </p>
+        <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
+        
+        <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          You've got all of our powerful betting tools 
+          <span style={{ 
+  	    background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
+  	    color: '#1e293b',
+  	    padding: '0.5rem 1rem',
+  	    borderRadius: '6px',
+  	    fontSize: '1.4rem',
+            fontWeight: '800',
+            letterSpacing: '0.05em'
+          }}>UNLOCKED</span>
+        </h1>
+        <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
+      </div>
+      
+      <div style={{ 
+        display: 'flex', 
+        gap: '1.5rem', 
+        overflowX: 'auto', 
+        paddingBottom: '1rem',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+      }}>
+        <div style={{ minWidth: '380px' }}><PicksWidget /></div>
+        <div style={{ minWidth: '380px' }}><StatsWidget /></div>
+        <div style={{ minWidth: '380px' }}><FantasyWidget /></div>
+        <div style={{ minWidth: '380px' }}><TDWidget /></div>
+        <div style={{ minWidth: '380px' }}><NewsWidget /></div>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+      <div style={{ marginTop: '4rem' }}>
+        <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          Try our FREE mini betting tools
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
+               style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <a href="https://www.thebettinginsider.com/tools/bankroll-builder" style={toolLinkStyle}>
+            <span style={topTagStyle}>TOP</span>
+            Bankroll Builder
           </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
+          <a href="https://www.thebettinginsider.com/tools/insider-betting-guide" style={toolLinkStyle}>
+            <span style={favTagStyle}>FAV</span>
+            Betting Guide
+          </a>
+          <a href="https://www.thebettinginsider.com/daily-mlb-game-stats" style={toolLinkStyle}>
+            Batter v Pitcher
+          </a>
+          <a href="https://www.thebettinginsider.com/tools/roi-calculator" style={toolLinkStyle}>
+            ROI Calculator
+          </a>
+          <a href="https://www.thebettinginsider.com/tools/parlay-calculator" style={toolLinkStyle}>
+            Parlay Calculator
+          </a>
+          <a href="https://www.thebettinginsider.com/action-systems" style={toolLinkStyle}>
+            About Systems
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div style={{ marginTop: '3rem' }}>
+        <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          Get Help
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
+               style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+        </h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+          <a href="https://billing.stripe.com/p/login/cN2eYg15W3W77rW288" style={helpLinkStyle}>
+            Manage Subscription
+          </a>
+          <a href="https://www.thebettinginsider.com/insider-faqs" style={helpLinkStyle}>
+            Common Questions
+          </a>
+          <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
+            Contact Us
+          </a>
+          <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
+            About Company
+          </a>
+          <a href="https://www.thebettinginsider.com/policies/terms-of-service" style={helpLinkStyle}>
+            Terms of Service
+          </a>
+          <a href="https://www.thebettinginsider.com/policies/refund-policy" style={helpLinkStyle}>
+            Refund Policy
+          </a>
+          <a href="https://www.thebettinginsider.com/policies/privacy-policy" style={helpLinkStyle}>
+            Privacy
+          </a>
+        </div>
+      </div>
     </div>
-  );
+  )
+}
+
+const toolLinkStyle = {
+  background: 'rgba(255,255,255,0.03)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '8px',
+  padding: '1rem',
+  color: 'white',
+  textDecoration: 'none',
+  transition: 'all 0.2s',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  fontSize: '0.9rem'
+}
+
+const helpLinkStyle = {
+  color: 'rgba(255,255,255,0.6)',
+  textDecoration: 'none',
+  fontSize: '0.85rem',
+  transition: 'color 0.2s'
+}
+
+const topTagStyle = {
+  background: '#ef4444',
+  color: 'white',
+  padding: '0.2rem 0.4rem',
+  borderRadius: '4px',
+  fontSize: '0.65rem',
+  fontWeight: '700'
+}
+
+const favTagStyle = {
+  background: '#f59e0b',
+  color: 'white',
+  padding: '0.2rem 0.4rem',
+  borderRadius: '4px',
+  fontSize: '0.65rem',
+  fontWeight: '700'
 }
