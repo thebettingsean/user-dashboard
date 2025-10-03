@@ -13,8 +13,29 @@ const BOOK_LOGOS: Record<string, string> = {
   'williamhill_us': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a950f718415ee5ce7_6.svg'
 }
 
-const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e02d24e3982f4f0c182362_NEW%20BOOK%20LOGOS%20SVG.svg'
+const AFFILIATE_LINKS: Record<string, string> = {
+  'williamhill_us': 'https://wlwilliamhillus.adsrv.eacdn.com/C.ashx?btag=a_23811b_1253c_&affid=6&siteid=23811&adid=1253&c=',
+  'draftkings': 'https://dksb.sng.link/As9kz/f1jp?_dl=https%3A%2F%2Fsportsbook.draftkings.com%2Fgateway%3Fs%3D248711710&pcid=420560&psn=1628&pcn=Promo1&pscn=XCLSV1%E2%80%93US%E2%80%93Sport%E2%80%93WelcomeOffer&pcrn=KaxMedia&pscid=xx&pcrid=xx&wpcid=420560&wpsrc=1628&wpcn=Promo1&wpscn=XCLSV1%E2%80%93US%E2%80%93Sport%E2%80%93WelcomeOffer&wpcrn=KaxMedia&wpscid=xx&wpcrid=xx&_forward_params=1',
+  'fanduel': 'https://wlfanduelus.adsrv.eacdn.com/C.ashx?btag=a_43558b_16c_&affid=11104&siteid=43558&adid=16&c=',
+  'fanatics': 'https://track.fanaticsbettingpartners.com/track/52e9b64c-75df-4778-a45c-c5404745a87a?type=display&s1=XCLSV1&s2=US-DC-IL-IN-IA-LA-KS-KY-NC-OH-PA-VA-TN-WV-WY&s3=Sports&s4=Welcome-Offer&s5=CYOO',
+  'betmgm': 'https://mediaserver.betmgmpartners.com/renderBanner.do?zoneId=1734528',
+  'bovada': 'https://record.revenuenetwork.com/_k0-8O2GFmD-Ne_S1w7rqVWNd7ZgqdRLk/1/',
+  'betonlineag': 'https://record.revenuenetwork.com/_k0-8O2GFmD-Ne_S1w7rqVWNd7ZgqdRLk/1/',
+  'betrivers': 'https://betrivers.com'
+}
+
+const RANK_ICONS = [
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b768ecad17fb0140a6c_1.svg', color: '#00bf63' },
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7606434064b25ac2b6_4.svg', color: '#FF751F' },
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b76dab754fc3ed6e0e0_2.svg', color: '#FFBD59' },
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b769ab7d32a68961d91_3.svg', color: '#FFDE59' },
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7600031a16ccbaa127_6.svg', color: '#5170FF' },
+  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7606434064b25ac2b3_5.svg', color: '#38B6FF' }
+]
+
+const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0313f97df902b5312a3f6_NEW%20BOOK%20LOGOS%20SVG-2.svg'
 const FILTER_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
+const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b768ecad17fb0140a6c_1.svg'
 
 export default function PropParlayTool() {
   const [data, setData] = useState<any>(null)
@@ -91,7 +112,6 @@ export default function PropParlayTool() {
       return bestOdds >= threshold
     })
 
-    // Sort by best odds (closest to -150 first)
     props.sort((a: any, b: any) => {
       const aOdds = Math.max(...a.bookmakers.map((bm: any) => bm.odds))
       const bOdds = Math.max(...b.bookmakers.map((bm: any) => bm.odds))
@@ -159,36 +179,7 @@ export default function PropParlayTool() {
 
   function formatTeamNames(matchup: string) {
     return matchup
-      .replace(/Minnesota /g, '')
-      .replace(/Cleveland /g, '')
-      .replace(/Houston /g, '')
-      .replace(/Baltimore /g, '')
-      .replace(/Miami /g, '')
-      .replace(/Carolina /g, '')
-      .replace(/Dallas /g, '')
-      .replace(/New York /g, '')
-      .replace(/Denver /g, '')
-      .replace(/Philadelphia /g, '')
-      .replace(/Las Vegas /g, '')
-      .replace(/Indianapolis /g, '')
-      .replace(/Tennessee /g, '')
-      .replace(/Arizona /g, '')
-      .replace(/Tampa Bay /g, '')
-      .replace(/Seattle /g, '')
-      .replace(/Detroit /g, '')
-      .replace(/Cincinnati /g, '')
-      .replace(/Washington /g, '')
-      .replace(/Los Angeles /g, '')
-      .replace(/New England /g, '')
-      .replace(/Buffalo /g, '')
-      .replace(/Kansas City /g, '')
-      .replace(/Jacksonville /g, '')
-      .replace(/San Francisco /g, '')
-      .replace(/Green Bay /g, '')
-      .replace(/Chicago /g, '')
-      .replace(/Pittsburgh /g, '')
-      .replace(/Atlanta /g, '')
-      .replace(/New Orleans /g, '')
+      .replace(/Minnesota |Cleveland |Houston |Baltimore |Miami |Carolina |Dallas |New York |Denver |Philadelphia |Las Vegas |Indianapolis |Tennessee |Arizona |Tampa Bay |Seattle |Detroit |Cincinnati |Washington |Los Angeles |New England |Buffalo |Kansas City |Jacksonville |San Francisco |Green Bay |Chicago |Pittsburgh |Atlanta |New Orleans /g, '')
   }
 
   function deduplicatePlayerProps(props: any[]) {
@@ -284,8 +275,13 @@ export default function PropParlayTool() {
     <div style={styles.wrapper}>
       <div style={styles.container}>
         <div style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Prop Parlay Tool</h1>
+          <div style={styles.titleSection}>
+            <div style={styles.titleRow}>
+              <h1 style={styles.title}>Prop Parlay Tool</h1>
+              <div style={styles.titleIconBox}>
+                <img src={TITLE_ICON} alt="Tool" style={styles.titleIconImg} />
+              </div>
+            </div>
             <p style={styles.subtitle}>100% Hit Rate Props • 20%+ Above Line This Season</p>
           </div>
           <div style={styles.bookSelector}>
@@ -485,25 +481,19 @@ function PropsTable({ props, selectedBook }: { props: any[], selectedBook: strin
               style={styles.tableRowHeader}
               onClick={() => toggleRow(idx)}
             >
-              <div style={styles.tableRowMain}>
-                <div style={styles.tablePlayerName}>{prop.player}</div>
-                <div style={styles.tableRowInfo}>
-                  <span style={styles.tableLine}>
-                    {formatMarket(prop.market)} O{prop.line}
-                  </span>
-                  <span style={styles.tableEdge}>+{percentAbove}% above</span>
+              <div style={styles.tableRowMainMobile}>
+                <div style={styles.tablePlayerNameMobile}>{prop.player}</div>
+                <div style={styles.propDetailsMobile}>
+                  <span style={styles.propTextMobile}>{formatMarket(prop.market)} O{prop.line}</span>
+                  <span style={styles.oddsTextMobile}>{displayOdds && formatOdds(displayOdds)}</span>
                 </div>
+                <div style={styles.teamTextMobile}>{prop.game}</div>
               </div>
-              <div style={styles.tableRowMeta}>
-                <div style={styles.tableTeam}>{prop.game}</div>
-                <div style={styles.tableTime}>{prop.game_time}</div>
-              </div>
-              <div style={styles.bookOddsCorner}>
-                {bookLogo && <img src={bookLogo} alt="Book" style={styles.bookLogoSmall} />}
-                {displayOdds && <div style={styles.cornerOdds}>{formatOdds(displayOdds)}</div>}
-              </div>
-              <div style={styles.tableToggle}>
-                {isExpanded ? '▼' : '▶'}
+              <div style={styles.tableRowRight}>
+                {bookLogo && <img src={bookLogo} alt="Book" style={styles.bookLogoMobile} />}
+                <div style={styles.tableToggle}>
+                  {isExpanded ? '▼' : '▶'}
+                </div>
               </div>
             </div>
 
@@ -518,19 +508,27 @@ function PropsTable({ props, selectedBook }: { props: any[], selectedBook: strin
                     <div style={styles.expandedLabel}>Hit Rate</div>
                     <div style={styles.expandedValue}>100%</div>
                   </div>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Above Line</div>
+                    <div style={styles.expandedValue}>+{percentAbove}%</div>
+                  </div>
+                </div>
+
+                <div style={styles.gameInfoSection}>
+                  <span style={styles.gameInfoText}>{prop.game} • {prop.game_time}</span>
                 </div>
 
                 <div style={styles.weeklySection}>
-                  <div style={styles.expandedLabel}>Weekly Performance:</div>
+                  <div style={styles.expandedLabel}>Weekly:</div>
                   <div style={styles.weeklyGrid}>
                     {prop.weekly_values.map((val: number, i: number) => (
-                      <div key={i} style={styles.weeklyBadge}>Wk{i+1}: {val}</div>
+                      <div key={i} style={styles.weeklyBadge}>W{i+1}: {val}</div>
                     ))}
                   </div>
                 </div>
 
                 <div style={styles.booksSection}>
-                  <div style={styles.expandedLabel}>Available Books:</div>
+                  <div style={styles.expandedLabel}>Books:</div>
                   <div style={styles.booksGrid}>
                     {prop.bookmakers.map((book: any, i: number) => (
                       <div key={i} style={styles.bookRowExpanded}>
@@ -560,24 +558,39 @@ function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: st
   }
 
   const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
+  const affiliateLink = selectedBook !== 'all' ? AFFILIATE_LINKS[selectedBook] : null
 
   return (
     <div style={styles.parlayGrid}>
       {combos.map((combo, idx) => (
-        <ParlayCard key={idx} combo={combo} rank={idx + 1} bookLogo={bookLogo} />
+        <ParlayCard 
+          key={idx} 
+          combo={combo} 
+          rank={idx + 1} 
+          bookLogo={bookLogo}
+          affiliateLink={affiliateLink}
+          selectedBook={selectedBook}
+        />
       ))}
     </div>
   )
 }
 
-function ParlayCard({ combo, rank, bookLogo }: { combo: any, rank: number, bookLogo: string }) {
+function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { combo: any, rank: number, bookLogo: string, affiliateLink: string | null, selectedBook: string }) {
+  const rankConfig = rank <= 5 ? RANK_ICONS[rank - 1] : RANK_ICONS[5]
+
   return (
     <div style={styles.parlayCard}>
       <div style={styles.parlayCardHeader}>
-        <div style={styles.rankCircle}>#{rank}</div>
+        <div style={{
+          ...styles.rankCircle,
+          background: `linear-gradient(180deg, ${rankConfig.color} 0%, ${rankConfig.color}AA 100%)`
+        }}>
+          <img src={rankConfig.svg} alt={`#${rank}`} style={styles.rankIcon} />
+        </div>
         <div style={styles.parlayMeta}>
           <div style={styles.parlayTypeLabel}>
-            {combo.type} • {combo.legs.length}-Leg Parlay
+            {combo.type} • {combo.legs.length}-Leg
           </div>
           <div style={styles.parlayGameText}>{combo.game}</div>
         </div>
@@ -587,30 +600,36 @@ function ParlayCard({ combo, rank, bookLogo }: { combo: any, rank: number, bookL
         </div>
       </div>
 
-      <div style={styles.parlayStats}>
-        <div style={styles.parlayStat}>
-          <span style={styles.parlayStatLabel}>Avg % Above:</span>
-          <span style={styles.parlayStatValue}>+{combo.avgPercentAbove.toFixed(1)}%</span>
-        </div>
-        <div style={styles.parlayStat}>
-          <span style={styles.parlayStatLabel}>Hit Rate:</span>
-          <span style={styles.parlayStatValue}>100%</span>
-        </div>
-      </div>
-
       <div style={styles.legsContainer}>
-        {combo.legs.map((leg: any, i: number) => (
-          <div key={i} style={styles.legRow}>
-            <div style={styles.legNumber}>{i + 1}</div>
-            <div style={styles.legInfo}>
-              <div style={styles.legPlayerName}>{leg.player}</div>
-              <div style={styles.legPropInfo}>
-                {formatMarket(leg.market)} O{leg.line}
+        {combo.legs.map((leg: any, i: number) => {
+          const legOdds = selectedBook === 'all' 
+            ? Math.max(...leg.bookmakers.map((b: any) => b.odds))
+            : leg.bookmakers.find((b: any) => b.name === selectedBook)?.odds || Math.max(...leg.bookmakers.map((b: any) => b.odds))
+          
+          return (
+            <div key={i} style={styles.legRow}>
+              <div style={styles.legNumber}>{i + 1}</div>
+              <div style={styles.legInfo}>
+                <div style={styles.legPlayerName}>{leg.player}</div>
+                <div style={styles.legPropInfo}>
+                  {formatMarket(leg.market)} O{leg.line} • {leg.game} • {formatOdds(legOdds)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
+
+      {affiliateLink && (
+        <a 
+          href={affiliateLink} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={styles.betNowButton}
+        >
+          Bet now on {formatBookName(selectedBook)} ↗
+        </a>
+      )}
     </div>
   )
 }
@@ -647,7 +666,7 @@ const styles = {
   wrapper: {
     minHeight: '100vh',
     background: 'linear-gradient(180deg, #334155 0%, #1f2937 15%, #1f2937 100%)',
-    padding: '2rem',
+    padding: '1.5rem 1rem',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   },
   container: {
@@ -659,23 +678,43 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '2rem',
-    gap: '2rem',
+    marginBottom: '1.5rem',
+    gap: '1.5rem',
     flexWrap: 'wrap' as const
   },
+  titleSection: {},
+  titleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginBottom: '0.5rem'
+  },
   title: {
-    fontSize: 'clamp(2rem, 5vw, 3rem)',
+    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
     fontWeight: '800',
     background: 'linear-gradient(135deg, #e5e7eb, #ffffff)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    marginBottom: '0.5rem'
+    margin: 0
+  },
+  titleIconBox: {
+    background: 'linear-gradient(180deg, #00bf63 0%, #00bf63AA 100%)',
+    borderRadius: '8px',
+    padding: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  titleIconImg: {
+    width: '24px',
+    height: '24px',
+    display: 'block'
   },
   subtitle: {
-    fontSize: '0.85rem',
+    fontSize: '0.7rem',
     fontWeight: '700',
     color: '#60a5fa',
-    letterSpacing: '0.1em',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase' as const
   },
   bookSelector: {
@@ -683,9 +722,9 @@ const styles = {
   },
   bookLabel: {
     display: 'block',
-    fontSize: '0.75rem',
+    fontSize: '0.65rem',
     color: '#9ca3af',
-    marginBottom: '0.5rem',
+    marginBottom: '0.4rem',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em'
   },
@@ -694,28 +733,28 @@ const styles = {
     border: '1px solid rgba(255,255,255,0.12)',
     color: '#e5e7eb',
     borderRadius: '8px',
-    padding: '0.65rem 1rem',
-    fontSize: '0.9rem',
+    padding: '0.5rem 0.75rem',
+    fontSize: '0.8rem',
     outline: 'none',
     cursor: 'pointer',
-    minWidth: '200px'
+    minWidth: '160px'
   },
   viewToggle: {
     display: 'flex',
-    gap: '0.5rem',
-    marginBottom: '1.5rem',
+    gap: '0.4rem',
+    marginBottom: '1.25rem',
     background: 'rgba(255,255,255,0.05)',
-    padding: '0.35rem',
+    padding: '0.3rem',
     borderRadius: '8px',
     border: '1px solid rgba(255,255,255,0.1)'
   },
   toggleBtn: {
     flex: 1,
-    padding: '0.75rem 1.5rem',
+    padding: '0.65rem 1rem',
     background: 'transparent',
     border: 'none',
     color: '#9ca3af',
-    fontSize: '0.9rem',
+    fontSize: '0.8rem',
     fontWeight: '600',
     borderRadius: '6px',
     cursor: 'pointer',
@@ -726,43 +765,44 @@ const styles = {
     color: '#60a5fa'
   },
   filterRow: {
-    marginBottom: '1.5rem'
+    marginBottom: '1.25rem'
   },
   filterButton: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: '0.6rem',
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.1)',
     color: '#e5e7eb',
     borderRadius: '8px',
-    padding: '0.75rem 1.25rem',
-    fontSize: '0.9rem',
+    padding: '0.65rem 1rem',
+    fontSize: '0.8rem',
     cursor: 'pointer',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    width: '100%'
   },
   filterIcon: {
-    width: '18px',
-    height: '18px',
+    width: '16px',
+    height: '16px',
     opacity: 0.7
   },
   filterDropdown: {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: '8px',
-    padding: '1rem',
-    marginBottom: '1.5rem',
+    padding: '0.85rem',
+    marginBottom: '1.25rem',
     display: 'grid',
-    gap: '1rem',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
+    gap: '0.85rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
   },
   filterSection: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.5rem'
+    gap: '0.4rem'
   },
   filterLabel: {
-    fontSize: '0.75rem',
+    fontSize: '0.65rem',
     color: '#9ca3af',
     fontWeight: '600',
     textTransform: 'uppercase' as const
@@ -772,8 +812,8 @@ const styles = {
     border: '1px solid rgba(255,255,255,0.12)',
     color: '#e5e7eb',
     borderRadius: '6px',
-    padding: '0.6rem 0.85rem',
-    fontSize: '0.85rem',
+    padding: '0.5rem 0.7rem',
+    fontSize: '0.75rem',
     outline: 'none',
     cursor: 'pointer'
   },
@@ -786,248 +826,230 @@ const styles = {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(59,130,246,0.35)',
     borderRadius: '10px',
-    overflow: 'hidden',
-    transition: 'all 0.2s'
+    overflow: 'hidden'
   },
   tableRowHeader: {
     display: 'flex',
-    alignItems: 'center',
-    padding: '1rem 1.25rem',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    padding: '0.75rem 0.85rem',
     cursor: 'pointer',
-    gap: '1rem',
-    transition: 'background 0.2s',
-    position: 'relative' as const
+    gap: '0.75rem'
   },
-  tableRowMain: {
-    flex: '1',
-    minWidth: '0'
+  tableRowMainMobile: {
+    flex: 1,
+    minWidth: 0
   },
-  tablePlayerName: {
-    fontSize: '1.05rem',
+  tablePlayerNameMobile: {
+    fontSize: '0.85rem',
     fontWeight: '700',
-    marginBottom: '0.35rem'
+    marginBottom: '0.25rem',
+    lineHeight: 1.2
   },
-  tableRowInfo: {
+  propDetailsMobile: {
     display: 'flex',
-    gap: '1rem',
-    fontSize: '0.85rem'
+    gap: '0.5rem',
+    fontSize: '0.7rem',
+    marginBottom: '0.2rem',
+    flexWrap: 'wrap' as const
   },
-  tableLine: {
+  propTextMobile: {
     color: '#9ca3af'
   },
-  tableEdge: {
-    color: '#16a34a',
+  oddsTextMobile: {
+    color: '#ffffff',
     fontWeight: '700'
   },
-  tableRowMeta: {
-    textAlign: 'right' as const,
-    minWidth: '200px'
-  },
-  tableTeam: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-    marginBottom: '0.25rem'
-  },
-  tableTime: {
-    fontSize: '0.75rem',
+  teamTextMobile: {
+    fontSize: '0.65rem',
     color: '#6b7280'
   },
-  bookOddsCorner: {
+  tableRowRight: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    gap: '0.25rem',
-    marginLeft: '1rem'
+    gap: '0.35rem'
   },
-  bookLogoSmall: {
-    width: '32px',
-    height: '32px',
+  bookLogoMobile: {
+    width: '28px',
+    height: '28px',
     objectFit: 'contain' as const
   },
-  cornerOdds: {
-    fontSize: '0.9rem',
-    fontWeight: '700',
+  tableToggle: {
+    fontSize: '0.75rem',
     color: '#60a5fa'
   },
-  tableToggle: {
-    fontSize: '0.85rem',
-    color: '#60a5fa',
-    marginLeft: '1rem'
-  },
   tableRowExpanded: {
-    padding: '1.25rem',
+    padding: '0.85rem',
     borderTop: '1px solid rgba(255,255,255,0.1)',
     background: 'rgba(0,0,0,0.15)'
   },
   expandedGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-    gap: '1rem',
-    marginBottom: '1.25rem'
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.6rem',
+    marginBottom: '0.85rem'
   },
   expandedStat: {
     background: 'rgba(255,255,255,0.05)',
-    padding: '0.75rem',
-    borderRadius: '8px'
+    padding: '0.5rem',
+    borderRadius: '6px',
+    textAlign: 'center' as const
   },
   expandedLabel: {
-    fontSize: '0.75rem',
+    fontSize: '0.65rem',
     color: '#9ca3af',
-    marginBottom: '0.5rem',
+    marginBottom: '0.3rem',
     fontWeight: '600'
   },
   expandedValue: {
-    fontSize: '1.1rem',
-    fontWeight: '700'
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#ffffff'
+  },
+  gameInfoSection: {
+    marginBottom: '0.85rem',
+    padding: '0.5rem',
+    background: 'rgba(96,165,250,0.1)',
+    borderRadius: '6px'
+  },
+  gameInfoText: {
+    fontSize: '0.7rem',
+    color: '#9ca3af'
   },
   weeklySection: {
-    marginBottom: '1.25rem'
+    marginBottom: '0.85rem'
   },
   weeklyGrid: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.4rem',
     flexWrap: 'wrap' as const,
-    marginTop: '0.5rem'
+    marginTop: '0.4rem'
   },
   weeklyBadge: {
     background: 'rgba(96,165,250,0.15)',
-    padding: '0.35rem 0.65rem',
-    borderRadius: '6px',
-    fontSize: '0.8rem',
+    padding: '0.3rem 0.5rem',
+    borderRadius: '4px',
+    fontSize: '0.7rem',
     fontWeight: '600'
   },
   booksSection: {},
   booksGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '0.4rem',
-    marginTop: '0.5rem'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+    gap: '0.35rem',
+    marginTop: '0.4rem'
   },
   bookRowExpanded: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.4rem 0.6rem',
+    gap: '0.4rem',
+    padding: '0.35rem 0.5rem',
     background: 'rgba(0,0,0,0.2)',
-    borderRadius: '6px',
-    fontSize: '0.75rem'
+    borderRadius: '4px'
   },
   bookLogoTiny: {
-    width: '20px',
-    height: '20px',
+    width: '16px',
+    height: '16px',
     objectFit: 'contain' as const
   },
   bookNameTiny: {
     flex: 1,
     color: '#9ca3af',
-    fontSize: '0.75rem'
+    fontSize: '0.65rem'
   },
   bookOddsTiny: {
     fontWeight: '700',
-    fontSize: '0.75rem'
+    fontSize: '0.7rem',
+    color: '#ffffff'
   },
   parlayGrid: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '1rem'
+    gap: '0.85rem'
   },
   parlayCard: {
     background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(59,130,246,0.35)',
-    borderRadius: '14px',
-    padding: '1.25rem',
+    borderRadius: '12px',
+    padding: '1rem',
     transition: 'all 0.25s'
   },
   parlayCardHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
-    marginBottom: '1rem',
-    paddingBottom: '1rem',
+    gap: '0.75rem',
+    marginBottom: '0.85rem',
+    paddingBottom: '0.85rem',
     borderBottom: '1px solid rgba(255,255,255,0.1)'
   },
   rankCircle: {
-    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    width: '48px',
-    height: '48px',
-    borderRadius: '12px',
+    width: '42px',
+    height: '42px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '1rem',
-    fontWeight: '800',
     flexShrink: 0
+  },
+  rankIcon: {
+    width: '24px',
+    height: '24px'
   },
   parlayMeta: {
     flex: 1
   },
   parlayTypeLabel: {
-    fontSize: '0.8rem',
+    fontSize: '0.7rem',
     color: '#60a5fa',
     fontWeight: '700',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
-    marginBottom: '0.25rem'
+    marginBottom: '0.2rem'
   },
   parlayGameText: {
-    fontSize: '0.85rem',
+    fontSize: '0.75rem',
     color: '#9ca3af'
   },
   parlayBookCorner: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    gap: '0.35rem'
+    gap: '0.3rem'
+  },
+  bookLogoSmall: {
+    width: '28px',
+    height: '28px',
+    objectFit: 'contain' as const
   },
   parlayOddsValue: {
-    fontSize: '1.1rem',
+    fontSize: '0.95rem',
     fontWeight: '800',
-    color: '#16a34a'
-  },
-  parlayStats: {
-    display: 'flex',
-    gap: '2rem',
-    marginBottom: '1rem',
-    padding: '0.75rem 1rem',
-    background: 'rgba(0,0,0,0.2)',
-    borderRadius: '8px'
-  },
-  parlayStat: {
-    display: 'flex',
-    gap: '0.5rem',
-    alignItems: 'center'
-  },
-  parlayStatLabel: {
-    fontSize: '0.85rem',
-    color: '#9ca3af'
-  },
-  parlayStatValue: {
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    color: '#16a34a'
+    color: '#ffffff'
   },
   legsContainer: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.65rem'
+    gap: '0.5rem',
+    marginBottom: '0.85rem'
   },
   legRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem 0.85rem',
+    gap: '0.6rem',
+    padding: '0.6rem 0.7rem',
     background: 'rgba(0,0,0,0.25)',
-    borderRadius: '8px'
+    borderRadius: '6px'
   },
   legNumber: {
     background: 'rgba(96,165,250,0.2)',
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
+    width: '24px',
+    height: '24px',
+    borderRadius: '5px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '0.85rem',
+    fontSize: '0.75rem',
     fontWeight: '700',
     color: '#60a5fa',
     flexShrink: 0
@@ -1037,7 +1059,7 @@ const styles = {
     minWidth: 0
   },
   legPlayerName: {
-    fontSize: '0.95rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
     marginBottom: '0.2rem',
     whiteSpace: 'nowrap' as const,
@@ -1045,27 +1067,40 @@ const styles = {
     textOverflow: 'ellipsis'
   },
   legPropInfo: {
-    fontSize: '0.8rem',
+    fontSize: '0.7rem',
     color: '#9ca3af'
+  },
+  betNowButton: {
+    display: 'block',
+    width: '100%',
+    padding: '0.75rem',
+    background: 'linear-gradient(135deg, #00bf63, #00a855)',
+    color: 'white',
+    textAlign: 'center' as const,
+    borderRadius: '8px',
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    textDecoration: 'none',
+    transition: 'all 0.2s'
   },
   loading: {
     textAlign: 'center' as const,
-    padding: '5rem 2rem',
+    padding: '4rem 1.5rem',
     color: '#9ca3af'
   },
   spinner: {
     display: 'inline-block',
-    width: '40px',
-    height: '40px',
-    border: '4px solid rgba(96,165,250,0.2)',
+    width: '36px',
+    height: '36px',
+    border: '3px solid rgba(96,165,250,0.2)',
     borderTopColor: '#60a5fa',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
   empty: {
     textAlign: 'center' as const,
-    padding: '4rem 2rem',
+    padding: '3rem 1.5rem',
     color: '#9ca3af',
-    fontSize: '1rem'
+    fontSize: '0.9rem'
   }
 }
