@@ -698,9 +698,9 @@ const styles = {
     margin: 0
   },
   titleIconBox: {
-    background: 'linear-gradient(180deg, #00bf63 0%, #00bf63AA 100%)',
+    background: 'linear-gradient(180deg, #00bf63 0%, #008a47 100%)',
     borderRadius: '8px',
-    padding: '0.5rem',
+    padding: '0.35rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -708,7 +708,8 @@ const styles = {
   titleIconImg: {
     width: '24px',
     height: '24px',
-    display: 'block'
+    display: 'block',
+    filter: 'brightness(1.2)'
   },
   subtitle: {
     fontSize: '0.7rem',
