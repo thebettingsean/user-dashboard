@@ -206,8 +206,14 @@ export default function PropParlayTool() {
 
   function generateCombos(arr: any[], size: number) {
     const result: any[] = []
+    const maxResults = 2000 // Set limit
+  
     const f = (prefix: any[], arr: any[]) => {
+      if (result.length >= maxResults) return // EARLY EXIT
+    
       for (let i = 0; i < arr.length; i++) {
+        if (result.length >= maxResults) break // EARLY EXIT
+      
         const newPrefix = [...prefix, arr[i]]
         if (newPrefix.length === size) {
           result.push(newPrefix)
@@ -217,9 +223,8 @@ export default function PropParlayTool() {
       }
     }
     f([], arr)
-    return result.slice(0, 2000)
+    return result
   }
-
   function calculateParlayOdds(legs: any[], selectedBook: string) {
     const decimalOdds = legs.map(leg => {
       let bestOdds
