@@ -631,8 +631,10 @@ function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { co
             Bet now on {formatBookName(selectedBook)} ↗
           </a>
         </div>
-       )
-      }
+      )}
+    </div>
+  )
+}
 
 function formatOdds(odds: number) {
   return odds > 0 ? `+${odds}` : `${odds}`
@@ -985,17 +987,18 @@ const styles = {
     borderBottom: '1px solid rgba(255,255,255,0.1)'
   },
   rankCircle: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '10px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0
   },
   rankIcon: {
-    width: '24px',
-    height: '24px'
+    width: '28px',
+    height: '28px',
+    filter: 'brightness(1.3) contrast(1.1)'
   },
   parlayMeta: {
     flex: 1
