@@ -190,8 +190,8 @@ export default function Home() {
           {/* Row 1: Premium Dashboards */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Dashboards
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
+                 style={{ width: '28px', height: '28px' }} />
           </h3>
           <div style={{ 
             display: 'flex', 
@@ -210,8 +210,8 @@ export default function Home() {
           {/* Row 2: Premium NFL Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium NFL tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
+                 style={{ width: '28px', height: '28px' }} />
           </h3>
           <div style={{ 
             display: 'flex', 
