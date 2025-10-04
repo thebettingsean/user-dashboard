@@ -92,7 +92,6 @@ export default function Home() {
           align-items: center;
           padding: 1rem 1.25rem;
           background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.1);
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s;
