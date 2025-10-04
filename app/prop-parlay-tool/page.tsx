@@ -631,7 +631,8 @@ function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { co
             Bet now on {formatBookName(selectedBook)} ↗
           </a>
         </div>
-      )}
+       )
+      }
 
 function formatOdds(odds: number) {
   return odds > 0 ? `+${odds}` : `${odds}`
