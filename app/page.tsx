@@ -32,7 +32,12 @@ export default function Home() {
         <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
       </div>
       
-      {/* Row 1: Picks, Stats, News */}
+      {/* Row 1: Premium Dashboards */}
+      <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        Premium Dashboards
+        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
+             style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+      </h3>
       <div style={{ 
         display: 'flex', 
         gap: '1.5rem', 
@@ -47,7 +52,12 @@ export default function Home() {
         <div style={{ minWidth: '380px' }}><NewsWidget /></div>
       </div>
 
-      {/* Row 2: PropParlay, Fantasy, TD */}
+      {/* Row 2: Premium NFL Tools */}
+      <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        Premium NFL tools
+        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
+             style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+      </h3>
       <div style={{ 
         display: 'flex', 
         gap: '1.5rem', 
