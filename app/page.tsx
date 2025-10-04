@@ -3,6 +3,7 @@ import StatsWidget from '../components/StatsWidget'
 import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
+import PropParlayWidget from '../components/PropParlayWidget'
 
 export default function Home() {
   return (
@@ -43,9 +44,11 @@ export default function Home() {
         <div style={{ minWidth: '380px' }}><StatsWidget /></div>
         <div style={{ minWidth: '380px' }}><FantasyWidget /></div>
         <div style={{ minWidth: '380px' }}><TDWidget /></div>
+        <div style={{ minWidth: '380px' }}><PropParlayWidget /></div>
         <div style={{ minWidth: '380px' }}><NewsWidget /></div>
       </div>
 
+      {/* Rest of your code stays the same */}
       <div style={{ marginTop: '4rem' }}>
         <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           Try our FREE mini betting tools
