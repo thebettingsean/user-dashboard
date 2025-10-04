@@ -413,6 +413,10 @@ export default function PropParlayTool() {
                     <option value="4">4-Leg Parlay</option>
                     <option value="5">5-Leg Parlay</option>
                     <option value="6">6-Leg Parlay</option>
+                    <option value="7">7-Leg Parlay</option>
+                    <option value="8">8-Leg Parlay</option>
+                    <option value="9">9-Leg Parlay</option>
+                    <option value="10">10-Leg Parlay</option>
                   </select>
                 </div>
 
