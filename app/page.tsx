@@ -92,16 +92,6 @@ export default function Home() {
             display: block;
           }
         }
-        .accordion-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem 1.25rem;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.2s;
-          color: white;
-        }
         .accordion-content {
           margin-top: 0.75rem;
         }
@@ -144,8 +134,18 @@ export default function Home() {
             {row1Widgets.map(widget => (
               <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                 <div 
-                  className="accordion-header"
                   onClick={() => toggleWidget(widget.id)}
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                    border: `1px solid ${widget.borderColor}`,
+                    background: widget.background,
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
                 >
                   <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
                   <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
@@ -169,8 +169,18 @@ export default function Home() {
             {row2Widgets.map(widget => (
               <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                 <div 
-                  className="accordion-header"
                   onClick={() => toggleWidget(widget.id)}
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                    border: `1px solid ${widget.borderColor}`,
+                    background: widget.background,
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
                 >
                   <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
                   <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
