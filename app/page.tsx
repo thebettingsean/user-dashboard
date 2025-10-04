@@ -26,21 +26,21 @@ export default function Home() {
       id: 'picks', 
       title: 'Picks Dashboard', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg',
-      color: 'rgba(255, 202, 16, 0.2)',
+      color: 'rgba(255, 202, 16, 0.5)',
       component: <PicksWidget /> 
     },
     { 
       id: 'stats', 
       title: 'Stats Dashboard', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
-      color: 'rgba(24, 118, 53, 0.2)',
+      color: 'rgba(24, 118, 53, 0.5)',
       component: <StatsWidget /> 
     },
     { 
       id: 'news', 
       title: 'News & Insights', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      color: 'rgba(56, 182, 255, 0.2)',
+      color: 'rgba(56, 182, 255, 0.5)',
       component: <NewsWidget /> 
     }
   ]
@@ -50,21 +50,21 @@ export default function Home() {
       id: 'propparlay', 
       title: 'Prop Parlay Tool', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg',
-      color: 'rgba(94, 23, 235, 0.2)',
+      color: 'rgba(94, 23, 235, 0.5)',
       component: <PropParlayWidget /> 
     },
     { 
       id: 'fantasy', 
       title: 'Fantasy Dashboard', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg',
-      color: 'rgba(186, 19, 47, 0.2)',
+      color: 'rgba(186, 19, 47, 0.5)',
       component: <FantasyWidget /> 
     },
     { 
       id: 'td', 
       title: 'TD Dashboard', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg',
-      color: 'rgba(255, 117, 31, 0.2)',
+      color: 'rgba(255, 117, 31, 0.5)',
       component: <TDWidget /> 
     }
   ]
@@ -135,7 +135,7 @@ export default function Home() {
           {/* Row 1: Premium Dashboards */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Dashboards
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
@@ -160,7 +160,7 @@ export default function Home() {
           {/* Row 2: Premium NFL Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium NFL tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e151ee32b17a59b6a96a6c_TICKET-6.svg" 
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
