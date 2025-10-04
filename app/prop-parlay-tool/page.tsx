@@ -621,18 +621,17 @@ function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { co
       </div>
 
       {affiliateLink && (
-        <a 
-          href={affiliateLink} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={styles.betNowButton}
-        >
-          Bet now on {formatBookName(selectedBook)} ↗
-        </a>
+        <div style={styles.betNowLink}>
+          <a 
+            href={affiliateLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={styles.betNowText}
+          >
+            Bet now on {formatBookName(selectedBook)} ↗
+          </a>
+        </div>
       )}
-    </div>
-  )
-}
 
 function formatOdds(odds: number) {
   return odds > 0 ? `+${odds}` : `${odds}`
@@ -1071,18 +1070,18 @@ const styles = {
     fontSize: '0.7rem',
     color: '#9ca3af'
   },
-  betNowButton: {
-    display: 'block',
-    width: '100%',
-    padding: '0.75rem',
-    background: 'linear-gradient(135deg, #00bf63, #00a855)',
-    color: 'white',
-    textAlign: 'center' as const,
-    borderRadius: '8px',
+  betNowLink: {
+    marginTop: '0.85rem',
+    paddingTop: '0.85rem',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+    textAlign: 'center' as const
+  },
+  betNowText: {
+    color: '#ffffff',
     fontSize: '0.85rem',
-    fontWeight: '700',
+    fontWeight: '600',
     textDecoration: 'none',
-    transition: 'all 0.2s'
+    transition: 'opacity 0.2s'
   },
   loading: {
     textAlign: 'center' as const,
