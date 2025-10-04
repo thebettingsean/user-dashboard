@@ -32,6 +32,22 @@ export default function Home() {
         <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
       </div>
       
+      {/* Row 1: Picks, Stats, News */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '1.5rem', 
+        overflowX: 'auto', 
+        paddingBottom: '1rem',
+        marginBottom: '1.5rem',
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+      }}>
+        <div style={{ minWidth: '380px' }}><PicksWidget /></div>
+        <div style={{ minWidth: '380px' }}><StatsWidget /></div>
+        <div style={{ minWidth: '380px' }}><NewsWidget /></div>
+      </div>
+
+      {/* Row 2: PropParlay, Fantasy, TD */}
       <div style={{ 
         display: 'flex', 
         gap: '1.5rem', 
@@ -40,12 +56,9 @@ export default function Home() {
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(255,255,255,0.2) transparent'
       }}>
-        <div style={{ minWidth: '380px' }}><PicksWidget /></div>
-        <div style={{ minWidth: '380px' }}><StatsWidget /></div>
+        <div style={{ minWidth: '380px' }}><PropParlayWidget /></div>
         <div style={{ minWidth: '380px' }}><FantasyWidget /></div>
         <div style={{ minWidth: '380px' }}><TDWidget /></div>
-        <div style={{ minWidth: '380px' }}><PropParlayWidget /></div>
-        <div style={{ minWidth: '380px' }}><NewsWidget /></div>
       </div>
 
       {/* Rest of your code stays the same */}
