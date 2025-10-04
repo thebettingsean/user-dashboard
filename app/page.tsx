@@ -59,7 +59,7 @@ export default function Home() {
     },
     { 
       id: 'fantasy', 
-      title: 'Fantasy Dashboard', 
+      title: 'Weekly Fantasy Data', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg',
       borderColor: 'rgba(186, 19, 47, 0.6)',
       background: 'linear-gradient(135deg, rgba(186, 19, 47, 0.15) 0%, rgba(186, 19, 47, 0.08) 100%)',
@@ -67,7 +67,7 @@ export default function Home() {
     },
     { 
       id: 'td', 
-      title: 'TD Dashboard', 
+      title: 'Top TD Scorers', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg',
       borderColor: 'rgba(255, 117, 31, 0.6)',
       background: 'linear-gradient(135deg, rgba(255, 117, 31, 0.15) 0%, rgba(255, 117, 31, 0.08) 100%)',
