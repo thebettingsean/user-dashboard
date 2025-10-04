@@ -97,14 +97,10 @@ export default function Home() {
           justify-content: space-between;
           align-items: center;
           padding: 1rem 1.25rem;
-          background: rgba(255,255,255,0.03);
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s;
           color: white;
-        }
-        .accordion-header:hover {
-          background: rgba(255,255,255,0.05);
         }
         .accordion-content {
           margin-top: 0.75rem;
@@ -142,7 +138,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Dashboards
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+                 style={{ width: '28px', height: '28px' }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row1Widgets.map(widget => (
@@ -167,7 +163,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium NFL tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+                 style={{ width: '28px', height: '28px' }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row2Widgets.map(widget => (
