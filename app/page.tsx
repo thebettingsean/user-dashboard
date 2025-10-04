@@ -22,15 +22,51 @@ export default function Home() {
   }
 
   const row1Widgets = [
-    { id: 'picks', title: 'Picks Dashboard', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg', component: <PicksWidget /> },
-    { id: 'stats', title: 'Stats Dashboard', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg', component: <StatsWidget /> },
-    { id: 'news', title: 'News & Insights', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg', component: <NewsWidget /> }
+    { 
+      id: 'picks', 
+      title: 'Picks Dashboard', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg',
+      color: 'rgba(255, 202, 16, 0.2)',
+      component: <PicksWidget /> 
+    },
+    { 
+      id: 'stats', 
+      title: 'Stats Dashboard', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
+      color: 'rgba(24, 118, 53, 0.2)',
+      component: <StatsWidget /> 
+    },
+    { 
+      id: 'news', 
+      title: 'News & Insights', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
+      color: 'rgba(56, 182, 255, 0.2)',
+      component: <NewsWidget /> 
+    }
   ]
 
   const row2Widgets = [
-    { id: 'propparlay', title: 'Prop Parlay Tool', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg', component: <PropParlayWidget /> },
-    { id: 'fantasy', title: 'Fantasy Dashboard', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg', component: <FantasyWidget /> },
-    { id: 'td', title: 'TD Dashboard', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg', component: <TDWidget /> }
+    { 
+      id: 'propparlay', 
+      title: 'Prop Parlay Tool', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg',
+      color: 'rgba(94, 23, 235, 0.2)',
+      component: <PropParlayWidget /> 
+    },
+    { 
+      id: 'fantasy', 
+      title: 'Fantasy Dashboard', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg',
+      color: 'rgba(186, 19, 47, 0.2)',
+      component: <FantasyWidget /> 
+    },
+    { 
+      id: 'td', 
+      title: 'TD Dashboard', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg',
+      color: 'rgba(255, 117, 31, 0.2)',
+      component: <TDWidget /> 
+    }
   ]
 
   return (
