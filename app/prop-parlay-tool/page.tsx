@@ -174,7 +174,7 @@ export default function PropParlayTool() {
       comboResults = comboResults.filter(c => c.totalOdds >= threshold)
     }
 
-    return comboResults.sort((a, b) => b.totalOdds - a.totalOdds).slice(0, 50)
+    return comboResults.sort((a, b) => b.totalOdds - a.totalOdds).slice(0, 500)
   }, [filteredProps, filters.legs, filters.parlayType, filters.parlayMinOdds, filters.book])
 
   function formatTeamNames(matchup: string) {
@@ -217,7 +217,7 @@ export default function PropParlayTool() {
       }
     }
     f([], arr)
-    return result.slice(0, 200)
+    return result.slice(0, 2000)
   }
 
   function calculateParlayOdds(legs: any[], selectedBook: string) {
