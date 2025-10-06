@@ -21,8 +21,8 @@ export default function Navbar() {
       label: "Today's Picks",
       href: '#',
       dropdown: [
-        { label: 'About', href: 'https://www.thebettinginsider.com/betting/about' },
-        { label: 'Dashboard', href: 'https://www.thebettinginsider.com/betting/dashboard' }
+        { label: 'About', href: '#' },
+        { label: 'Dashboard', href: '#' }
       ]
     },
     {
@@ -30,24 +30,34 @@ export default function Navbar() {
       label: 'Top Betting Trends',
       href: '#',
       dropdown: [
-        { label: 'About', href: 'https://www.thebettinginsider.com/stats-about' },
-        { label: 'Dashboard', href: 'app.thebettinginsider.com' }
+        { label: 'About', href: '#' },
+        { label: 'Dashboard', href: '#' }
       ]
     },
     {
       id: 'tools',
       label: 'Premium Tools',
-      href: 'https://www.thebettinginsider.com/insider-tools',
-      noDropdown: true
+      href: '#',
+      dropdown: [
+        { label: 'All', tagline: 'Live', href: 'https://www.thebettinginsider.com/insider-tools' },
+        { label: 'Perfect Prop Parlays', href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool' },
+        { label: 'Anytime TD Edge', href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool' },
+        { label: 'Batter v Pitcher', href: 'https://www.thebettinginsider.com/daily-mlb-game-stats' },
+        { label: 'Bankroll Builder', tagline: 'Learn', href: 'https://www.thebettinginsider.com/tools/bankroll-builder' },
+        { label: 'Growth Plan', href: 'https://www.thebettinginsider.com/tools/roi-calculator' },
+        { label: 'Betting Guide', href: 'https://www.thebettinginsider.com/tools/insider-betting-guide' },
+        { label: 'Parlay Analyzer', href: 'https://www.thebettinginsider.com/tools/parlay-calculator' },
+        { label: 'About Systems', href: 'https://www.thebettinginsider.com/action-systems' }
+      ]
     },
     {
       id: 'fantasy',
       label: 'Fantasy Football',
       href: '#',
       dropdown: [
-        { label: 'About', href: 'https://www.thebettinginsider.com/fantasy/home' },
-        { label: 'Pre-Draft', href: 'https://www.thebettinginsider.com/fantasy/pre-draft-rankings' },
-        { label: 'Start / Sit', href: 'https://www.thebettinginsider.com/fantasy/weekly-rankings' }
+        { label: 'About', href: '#' },
+        { label: 'Pre-Draft', href: '#' },
+        { label: 'Start / Sit', href: '#' }
       ]
     },
     {
@@ -55,10 +65,10 @@ export default function Navbar() {
       label: 'Company',
       href: '#',
       dropdown: [
-        { label: 'Contact', href: 'https://www.thebettinginsider.com/contact-us' },
-        { label: 'Blog', href: 'https://www.thebettinginsider.com/insider-blog' },
-        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' },
-        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faqs' }
+        { label: 'Contact', href: '#' },
+        { label: 'Blog', href: '#' },
+        { label: 'About', href: '#' },
+        { label: "FAQ's", href: '#' }
       ]
     }
   ]
@@ -155,8 +165,7 @@ export default function Navbar() {
           background: rgba(255, 255, 255, 0.06);
         }
 
-        .nav-item.has-dropdown::after,
-        .nav-item.no-dropdown::after {
+        .nav-item.has-dropdown::after {
           content: '▼';
           margin-left: 0.3rem;
           font-size: 0.65rem;
@@ -172,7 +181,7 @@ export default function Navbar() {
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 8px;
           padding: 0.5rem 0;
-          min-width: 180px;
+          min-width: 220px;
           opacity: 0;
           visibility: hidden;
           transform: translateY(-10px);
@@ -184,6 +193,15 @@ export default function Navbar() {
           opacity: 1;
           visibility: visible;
           transform: translateY(0);
+        }
+
+        .dropdown-tagline {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.5);
+          padding: 0.5rem 1.25rem 0.25rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .dropdown-item {
@@ -222,7 +240,6 @@ export default function Navbar() {
           border-color: rgba(59, 130, 246, 0.8);
         }
 
-        /* MOBILE MENU DROPS BELOW NAVBAR */
         .mobile-menu {
           position: absolute;
           top: 90px;
@@ -265,6 +282,14 @@ export default function Navbar() {
           color: white;
         }
 
+        .mobile-tagline {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.6);
+          padding: 0.75rem 1.5rem 0.25rem;
+          text-transform: uppercase;
+        }
+
         .mobile-dropdown {
           background: rgba(0, 0, 0, 0.3);
           max-height: 0;
@@ -293,7 +318,7 @@ export default function Navbar() {
           .hamburger {
             display: none;
           }
-
+          
           .desktop-nav {
             display: flex;
           }
@@ -396,14 +421,25 @@ export default function Navbar() {
                   <span>{item.label}</span>
                   <div className="dropdown">
                     {item.dropdown.map((dropItem, idx) => (
-                      <Link key={idx} href={dropItem.href} className="dropdown-item">
-                        {dropItem.label}
-                      </Link>
+                      <>
+                        {dropItem.tagline && (
+                          <div key={`tagline-${idx}`} className="dropdown-tagline">
+                            {dropItem.tagline}
+                          </div>
+                        )}
+                        <Link
+                          key={idx}
+                          href={dropItem.href}
+                          className="dropdown-item"
+                        >
+                          {dropItem.label}
+                        </Link>
+                      </>
                     ))}
                   </div>
                 </div>
               ) : (
-                <Link key={item.id} href={item.href} className="nav-item no-dropdown">
+                <Link key={item.id} href={item.href} className="nav-item">
                   {item.label}
                 </Link>
               )
@@ -443,14 +479,24 @@ export default function Navbar() {
                     }`}
                   >
                     {item.dropdown.map((dropItem, idx) => (
-                      <Link
-                        key={idx}
-                        href={dropItem.href}
-                        className="mobile-dropdown-item"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {dropItem.label}
-                      </Link>
+                      <>
+                        {dropItem.tagline && (
+                          <div
+                            key={`mobile-tagline-${idx}`}
+                            className="mobile-tagline"
+                          >
+                            {dropItem.tagline}
+                          </div>
+                        )}
+                        <Link
+                          key={idx}
+                          href={dropItem.href}
+                          className="mobile-dropdown-item"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {dropItem.label}
+                        </Link>
+                      </>
                     ))}
                   </div>
                 </>
