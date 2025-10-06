@@ -21,8 +21,8 @@ export default function Navbar() {
       label: "Today's Picks",
       href: '#',
       dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Dashboard', href: '#' }
+        { label: 'About', href: 'https://www.thebettinginsider.com/betting/about' },
+        { label: 'Dashboard', href: 'https://www.thebettinginsider.com/betting/dashboard' }
       ]
     },
     {
@@ -30,23 +30,24 @@ export default function Navbar() {
       label: 'Top Betting Trends',
       href: '#',
       dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Dashboard', href: '#' }
+        { label: 'About', href: 'https://www.thebettinginsider.com/stats-about' },
+        { label: 'Dashboard', href: 'app.thebettinginsider.com' }
       ]
     },
     {
       id: 'tools',
       label: 'Premium Tools',
-      href: '#'
+      href: 'https://www.thebettinginsider.com/insider-tools',
+      noDropdown: true
     },
     {
       id: 'fantasy',
       label: 'Fantasy Football',
       href: '#',
       dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Pre-Draft', href: '#' },
-        { label: 'Start / Sit', href: '#' }
+        { label: 'About', href: 'https://www.thebettinginsider.com/fantasy/home' },
+        { label: 'Pre-Draft', href: 'https://www.thebettinginsider.com/fantasy/pre-draft-rankings' },
+        { label: 'Start / Sit', href: 'https://www.thebettinginsider.com/fantasy/weekly-rankings' }
       ]
     },
     {
@@ -54,15 +55,15 @@ export default function Navbar() {
       label: 'Company',
       href: '#',
       dropdown: [
-        { label: 'Contact', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'About', href: '#' },
-        { label: "FAQ's", href: '#' }
+        { label: 'Contact', href: 'https://www.thebettinginsider.com/contact-us' },
+        { label: 'Blog', href: 'https://www.thebettinginsider.com/insider-blog' },
+        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' },
+        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faqs' }
       ]
     }
   ]
 
-  const filteredNavItems = !isLoaded 
+  const filteredNavItems = !isLoaded
     ? navItems.filter(item => !item.showOnlyWhenSignedIn)
     : navItems.filter(item => {
         if (item.showOnlyWhenSignedIn) {
@@ -70,7 +71,7 @@ export default function Navbar() {
         }
         return true
       })
-  
+
   return (
     <>
       <style jsx>{`
@@ -86,7 +87,7 @@ export default function Navbar() {
           align-items: center;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         .navbar-content {
           max-width: 1400px;
           margin: 0 auto;
@@ -144,17 +145,21 @@ export default function Navbar() {
           white-space: nowrap;
           padding: 0.5rem 0.75rem;
           border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
         }
 
         .nav-item:hover {
-          color: rgba(255, 255, 255, 0.8);
-          backgroundL rgba(255, 255, 255, 0.06);
+          color: rgba(255, 255, 255, 0.9);
+          background: rgba(255, 255, 255, 0.06);
         }
 
-        .nav-item.has-dropdown::after {
+        .nav-item.has-dropdown::after,
+        .nav-item.no-dropdown::after {
           content: '▼';
-          margin-left: 0.4rem;
-          font-size: 0.7rem;
+          margin-left: 0.3rem;
+          font-size: 0.65rem;
           opacity: 0.6;
         }
 
@@ -217,10 +222,10 @@ export default function Navbar() {
           border-color: rgba(59, 130, 246, 0.8);
         }
 
-        /* MOBILE MENU FIXED BELOW NAVBAR */
+        /* MOBILE MENU DROPS BELOW NAVBAR */
         .mobile-menu {
           position: absolute;
-          top: 85px;
+          top: 90px;
           left: 0;
           right: 0;
           background: rgba(15, 23, 42, 0.98);
@@ -288,7 +293,7 @@ export default function Navbar() {
           .hamburger {
             display: none;
           }
-          
+
           .desktop-nav {
             display: flex;
           }
@@ -352,10 +357,10 @@ export default function Navbar() {
             min-height: 75px;
           }
 
-          .mobile-menu
-            top: 75px;
+          .mobile-menu {
+            top: 80px;
           }
- 
+
           .logo {
             height: 40px;
           }
@@ -364,8 +369,8 @@ export default function Navbar() {
 
       <nav className="navbar">
         <div className="navbar-content">
-          <button 
-            className="hamburger" 
+          <button
+            className="hamburger"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -376,7 +381,7 @@ export default function Navbar() {
 
           <div className="logo-container">
             <Link href="/">
-              <img 
+              <img
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
                 alt="The Betting Insider"
                 className="logo"
@@ -385,7 +390,7 @@ export default function Navbar() {
           </div>
 
           <div className="desktop-nav">
-            {filteredNavItems.map(item => (
+            {filteredNavItems.map(item =>
               item.dropdown ? (
                 <div key={item.id} className="nav-item has-dropdown">
                   <span>{item.label}</span>
@@ -398,11 +403,11 @@ export default function Navbar() {
                   </div>
                 </div>
               ) : (
-                <Link key={item.id} href={item.href} className="nav-item">
+                <Link key={item.id} href={item.href} className="nav-item no-dropdown">
                   {item.label}
                 </Link>
               )
-            ))}
+            )}
           </div>
 
           <div className="auth-section">
@@ -421,20 +426,26 @@ export default function Navbar() {
             <div key={item.id} className="mobile-nav-item">
               {item.dropdown ? (
                 <>
-                  <div 
+                  <div
                     className="mobile-nav-link"
-                    onClick={() => setOpenDropdown(openDropdown === item.id ? null : item.id)}
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === item.id ? null : item.id)
+                    }
                   >
                     <span>{item.label}</span>
                     <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
                       {openDropdown === item.id ? '▲' : '▼'}
                     </span>
                   </div>
-                  <div className={`mobile-dropdown ${openDropdown === item.id ? 'open' : ''}`}>
+                  <div
+                    className={`mobile-dropdown ${
+                      openDropdown === item.id ? 'open' : ''
+                    }`}
+                  >
                     {item.dropdown.map((dropItem, idx) => (
-                      <Link 
-                        key={idx} 
-                        href={dropItem.href} 
+                      <Link
+                        key={idx}
+                        href={dropItem.href}
                         className="mobile-dropdown-item"
                         onClick={() => setMobileMenuOpen(false)}
                       >
@@ -444,8 +455,8 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <Link 
-                  href={item.href} 
+                <Link
+                  href={item.href}
                   className="mobile-nav-link"
                   onClick={() => setMobileMenuOpen(false)}
                 >
