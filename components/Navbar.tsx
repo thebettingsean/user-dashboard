@@ -287,10 +287,32 @@ export default function Navbar() {
         @media (max-width: 767px) {
           .navbar-content {
             padding: 0.75rem 1rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+          }
+
+          .logo-container {
+            grid-column: 1;
+            justify-content: flex-start;
+          }
+
+          .hamburger {
+            margin-right: 0.5rem;
+          }
+
+          .auth-section {
+            grid-column: 3;
+            justify-self: end;
           }
 
           .logo {
-            height: 40px;
+            height: 36px;
+          }
+
+          .sign-in-button {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
           }
         }
       `}</style>
