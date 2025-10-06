@@ -26,7 +26,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
 
 const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0313f97df902b5312a3f6_NEW%20BOOK%20LOGOS%20SVG-2.svg'
 const FILTER_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
-const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e3ecad474cfd298c457d58_PPP%20BRANDING!-2.svg'
+const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e3ef8673f9a7c75b24bf2f_PPP%20BRANDING!-3.svg'
 
 export default function PropParlayTool() {
   const [data, setData] = useState<any>(null)
