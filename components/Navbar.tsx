@@ -81,7 +81,9 @@ export default function Navbar() {
           top: 0;
           z-index: 1000;
           backdrop-filter: blur(10px);
-          height: 60px;
+          min-height: 85px;
+          display: flex;
+          align-items: center;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
@@ -92,6 +94,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          width: 100%;
         }
 
         .logo-container {
@@ -340,6 +343,14 @@ export default function Navbar() {
           .sign-in-button {
             padding: 0.5rem 1rem;
             font-size: 0.85rem;
+          }
+
+          .navbar {
+            min-height: 75px;
+          }
+ 
+          .logo {
+            height: 40px;
           }
         }
       `}</style>
