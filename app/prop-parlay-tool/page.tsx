@@ -24,18 +24,9 @@ const AFFILIATE_LINKS: Record<string, string> = {
   'betrivers': 'https://betrivers.com'
 }
 
-const RANK_ICONS = [
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b768ecad17fb0140a6c_1.svg', color: '#00bf63' },
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7606434064b25ac2b6_4.svg', color: '#FF751F' },
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b76dab754fc3ed6e0e0_2.svg', color: '#FFBD59' },
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b769ab7d32a68961d91_3.svg', color: '#FFDE59' },
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7600031a16ccbaa127_6.svg', color: '#5170FF' },
-  { svg: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b7606434064b25ac2b3_5.svg', color: '#38B6FF' }
-]
-
 const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0313f97df902b5312a3f6_NEW%20BOOK%20LOGOS%20SVG-2.svg'
 const FILTER_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
-const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b768ecad17fb0140a6c_1.svg'
+const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e3e8390fe07510984b05f9_PPP%20BRANDING!.svg'
 
 export default function PropParlayTool() {
   const [data, setData] = useState<any>(null)
@@ -206,13 +197,13 @@ export default function PropParlayTool() {
 
   function generateCombos(arr: any[], size: number) {
     const result: any[] = []
-    const maxResults = 2000 // Set limit
+    const maxResults = 2000
   
     const f = (prefix: any[], arr: any[]) => {
-      if (result.length >= maxResults) return // EARLY EXIT
+      if (result.length >= maxResults) return
     
       for (let i = 0; i < arr.length; i++) {
-        if (result.length >= maxResults) break // EARLY EXIT
+        if (result.length >= maxResults) break
       
         const newPrefix = [...prefix, arr[i]]
         if (newPrefix.length === size) {
@@ -225,6 +216,7 @@ export default function PropParlayTool() {
     f([], arr)
     return result
   }
+
   function calculateParlayOdds(legs: any[], selectedBook: string) {
     const decimalOdds = legs.map(leg => {
       let bestOdds
@@ -282,7 +274,7 @@ export default function PropParlayTool() {
         <div style={styles.header}>
           <div style={styles.titleSection}>
             <div style={styles.titleRow}>
-              <h1 style={styles.title}>Prop Parlay Tool</h1>
+              <h1 style={styles.title}>Perfect Prop Parlays</h1>
               <div style={styles.titleIconBox}>
                 <img src={TITLE_ICON} alt="Tool" style={styles.titleIconImg} />
               </div>
@@ -582,16 +574,11 @@ function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: st
 }
 
 function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { combo: any, rank: number, bookLogo: string, affiliateLink: string | null, selectedBook: string }) {
-  const rankConfig = rank <= 5 ? RANK_ICONS[rank - 1] : RANK_ICONS[5]
-
   return (
     <div style={styles.parlayCard}>
       <div style={styles.parlayCardHeader}>
-        <div style={{
-          ...styles.rankCircle,
-          background: `linear-gradient(180deg, ${rankConfig.color} 0%, ${rankConfig.color}AA 100%)`
-        }}>
-          <img src={rankConfig.svg} alt={`#${rank}`} style={styles.rankIcon} />
+        <div style={styles.rankCircle}>
+          <img src={TITLE_ICON} alt={`Parlay #${rank}`} style={styles.rankIcon} />
         </div>
         <div style={styles.parlayMeta}>
           <div style={styles.parlayTypeLabel}>
@@ -705,18 +692,14 @@ const styles = {
     margin: 0
   },
   titleIconBox: {
-    background: 'linear-gradient(180deg, #00bf63 0%, #008a47 100%)',
-    borderRadius: '8px',
-    padding: '0.35rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   titleIconImg: {
-    width: '24px',
-    height: '24px',
-    display: 'block',
-    filter: 'brightness(1.2)'
+    width: '52px',
+    height: '52px',
+    display: 'block'
   },
   subtitle: {
     fontSize: '0.7rem',
@@ -992,18 +975,14 @@ const styles = {
     borderBottom: '1px solid rgba(255,255,255,0.1)'
   },
   rankCircle: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0
   },
   rankIcon: {
-    width: '28px',
-    height: '28px',
-    filter: 'brightness(1.3) contrast(1.1)'
+    width: '48px',
+    height: '48px'
   },
   parlayMeta: {
     flex: 1
