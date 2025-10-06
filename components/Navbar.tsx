@@ -287,23 +287,20 @@ export default function Navbar() {
         @media (max-width: 767px) {
           .navbar-content {
             padding: 0.75rem 1rem;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
           }
 
           .logo-container {
-            grid-column: 1;
-            justify-content: flex-start;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
           }
 
           .hamburger {
-            margin-right: 0.5rem;
+            margin-right: 0;
           }
 
           .auth-section {
-            grid-column: 3;
-            justify-self: end;
+            margin-left: auto;
           }
 
           .logo {
@@ -313,6 +310,10 @@ export default function Navbar() {
           .sign-in-button {
             padding: 0.5rem 1rem;
             font-size: 0.85rem;
+          }
+
+          .desktop-nav {
+            display: none !important;
           }
         }
       `}</style>
