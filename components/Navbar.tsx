@@ -139,13 +139,16 @@ export default function Navbar() {
           text-decoration: none;
           font-size: 0.9rem;
           font-weight: 500;
-          transition: color 0.2s;
+          transition: color 0.2s, background 0.2s;
           cursor: pointer;
           white-space: nowrap;
+          padding: 0.5rem 0.75rem;
+          border-radius: 4px;
         }
 
         .nav-item:hover {
           color: rgba(255, 255, 255, 0.8);
+          backgroundL rgba(255, 255, 255, 0.06);
         }
 
         .nav-item.has-dropdown::after {
@@ -217,7 +220,7 @@ export default function Navbar() {
         /* MOBILE MENU FIXED BELOW NAVBAR */
         .mobile-menu {
           position: absolute;
-          top: 60px;
+          top: 85px;
           left: 0;
           right: 0;
           background: rgba(15, 23, 42, 0.98);
@@ -228,7 +231,7 @@ export default function Navbar() {
           transform: translateY(-10px);
           transition: all 0.35s ease;
           backdrop-filter: blur(10px);
-          z-index: 999;
+          z-index: 900;
         }
 
         .mobile-menu.open {
@@ -347,6 +350,10 @@ export default function Navbar() {
 
           .navbar {
             min-height: 75px;
+          }
+
+          .mobile-menu
+            top: 75px;
           }
  
           .logo {
