@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 export default function Navbar() {
-  const { isSignedIn } = useUser()
+  const { isSignedIn, isLoaded } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
@@ -62,13 +62,14 @@ export default function Navbar() {
     }
   ]
 
-  const filteredNavItems = navItems.filter(item => {
-    if (item.showOnlyWhenSignedIn) {
-      return isSignedIn
-    }
-    return true
-  })
-
+  const filteredNavItems = !isLoaded 
+    ? navItems.filter(item => !item.showOnlyWhenSignedIn)
+    : navItems.filter(item => {
+        if (item.showOnlyWhenSignedIn) {
+          return isSignedIn
+        }
+        return true
+      })
   return (
     <>
       <style jsx>{`
