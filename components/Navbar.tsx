@@ -288,20 +288,30 @@ export default function Navbar() {
         @media (max-width: 767px) {
           .navbar-content {
             padding: 0.75rem 1rem;
+            position: relative;
           }
 
           .logo-container {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
+            display: block;
           }
 
           .hamburger {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
             margin-right: 0;
+            z-index: 10;
           }
 
           .auth-section {
-            margin-left: auto;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
           }
 
           .logo {
