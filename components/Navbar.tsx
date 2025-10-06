@@ -81,6 +81,8 @@ export default function Navbar() {
           top: 0;
           z-index: 1000;
           backdrop-filter: blur(10px);
+          height: 60px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         .navbar-content {
@@ -209,22 +211,26 @@ export default function Navbar() {
           border-color: rgba(59, 130, 246, 0.8);
         }
 
+        /* MOBILE MENU FIXED BELOW NAVBAR */
         .mobile-menu {
-          display: block;
-          position: fixed;
+          position: absolute;
           top: 60px;
           left: 0;
           right: 0;
           background: rgba(15, 23, 42, 0.98);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          max-height: calc(100vh - 60px);
-          overflow-y: auto;
-          transform: translateY(-100%);
-          transition: transform 0.3s ease;
+          max-height: 0;
+          overflow: hidden;
+          opacity: 0;
+          transform: translateY(-10px);
+          transition: all 0.35s ease;
           backdrop-filter: blur(10px);
+          z-index: 999;
         }
 
         .mobile-menu.open {
+          max-height: 600px;
+          opacity: 1;
           transform: translateY(0);
         }
 
