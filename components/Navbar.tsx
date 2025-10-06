@@ -70,6 +70,7 @@ export default function Navbar() {
         }
         return true
       })
+  
   return (
     <>
       <style jsx>{`
@@ -211,15 +212,15 @@ export default function Navbar() {
         .mobile-menu {
           display: block;
           position: fixed;
-          top: 65px;
+          top: 60px;
           left: 0;
           right: 0;
           background: rgba(15, 23, 42, 0.98);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          max-height: calc(100vh - 65px);
+          max-height: calc(100vh - 60px);
           overflow-y: auto;
           transform: translateY(-100%);
-          transition: transform 0.3s;
+          transition: transform 0.3s ease;
           backdrop-filter: blur(10px);
         }
 
@@ -287,15 +288,11 @@ export default function Navbar() {
 
         @media (max-width: 767px) {
           .navbar-content {
-            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-          }
-
-          .logo-container {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            display: block;
+            padding: 0.75rem 1rem;
           }
 
           .hamburger {
@@ -303,8 +300,21 @@ export default function Navbar() {
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            margin-right: 0;
+            display: flex;
             z-index: 10;
+            margin-right: 0;
+          }
+
+          .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+          }
+
+          .logo {
+            height: 36px;
+            width: auto;
           }
 
           .auth-section {
@@ -314,33 +324,33 @@ export default function Navbar() {
             transform: translateY(-50%);
           }
 
-          .logo {
-            height: 36px;
+          .desktop-nav {
+            display: none !important;
+            visibility: hidden;
+            height: 0;
+            overflow: hidden;
           }
 
           .sign-in-button {
             padding: 0.5rem 1rem;
             font-size: 0.85rem;
           }
-
-          .desktop-nav {
-            display: none !important;
-          }
         }
       `}</style>
 
       <nav className="navbar">
         <div className="navbar-content">
+          <button 
+            className="hamburger" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
           <div className="logo-container">
-            <button 
-              className="hamburger" 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
             <Link href="/">
               <img 
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
