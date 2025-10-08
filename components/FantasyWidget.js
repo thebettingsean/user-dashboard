@@ -1,10 +1,98 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+// NFL 2025 Season Schedule
+const NFL_SCHEDULE = [
+  {
+    week: 5,
+    start: new Date('2025-09-30'),
+    end: new Date('2025-10-06T23:59:59')
+  },
+  {
+    week: 6,
+    start: new Date('2025-10-07'),
+    end: new Date('2025-10-13T23:59:59')
+  },
+  {
+    week: 7,
+    start: new Date('2025-10-14'),
+    end: new Date('2025-10-20T23:59:59')
+  },
+  {
+    week: 8,
+    start: new Date('2025-10-21'),
+    end: new Date('2025-10-27T23:59:59')
+  },
+  {
+    week: 9,
+    start: new Date('2025-10-28'),
+    end: new Date('2025-11-03T23:59:59')
+  },
+  {
+    week: 10,
+    start: new Date('2025-11-04'),
+    end: new Date('2025-11-10T23:59:59')
+  },
+  {
+    week: 11,
+    start: new Date('2025-11-11'),
+    end: new Date('2025-11-17T23:59:59')
+  },
+  {
+    week: 12,
+    start: new Date('2025-11-18'),
+    end: new Date('2025-11-24T23:59:59')
+  },
+  {
+    week: 13,
+    start: new Date('2025-11-25'),
+    end: new Date('2025-12-01T23:59:59')
+  },
+  {
+    week: 14,
+    start: new Date('2025-12-02'),
+    end: new Date('2025-12-08T23:59:59')
+  },
+  {
+    week: 15,
+    start: new Date('2025-12-09'),
+    end: new Date('2025-12-15T23:59:59')
+  },
+  {
+    week: 16,
+    start: new Date('2025-12-16'),
+    end: new Date('2025-12-22T23:59:59')
+  },
+  {
+    week: 17,
+    start: new Date('2025-12-23'),
+    end: new Date('2025-12-29T23:59:59')
+  },
+  {
+    week: 18,
+    start: new Date('2025-12-30'),
+    end: new Date('2026-01-05T23:59:59')
+  }
+];
+
+// Function to get current NFL week
+function getCurrentNFLWeek() {
+  const now = new Date();
+  
+  for (const weekData of NFL_SCHEDULE) {
+    if (now >= weekData.start && now <= weekData.end) {
+      return weekData.week;
+    }
+  }
+  
+  // Default to week 6 if outside schedule
+  return 6;
+}
+
 export default function FantasyWidget() {
   const [players, setPlayers] = useState({ qb: [], rb: [], wr: [] })
   const [loading, setLoading] = useState(true)
-  const [week, setWeek] = useState(5)
+  const [week, setWeek] = useState(getCurrentNFLWeek())
 
   useEffect(() => {
     fetchFantasyData()
@@ -12,7 +100,10 @@ export default function FantasyWidget() {
 
   async function fetchFantasyData() {
     try {
-      const res = await fetch('https://prypgwgaeadicxlgbgjw.supabase.co/rest/v1/weekly_rankings?week=eq.5&select=*&limit=20', {
+      const currentWeek = getCurrentNFLWeek();
+      setWeek(currentWeek);
+      
+      const res = await fetch(`https://prypgwgaeadicxlgbgjw.supabase.co/rest/v1/weekly_rankings?week=eq.${currentWeek}&select=*&limit=20`, {
         headers: {
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByeXBnd2dhZWFkaWN4bGdiZ2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxNzE0MDEsImV4cCI6MjA2Nzc0NzQwMX0.nSehEJTPVnfhsD2y98lGzVNTTJ8MFfwv3Vaw5kLbAYc'
         }
@@ -101,8 +192,6 @@ export default function FantasyWidget() {
     </div>
   )
 }
-
-// All styles remain the same as before
 
 const widgetStyle = {
   background: 'linear-gradient(135deg, rgba(186, 19, 47, 0.12) 0%, rgba(186, 19, 47, 0.04) 100%)',
