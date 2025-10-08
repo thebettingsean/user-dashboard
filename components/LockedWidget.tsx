@@ -42,13 +42,13 @@ export default function LockedWidget({ isLoggedIn, hasSubscription, children }: 
         style={{
           position: 'absolute',
           top: '100px', // Start blur below the header area
-          left: 0,
-          right: 0,
-          bottom: 0,
+          left: '12px',
+          right: '12px',
+          bottom: '12px',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '0 0 12px 12px',
+          borderRadius: '12px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',

@@ -141,7 +141,7 @@ export default function Home() {
                 }}>UNLOCKED</span>
               </>
             ) : (
-              'Elite betting tools are ready to be powered up'
+              'Our elite betting tools are ready to be powered up'
             )}
           </h1>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
