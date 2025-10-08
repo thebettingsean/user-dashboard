@@ -36,7 +36,7 @@ export default function TDWidget() {
       </div>
       
       <h2 style={titleStyle}>
-        TD Edge Leaders
+        Anytime TD Leaders
         <span style={weekTag}>Week {currentWeek}</span>  
       </h2>
       <p style={taglineStyle}>Best value touchdown plays</p>
