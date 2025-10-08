@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSubscription } from '../lib/hooks/useSubscription'
+import LockedWidget from '../components/LockedWidget'
 import PicksWidget from '../components/PicksWidget'
 import StatsWidget from '../components/StatsWidget'
 import FantasyWidget from '../components/FantasyWidget'
@@ -10,6 +12,14 @@ import PropParlayWidget from '../components/PropParlayWidget'
 
 export default function Home() {
   const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
+  const [welcomeMessage, setWelcomeMessage] = useState('')
+  const { isLoading, isSubscribed, firstName } = useSubscription()
+
+  useEffect(() => {
+    if (!isLoading) {
+      setWelcomeMessage(getWelcomeMessage(firstName))
+    }
+  }, [isLoading, firstName])
 
   function toggleWidget(widgetId: string) {
     const newExpanded = new Set(expandedWidgets)
@@ -19,6 +29,15 @@ export default function Home() {
       newExpanded.add(widgetId)
     }
     setExpandedWidgets(newExpanded)
+  }
+
+  // If still loading, show a loading state
+  if (isLoading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'white', opacity: 0.7 }}>Loading...</p>
+      </div>
+    )
   }
 
   const row1Widgets = [
@@ -100,7 +119,7 @@ export default function Home() {
       <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
         <div style={{ marginBottom: '3rem' }}>
           <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '0.35rem', fontWeight: '500' }}>
-            Welcome to a bettors paradise, friend
+            {welcomeMessage}
           </p>
           <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
             Let's have ourselves a day!
@@ -108,16 +127,22 @@ export default function Home() {
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
           
           <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            You've got all of our powerful betting tools 
-            <span style={{ 
-              background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
-              color: '#1e293b',
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              fontSize: '1.4rem',
-              fontWeight: '800',
-              letterSpacing: '0.05em'
-            }}>UNLOCKED</span>
+            {isSubscribed ? (
+              <>
+                You've got all of our powerful betting tools 
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
+                  color: '#1e293b',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '6px',
+                  fontSize: '1.4rem',
+                  fontWeight: '800',
+                  letterSpacing: '0.05em'
+                }}>UNLOCKED</span>
+              </>
+            ) : (
+              'Your Premium Dashboard'
+            )}
           </h1>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
         </div>
@@ -152,7 +177,9 @@ export default function Home() {
                 </div>
                 {expandedWidgets.has(widget.id) && (
                   <div className="accordion-content">
-                    {widget.component}
+                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                      {widget.component}
+                    </LockedWidget>
                   </div>
                 )}
               </div>
@@ -187,7 +214,9 @@ export default function Home() {
                 </div>
                 {expandedWidgets.has(widget.id) && (
                   <div className="accordion-content">
-                    {widget.component}
+                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                      {widget.component}
+                    </LockedWidget>
                   </div>
                 )}
               </div>
@@ -212,9 +241,21 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-            <div style={{ minWidth: '380px' }}><PicksWidget /></div>
-            <div style={{ minWidth: '380px' }}><StatsWidget /></div>
-            <div style={{ minWidth: '380px' }}><NewsWidget /></div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PicksWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <StatsWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <NewsWidget />
+              </LockedWidget>
+            </div>
           </div>
 
           {/* Row 2: Premium NFL Tools */}
@@ -231,13 +272,25 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-            <div style={{ minWidth: '380px' }}><PropParlayWidget /></div>
-            <div style={{ minWidth: '380px' }}><FantasyWidget /></div>
-            <div style={{ minWidth: '380px' }}><TDWidget /></div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PropParlayWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <FantasyWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <TDWidget />
+              </LockedWidget>
+            </div>
           </div>
         </div>
 
-        {/* Rest of your code stays the same */}
+        {/* Rest of your existing code */}
         <div style={{ marginTop: '4rem' }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
@@ -301,6 +354,69 @@ export default function Home() {
       </div>
     </>
   )
+}
+
+// Welcome message generator
+function getWelcomeMessage(firstName: string | null): string {
+  const name = firstName || 'friend'
+  
+  // If no firstName (not logged in), return special message
+  if (!firstName) {
+    return 'Welcome to Insider Sports, please login to access our tools!'
+  }
+
+  const now = new Date()
+  const hour = now.getHours()
+  const day = now.getDay() // 0 = Sunday, 1 = Monday, etc.
+
+  // Time-based messages (70% of the time)
+  const timeMessages = [
+    { condition: hour >= 5 && hour < 12, message: `Good morning, ${name}! Let's start hot` },
+    { condition: hour >= 12 && hour < 17, message: `Good afternoon, ${name}! Lines are moving` },
+    { condition: hour >= 18 && hour < 23, message: `Evening action incoming, ${name}` },
+    { condition: hour >= 0 && hour < 5, message: `Burning the midnight oil, ${name}?` }
+  ]
+
+  // Day-based messages
+  const dayMessages = [
+    `Let's start the week strong, ${name}`, // Monday
+    `Let's keep the momentum going, ${name}`, // Tuesday
+    `Midweek magic time, ${name}`, // Wednesday
+    `Let's have a great Thursday, ${name}`, // Thursday
+    `Let's finish the week hot, ${name}`, // Friday
+    `Weekend action awaits, ${name}`, // Saturday
+    `Sunday slate domination, ${name}` // Sunday
+  ]
+
+  // Basic messages
+  const basicMessages = [
+    `Welcome back, ${name}!`,
+    `Let's dominate today, ${name}`,
+    `Ready to win big, ${name}?`,
+    `Let's make some money, ${name}`,
+    `Time to cash in, ${name}`,
+    `Let's have a great day, ${name}`,
+    `Welcome to the edge, ${name}`,
+    `Let's get after it, ${name}`,
+    `Time to find the value, ${name}`,
+    `Sharp plays incoming, ${name}`
+  ]
+
+  const random = Math.random()
+
+  // 70% time-based
+  if (random < 0.7) {
+    const timeMessage = timeMessages.find(m => m.condition)
+    if (timeMessage) return timeMessage.message
+  }
+
+  // 20% day-based
+  if (random < 0.9) {
+    return dayMessages[day]
+  }
+
+  // 10% random basic
+  return basicMessages[Math.floor(Math.random() * basicMessages.length)]
 }
 
 const toolLinkStyle = {
