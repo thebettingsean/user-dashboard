@@ -122,7 +122,16 @@ export default function Home() {
             {welcomeMessage}
           </p>
           <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
-            Let's have ourselves a day!
+            Chat with us in the <a 
+              href="https://community.thebettinginsider.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: '#60a5fa', 
+                textDecoration: 'underline',
+                textUnderlineOffset: '2px'
+              }}
+            >Insider Community</a>
           </p>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
           
@@ -141,7 +150,7 @@ export default function Home() {
                 }}>UNLOCKED</span>
               </>
             ) : (
-              'Our elite betting tools are ready to be powered up'
+              'Elite betting tools are ready to be powered up'
             )}
           </h1>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
@@ -153,7 +162,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Dashboards
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                 style={{ width: '28px', height: '28px' }} />
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row1Widgets.map(widget => (
@@ -190,7 +199,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium NFL tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
-                 style={{ width: '28px', height: '28px' }} />
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row2Widgets.map(widget => (
@@ -230,7 +239,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Dashboards
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                 style={{ width: '28px', height: '28px' }} />
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ 
             display: 'flex', 
@@ -262,7 +271,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium NFL tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
-                 style={{ width: '28px', height: '28px' }} />
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ 
             display: 'flex', 
@@ -295,7 +304,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+                 style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <a href="https://www.thebettinginsider.com/tools/bankroll-builder" style={toolLinkStyle}>
@@ -325,7 +334,7 @@ export default function Home() {
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
-                 style={{ width: '28px', height: '28px', opacity: 0.7 }} />
+                 style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
           </h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
             <a href="https://billing.stripe.com/p/login/cN2eYg15W3W77rW288" style={helpLinkStyle}>
@@ -377,15 +386,15 @@ function getWelcomeMessage(firstName: string | null): string {
     { condition: hour >= 0 && hour < 5, message: `Burning the midnight oil, ${name}?` }
   ]
 
-  // Day-based messages
+  // Day-based messages - FIXED INDEX (0 = Sunday, 6 = Saturday)
   const dayMessages = [
-    `Let's start the week strong, ${name}`, // Monday
-    `Let's keep the momentum going, ${name}`, // Tuesday
-    `Midweek magic time, ${name}`, // Wednesday
-    `Let's have a great Thursday, ${name}`, // Thursday
-    `Let's finish the week hot, ${name}`, // Friday
-    `Weekend action awaits, ${name}`, // Saturday
-    `Sunday slate domination, ${name}` // Sunday
+    `Sunday slate domination, ${name}`, // Sunday (0)
+    `Let's start the week strong, ${name}`, // Monday (1)
+    `Let's keep the momentum going, ${name}`, // Tuesday (2)
+    `Midweek magic time, ${name}`, // Wednesday (3)
+    `Let's have a great Thursday, ${name}`, // Thursday (4)
+    `Let's finish the week hot, ${name}`, // Friday (5)
+    `Weekend action awaits, ${name}`, // Saturday (6)
   ]
 
   // Basic messages
