@@ -1,12 +1,101 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+// NFL 2025 Season Schedule
+const NFL_SCHEDULE = [
+  {
+    week: 5,
+    start: new Date('2025-09-30'),
+    end: new Date('2025-10-06T23:59:59')
+  },
+  {
+    week: 6,
+    start: new Date('2025-10-07'),
+    end: new Date('2025-10-13T23:59:59')
+  },
+  {
+    week: 7,
+    start: new Date('2025-10-14'),
+    end: new Date('2025-10-20T23:59:59')
+  },
+  {
+    week: 8,
+    start: new Date('2025-10-21'),
+    end: new Date('2025-10-27T23:59:59')
+  },
+  {
+    week: 9,
+    start: new Date('2025-10-28'),
+    end: new Date('2025-11-03T23:59:59')
+  },
+  {
+    week: 10,
+    start: new Date('2025-11-04'),
+    end: new Date('2025-11-10T23:59:59')
+  },
+  {
+    week: 11,
+    start: new Date('2025-11-11'),
+    end: new Date('2025-11-17T23:59:59')
+  },
+  {
+    week: 12,
+    start: new Date('2025-11-18'),
+    end: new Date('2025-11-24T23:59:59')
+  },
+  {
+    week: 13,
+    start: new Date('2025-11-25'),
+    end: new Date('2025-12-01T23:59:59')
+  },
+  {
+    week: 14,
+    start: new Date('2025-12-02'),
+    end: new Date('2025-12-08T23:59:59')
+  },
+  {
+    week: 15,
+    start: new Date('2025-12-09'),
+    end: new Date('2025-12-15T23:59:59')
+  },
+  {
+    week: 16,
+    start: new Date('2025-12-16'),
+    end: new Date('2025-12-22T23:59:59')
+  },
+  {
+    week: 17,
+    start: new Date('2025-12-23'),
+    end: new Date('2025-12-29T23:59:59')
+  },
+  {
+    week: 18,
+    start: new Date('2025-12-30'),
+    end: new Date('2026-01-05T23:59:59')
+  }
+];
+
+// Function to get current NFL week
+function getCurrentNFLWeek() {
+  const now = new Date();
+  
+  for (const weekData of NFL_SCHEDULE) {
+    if (now >= weekData.start && now <= weekData.end) {
+      return weekData.week;
+    }
+  }
+  
+  // Default to week 6 if outside schedule
+  return 6;
+}
+
 export default function TDWidget() {
   const [players, setPlayers] = useState([])
   const [loading, setLoading] = useState(true)
-  const currentWeek = 5
+  const [currentWeek, setCurrentWeek] = useState(getCurrentNFLWeek())
 
   useEffect(() => {
+    setCurrentWeek(getCurrentNFLWeek())
     fetchTDData()
   }, [])
 
@@ -32,7 +121,7 @@ export default function TDWidget() {
     <div style={widgetStyle}>
       <div style={iconWrapper}>
         <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg" 
-             style={{ width: '36px', height: '36px' }} />
+             style={{ width: '36px', height: '36px' }} alt="" />
       </div>
       
       <h2 style={titleStyle}>
@@ -67,8 +156,6 @@ export default function TDWidget() {
   )
 }
 
-// All styles remain the same as before
-
 const widgetStyle = {
   background: 'linear-gradient(135deg, rgba(255, 117, 31, 0.12) 0%, rgba(255, 117, 31, 0.04) 100%)',
   border: '1px solid rgba(255, 117, 31, 0.2)',
@@ -100,7 +187,10 @@ const titleStyle = {
   fontSize: '1.1rem',
   fontWeight: '700',
   marginBottom: '0.25rem',
-  color: '#fff'
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem'
 }
 
 const taglineStyle = {
@@ -143,6 +233,5 @@ const weekTag = {
   padding: '0.2rem 0.5rem',
   borderRadius: '4px',
   fontSize: '0.65rem',
-  fontWeight: '700',
-  marginLeft: '0.5rem'
+  fontWeight: '700'
 }
