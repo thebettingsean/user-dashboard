@@ -129,7 +129,7 @@ export default function PropParlayWidget() {
         />
       </div>
       
-      <h2 style={titleStyle}>Prop Parlay Tool</h2>
+      <h2 style={titleStyle}>Perfect Prop Parlays</h2>
       <p style={taglineStyle}>100% hit rate props</p>
       
       {loading ? (
