@@ -145,7 +145,7 @@ export default function FantasyWidget() {
         Weekly Fantasy
         <span style={weekTag}>Week {week}</span>
       </h2>
-      <p style={taglineStyle}>Vegas-backed projections</p>
+      <p style={taglineStyle}>Vegas-backed start/sit tool</p>
       
       {loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
