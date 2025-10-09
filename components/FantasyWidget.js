@@ -276,5 +276,5 @@ const viewAllStyle = {
   fontSize: '0.8rem',
   fontWeight: '600',
   textDecoration: 'none',
-  marginTop: '1rem'
+  marginTop: '1.5rem'
 }
