@@ -53,7 +53,7 @@ export default function StatsWidget() {
       </div>
       
       <a href="https://app.thebettinginsider.com" style={viewAllStyle}>
-        view all →
+        All top trends →
       </a>
     </div>
   )
@@ -123,9 +123,13 @@ const viewAllStyle = {
   position: 'absolute',
   bottom: '1.5rem',
   right: '1.5rem',
+  left: '1.5rem',
+  textAlign: 'center',
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
+  fontWeight: '600',
   textDecoration: 'none'
+  marginTop: '1rem'
 }
 
 const dateTag = {

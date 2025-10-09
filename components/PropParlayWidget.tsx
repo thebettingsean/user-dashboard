@@ -164,7 +164,7 @@ export default function PropParlayWidget() {
       )}
       
       <a href="/prop-parlay-tool" style={viewAllStyle}>
-        build parlays →
+        More 100% parlays →
       </a>
     </div>
   )
@@ -256,10 +256,14 @@ const sectionTitle = {
 }
 
 const viewAllStyle = {
-  position: 'absolute' as const,
+  position: 'absolute',
   bottom: '1.5rem',
   right: '1.5rem',
+  left: '1.5rem',
+  textAlign: 'center',
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
+  fontWeight: '600',
   textDecoration: 'none'
+  marginTop: '1rem'
 }
