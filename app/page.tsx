@@ -34,7 +34,7 @@ export default function Home() {
   // If still loading, show a loading state
   if (isLoading) {
     return (
-      <div className="page-container" style={{ padding: '2rem', textAlign: 'center', minHeight: '100vh' }}>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
         <p style={{ color: 'white', opacity: 0.7 }}>Loading...</p>
       </div>
     )
@@ -95,11 +95,8 @@ export default function Home() {
   ]
 
   return (
-    <div className="page-container" style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+    <>
       <style jsx>{`
-        .page-container {
-          background: #0a0a0a;
-        }
         .mobile-view {
           display: block;
         }
@@ -364,7 +361,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
