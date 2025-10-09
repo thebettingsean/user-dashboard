@@ -1,5 +1,7 @@
+'use client'
+
 export default function StatsWidget() {
-  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })  // ADD THIS
+  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   
   return (
     <div style={widgetStyle}>
@@ -26,7 +28,6 @@ export default function StatsWidget() {
             <strong style={{ fontSize: '0.85rem', color: '#10b981' }}>Lions -7.5 (+63%)</strong>
           </div>
         </div>
-
         <div style={sectionStyle}>
           <h4 style={sectionTitle}>Referees</h4>
           <div style={statItemStyle}>
@@ -38,8 +39,7 @@ export default function StatsWidget() {
             <strong style={{ fontSize: '0.85rem' }}>Over</strong>
           </div>
         </div>
-
-        <div style={sectionStyle}>
+        <div style={{...sectionStyle, borderBottom: 'none'}}>
           <h4 style={sectionTitle}>Hit Rates</h4>
           <div style={statItemStyle}>
             <span style={{ fontSize: '0.8rem' }}>Hill • Rec Over</span>
@@ -90,7 +90,10 @@ const titleStyle = {
   fontSize: '1.1rem',
   fontWeight: '700',
   marginBottom: '0.25rem',
-  color: '#fff'
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem'
 }
 
 const taglineStyle = {
@@ -128,8 +131,7 @@ const viewAllStyle = {
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
-  textDecoration: 'none',
-  marginTop: '1.5rem'
+  textDecoration: 'none'
 }
 
 const dateTag = {

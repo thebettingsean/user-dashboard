@@ -51,7 +51,7 @@ export default function PicksWidget() {
         <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
       ) : (
         <div style={{ flex: 1 }}>
-          <div style={sectionStyle}>
+          <div style={hottestBettor ? sectionStyle : {...sectionStyle, borderBottom: 'none'}}>
             <h4 style={sectionTitle}>Most at Risk</h4>
             {topUnitsPicks.map(pick => (
               <div key={pick.id} style={pickItemStyle}>
@@ -62,7 +62,7 @@ export default function PicksWidget() {
           </div>
 
           {hottestBettor && (
-            <div style={sectionStyle}>
+            <div style={{...sectionStyle, borderBottom: 'none'}}>
               <h4 style={sectionTitle}>
                 Hottest: {hottestBettor.bettors?.name} ({hottestBettor.bettors?.record})
               </h4>
@@ -84,7 +84,6 @@ export default function PicksWidget() {
   )
 }
 
-// Styles remain the same
 const widgetStyle = {
   background: 'linear-gradient(135deg, rgba(255, 202, 16, 0.12) 0%, rgba(255, 202, 16, 0.04) 100%)',
   border: '1px solid rgba(255, 202, 16, 0.2)',
@@ -176,6 +175,5 @@ const viewAllStyle = {
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
-  textDecoration: 'none',
-  marginTop: '1.5rem'
+  textDecoration: 'none'
 }

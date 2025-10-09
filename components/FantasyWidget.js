@@ -173,7 +173,7 @@ export default function FantasyWidget() {
             ))}
           </div>
 
-          <div style={sectionStyle}>
+          <div style={{...sectionStyle, borderBottom: 'none'}}>
             <h4 style={sectionTitle}>Wide Receivers</h4>
             {players.wr.map(p => (
               <div key={p.id} style={playerItemStyle}>
@@ -275,6 +275,5 @@ const viewAllStyle = {
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
-  textDecoration: 'none',
-  marginTop: '1.5rem'
+  textDecoration: 'none'
 }

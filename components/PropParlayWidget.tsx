@@ -150,9 +150,10 @@ export default function PropParlayWidget() {
 
           {topSGP.legs.map((leg: any, i: number) => {
             const bestOdds = Math.max(...leg.bookmakers.map((b: any) => b.odds))
+            const isLast = i === topSGP.legs.length - 1
             
             return (
-              <div key={i} style={sectionStyle}>
+              <div key={i} style={{...sectionStyle, ...(isLast ? {borderBottom: 'none'} : {})}}>
                 <h4 style={sectionTitle}>LEG {i + 1}: {leg.player}</h4>
                 <p style={{ fontSize: '0.75rem', lineHeight: '1.4', opacity: 0.8 }}>
                   {formatMarket(leg.market)} O{leg.line} • {formatOdds(bestOdds)}
@@ -264,6 +265,5 @@ const viewAllStyle = {
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
-  textDecoration: 'none',
-  marginTop: '1.5rem'
+  textDecoration: 'none'
 }
