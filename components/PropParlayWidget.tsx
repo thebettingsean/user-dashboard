@@ -256,11 +256,11 @@ const sectionTitle = {
 }
 
 const viewAllStyle = {
-  position: 'absolute',
+  position: 'absolute' as const,
   bottom: '1.5rem',
   right: '1.5rem',
   left: '1.5rem',
-  textAlign: 'center',
+  textAlign: 'center' as const,
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
