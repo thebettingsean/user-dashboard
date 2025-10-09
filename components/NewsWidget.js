@@ -97,6 +97,6 @@ const viewAllStyle = {
   color: 'rgba(255,255,255,0.6)',
   fontSize: '0.8rem',
   fontWeight: '600',
-  textDecoration: 'none'
+  textDecoration: 'none',
   marginTop: '1rem'
 }
