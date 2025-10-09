@@ -34,7 +34,7 @@ export default function Home() {
   // If still loading, show a loading state
   if (isLoading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div className="page-container" style={{ padding: '2rem', textAlign: 'center', minHeight: '100vh' }}>
         <p style={{ color: 'white', opacity: 0.7 }}>Loading...</p>
       </div>
     )
@@ -95,11 +95,10 @@ export default function Home() {
   ]
 
   return (
-    <>
+    <div className="page-container" style={{ background: '#0a0a0a', minHeight: '100vh' }}>
       <style jsx>{`
         .page-container {
           background: #0a0a0a;
-          min-height: 100vh;
         }
         .mobile-view {
           display: block;
@@ -120,254 +119,252 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="page-container">
-        <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '3rem' }}>
-            <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '0.35rem', fontWeight: '500' }}>
-              {welcomeMessage}
-            </p>
-            <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
-              Chat with us in the <a 
-                href="https://community.thebettinginsider.com" 
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  color: '#60a5fa', 
-                  textDecoration: 'underline',
-                  textUnderlineOffset: '2px'
-                }}
-              >Insider Community</a>
-            </p>
-            <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
-            
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {isSubscribed ? (
-                <>
-                  You've got all of our powerful betting tools 
-                  <span style={{ 
-                    background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
-                    color: '#1e293b',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    fontSize: '1.4rem',
-                    fontWeight: '800',
-                    letterSpacing: '0.05em'
-                  }}>UNLOCKED</span>
-                </>
-              ) : (
-                'Elite betting tools are ready to be powered up'
-              )}
-            </h1>
-            <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
-          </div>
+      <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '3rem' }}>
+          <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '0.35rem', fontWeight: '500' }}>
+            {welcomeMessage}
+          </p>
+          <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
+            Chat with us in the <a 
+              href="https://community.thebettinginsider.com" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: '#60a5fa', 
+                textDecoration: 'underline',
+                textUnderlineOffset: '2px'
+              }}
+            >Insider Community</a>
+          </p>
+          <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
           
-          {/* MOBILE VIEW - Accordion */}
-          <div className="mobile-view">
-            {/* Row 1: Premium Dashboards */}
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Premium Dashboards
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                   style={{ width: '28px', height: '28px' }} alt="" />
-            </h3>
-            <div style={{ marginBottom: '2rem' }}>
-              {row1Widgets.map(widget => (
-                <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                  <div 
-                    onClick={() => toggleWidget(widget.id)}
-                    style={{ 
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '1rem 1.25rem',
-                      border: `0.5px solid ${widget.borderColor}`,
-                      background: widget.background,
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      color: 'white'
-                    }}
-                  >
-                    <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
-                    <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
-                  </div>
-                  {expandedWidgets.has(widget.id) && (
-                    <div className="accordion-content">
-                      <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                        {widget.component}
-                      </LockedWidget>
-                    </div>
-                  )}
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {isSubscribed ? (
+              <>
+                You've got all of our powerful betting tools 
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
+                  color: '#1e293b',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '6px',
+                  fontSize: '1.4rem',
+                  fontWeight: '800',
+                  letterSpacing: '0.05em'
+                }}>UNLOCKED</span>
+              </>
+            ) : (
+              'Elite betting tools are ready to be powered up'
+            )}
+          </h1>
+          <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
+        </div>
+        
+        {/* MOBILE VIEW - Accordion */}
+        <div className="mobile-view">
+          {/* Row 1: Premium Dashboards */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Premium Dashboards
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
+          </h3>
+          <div style={{ marginBottom: '2rem' }}>
+            {row1Widgets.map(widget => (
+              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
+                <div 
+                  onClick={() => toggleWidget(widget.id)}
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                    border: `0.5px solid ${widget.borderColor}`,
+                    background: widget.background,
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
+                >
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
+                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
                 </div>
-              ))}
-            </div>
-
-            {/* Row 2: Premium NFL Tools */}
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Premium NFL tools
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
-                   style={{ width: '28px', height: '28px' }} alt="" />
-            </h3>
-            <div style={{ marginBottom: '2rem' }}>
-              {row2Widgets.map(widget => (
-                <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                  <div 
-                    onClick={() => toggleWidget(widget.id)}
-                    style={{ 
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '1rem 1.25rem',
-                      border: `0.5px solid ${widget.borderColor}`,
-                      background: widget.background,
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      color: 'white'
-                    }}
-                  >
-                    <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
-                    <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
+                {expandedWidgets.has(widget.id) && (
+                  <div className="accordion-content">
+                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                      {widget.component}
+                    </LockedWidget>
                   </div>
-                  {expandedWidgets.has(widget.id) && (
-                    <div className="accordion-content">
-                      <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                        {widget.component}
-                      </LockedWidget>
-                    </div>
-                  )}
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Row 2: Premium NFL Tools */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Premium NFL tools
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
+          </h3>
+          <div style={{ marginBottom: '2rem' }}>
+            {row2Widgets.map(widget => (
+              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
+                <div 
+                  onClick={() => toggleWidget(widget.id)}
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                    border: `0.5px solid ${widget.borderColor}`,
+                    background: widget.background,
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
+                >
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
+                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
                 </div>
-              ))}
+                {expandedWidgets.has(widget.id) && (
+                  <div className="accordion-content">
+                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                      {widget.component}
+                    </LockedWidget>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* DESKTOP VIEW - Horizontal Scroll Rows */}
+        <div className="desktop-view">
+          {/* Row 1: Premium Dashboards */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Premium Dashboards
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
+          </h3>
+          <div style={{ 
+            display: 'flex', 
+            gap: '1.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '1rem',
+            marginBottom: '1.5rem',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+          }}>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PicksWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <StatsWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <NewsWidget />
+              </LockedWidget>
             </div>
           </div>
 
-          {/* DESKTOP VIEW - Horizontal Scroll Rows */}
-          <div className="desktop-view">
-            {/* Row 1: Premium Dashboards */}
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Premium Dashboards
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                   style={{ width: '28px', height: '28px' }} alt="" />
-            </h3>
-            <div style={{ 
-              display: 'flex', 
-              gap: '1.5rem', 
-              overflowX: 'auto', 
-              paddingBottom: '1rem',
-              marginBottom: '1.5rem',
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-            }}>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <PicksWidget />
-                </LockedWidget>
-              </div>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <StatsWidget />
-                </LockedWidget>
-              </div>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <NewsWidget />
-                </LockedWidget>
-              </div>
+          {/* Row 2: Premium NFL Tools */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Premium NFL tools
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
+          </h3>
+          <div style={{ 
+            display: 'flex', 
+            gap: '1.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '1rem',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+          }}>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PropParlayWidget />
+              </LockedWidget>
             </div>
-
-            {/* Row 2: Premium NFL Tools */}
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Premium NFL tools
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
-                   style={{ width: '28px', height: '28px' }} alt="" />
-            </h3>
-            <div style={{ 
-              display: 'flex', 
-              gap: '1.5rem', 
-              overflowX: 'auto', 
-              paddingBottom: '1rem',
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-            }}>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <PropParlayWidget />
-                </LockedWidget>
-              </div>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <FantasyWidget />
-                </LockedWidget>
-              </div>
-              <div style={{ minWidth: '380px' }}>
-                <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                  <TDWidget />
-                </LockedWidget>
-              </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <FantasyWidget />
+              </LockedWidget>
             </div>
-          </div>
-
-          {/* Rest of your existing code */}
-          <div style={{ marginTop: '4rem' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Try our FREE mini betting tools
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
-                   style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              <a href="https://www.thebettinginsider.com/tools/bankroll-builder" style={toolLinkStyle}>
-                <span style={topTagStyle}>TOP</span>
-                Bankroll Builder
-              </a>
-              <a href="https://www.thebettinginsider.com/tools/insider-betting-guide" style={toolLinkStyle}>
-                <span style={favTagStyle}>FAV</span>
-                Betting Guide
-              </a>
-              <a href="https://www.thebettinginsider.com/daily-mlb-game-stats" style={toolLinkStyle}>
-                Batter v Pitcher
-              </a>
-              <a href="https://www.thebettinginsider.com/tools/roi-calculator" style={toolLinkStyle}>
-                ROI Calculator
-              </a>
-              <a href="https://www.thebettinginsider.com/tools/parlay-calculator" style={toolLinkStyle}>
-                Parlay Calculator
-              </a>
-              <a href="https://www.thebettinginsider.com/action-systems" style={toolLinkStyle}>
-                About Systems
-              </a>
-            </div>
-          </div>
-
-          <div style={{ marginTop: '3rem' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              Get Help
-              <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
-                   style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
-              <a href="https://billing.stripe.com/p/login/cN2eYg15W3W77rW288" style={helpLinkStyle}>
-                Manage Subscription
-              </a>
-              <a href="https://www.thebettinginsider.com/insider-faqs" style={helpLinkStyle}>
-                Common Questions
-              </a>
-              <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
-                Contact Us
-              </a>
-              <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
-                About Company
-              </a>
-              <a href="https://www.thebettinginsider.com/policies/terms-of-service" style={helpLinkStyle}>
-                Terms of Service
-              </a>
-              <a href="https://www.thebettinginsider.com/policies/refund-policy" style={helpLinkStyle}>
-                Refund Policy
-              </a>
-              <a href="https://www.thebettinginsider.com/policies/privacy-policy" style={helpLinkStyle}>
-                Privacy
-              </a>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <TDWidget />
+              </LockedWidget>
             </div>
           </div>
         </div>
+
+        {/* Rest of your existing code */}
+        <div style={{ marginTop: '4rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Try our FREE mini betting tools
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
+                 style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <a href="https://www.thebettinginsider.com/tools/bankroll-builder" style={toolLinkStyle}>
+              <span style={topTagStyle}>TOP</span>
+              Bankroll Builder
+            </a>
+            <a href="https://www.thebettinginsider.com/tools/insider-betting-guide" style={toolLinkStyle}>
+              <span style={favTagStyle}>FAV</span>
+              Betting Guide
+            </a>
+            <a href="https://www.thebettinginsider.com/daily-mlb-game-stats" style={toolLinkStyle}>
+              Batter v Pitcher
+            </a>
+            <a href="https://www.thebettinginsider.com/tools/roi-calculator" style={toolLinkStyle}>
+              ROI Calculator
+            </a>
+            <a href="https://www.thebettinginsider.com/tools/parlay-calculator" style={toolLinkStyle}>
+              Parlay Calculator
+            </a>
+            <a href="https://www.thebettinginsider.com/action-systems" style={toolLinkStyle}>
+              About Systems
+            </a>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '3rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Get Help
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
+                 style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+            <a href="https://billing.stripe.com/p/login/cN2eYg15W3W77rW288" style={helpLinkStyle}>
+              Manage Subscription
+            </a>
+            <a href="https://www.thebettinginsider.com/insider-faqs" style={helpLinkStyle}>
+              Common Questions
+            </a>
+            <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
+              Contact Us
+            </a>
+            <a href="https://www.thebettinginsider.com/contact-us" style={helpLinkStyle}>
+              About Company
+            </a>
+            <a href="https://www.thebettinginsider.com/policies/terms-of-service" style={helpLinkStyle}>
+              Terms of Service
+            </a>
+            <a href="https://www.thebettinginsider.com/policies/refund-policy" style={helpLinkStyle}>
+              Refund Policy
+            </a>
+            <a href="https://www.thebettinginsider.com/policies/privacy-policy" style={helpLinkStyle}>
+              Privacy
+            </a>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   )
 }
 
