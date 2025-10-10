@@ -141,7 +141,7 @@ export default function Navbar() {
         }
 
         .logo {
-          height: 70px;
+          height: 85px;
           width: auto;
           cursor: pointer;
         }
@@ -354,6 +354,21 @@ export default function Navbar() {
         .auth-section {
           display: flex;
           align-items: center;
+        }
+
+        .auth-section :global(.cl-userButtonBox) {
+          width: 45px;
+          height: 45px;
+        }
+
+        .auth-section :global(.cl-userButtonTrigger) {
+          width: 45px !important;
+          height: 45px !important;
+        }
+
+        .auth-section :global(.cl-avatarBox) {
+          width: 45px;
+          height: 45px;
         }
 
         .sign-in-button {
@@ -591,6 +606,21 @@ export default function Navbar() {
             transform: translateY(-50%);
           }
 
+          .auth-section :global(.cl-userButtonBox) {
+            width: 38px;
+            height: 38px;
+          }
+
+          .auth-section :global(.cl-userButtonTrigger) {
+            width: 38px !important;
+            height: 38px !important;
+          }
+
+          .auth-section :global(.cl-avatarBox) {
+            width: 38px;
+            height: 38px;
+          }
+
           .desktop-nav {
             display: none !important;
             visibility: hidden;
@@ -612,7 +642,7 @@ export default function Navbar() {
           }
 
           .logo {
-            height: 40px;
+            height: 55px;
           }
         }
       `}</style>
