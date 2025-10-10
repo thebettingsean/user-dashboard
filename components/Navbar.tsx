@@ -106,7 +106,7 @@ export default function Navbar() {
         { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' }
       ]
     }
-
+  ]
   return (
     <>
       <style jsx>{`
