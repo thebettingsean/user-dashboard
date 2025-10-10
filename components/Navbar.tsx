@@ -526,6 +526,9 @@ export default function Navbar() {
           height: 18px;
           object-fit: contain;
           flex-shrink: 0;
+          margin-right: 1rem;
+          position: relative;
+          top: 2px;
         }
 
         @media (min-width: 768px) {
