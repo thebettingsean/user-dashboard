@@ -103,7 +103,8 @@ export default function Navbar() {
         { label: 'Contact Us', href: 'https://www.thebettinginsider.com/contact-us' },
         { label: 'Articles', href: '#' },
         { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' },
-        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' }
+        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' },
+        { label: 'Pricing', href: 'https://www.thebettinginsider.com/pricing' }
       ]
     }
   ]
