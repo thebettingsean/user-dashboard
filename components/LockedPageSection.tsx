@@ -15,7 +15,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '500px' }}>
+    <>
       {/* Show preview content but make it non-interactive and blurred */}
       <div style={{ 
         pointerEvents: 'none', 
@@ -25,11 +25,11 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
       }}>
         {children}
       </div>
-
-      {/* Lock overlay - covers entire section and prevents scrolling */}
+      
+      {/* Lock overlay - FIXED position covers entire viewport */}
       <div 
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -40,11 +40,12 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           justifyContent: 'center',
           gap: '1.5rem',
           cursor: 'pointer',
-          zIndex: 100,
-          background: 'rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
-          padding: '2rem'
+          zIndex: 9999,
+          background: 'rgba(15, 23, 42, 0.95)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          padding: '2rem',
+          overflow: 'hidden'
         }}
         onClick={handleClick}
       >
@@ -94,6 +95,6 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           Sign Up Now
         </button>
       </div>
-    </div>
+    </>
   )
 }
