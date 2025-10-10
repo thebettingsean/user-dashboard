@@ -503,11 +503,11 @@ export default function Navbar() {
         .mobile-free-tool-item {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
-          padding: 1.5rem 1.5rem 1.5rem 3rem;
+          gap: 3rem;
+          padding: 3rem 3rem 3rem 6rem;
           color: rgba(255, 255, 255, 0.8);
           text-decoration: none;
-          font-size: 1.1rem;
+          font-size: 1.5rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
