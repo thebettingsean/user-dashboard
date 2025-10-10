@@ -283,7 +283,7 @@ export default function PropParlayTool() {
                 <img src={TITLE_ICON} alt="Tool" style={styles.titleIconImg} />
               </div>
             </div>
-            <p style={styles.subtitle}>100% Hit Rate Props • 20%+ Above Line This Season</p>
+            <p style={styles.subtitle}>100% Hit Rate Props</p>
           </div>
           <div style={styles.bookSelector}>
             <label style={styles.bookLabel}>Choose your book</label>
