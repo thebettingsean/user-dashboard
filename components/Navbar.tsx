@@ -494,20 +494,22 @@ export default function Navbar() {
           margin: 0;
         }
 
+        /* FIXED: Mobile Free Tools Dropdown - Match Insider HQ styling */
         .mobile-free-tools-list {
-          padding: 0.5rem 0;
+          padding: 0;
           display: flex;
           flex-direction: column;
+          background: rgba(0, 0, 0, 0.3);
         }
 
         .mobile-free-tool-item {
           display: flex;
           align-items: center;
-          gap: 3rem;
-          padding: 3rem 3rem 3rem 6rem;
-          color: rgba(255, 255, 255, 0.8);
+          gap: 0.75rem;
+          padding: 0.75rem 1.5rem 0.75rem 3rem;
+          color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
-          font-size: 1.5rem;
+          font-size: 0.9rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -522,14 +524,10 @@ export default function Navbar() {
         }
 
         .mobile-free-tool-icon {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           object-fit: contain;
           flex-shrink: 0;
-          margin-right: 1rem;
-          margin-left: 1rem;
-          position: relative;
-          top: 2px;
         }
 
         @media (min-width: 768px) {
@@ -788,17 +786,19 @@ export default function Navbar() {
                       openDropdown === item.id ? 'open' : ''
                     }`}
                   >
-                    {freeTools.map((tool, idx) => (
-                      <Link
-                        key={idx}
-                        href={tool.href}
-                        className="mobile-free-tool-item"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <img src={tool.icon} alt={tool.label} className="mobile-free-tool-icon" />
-                        <span>{tool.label}</span>
-                      </Link>
-                    ))}
+                    <div className="mobile-free-tools-list">
+                      {freeTools.map((tool, idx) => (
+                        <Link
+                          key={idx}
+                          href={tool.href}
+                          className="mobile-free-tool-item"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <img src={tool.icon} alt={tool.label} className="mobile-free-tool-icon" />
+                          <span>{tool.label}</span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : item.dropdown ? (
