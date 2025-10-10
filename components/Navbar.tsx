@@ -107,6 +107,7 @@ export default function Navbar() {
       ]
     }
   ]
+
   return (
     <>
       <style jsx>{`
@@ -433,6 +434,11 @@ export default function Navbar() {
           text-decoration: none;
           font-size: 0.9rem;
           transition: all 0.2s;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-dropdown-item:last-child {
+          border-bottom: none;
         }
 
         .mobile-dropdown-item:hover {
@@ -450,7 +456,7 @@ export default function Navbar() {
         .mobile-premium-card {
           background: rgba(40, 40, 40, 0.95);
           border: 1.5px solid rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
+          border-radius: 8px;
           overflow: hidden;
           text-decoration: none;
           display: flex;
@@ -461,6 +467,7 @@ export default function Navbar() {
           width: 100%;
           height: 60px;
           overflow: hidden;
+          border-radius: 8px 8px 0 0;
         }
 
         .mobile-premium-card-icon {
@@ -488,7 +495,7 @@ export default function Navbar() {
         }
 
         .mobile-free-tools-list {
-          padding: 0.5rem 1rem;
+          padding: 0.5rem 0;
           display: flex;
           flex-direction: column;
         }
@@ -503,6 +510,10 @@ export default function Navbar() {
           font-size: 0.9rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-free-tool-item:last-child {
+          border-bottom: none;
         }
 
         .mobile-free-tool-item:hover {
@@ -695,11 +706,7 @@ export default function Navbar() {
                 )
               }
 
-              return (
-                <Link key={item.id} href={item.href} className="nav-item">
-                  {item.label}
-                </Link>
-              )
+              return null
             })}
           </div>
 
@@ -826,15 +833,7 @@ export default function Navbar() {
                     ))}
                   </div>
                 </>
-              ) : (
-                <Link
-                  href={item.href}
-                  className="mobile-nav-link"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              )}
+              ) : null}
             </div>
           ))}
         </div>
