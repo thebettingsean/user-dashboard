@@ -9,30 +9,90 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
+  const premiumFeatures = [
+    {
+      label: 'Analyst Picks',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e211db4d96a6f3c78_1.svg',
+      description: 'Expert picks backed by data'
+    },
+    {
+      label: 'Referee Trends',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e3d1f4d0174905c00_6.svg',
+      description: 'Historical referee data'
+    },
+    {
+      label: 'Matchup Data',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9406088227a3da1f24af7_2.svg',
+      description: 'Detailed team data'
+    },
+    {
+      label: 'Public Betting',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405eadd52d3bb0504f91_3.svg',
+      description: 'See where the money is going'
+    },
+    {
+      label: 'Prop Data',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e0e2b65da9f879088_5.svg',
+      description: 'Player prop insights and angles'
+    },
+    {
+      label: 'Fantasy Football',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e9aedfdf2c023d1fa_4.svg',
+      description: 'Start/Sit, Waiver, Trade tools'
+    }
+  ]
+
+  const freeTools = [
+    {
+      label: 'Perfect Parlays',
+      href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e3ef8673f9a7c75b24bf2f_PPP%20BRANDING!-3.svg'
+    },
+    {
+      label: 'Top TD Leaders',
+      href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg'
+    },
+    {
+      label: 'Bankroll Builder',
+      href: 'https://www.thebettinginsider.com/tools/bankroll-builder',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
+    },
+    {
+      label: 'ROI Calculator',
+      href: 'https://www.thebettinginsider.com/tools/roi-calculator',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e03b768ecad17fb0140a6c_1.svg'
+    },
+    {
+      label: 'Betting Guide',
+      href: 'https://www.thebettinginsider.com/tools/insider-betting-guide',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg'
+    },
+    {
+      label: 'Top Rated Books',
+      href: '#',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0313f97df902b5312a3f6_NEW%20BOOK%20LOGOS%20SVG-2.svg'
+    }
+  ]
+
   const navItems = [
     {
       id: 'premium',
       label: 'Premium Features',
       href: '#',
-      dropdown: [
-        { label: 'Analyst Picks', href: '#' },
-        { label: 'Matchup Data', href: '#' },
-        { label: 'Public Betting', href: '#' },
-        { label: 'Prop Data', href: '#' },
-        { label: 'Fantasy Football', href: '#', tagline: 'All features included' }
-      ]
+      type: 'premium'
     },
     {
       id: 'free-tools',
       label: 'Free Tools',
       href: '#',
-      dropdown: [
-        { label: 'Perfect Parlays', href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool' },
-        { label: 'Top TD Leaders', href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool' },
-        { label: 'Bankroll Builder', href: 'https://www.thebettinginsider.com/tools/bankroll-builder' },
-        { label: 'ROI Calculator', href: 'https://www.thebettinginsider.com/tools/roi-calculator' },
-        { label: 'Betting Guide', href: 'https://www.thebettinginsider.com/tools/insider-betting-guide' }
-      ]
+      type: 'free-tools'
     },
     {
       id: 'blog',
@@ -170,13 +230,118 @@ export default function Navbar() {
           transform: translateY(0);
         }
 
-        .dropdown-tagline {
-          font-size: 0.7rem;
+        .premium-dropdown {
+          min-width: 550px;
+          padding: 1.5rem;
+        }
+
+        .premium-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+
+        .premium-card {
+          background: rgba(40, 40, 40, 0.95);
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border-radius: 12px;
+          padding: 0;
+          text-align: center;
+          transition: all 0.3s;
+          cursor: pointer;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .premium-card:hover {
+          transform: translateY(-3px);
+          border-color: rgba(255, 255, 255, 0.3);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .premium-card-icon-wrapper {
+          width: 100%;
+          height: 80px;
+          overflow: hidden;
+          border-radius: 12px 12px 0 0;
+        }
+
+        .premium-card-icon {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .premium-card-text {
+          padding: 0.6rem 0.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          background: rgba(30, 30, 30, 0.8);
+        }
+
+        .premium-card-label {
+          color: white;
+          font-size: 0.8rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.5);
-          padding: 0.25rem 1.25rem 0.5rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+          margin: 0;
+          text-align: left;
+        }
+
+        .premium-card-description {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 0.7rem;
+          margin: 0;
+          text-align: left;
+        }
+
+        .free-tools-dropdown {
+          min-width: 520px;
+          padding: 1.25rem;
+        }
+
+        .free-tools-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+
+        .free-tool-item {
+          display: flex;
+          align-items: center;
+          gap: 2.5rem;
+          padding: 0.85rem 1.15rem;
+          color: white;
+          text-decoration: none;
+          transition: all 0.2s;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+        }
+
+        .free-tool-item:hover {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .free-tool-icon {
+          width: 20px;
+          height: 20px;
+          object-fit: contain;
+          flex-shrink: 0;
+          margin-right: 1rem;
+          position: relative;
+          top: 4px;  /* ADD THIS */
+        }
+
+        .free-tool-label {
+          font-size: 0.875rem;
+          font-weight: 500;
+          line-height: 1.2;
         }
 
         .dropdown-item {
@@ -255,14 +420,6 @@ export default function Navbar() {
         .mobile-nav-link:hover {
           background: rgba(255, 255, 255, 0.03);
           color: white;
-        }
-
-        .mobile-tagline {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.6);
-          padding: 0.25rem 1.5rem 0.75rem 3rem;
-          text-transform: uppercase;
         }
 
         .mobile-dropdown {
@@ -390,34 +547,89 @@ export default function Navbar() {
           </div>
 
           <div className="desktop-nav">
-            {navItems.map(item =>
-              item.dropdown ? (
-                <div key={item.id} className="nav-item has-dropdown">
-                  <span>{item.label}</span>
-                  <div className="dropdown">
-                    {item.dropdown.map((dropItem, idx) => (
-                      <div key={idx}>
+            {navItems.map(item => {
+              if (item.type === 'premium') {
+                return (
+                  <div key={item.id} className="nav-item has-dropdown">
+                    <span>{item.label}</span>
+                    <div className="dropdown premium-dropdown">
+                      <div className="premium-grid">
+                        {premiumFeatures.map((feature, idx) => (
+                          <Link
+                            key={idx}
+                            href={feature.href}
+                            className="premium-card"
+                          >
+                            <div className="premium-card-icon-wrapper">
+                              <img
+                                src={feature.icon}
+                                alt={feature.label}
+                                className="premium-card-icon"
+                              />
+                            </div>
+                            <div className="premium-card-text">
+                              <h3 className="premium-card-label">{feature.label}</h3>
+                              <p className="premium-card-description">{feature.description}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+
+              if (item.type === 'free-tools') {
+                return (
+                  <div key={item.id} className="nav-item has-dropdown">
+                    <span>{item.label}</span>
+                    <div className="dropdown free-tools-dropdown">
+                      <div className="free-tools-grid">
+                        {freeTools.map((tool, idx) => (
+                          <Link
+                            key={idx}
+                            href={tool.href}
+                            className="free-tool-item"
+                          >
+                            <img
+                              src={tool.icon}
+                              alt={tool.label}
+                              className="free-tool-icon"
+                            />
+                            <span className="free-tool-label">{tool.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+
+              if (item.dropdown) {
+                return (
+                  <div key={item.id} className="nav-item has-dropdown">
+                    <span>{item.label}</span>
+                    <div className="dropdown">
+                      {item.dropdown.map((dropItem, idx) => (
                         <Link
+                          key={idx}
                           href={dropItem.href}
                           className="dropdown-item"
                         >
                           {dropItem.label}
                         </Link>
-                        {dropItem.tagline && (
-                          <div className="dropdown-tagline">
-                            {dropItem.tagline}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
+                )
+              }
+
+              return (
                 <Link key={item.id} href={item.href} className="nav-item">
                   {item.label}
                 </Link>
               )
-            )}
+            })}
           </div>
 
           <div className="auth-section">
@@ -434,7 +646,67 @@ export default function Navbar() {
         <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
           {navItems.map(item => (
             <div key={item.id} className="mobile-nav-item">
-              {item.dropdown ? (
+              {item.type === 'premium' ? (
+                <>
+                  <div
+                    className="mobile-nav-link"
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === item.id ? null : item.id)
+                    }
+                  >
+                    <span>{item.label}</span>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
+                      {openDropdown === item.id ? '▲' : '▼'}
+                    </span>
+                  </div>
+                  <div
+                    className={`mobile-dropdown ${
+                      openDropdown === item.id ? 'open' : ''
+                    }`}
+                  >
+                    {premiumFeatures.map((feature, idx) => (
+                      <Link
+                        key={idx}
+                        href={feature.href}
+                        className="mobile-dropdown-item"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {feature.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : item.type === 'free-tools' ? (
+                <>
+                  <div
+                    className="mobile-nav-link"
+                    onClick={() =>
+                      setOpenDropdown(openDropdown === item.id ? null : item.id)
+                    }
+                  >
+                    <span>{item.label}</span>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
+                      {openDropdown === item.id ? '▲' : '▼'}
+                    </span>
+                  </div>
+                  <div
+                    className={`mobile-dropdown ${
+                      openDropdown === item.id ? 'open' : ''
+                    }`}
+                  >
+                    {freeTools.map((tool, idx) => (
+                      <Link
+                        key={idx}
+                        href={tool.href}
+                        className="mobile-dropdown-item"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {tool.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              ) : item.dropdown ? (
                 <>
                   <div
                     className="mobile-nav-link"
@@ -453,20 +725,14 @@ export default function Navbar() {
                     }`}
                   >
                     {item.dropdown.map((dropItem, idx) => (
-                      <div key={idx}>
-                        <Link
-                          href={dropItem.href}
-                          className="mobile-dropdown-item"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {dropItem.label}
-                        </Link>
-                        {dropItem.tagline && (
-                          <div className="mobile-tagline">
-                            {dropItem.tagline}
-                          </div>
-                        )}
-                      </div>
+                      <Link
+                        key={idx}
+                        href={dropItem.href}
+                        className="mobile-dropdown-item"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {dropItem.label}
+                      </Link>
                     ))}
                   </div>
                 </>
