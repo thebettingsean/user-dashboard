@@ -16,17 +16,17 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
 
   return (
     <div style={{ position: 'relative', minHeight: '500px' }}>
-      {/* Show preview content but make it non-interactive */}
+      {/* Show preview content but make it non-interactive and blurred */}
       <div style={{ 
         pointerEvents: 'none', 
         userSelect: 'none',
-        filter: 'blur(4px)',
-        opacity: 0.5
+        filter: 'blur(8px)',
+        opacity: 0.3
       }}>
         {children}
       </div>
 
-      {/* Lock overlay */}
+      {/* Lock overlay - covers entire section and prevents scrolling */}
       <div 
         style={{
           position: 'absolute',
@@ -41,39 +41,57 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           gap: '1.5rem',
           cursor: 'pointer',
           zIndex: 100,
-          background: 'rgba(0, 0, 0, 0.2)'
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+          padding: '2rem'
         }}
         onClick={handleClick}
       >
         <img 
           src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg"
           alt="Locked"
-          style={{ width: '64px', height: '64px', opacity: 0.9 }}
+          style={{ width: '80px', height: '80px', opacity: 1 }}
         />
-        <p style={{ 
-          color: 'white', 
-          fontSize: '1.25rem', 
-          fontWeight: '700',
+        <div style={{ 
           textAlign: 'center',
-          margin: 0,
-          maxWidth: '400px',
-          padding: '0 1rem'
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem'
         }}>
-          You must be an Insider to use this
-        </p>
+          <p style={{ 
+            color: 'white', 
+            fontSize: '1.5rem', 
+            fontWeight: '700',
+            margin: 0,
+            lineHeight: 1.2
+          }}>
+            This tool is for Insiders only
+          </p>
+          <p style={{ 
+            color: 'rgba(255, 255, 255, 0.8)', 
+            fontSize: '1rem', 
+            fontWeight: '500',
+            margin: 0
+          }}>
+            Please sign-up to access
+          </p>
+        </div>
         <button 
           style={{
             background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%)',
             border: '2px solid rgba(59, 130, 246, 0.8)',
             color: 'white',
-            padding: '0.85rem 2rem',
+            padding: '1rem 2.5rem',
             borderRadius: '10px',
-            fontSize: '1rem',
+            fontSize: '1.05rem',
             fontWeight: '700',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginTop: '0.5rem'
           }}
         >
-          Click here to sign up
+          Sign Up Now
         </button>
       </div>
     </div>
