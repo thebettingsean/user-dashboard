@@ -10,8 +10,13 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
     return <>{children}</>
   }
 
-  const handleClick = () => {
+  const handleSignUpClick = () => {
     window.location.href = 'https://www.thebettinginsider.com/pricing'
+  }
+
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.history.back()
   }
 
   return (
@@ -47,8 +52,40 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           padding: '2rem',
           overflow: 'hidden'
         }}
-        onClick={handleClick}
+        onClick={handleSignUpClick}
       >
+        {/* Back button in top left */}
+        <button
+          onClick={handleBackClick}
+          style={{
+            position: 'absolute',
+            top: '1.5rem',
+            left: '1.5rem',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            padding: '0.75rem 1.25rem',
+            borderRadius: '8px',
+            fontSize: '0.95rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            zIndex: 10000
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          <span style={{ fontSize: '1.2rem' }}>←</span>
+          Back
+        </button>
+
         <img 
           src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg"
           alt="Locked"
