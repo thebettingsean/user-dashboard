@@ -315,129 +315,131 @@ export default function PropParlayTool() {
           </button>
         </div>
 
-        {view === 'props' ? (
-          <>
-            <div style={styles.filterRow}>
-              <button 
-                style={styles.filterButton}
-                onClick={() => setShowPropsFilter(!showPropsFilter)}
-              >
-                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
-                <span>{getPropsFilterText()}</span>
-              </button>
-            </div>
-
-            {showPropsFilter && (
-              <div style={styles.filterDropdown}>
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Games</div>
-                  <select 
-                    value={filters.game} 
-                    onChange={(e) => setFilters({...filters, game: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Games</option>
-                    {games.map((g: any, i: number) => (
-                      <option key={i} value={g.matchup}>{g.matchup}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Odds Range</div>
-                  <select 
-                    value={filters.minOdds} 
-                    onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="-600">Best Odds (All)</option>
-                    <option value="-250">-150 to -250</option>
-                    <option value="-400">-150 to -400</option>
-                    <option value="-600">-150 to -600</option>
-                  </select>
-                </div>
+        <LockedPageSection isLocked={view === 'parlays' && !isSubscribed}>
+          {view === 'props' ? (
+            <>
+              <div style={styles.filterRow}>
+                <button 
+                  style={styles.filterButton}
+                  onClick={() => setShowPropsFilter(!showPropsFilter)}
+                >
+                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <span>{getPropsFilterText()}</span>
+                </button>
               </div>
-            )}
 
-            <PropsTable props={filteredProps} selectedBook={filters.book} />
-          </>
-        ) : (
-          <LockedPageSection isLocked={!isSubscribed}>
-            <div style={styles.filterRow}>
-              <button 
-                style={styles.filterButton}
-                onClick={() => setShowParlaysFilter(!showParlaysFilter)}
-              >
-                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
-                <span>{getParlaysFilterText()}</span>
-              </button>
-            </div>
+              {showPropsFilter && (
+                <div style={styles.filterDropdown}>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Games</div>
+                    <select 
+                      value={filters.game} 
+                      onChange={(e) => setFilters({...filters, game: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Games</option>
+                      {games.map((g: any, i: number) => (
+                        <option key={i} value={g.matchup}>{g.matchup}</option>
+                      ))}
+                    </select>
+                  </div>
 
-            {showParlaysFilter && (
-              <div style={styles.filterDropdown}>
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Games</div>
-                  <select 
-                    value={filters.game} 
-                    onChange={(e) => setFilters({...filters, game: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Games</option>
-                    {games.map((g: any, i: number) => (
-                      <option key={i} value={g.matchup}>{g.matchup}</option>
-                    ))}
-                  </select>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Odds Range</div>
+                    <select 
+                      value={filters.minOdds} 
+                      onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="-600">Best Odds (All)</option>
+                      <option value="-250">-150 to -250</option>
+                      <option value="-400">-150 to -400</option>
+                      <option value="-600">-150 to -600</option>
+                    </select>
+                  </div>
                 </div>
+              )}
 
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Parlay Type</div>
-                  <select 
-                    value={filters.parlayType} 
-                    onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Parlay Types</option>
-                    <option value="sgp">Same Game Only</option>
-                    <option value="standard">Multi-Game Only</option>
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Number of Legs</div>
-                  <select 
-                    value={filters.legs} 
-                    onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="2">2-Leg Parlay</option>
-                    <option value="3">3-Leg Parlay</option>
-                    <option value="4">4-Leg Parlay</option>
-                    <option value="5">5-Leg Parlay</option>
-                    <option value="6">6-Leg Parlay</option>
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Parlay Odds</div>
-                  <select 
-                    value={filters.parlayMinOdds} 
-                    onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="highest">Highest Odds</option>
-                    <option value="-150">-150 or Better</option>
-                    <option value="100">+100 or Better</option>
-                    <option value="250">+250 or Better</option>
-                    <option value="350">+350 or Better</option>
-                    <option value="500">+500 or Better</option>
-                  </select>
-                </div>
+              <PropsTable props={filteredProps} selectedBook={filters.book} />
+            </>
+          ) : (
+            <>
+              <div style={styles.filterRow}>
+                <button 
+                  style={styles.filterButton}
+                  onClick={() => setShowParlaysFilter(!showParlaysFilter)}
+                >
+                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <span>{getParlaysFilterText()}</span>
+                </button>
               </div>
-            )}
 
-            <ParlaysGrid combos={parlayCombo} selectedBook={filters.book} />
-          </LockedPageSection>
-        )}
+              {showParlaysFilter && (
+                <div style={styles.filterDropdown}>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Games</div>
+                    <select 
+                      value={filters.game} 
+                      onChange={(e) => setFilters({...filters, game: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Games</option>
+                      {games.map((g: any, i: number) => (
+                        <option key={i} value={g.matchup}>{g.matchup}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Parlay Type</div>
+                    <select 
+                      value={filters.parlayType} 
+                      onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Parlay Types</option>
+                      <option value="sgp">Same Game Only</option>
+                      <option value="standard">Multi-Game Only</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Number of Legs</div>
+                    <select 
+                      value={filters.legs} 
+                      onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="2">2-Leg Parlay</option>
+                      <option value="3">3-Leg Parlay</option>
+                      <option value="4">4-Leg Parlay</option>
+                      <option value="5">5-Leg Parlay</option>
+                      <option value="6">6-Leg Parlay</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Parlay Odds</div>
+                    <select 
+                      value={filters.parlayMinOdds} 
+                      onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="highest">Highest Odds</option>
+                      <option value="-150">-150 or Better</option>
+                      <option value="100">+100 or Better</option>
+                      <option value="250">+250 or Better</option>
+                      <option value="350">+350 or Better</option>
+                      <option value="500">+500 or Better</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <ParlaysGrid combos={parlayCombo} selectedBook={filters.book} />
+            </>
+          )}
+        </LockedPageSection>
       </div>
     </div>
   )
