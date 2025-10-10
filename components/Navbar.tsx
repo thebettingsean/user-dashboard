@@ -95,26 +95,17 @@ export default function Navbar() {
       type: 'free-tools'
     },
     {
-      id: 'blog',
-      label: 'Blog',
-      href: '#'
-    },
-    {
-      id: 'about',
-      label: 'About',
-      href: '#',
-      dropdown: [
-        { label: 'Company', href: 'https://www.thebettinginsider.com/insider-company' },
-        { label: 'Contact', href: 'https://www.thebettinginsider.com/contact-us' },
-        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' }
-      ]
-    },
-    {
       id: 'insider-hq',
       label: 'Insider HQ',
-      href: 'https://dashboard.thebettinginsider.com'
+      href: '#',
+      dropdown: [
+        { label: 'Your Dashboard', href: 'https://dashboard.thebettinginsider.com' },
+        { label: 'Contact Us', href: 'https://www.thebettinginsider.com/contact-us' },
+        { label: 'Articles', href: '#' },
+        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' },
+        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' }
+      ]
     }
-  ]
 
   return (
     <>
@@ -459,7 +450,7 @@ export default function Navbar() {
         .mobile-premium-card {
           background: rgba(40, 40, 40, 0.95);
           border: 1.5px solid rgba(255, 255, 255, 0.15);
-          border-radius: 8px;
+          border-radius: 12px;
           overflow: hidden;
           text-decoration: none;
           display: flex;
@@ -498,6 +489,8 @@ export default function Navbar() {
 
         .mobile-free-tools-list {
           padding: 0.5rem 1rem;
+          display: flex;
+          flex-direction: column;
         }
 
         .mobile-free-tool-item {
@@ -509,6 +502,7 @@ export default function Navbar() {
           text-decoration: none;
           font-size: 0.9rem;
           transition: all 0.2s;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .mobile-free-tool-item:hover {
