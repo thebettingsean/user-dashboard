@@ -11,76 +11,50 @@ export default function Navbar() {
 
   const navItems = [
     {
-      id: 'dashboard',
-      label: 'Your Dashboard',
-      href: '/',
-      showOnlyWhenSignedIn: true
-    },
-    {
-      id: 'picks',
-      label: "Today's Picks",
+      id: 'premium',
+      label: 'Premium Features',
       href: '#',
       dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Dashboard', href: '#' }
+        { label: 'Analyst Picks', href: '#' },
+        { label: 'Matchup Data', href: '#' },
+        { label: 'Public Betting', href: '#' },
+        { label: 'Prop Data', href: '#' },
+        { label: 'Fantasy Football', href: '#', tagline: 'All features included' }
       ]
     },
     {
-      id: 'trends',
-      label: 'Top Betting Trends',
+      id: 'free-tools',
+      label: 'Free Tools',
       href: '#',
       dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Dashboard', href: '#' }
+        { label: 'Perfect Parlays', href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool' },
+        { label: 'Top TD Leaders', href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool' },
+        { label: 'Bankroll Builder', href: 'https://www.thebettinginsider.com/tools/bankroll-builder' },
+        { label: 'ROI Calculator', href: 'https://www.thebettinginsider.com/tools/roi-calculator' },
+        { label: 'Betting Guide', href: 'https://www.thebettinginsider.com/tools/insider-betting-guide' }
       ]
     },
     {
-      id: 'tools',
-      label: 'Premium Tools',
+      id: 'blog',
+      label: 'Blog',
+      href: '#'
+    },
+    {
+      id: 'about',
+      label: 'About',
       href: '#',
       dropdown: [
-        { label: 'All', tagline: 'Live', href: 'https://www.thebettinginsider.com/insider-tools' },
-        { label: 'Perfect Prop Parlays', href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool' },
-        { label: 'Anytime TD Edge', href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool' },
-        { label: 'Batter v Pitcher', href: 'https://www.thebettinginsider.com/daily-mlb-game-stats' },
-        { label: 'Bankroll Builder', tagline: 'Learn', href: 'https://www.thebettinginsider.com/tools/bankroll-builder' },
-        { label: 'Growth Plan', href: 'https://www.thebettinginsider.com/tools/roi-calculator' },
-        { label: 'Betting Guide', href: 'https://www.thebettinginsider.com/tools/insider-betting-guide' },
-        { label: 'Parlay Analyzer', href: 'https://www.thebettinginsider.com/tools/parlay-calculator' },
-        { label: 'About Systems', href: 'https://www.thebettinginsider.com/action-systems' }
+        { label: 'Company', href: 'https://www.thebettinginsider.com/insider-company' },
+        { label: 'Contact', href: 'https://www.thebettinginsider.com/contact-us' },
+        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' }
       ]
     },
     {
-      id: 'fantasy',
-      label: 'Fantasy Football',
-      href: '#',
-      dropdown: [
-        { label: 'About', href: '#' },
-        { label: 'Pre-Draft', href: '#' },
-        { label: 'Start / Sit', href: '#' }
-      ]
-    },
-    {
-      id: 'company',
-      label: 'Company',
-      href: '#',
-      dropdown: [
-        { label: 'Contact', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'About', href: '#' },
-        { label: "FAQ's", href: '#' }
-      ]
+      id: 'insider-hq',
+      label: 'Insider HQ',
+      href: 'https://dashboard.thebettinginsider.com'
     }
   ]
-
-  const filteredNavItems = !isLoaded
-    ? navItems.filter(item => !item.showOnlyWhenSignedIn)
-    : navItems.filter(item => {
-        if (item.showOnlyWhenSignedIn) {
-          return isSignedIn
-        }
-        return true
-      })
 
   return (
     <>
@@ -116,6 +90,7 @@ export default function Navbar() {
         .logo {
           height: 70px;
           width: auto;
+          cursor: pointer;
         }
 
         .hamburger {
@@ -199,7 +174,7 @@ export default function Navbar() {
           font-size: 0.7rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.5);
-          padding: 0.5rem 1.25rem 0.25rem;
+          padding: 0.25rem 1.25rem 0.5rem;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -286,7 +261,7 @@ export default function Navbar() {
           font-size: 0.75rem;
           font-weight: 600;
           color: rgba(255, 255, 255, 0.6);
-          padding: 0.75rem 1.5rem 0.25rem;
+          padding: 0.25rem 1.5rem 0.75rem 3rem;
           text-transform: uppercase;
         }
 
@@ -405,7 +380,7 @@ export default function Navbar() {
           </button>
 
           <div className="logo-container">
-            <Link href="/">
+            <Link href={isSignedIn ? 'https://dashboard.thebettinginsider.com' : 'https://www.thebettinginsider.com'}>
               <img
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
                 alt="The Betting Insider"
@@ -415,26 +390,25 @@ export default function Navbar() {
           </div>
 
           <div className="desktop-nav">
-            {filteredNavItems.map(item =>
+            {navItems.map(item =>
               item.dropdown ? (
                 <div key={item.id} className="nav-item has-dropdown">
                   <span>{item.label}</span>
                   <div className="dropdown">
                     {item.dropdown.map((dropItem, idx) => (
-                      <>
-                        {dropItem.tagline && (
-                          <div key={`tagline-${idx}`} className="dropdown-tagline">
-                            {dropItem.tagline}
-                          </div>
-                        )}
+                      <div key={idx}>
                         <Link
-                          key={idx}
                           href={dropItem.href}
                           className="dropdown-item"
                         >
                           {dropItem.label}
                         </Link>
-                      </>
+                        {dropItem.tagline && (
+                          <div className="dropdown-tagline">
+                            {dropItem.tagline}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -448,7 +422,7 @@ export default function Navbar() {
 
           <div className="auth-section">
             {isSignedIn ? (
-              <UserButton afterSignOutUrl="/" />
+              <UserButton afterSignOutUrl="https://www.thebettinginsider.com" />
             ) : (
               <SignInButton mode="modal">
                 <button className="sign-in-button">Sign In / Up</button>
@@ -458,7 +432,7 @@ export default function Navbar() {
         </div>
 
         <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-          {filteredNavItems.map(item => (
+          {navItems.map(item => (
             <div key={item.id} className="mobile-nav-item">
               {item.dropdown ? (
                 <>
@@ -479,24 +453,20 @@ export default function Navbar() {
                     }`}
                   >
                     {item.dropdown.map((dropItem, idx) => (
-                      <>
-                        {dropItem.tagline && (
-                          <div
-                            key={`mobile-tagline-${idx}`}
-                            className="mobile-tagline"
-                          >
-                            {dropItem.tagline}
-                          </div>
-                        )}
+                      <div key={idx}>
                         <Link
-                          key={idx}
                           href={dropItem.href}
                           className="mobile-dropdown-item"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {dropItem.label}
                         </Link>
-                      </>
+                        {dropItem.tagline && (
+                          <div className="mobile-tagline">
+                            {dropItem.tagline}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </>
