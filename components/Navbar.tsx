@@ -753,7 +753,20 @@ export default function Navbar() {
 
           <div className="auth-section">
             {isSignedIn ? (
-              <UserButton afterSignOutUrl="https://www.thebettinginsider.com" />
+              <UserButton afterSignOutUrl="https://www.thebettinginsider.com">
+                <UserButton.MenuItems>
+                  <UserButton.Link
+                    label="Manage Subscription"
+                    labelIcon={
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                      </svg>
+                    }
+                    href="https://billing.stripe.com/p/login/cN2eYg15W3W77rW288"
+                  />
+                </UserButton.MenuItems>
+              </UserButton>
             ) : (
               <SignInButton mode="modal">
                 <button className="sign-in-button">Sign In / Up</button>
