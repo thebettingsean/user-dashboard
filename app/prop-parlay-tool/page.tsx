@@ -362,7 +362,7 @@ export default function PropParlayTool() {
             <PropsTable props={filteredProps} selectedBook={filters.book} />
           </>
         ) : (
-          <LockedPageSection>
+          <LockedPageSection isLocked={!isSubscribed}>
             <div style={styles.filterRow}>
               <button 
                 style={styles.filterButton}
