@@ -504,7 +504,7 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           gap: 1.5rem;
-          padding: 0.75rem 1rem 0.75rem 2rem;
+          padding: 0.1.5rem 1.5rem 1.5rem 2rem;
           color: rgba(255, 255, 255, 0.8);
           text-decoration: none;
           font-size: 0.9rem;
@@ -527,6 +527,7 @@ export default function Navbar() {
           object-fit: contain;
           flex-shrink: 0;
           margin-right: 1rem;
+          margin-left: 1rem;
           position: relative;
           top: 2px;
         }
