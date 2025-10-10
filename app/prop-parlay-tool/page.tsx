@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useSubscription } from '../lib/hooks/useSubscription'
+import { useSubscription } from '../../lib/hooks/useSubscription'
 
 const BOOK_LOGOS: Record<string, string> = {
   'draftkings': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a8e5ff0c6651eee22_1.svg',
