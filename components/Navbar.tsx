@@ -335,7 +335,7 @@ export default function Navbar() {
           flex-shrink: 0;
           margin-right: 1rem;
           position: relative;
-          top: 4px;  /* ADD THIS */
+          top: 4px;
         }
 
         .free-tool-label {
@@ -415,6 +415,7 @@ export default function Navbar() {
           text-decoration: none;
           font-weight: 500;
           cursor: pointer;
+          transition: all 0.2s;
         }
 
         .mobile-nav-link:hover {
@@ -430,7 +431,8 @@ export default function Navbar() {
         }
 
         .mobile-dropdown.open {
-          max-height: 500px;
+          max-height: 600px;
+          overflow-y: auto;
         }
 
         .mobile-dropdown-item {
@@ -439,11 +441,86 @@ export default function Navbar() {
           color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
           font-size: 0.9rem;
+          transition: all 0.2s;
         }
 
         .mobile-dropdown-item:hover {
           background: rgba(255, 255, 255, 0.05);
           color: white;
+        }
+
+        .mobile-premium-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+          padding: 1rem;
+        }
+
+        .mobile-premium-card {
+          background: rgba(40, 40, 40, 0.95);
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          border-radius: 8px;
+          overflow: hidden;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .mobile-premium-card-icon-wrapper {
+          width: 100%;
+          height: 60px;
+          overflow: hidden;
+        }
+
+        .mobile-premium-card-icon {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .mobile-premium-card-text {
+          padding: 0.5rem 0.6rem;
+          background: rgba(30, 30, 30, 0.8);
+        }
+
+        .mobile-premium-card-label {
+          color: white;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin: 0 0 0.25rem 0;
+        }
+
+        .mobile-premium-card-description {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 0.65rem;
+          margin: 0;
+        }
+
+        .mobile-free-tools-list {
+          padding: 0.5rem 1rem;
+        }
+
+        .mobile-free-tool-item {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          padding: 0.75rem 1rem 0.75rem 2rem;
+          color: rgba(255, 255, 255, 0.8);
+          text-decoration: none;
+          font-size: 0.9rem;
+          transition: all 0.2s;
+        }
+
+        .mobile-free-tool-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+        }
+
+        .mobile-free-tool-icon {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
@@ -664,16 +741,28 @@ export default function Navbar() {
                       openDropdown === item.id ? 'open' : ''
                     }`}
                   >
-                    {premiumFeatures.map((feature, idx) => (
-                      <Link
-                        key={idx}
-                        href={feature.href}
-                        className="mobile-dropdown-item"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {feature.label}
-                      </Link>
-                    ))}
+                    <div className="mobile-premium-grid">
+                      {premiumFeatures.map((feature, idx) => (
+                        <Link
+                          key={idx}
+                          href={feature.href}
+                          className="mobile-premium-card"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <div className="mobile-premium-card-icon-wrapper">
+                            <img
+                              src={feature.icon}
+                              alt={feature.label}
+                              className="mobile-premium-card-icon"
+                            />
+                          </div>
+                          <div className="mobile-premium-card-text">
+                            <h4 className="mobile-premium-card-label">{feature.label}</h4>
+                            <p className="mobile-premium-card-description">{feature.description}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : item.type === 'free-tools' ? (
@@ -694,16 +783,23 @@ export default function Navbar() {
                       openDropdown === item.id ? 'open' : ''
                     }`}
                   >
-                    {freeTools.map((tool, idx) => (
-                      <Link
-                        key={idx}
-                        href={tool.href}
-                        className="mobile-dropdown-item"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {tool.label}
-                      </Link>
-                    ))}
+                    <div className="mobile-free-tools-list">
+                      {freeTools.map((tool, idx) => (
+                        <Link
+                          key={idx}
+                          href={tool.href}
+                          className="mobile-free-tool-item"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <img
+                            src={tool.icon}
+                            alt={tool.label}
+                            className="mobile-free-tool-icon"
+                          />
+                          <span>{tool.label}</span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </>
               ) : item.dropdown ? (
