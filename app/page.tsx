@@ -122,8 +122,8 @@ export default function Home() {
             {welcomeMessage}
           </p>
           <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
-            Chat with us in the <a 
-              href="https://community.thebettinginsider.com" 
+            Have a question? <a 
+              href="https://www.thebettinginsider.com/contact-us" 
               target="_blank"
               rel="noopener noreferrer"
               style={{ 
@@ -131,29 +131,11 @@ export default function Home() {
                 textDecoration: 'underline',
                 textUnderlineOffset: '2px'
               }}
-            >Insider Community</a>
+            >Contact Us</a>
           </p>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
           
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {isSubscribed ? (
-              <>
-                You've got all of our powerful betting tools 
-                <span style={{ 
-                  background: 'linear-gradient(135deg, #C0C0C0 0%, #E5E5E5 50%, #B8B8B8 100%)',
-                  color: '#1e293b',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '6px',
-                  fontSize: '1.4rem',
-                  fontWeight: '800',
-                  letterSpacing: '0.05em'
-                }}>UNLOCKED</span>
-              </>
-            ) : (
-              'Elite betting tools are ready to be powered up'
-            )}
-          </h1>
-          <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '3rem' }} />
+          
         </div>
         
         {/* MOBILE VIEW - Accordion */}
