@@ -16,7 +16,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
 
   const handleBackClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    window.history.back()
+    window.location.href = 'https://dashboard.thebettinginsider.com/prop-parlay-tool'
   }
 
   return (
