@@ -788,23 +788,17 @@ export default function Navbar() {
                       openDropdown === item.id ? 'open' : ''
                     }`}
                   >
-                    <div className="mobile-free-tools-list">
-                      {freeTools.map((tool, idx) => (
-                        <Link
-                          key={idx}
-                          href={tool.href}
-                          className="mobile-free-tool-item"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <img
-                            src={tool.icon}
-                            alt={tool.label}
-                            className="mobile-free-tool-icon"
-                          />
-                          <span>{tool.label}</span>
-                        </Link>
-                      ))}
-                    </div>
+                    {freeTools.map((tool, idx) => (
+                      <Link
+                        key={idx}
+                        href={tool.href}
+                        className="mobile-free-tool-item"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <img src={tool.icon} alt={tool.label} className="mobile-free-tool-icon" />
+                        <span>{tool.label}</span>
+                      </Link>
+                    ))}
                   </div>
                 </>
               ) : item.dropdown ? (
