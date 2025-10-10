@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useSubscription } from '../lib/hooks/useSubscription'
 
 const BOOK_LOGOS: Record<string, string> = {
   'draftkings': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a8e5ff0c6651eee22_1.svg',
@@ -27,6 +28,7 @@ const AFFILIATE_LINKS: Record<string, string> = {
 const ALL_BOOKS_LOGO = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0313f97df902b5312a3f6_NEW%20BOOK%20LOGOS%20SVG-2.svg'
 const FILTER_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg'
 const TITLE_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e3ef8673f9a7c75b24bf2f_PPP%20BRANDING!-3.svg'
+const LOCK_ICON = 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg'
 
 export default function PropParlayTool() {
   const [data, setData] = useState<any>(null)
@@ -42,6 +44,8 @@ export default function PropParlayTool() {
     parlayType: 'all',
     game: 'all'
   })
+
+  const { isLoading: subLoading, isSubscribed } = useSubscription()
 
   useEffect(() => {
     fetchData()
@@ -255,7 +259,11 @@ export default function PropParlayTool() {
     return `${game}, ${parlayType}, ${filters.legs}-legs, ${odds}`
   }
 
-  if (loading) {
+  const handlePricingRedirect = () => {
+    window.location.href = 'https://www.thebettinginsider.com/pricing'
+  }
+
+  if (loading || subLoading) {
     return (
       <div style={styles.wrapper}>
         <div style={styles.container}>
@@ -267,6 +275,8 @@ export default function PropParlayTool() {
       </div>
     )
   }
+
+  const showParlayLock = view === 'parlays' && !isSubscribed
 
   return (
     <div style={styles.wrapper}>
@@ -311,129 +321,151 @@ export default function PropParlayTool() {
           </button>
         </div>
 
-        {view === 'props' ? (
-          <>
-            <div style={styles.filterRow}>
-              <button 
-                style={styles.filterButton}
-                onClick={() => setShowPropsFilter(!showPropsFilter)}
-              >
-                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
-                <span>{getPropsFilterText()}</span>
-              </button>
-            </div>
-
-            {showPropsFilter && (
-              <div style={styles.filterDropdown}>
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Games</div>
-                  <select 
-                    value={filters.game} 
-                    onChange={(e) => setFilters({...filters, game: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Games</option>
-                    {games.map((g: any, i: number) => (
-                      <option key={i} value={g.matchup}>{g.matchup}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Odds Range</div>
-                  <select 
-                    value={filters.minOdds} 
-                    onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="-600">Best Odds (All)</option>
-                    <option value="-250">-150 to -250</option>
-                    <option value="-400">-150 to -400</option>
-                    <option value="-600">-150 to -600</option>
-                  </select>
-                </div>
+        <div style={{ position: 'relative' }}>
+          {view === 'props' ? (
+            <>
+              <div style={styles.filterRow}>
+                <button 
+                  style={styles.filterButton}
+                  onClick={() => setShowPropsFilter(!showPropsFilter)}
+                >
+                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <span>{getPropsFilterText()}</span>
+                </button>
               </div>
-            )}
 
-            <PropsTable props={filteredProps} selectedBook={filters.book} />
-          </>
-        ) : (
-          <>
-            <div style={styles.filterRow}>
-              <button 
-                style={styles.filterButton}
-                onClick={() => setShowParlaysFilter(!showParlaysFilter)}
-              >
-                <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
-                <span>{getParlaysFilterText()}</span>
-              </button>
-            </div>
+              {showPropsFilter && (
+                <div style={styles.filterDropdown}>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Games</div>
+                    <select 
+                      value={filters.game} 
+                      onChange={(e) => setFilters({...filters, game: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Games</option>
+                      {games.map((g: any, i: number) => (
+                        <option key={i} value={g.matchup}>{g.matchup}</option>
+                      ))}
+                    </select>
+                  </div>
 
-            {showParlaysFilter && (
-              <div style={styles.filterDropdown}>
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Games</div>
-                  <select 
-                    value={filters.game} 
-                    onChange={(e) => setFilters({...filters, game: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Games</option>
-                    {games.map((g: any, i: number) => (
-                      <option key={i} value={g.matchup}>{g.matchup}</option>
-                    ))}
-                  </select>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Odds Range</div>
+                    <select 
+                      value={filters.minOdds} 
+                      onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="-600">Best Odds (All)</option>
+                      <option value="-250">-150 to -250</option>
+                      <option value="-400">-150 to -400</option>
+                      <option value="-600">-150 to -600</option>
+                    </select>
+                  </div>
                 </div>
+              )}
 
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Parlay Type</div>
-                  <select 
-                    value={filters.parlayType} 
-                    onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="all">All Parlay Types</option>
-                    <option value="sgp">Same Game Only</option>
-                    <option value="standard">Multi-Game Only</option>
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Number of Legs</div>
-                  <select 
-                    value={filters.legs} 
-                    onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="2">2-Leg Parlay</option>
-                    <option value="3">3-Leg Parlay</option>
-                    <option value="4">4-Leg Parlay</option>
-                    <option value="5">5-Leg Parlay</option>
-                    <option value="6">6-Leg Parlay</option>
-                  </select>
-                </div>
-
-                <div style={styles.filterSection}>
-                  <div style={styles.filterLabel}>Parlay Odds</div>
-                  <select 
-                    value={filters.parlayMinOdds} 
-                    onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
-                    style={styles.filterDropdownSelect}
-                  >
-                    <option value="highest">Highest Odds</option>
-                    <option value="-150">-150 or Better</option>
-                    <option value="100">+100 or Better</option>
-                    <option value="250">+250 or Better</option>
-                    <option value="350">+350 or Better</option>
-                    <option value="500">+500 or Better</option>
-                  </select>
-                </div>
+              <PropsTable props={filteredProps} selectedBook={filters.book} />
+            </>
+          ) : (
+            <>
+              <div style={styles.filterRow}>
+                <button 
+                  style={styles.filterButton}
+                  onClick={() => setShowParlaysFilter(!showParlaysFilter)}
+                >
+                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <span>{getParlaysFilterText()}</span>
+                </button>
               </div>
-            )}
 
-            <ParlaysGrid combos={parlayCombo} selectedBook={filters.book} />
-          </>
-        )}
+              {showParlaysFilter && (
+                <div style={styles.filterDropdown}>
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Games</div>
+                    <select 
+                      value={filters.game} 
+                      onChange={(e) => setFilters({...filters, game: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Games</option>
+                      {games.map((g: any, i: number) => (
+                        <option key={i} value={g.matchup}>{g.matchup}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Parlay Type</div>
+                    <select 
+                      value={filters.parlayType} 
+                      onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="all">All Parlay Types</option>
+                      <option value="sgp">Same Game Only</option>
+                      <option value="standard">Multi-Game Only</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Number of Legs</div>
+                    <select 
+                      value={filters.legs} 
+                      onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="2">2-Leg Parlay</option>
+                      <option value="3">3-Leg Parlay</option>
+                      <option value="4">4-Leg Parlay</option>
+                      <option value="5">5-Leg Parlay</option>
+                      <option value="6">6-Leg Parlay</option>
+                    </select>
+                  </div>
+
+                  <div style={styles.filterSection}>
+                    <div style={styles.filterLabel}>Parlay Odds</div>
+                    <select 
+                      value={filters.parlayMinOdds} 
+                      onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
+                      style={styles.filterDropdownSelect}
+                    >
+                      <option value="highest">Highest Odds</option>
+                      <option value="-150">-150 or Better</option>
+                      <option value="100">+100 or Better</option>
+                      <option value="250">+250 or Better</option>
+                      <option value="350">+350 or Better</option>
+                      <option value="500">+500 or Better</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <ParlaysGrid combos={parlayCombo} selectedBook={filters.book} />
+            </>
+          )}
+
+          {/* Premium Lock Overlay for Parlay Builder */}
+          {showParlayLock && (
+            <div 
+              style={styles.lockOverlay}
+              onClick={handlePricingRedirect}
+            >
+              <div style={styles.lockContent}>
+                <img 
+                  src={LOCK_ICON}
+                  alt="Locked"
+                  style={styles.lockIcon}
+                />
+                <p style={styles.lockText}>You must be an Insider to use this</p>
+                <button style={styles.signUpButton}>
+                  Click here to sign up
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -1090,5 +1122,52 @@ const styles = {
     padding: '3rem 1.5rem',
     color: '#9ca3af',
     fontSize: '0.9rem'
+  },
+  lockOverlay: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    background: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+    cursor: 'pointer'
+  },
+  lockContent: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '1.5rem',
+    padding: '2rem'
+  },
+  lockIcon: {
+    width: '64px',
+    height: '64px',
+    opacity: 0.9
+  },
+  lockText: {
+    color: 'white',
+    fontSize: '1.25rem',
+    fontWeight: '700',
+    textAlign: 'center' as const,
+    margin: 0
+  },
+  signUpButton: {
+    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%)',
+    border: '2px solid rgba(59, 130, 246, 0.8)',
+    color: 'white',
+    padding: '0.85rem 2rem',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    textDecoration: 'none'
   }
 }

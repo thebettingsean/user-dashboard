@@ -1,7 +1,5 @@
 'use client'
 
-import { SignInButton } from '@clerk/nextjs'
-
 interface LockedWidgetProps {
   isLoggedIn: boolean
   hasSubscription: boolean
@@ -14,24 +12,20 @@ export default function LockedWidget({ isLoggedIn, hasSubscription, children }: 
     return <>{children}</>
   }
 
-  // Locked state - but we need to separate header from content
-  // This is tricky because we're wrapping already-rendered components
-  // We'll just blur everything and overlay the lock
-  const message = !isLoggedIn ? 'Please login to view' : 'Subscribe to view'
-  const checkoutUrl = 'https://stripe.thebettinginsider.com/checkout/price_1QuJos07WIhZOuSIc3iG0Nsi?trial=true'
+  // Locked state - unified message for both scenarios
+  const message = 'You must sign-up to view'
+  const pricingUrl = 'https://www.thebettinginsider.com/pricing'
 
   const handleClick = () => {
-    if (!isLoggedIn) {
-      // Will be handled by SignInButton wrapper
-      return
-    } else {
-      window.location.href = checkoutUrl
-    }
+    window.location.href = pricingUrl
   }
 
   // For locked state, we'll show a preview with blur on lower portion
   return (
-    <div style={{ position: 'relative' }}>
+    <div 
+      style={{ position: 'relative', cursor: 'pointer' }}
+      onClick={handleClick}
+    >
       {/* Show the full widget but make it non-interactive */}
       <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
         {children}
@@ -54,10 +48,8 @@ export default function LockedWidget({ isLoggedIn, hasSubscription, children }: 
           alignItems: 'center',
           justifyContent: 'center',
           gap: '1rem',
-          cursor: 'pointer',
           zIndex: 10
         }}
-        onClick={handleClick}
       >
         <img 
           src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg"
