@@ -85,3 +85,36 @@ body {
 .navbar .mobile-dropdown-item:last-child {
   border-bottom: none !important;
 }
+
+/* Free Tools Mobile Dropdown - Match Insider HQ styling */
+.navbar .mobile-free-tool-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.9rem 1.5rem 0.9rem 3rem !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  text-decoration: none !important;
+  font-size: 0.9rem !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: normal !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.navbar .mobile-free-tool-item:last-child {
+  border-bottom: none !important;
+}
+
+.navbar .mobile-free-tool-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
+
+.navbar .mobile-free-tool-icon {
+  width: 16px !important;
+  height: 16px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
