@@ -494,40 +494,48 @@ export default function Navbar() {
           margin: 0;
         }
 
-        /* FIXED: Mobile Free Tools Dropdown - Match Insider HQ styling */
+        /* FIXED: Mobile Free Tools Dropdown - Match Insider HQ styling with !important overrides */
         .mobile-free-tools-list {
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          background: rgba(0, 0, 0, 0.3);
+          padding: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          background: rgba(0, 0, 0, 0.3) !important;
+          margin: 0 !important;
         }
 
-        .mobile-free-tool-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem 1.5rem 0.75rem 3rem;
-          color: rgba(255, 255, 255, 0.6);
-          text-decoration: none;
-          font-size: 0.9rem;
-          transition: all 0.2s;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .mobile-dropdown .mobile-free-tool-item,
+        a.mobile-free-tool-item {
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.75rem !important;
+          padding: 0.75rem 1.5rem 0.75rem 3rem !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          text-decoration: none !important;
+          font-size: 0.9rem !important;
+          transition: all 0.2s !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+          background: transparent !important;
+          margin: 0 !important;
+          line-height: 1.5 !important;
         }
 
-        .mobile-free-tool-item:last-child {
-          border-bottom: none;
+        .mobile-dropdown .mobile-free-tool-item:last-child,
+        a.mobile-free-tool-item:last-child {
+          border-bottom: none !important;
         }
 
-        .mobile-free-tool-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
+        .mobile-dropdown .mobile-free-tool-item:hover,
+        a.mobile-free-tool-item:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: white !important;
         }
 
         .mobile-free-tool-icon {
-          width: 16px;
-          height: 16px;
-          object-fit: contain;
-          flex-shrink: 0;
+          width: 16px !important;
+          height: 16px !important;
+          object-fit: contain !important;
+          flex-shrink: 0 !important;
+          margin: 0 !important;
         }
 
         @media (min-width: 768px) {
