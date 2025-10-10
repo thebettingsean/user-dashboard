@@ -504,10 +504,10 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           gap: 1.5rem;
-          padding: 0.1.5rem 1.5rem 1.5rem 2rem;
+          padding: 1.5rem 1.5rem 1.5rem 3rem;
           color: rgba(255, 255, 255, 0.8);
           text-decoration: none;
-          font-size: 0.9rem;
+          font-size: 1.1rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
