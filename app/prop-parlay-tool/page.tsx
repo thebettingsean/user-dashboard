@@ -444,7 +444,115 @@ export default function PropParlayTool() {
     </div>
   )
 }
+function PropsTable({ props, selectedBook }: { props: any[], selectedBook: string }) {
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
+  if (!props.length) {
+    return <div style={styles.empty}>No props match your filters</div>
+  }
+
+  function toggleRow(index: number) {
+    const newExpanded = new Set(expandedRows)
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index)
+    } else {
+      newExpanded.add(index)
+    }
+    setExpandedRows(newExpanded)
+  }
+
+  function getBestOddsForBook(prop: any, book: string) {
+    if (book === 'all') {
+      return Math.max(...prop.bookmakers.map((b: any) => b.odds))
+    }
+    const bookmaker = prop.bookmakers.find((b: any) => b.name === book)
+    return bookmaker ? bookmaker.odds : null
+  }
+
+  return (
+    <div style={styles.table}>
+      {props.map((prop, idx) => {
+        const percentAbove = ((prop.season_avg - prop.line) / prop.line * 100).toFixed(0)
+        const isExpanded = expandedRows.has(idx)
+        const displayOdds = getBestOddsForBook(prop, selectedBook)
+        const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
+
+        return (
+          <div key={idx} style={styles.tableRow}>
+            <div 
+              style={styles.tableRowHeader}
+              onClick={() => toggleRow(idx)}
+            >
+              <div style={styles.tableRowMainMobile}>
+                <div style={styles.tablePlayerNameMobile}>{prop.player}</div>
+                <div style={styles.propDetailsMobile}>
+                  <span style={styles.propTextMobile}>{formatMarket(prop.market)} O{prop.line}</span>
+                  <span style={styles.oddsTextMobile}>{displayOdds && formatOdds(displayOdds)}</span>
+                </div>
+                <div style={styles.teamTextMobile}>{prop.game}</div>
+              </div>
+              <div style={styles.tableRowRight}>
+                {bookLogo && <img src={bookLogo} alt="Book" style={styles.bookLogoMobile} />}
+                <div style={styles.tableToggle}>
+                  {isExpanded ? '▼' : '▶'}
+                </div>
+              </div>
+            </div>
+
+            {isExpanded && (
+              <div style={styles.tableRowExpanded}>
+                <div style={styles.expandedGrid}>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Season Avg</div>
+                    <div style={styles.expandedValue}>{prop.season_avg}</div>
+                  </div>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Hit Rate</div>
+                    <div style={styles.expandedValue}>100%</div>
+                  </div>
+                  <div style={styles.expandedStat}>
+                    <div style={styles.expandedLabel}>Above Line</div>
+                    <div style={styles.expandedValue}>+{percentAbove}%</div>
+                  </div>
+                </div>
+
+                <div style={styles.gameInfoSection}>
+                  <span style={styles.gameInfoText}>{prop.game} • {prop.game_time}</span>
+                </div>
+
+                <div style={styles.weeklySection}>
+                  <div style={styles.expandedLabel}>Weekly:</div>
+                  <div style={styles.weeklyGrid}>
+                    {prop.weekly_values.map((val: number, i: number) => (
+                      <div key={i} style={styles.weeklyBadge}>W{i+1}: {val}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={styles.booksSection}>
+                  <div style={styles.expandedLabel}>Books:</div>
+                  <div style={styles.booksGrid}>
+                    {prop.bookmakers.map((book: any, i: number) => (
+                      <div key={i} style={styles.bookRowExpanded}>
+                        <img 
+                          src={BOOK_LOGOS[book.name]} 
+                          alt={book.name} 
+                          style={styles.bookLogoTiny}
+                        />
+                        <span style={styles.bookNameTiny}>{formatBookName(book.name)}</span>
+                        <span style={styles.bookOddsTiny}>{formatOdds(book.odds)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: string }) {
   if (!combos.length) {
     return <div style={styles.empty}>No parlays available with current filters</div>
