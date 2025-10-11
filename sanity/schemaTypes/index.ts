@@ -22,10 +22,11 @@ const weeklyReport = {
       validation: (Rule: any) => Rule.required()
     },
     {
-      name: 'weekNumber',
-      title: 'NFL Week Number',
-      type: 'number',
-      validation: (Rule: any) => Rule.required().min(1).max(18)
+      name: 'author',
+      title: 'Author',
+      type: 'string',
+      description: 'Author name (e.g., "The Insider Team")',
+      validation: (Rule: any) => Rule.required()
     },
     {
       name: 'publishDate',
@@ -35,14 +36,14 @@ const weeklyReport = {
     },
     {
       name: 'summary',
-      title: 'Summary (for widget)',
+      title: 'Summary',
       type: 'text',
       description: 'Short preview (2-3 sentences)',
       validation: (Rule: any) => Rule.required().max(250)
     },
     {
       name: 'content',
-      title: 'Full Report Content',
+      title: 'Report Content',
       type: 'array',
       of: [{type: 'block'}]
     },

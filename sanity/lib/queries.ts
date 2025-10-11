@@ -5,8 +5,20 @@ export const latestReportQuery = groq`
     _id,
     title,
     slug,
-    weekNumber,
+    author,
     publishDate,
     summary
+  }
+`
+
+export const reportBySlugQuery = groq`
+  *[_type == "weeklyReport" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    author,
+    publishDate,
+    summary,
+    content
   }
 `
