@@ -1,0 +1,12 @@
+
+> betting-dashboard@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use by process 6030, using available port 3001 instead.
+   ▲ Next.js 15.5.4
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.4.25:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1125ms
