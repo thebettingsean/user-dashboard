@@ -17,8 +17,9 @@ async function getReport(slug: string): Promise<Report | null> {
   return await client.fetch(reportBySlugQuery, { slug })
 }
 
-export default async function WeeklyReportPage({ params }: { params: { slug: string } }) {
-  const report = await getReport(params.slug)
+export default async function WeeklyReportPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const report = await getReport(slug)
 
   if (!report) {
     notFound()
