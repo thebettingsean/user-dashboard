@@ -8,7 +8,7 @@ interface Report {
   _id: string
   title: string
   slug: { current: string }
-  weekNumber: number
+  author: string
   publishDate: string
   summary: string
 }
@@ -33,6 +33,15 @@ export default function NewsWidget() {
 
   const reportUrl = report ? `/weekly-report/${report.slug.current}` : 'https://www.thebettinginsider.com/blog'
 
+  // Calculate week range
+  let weekRange = ''
+  if (report) {
+    const publishDate = new Date(report.publishDate)
+    const endDate = new Date(publishDate)
+    endDate.setDate(publishDate.getDate() + 6)
+    weekRange = `${publishDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}-${endDate.getDate()}`
+  }
+
   return (
     <div style={widgetStyle}>
       <div style={iconWrapper}>
@@ -42,9 +51,10 @@ export default function NewsWidget() {
       
       <h2 style={titleStyle}>
         {loading ? 'Loading...' : report ? report.title : 'Stay in the Know'}
+        {report && <span style={dateTag}>{weekRange}</span>}
       </h2>
       <p style={taglineStyle}>
-        {report ? `Week ${report.weekNumber} • ${new Date(report.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Our outlook on the week'}
+        {report ? `By ${report.author}` : 'Our outlook on the week'}
       </p>
       
       <div style={{ flex: 1 }}>
@@ -93,7 +103,19 @@ const titleStyle = {
   fontSize: '1.1rem',
   fontWeight: '700',
   marginBottom: '0.25rem',
-  color: '#fff'
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem'
+}
+
+const dateTag = {
+  background: 'rgba(56, 182, 255, 0.2)',
+  color: '#38b6ff',
+  padding: '0.2rem 0.5rem',
+  borderRadius: '4px',
+  fontSize: '0.65rem',
+  fontWeight: '700'
 }
 
 const taglineStyle = {
