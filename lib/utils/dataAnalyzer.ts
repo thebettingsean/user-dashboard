@@ -185,19 +185,24 @@ export function findTopRefereeTrends(
   const trends: RefereeTrend[] = []
 
   for (const { game, refereeStats } of games) {
-    if (!refereeStats || refereeStats.total_games < 10) continue
+    // Skip if no referee stats or insufficient data
+    if (!refereeStats || !refereeStats.over_under || !refereeStats.over_under.over_under) {
+      continue
+    }
+    
+    if (refereeStats.total_games < 10) continue
 
-    const overHits = refereeStats.over_under.over_under.over_hits
-    const underHits = refereeStats.over_under.over_under.under_hits
+    const overHits = refereeStats.over_under.over_under.over_hits || 0
+    const underHits = refereeStats.over_under.over_under.under_hits || 0
     const totalGames = refereeStats.total_games
-    const overPct = refereeStats.over_under.over_under.over_percentage
-    const underPct = refereeStats.over_under.over_under.under_percentage
+    const overPct = refereeStats.over_under.over_under.over_percentage || 0
+    const underPct = refereeStats.over_under.over_under.under_percentage || 0
 
     // Strong over trend
     if (overPct > 60) {
       trends.push({
         game: `${game.away_team.split(' ').pop()}/${game.home_team.split(' ').pop()}`,
-        referee: refereeStats.referee_name.split(' ').pop() || '',
+        referee: refereeStats.referee_name?.split(' ').pop() || 'Unknown',
         trend: `Over ${overHits}-${underHits} L${totalGames}`,
         percentage: Math.round(overPct)
       })
@@ -207,7 +212,7 @@ export function findTopRefereeTrends(
     if (underPct > 60) {
       trends.push({
         game: `${game.away_team.split(' ').pop()}/${game.home_team.split(' ').pop()}`,
-        referee: refereeStats.referee_name.split(' ').pop() || '',
+        referee: refereeStats.referee_name?.split(' ').pop() || 'Unknown',
         trend: `Under ${underHits}-${overHits} L${totalGames}`,
         percentage: Math.round(underPct)
       })

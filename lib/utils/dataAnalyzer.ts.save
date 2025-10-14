@@ -1,0 +1,16 @@
+k}
+
+export function findTeamTrends(games: Game[]): TeamTrend[] {
+  // Placeholder implementation
+  // In the future, you can add team stats API calls here
+  return [
+    {
+      description: 'Top offense vs weak defense',
+      matchup: 'Check matchup details'
+    },
+    {
+      description: 'Home favorite trend',
+      matchup: 'Strong ATS record'
+    }
+  ]
+}

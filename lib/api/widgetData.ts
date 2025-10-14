@@ -108,16 +108,21 @@ export async function getMatchupWidgetData(): Promise<MatchupWidgetData> {
       const games = await fetchGames(league, from, to)
       
       if (games.length === 0) continue
-      
       // Get referee stats for games that have referees assigned
       const gamesWithRefs = []
       for (const game of games.slice(0, 5)) {
         if (game.referee_id) {
-          const refereeStats = await fetchRefereeStats(league, game.game_id)
-          if (refereeStats) {
-            gamesWithRefs.push({ game, refereeStats })
+          try {
+            const refereeStats = await fetchRefereeStats(league, game.game_id)
+            if (refereeStats && refereeStats.over_under) {
+              gamesWithRefs.push({ game, refereeStats })
+            }
+          } catch (error) {
+            console.error(`Error fetching referee stats for ${game.game_id}:`, error)
+            // Continue to next game instead of failing completely
+            continue
           }
-        }
+        } 
       }
       
       if (gamesWithRefs.length === 0) continue
