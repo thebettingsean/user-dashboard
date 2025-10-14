@@ -77,7 +77,7 @@ export default function PicksWidget() {
         </div>
       )}
       
-      <a href="https://thebettinginsider.com/betting/dashboard" style={viewAllStyle}>
+      <a href="https://www.thebettinginsider.com/betting/dashboard" style={viewAllStyle}>
         All picks + write-ups →
       </a>
     </div>
