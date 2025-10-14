@@ -5,6 +5,7 @@ import { useSubscription } from '../lib/hooks/useSubscription'
 import LockedWidget from '../components/LockedWidget'
 import PicksWidget from '../components/PicksWidget'
 import StatsWidget from '../components/StatsWidget'
+import MatchupWidget from '../components/MatchupWidget'
 import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
@@ -51,11 +52,19 @@ export default function Home() {
     },
     { 
       id: 'stats', 
-      title: 'Stats Dashboard', 
+      title: 'Public Betting', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
       borderColor: 'rgba(24, 118, 53, 0.6)',
       background: 'linear-gradient(135deg, rgba(24, 118, 53, 0.15) 0%, rgba(24, 118, 53, 0.08) 100%)',
       component: <StatsWidget /> 
+    },
+    { 
+      id: 'matchup', 
+      title: 'Matchup Data', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg',
+      borderColor: 'rgba(217, 217, 217, 0.6)',
+      background: 'linear-gradient(135deg, rgba(217, 217, 217, 0.15) 0%, rgba(217, 217, 217, 0.08) 100%)',
+      component: <MatchupWidget /> 
     },
     { 
       id: 'news', 
@@ -118,24 +127,13 @@ export default function Home() {
 
       <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
         <div style={{ marginBottom: '3rem' }}>
-          <p style={{ fontSize: '1.1rem', opacity: 0.8, marginBottom: '0.35rem', fontWeight: '500' }}>
+          <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
           </p>
-          <p style={{ fontSize: '0.95rem', opacity: 0.6, marginBottom: '1rem' }}>
-            Have a question? <a 
-              href="https://www.thebettinginsider.com/contact-us" 
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                color: '#60a5fa', 
-                textDecoration: 'underline',
-                textUnderlineOffset: '2px'
-              }}
-            >Contact Us</a>
+          <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '1rem' }}>
+            Here are all of the tools you need to be a profitable bettor
           </p>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
-          
-          
         </div>
         
         {/* MOBILE VIEW - Accordion */}
@@ -240,6 +238,11 @@ export default function Home() {
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <StatsWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <MatchupWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
