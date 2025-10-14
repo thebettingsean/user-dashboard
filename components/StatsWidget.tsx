@@ -1,7 +1,78 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+interface MostPublicBet {
+  label: string
+  betsPct: number
+  dollarsPct: number
+}
+
+interface TopTrend {
+  type: 'vegas-backed' | 'sharp-money'
+  label: string
+  value: string
+}
+
+interface StatsWidgetData {
+  mostPublic: MostPublicBet[]
+  topTrends: TopTrend[]
+  league: string
+}
+
 export default function StatsWidget() {
+  const [data, setData] = useState<StatsWidgetData | null>(null)
+  const [loading, setLoading] = useState(true)
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/widget-data/stats')
+        const widgetData = await response.json()
+        setData(widgetData)
+      } catch (error) {
+        console.error('Error fetching stats widget data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Public Betting
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Public Betting
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>No data available</p>
+      </div>
+    )
+  }
   
   return (
     <div style={widgetStyle}>
@@ -14,41 +85,40 @@ export default function StatsWidget() {
         Public Betting
         <span style={dateTag}>{today}</span> 
       </h2>
-      <p style={taglineStyle}>See where the money is going</p>
+      <p style={taglineStyle}>See where the money is going • {data.league}</p>
       
       <div style={{ flex: 1 }}>
         <div style={sectionStyle}>
           <h4 style={sectionTitle}>Most Public</h4>
-          <div style={publicItemStyle}>
-            <div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.2rem' }}>Cowboys ML</div>
-              <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>75% of bets, 80% of dollars</div>
+          {data.mostPublic.map((bet, index) => (
+            <div key={index} style={publicItemStyle}>
+              <div>
+                <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.2rem' }}>
+                  {bet.label}
+                </div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                  {Math.round(bet.betsPct)}% of bets, {Math.round(bet.dollarsPct)}% of dollars
+                </div>
+              </div>
             </div>
-          </div>
-          <div style={publicItemStyle}>
-            <div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.2rem' }}>Bills -7.5</div>
-              <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>80% of bets, 90% of dollars</div>
-            </div>
-          </div>
+          ))}
         </div>
 
         <div style={{...sectionStyle, borderBottom: 'none'}}>
           <h4 style={sectionTitle}>Top Trends</h4>
-          <div style={trendItemStyle}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.8rem' }}>Vegas backed:</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>Jets +3.5</div>
+          {data.topTrends.map((trend, index) => (
+            <div key={index} style={trendItemStyle}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.8rem' }}>
+                  {trend.type === 'vegas-backed' ? 'Vegas backed:' : 'Big money:'}
+                </div>
+                <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{trend.label}</div>
+              </div>
+              <div style={trend.type === 'vegas-backed' ? valueTag : sharpTag}>
+                {trend.value}
+              </div>
             </div>
-            <div style={valueTag}>80% value</div>
-          </div>
-          <div style={trendItemStyle}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.8rem' }}>Big money:</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>Giants ML</div>
-            </div>
-            <div style={sharpTag}>+65% difference</div>
-          </div>
+          ))}
         </div>
       </div>
       

@@ -1,7 +1,78 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
+interface RefereeTrend {
+  game: string
+  referee: string
+  trend: string
+  percentage: number
+}
+
+interface TeamTrend {
+  description: string
+  matchup: string
+}
+
+interface MatchupWidgetData {
+  refereeTrends: RefereeTrend[]
+  teamTrends: TeamTrend[]
+  league: string
+}
+
 export default function MatchupWidget() {
+  const [data, setData] = useState<MatchupWidgetData | null>(null)
+  const [loading, setLoading] = useState(true)
   const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/widget-data/matchup')
+        const widgetData = await response.json()
+        setData(widgetData)
+      } catch (error) {
+        console.error('Error fetching matchup widget data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Matchup Data
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Matchup Data
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>No data available</p>
+      </div>
+    )
+  }
   
   return (
     <div style={widgetStyle}>
@@ -14,37 +85,32 @@ export default function MatchupWidget() {
         Matchup Data
         <span style={dateTag}>{today}</span> 
       </h2>
-      <p style={taglineStyle}>Referee and team statistical edges</p>
+      <p style={taglineStyle}>Referee and team statistical edges • {data.league}</p>
       
       <div style={{ flex: 1 }}>
         <div style={sectionStyle}>
           <h4 style={sectionTitle}>Top Referee Trends</h4>
-          <div style={refItemStyle}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>LAR/SEA • Johnson</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>Under 8-2 L10</div>
+          {data.refereeTrends.map((ref, index) => (
+            <div key={index} style={refItemStyle}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                  {ref.game} • {ref.referee}
+                </div>
+                <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{ref.trend}</div>
+              </div>
+              <div style={trendBadge}>{ref.percentage}%</div>
             </div>
-            <div style={trendBadge}>80%</div>
-          </div>
-          <div style={refItemStyle}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>KC/BUF • Smith</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>Over 7-3 L10</div>
-            </div>
-            <div style={trendBadge}>70%</div>
-          </div>
+          ))}
         </div>
 
         <div style={{...sectionStyle, borderBottom: 'none'}}>
           <h4 style={sectionTitle}>Top Team Trends</h4>
-          <div style={teamItemStyle}>
-            <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>Eagles rush offense</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>#1 vs #28 defense</div>
-          </div>
-          <div style={teamItemStyle}>
-            <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>Ravens home favorite</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>9-1 ATS L10</div>
-          </div>
+          {data.teamTrends.map((team, index) => (
+            <div key={index} style={teamItemStyle}>
+              <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{team.description}</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{team.matchup}</div>
+            </div>
+          ))}
         </div>
       </div>
       
