@@ -1,16 +1,22 @@
 // lib/utils/dataAnalyzer.ts
 
-import { RefereeStats } from '../api/sportsData'
-
-interface PublicMoneyBucket {
-  losses: number
-  roi: number
-  total_bet: number
-  total_profit: number
-  win_pct: number
-  wins: number
-  total_games?: number
-  quadrant_name?: string
+interface PublicMoneyData {
+  public_money_ml_away_bets_pct: number
+  public_money_ml_away_stake_pct: number
+  public_money_ml_home_bets_pct: number
+  public_money_ml_home_stake_pct: number
+  public_money_spread_away_bets_pct: number
+  public_money_spread_away_stake_pct: number
+  public_money_spread_home_bets_pct: number
+  public_money_spread_home_stake_pct: number
+  public_money_over_bets_pct: number
+  public_money_over_stake_pct: number
+  public_money_under_bets_pct: number
+  public_money_under_stake_pct: number
+  away_team_ml: number
+  home_team_ml: number
+  away_team_point_spread: number
+  home_team_point_spread: number
 }
 
 interface Game {
@@ -31,6 +37,25 @@ interface Game {
   }
 }
 
+interface RefereeStats {
+  referee_name: string
+  over_under: {
+    over_under: {
+      over_hits: number
+      under_hits: number
+      over_percentage: number
+      under_percentage: number
+    }
+  }
+  spread: {
+    spread: {
+      ats_wins: number
+      ats_losses: number
+    }
+  }
+  total_games: number
+}
+
 export interface MostPublicBet {
   label: string
   betsPct: number
@@ -38,7 +63,7 @@ export interface MostPublicBet {
 }
 
 export interface TopTrend {
-  type: 'vegas-backed' | 'sharp-money' | 'public-fade'
+  type: 'vegas-backed' | 'sharp-money'
   label: string
   value: string
 }
@@ -50,186 +75,113 @@ export interface RefereeTrend {
   percentage: number
 }
 
-// Helper to determine the "most public" bucket (76-100% means highest public backing)
-function getMostPublicBucket(
-  buckets: {
-    '0-25%': PublicMoneyBucket
-    '26-50%': PublicMoneyBucket
-    '51-75%': PublicMoneyBucket
-    '76-100%': PublicMoneyBucket
-  } | null
-): { bucketName: string; bucket: PublicMoneyBucket } | null {
-  if (!buckets) return null
-  
-  // The 76-100% bucket represents the most public side
-  const mostPublic = buckets['76-100%']
-  if (mostPublic && mostPublic.total_games && mostPublic.total_games > 0) {
-    return { bucketName: '76-100%', bucket: mostPublic }
-  }
-  
-  // Fallback to 51-75% if 76-100% has no games
-  const secondMostPublic = buckets['51-75%']
-  if (secondMostPublic && secondMostPublic.total_games && secondMostPublic.total_games > 0) {
-    return { bucketName: '51-75%', bucket: secondMostPublic }
-  }
-  
-  return null
-}
-
-// Helper to determine contrarian/fade bucket (0-25% means least public, could be sharp)
-function getContrarianBucket(
-  buckets: {
-    '0-25%': PublicMoneyBucket
-    '26-50%': PublicMoneyBucket
-    '51-75%': PublicMoneyBucket
-    '76-100%': PublicMoneyBucket
-  } | null
-): { bucketName: string; bucket: PublicMoneyBucket } | null {
-  if (!buckets) return null
-  
-  // The 0-25% bucket represents the least public side (contrarian play)
-  const contrarian = buckets['0-25%']
-  if (contrarian && contrarian.total_games && contrarian.total_games > 0) {
-    return { bucketName: '0-25%', bucket: contrarian }
-  }
-  
-  return null
-}
-
-// Analyze referee stats to find the most public bets
-export function findMostPublicBetsFromRefereeStats(
+// Analyze public money data to find the most public bets
+export function findMostPublicBets(
   game: Game,
-  refereeStats: RefereeStats
+  publicMoney: PublicMoneyData
 ): MostPublicBet[] {
-  const bets: MostPublicBet[] = []
-  
-  // Check moneyline public money
-  if (refereeStats.moneyline?.ml?.public_money) {
-    const mlPublic = getMostPublicBucket(refereeStats.moneyline.ml.public_money)
-    if (mlPublic && mlPublic.bucket.win_pct > 40) { // Only show if decent win rate
-      // Determine which team based on bucket performance (simplified approach)
-      // In reality, API should tell us which team this bucket represents
-      // For now, we'll show both home and away if they have strong public backing
-      const publicPct = parseInt(mlPublic.bucketName.split('-')[1]?.replace('%', '') || '75')
-      
-      bets.push({
-        label: `${game.home_team} ML`,
-        betsPct: publicPct,
-        dollarsPct: publicPct // Approximation - could be refined
-      })
-    }
+  const bets = []
+
+  // Check moneyline
+  if (publicMoney.public_money_ml_away_bets_pct > 65) {
+    bets.push({
+      label: `${game.away_team} ML`,
+      betsPct: publicMoney.public_money_ml_away_bets_pct,
+      dollarsPct: publicMoney.public_money_ml_away_stake_pct
+    })
   }
-  
-  // Check spread public money
-  if (refereeStats.spread?.spread?.public_money) {
-    const spreadPublic = getMostPublicBucket(refereeStats.spread.spread.public_money)
-    if (spreadPublic && spreadPublic.bucket.win_pct > 40) {
-      const publicPct = parseInt(spreadPublic.bucketName.split('-')[1]?.replace('%', '') || '75')
-      const spread = game.odds?.spread || 0
-      const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-      
-      bets.push({
-        label: `${game.home_team} ${spreadLabel}`,
-        betsPct: publicPct,
-        dollarsPct: publicPct
-      })
-    }
+  if (publicMoney.public_money_ml_home_bets_pct > 65) {
+    bets.push({
+      label: `${game.home_team} ML`,
+      betsPct: publicMoney.public_money_ml_home_bets_pct,
+      dollarsPct: publicMoney.public_money_ml_home_stake_pct
+    })
   }
-  
-  // Check over/under public money
-  if (refereeStats.over_under?.over_under?.public_money_over) {
-    const overPublic = getMostPublicBucket(refereeStats.over_under.over_under.public_money_over)
-    if (overPublic && overPublic.bucket.win_pct > 45) {
-      const publicPct = parseInt(overPublic.bucketName.split('-')[1]?.replace('%', '') || '75')
-      
-      bets.push({
-        label: `${game.name} Over`,
-        betsPct: publicPct,
-        dollarsPct: publicPct
-      })
-    }
+
+  // Check spreads
+  if (publicMoney.public_money_spread_away_bets_pct > 65) {
+    const spread = publicMoney.away_team_point_spread
+    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
+    bets.push({
+      label: `${game.away_team} ${spreadLabel}`,
+      betsPct: publicMoney.public_money_spread_away_bets_pct,
+      dollarsPct: publicMoney.public_money_spread_away_stake_pct
+    })
   }
-  
-  if (refereeStats.over_under?.over_under?.public_money_under) {
-    const underPublic = getMostPublicBucket(refereeStats.over_under.over_under.public_money_under)
-    if (underPublic && underPublic.bucket.win_pct > 45) {
-      const publicPct = parseInt(underPublic.bucketName.split('-')[1]?.replace('%', '') || '75')
-      
-      bets.push({
-        label: `${game.name} Under`,
-        betsPct: publicPct,
-        dollarsPct: publicPct
-      })
-    }
+  if (publicMoney.public_money_spread_home_bets_pct > 65) {
+    const spread = publicMoney.home_team_point_spread
+    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
+    bets.push({
+      label: `${game.home_team} ${spreadLabel}`,
+      betsPct: publicMoney.public_money_spread_home_bets_pct,
+      dollarsPct: publicMoney.public_money_spread_home_stake_pct
+    })
   }
-  
-  // Sort by bet percentage and return top results
-  return bets.sort((a, b) => b.betsPct - a.betsPct).slice(0, 3)
+
+  // Sort by bet percentage (highest first) and return top 2
+  return bets.sort((a, b) => b.betsPct - a.betsPct).slice(0, 2)
 }
 
-// Find interesting trends from referee stats public money buckets
-export function findTopTrendsFromRefereeStats(
+// Find interesting trends (sharp money vs public, etc)
+export function findTopTrends(
   game: Game,
-  refereeStats: RefereeStats
+  publicMoney: PublicMoneyData
 ): TopTrend[] {
   const trends: TopTrend[] = []
+
+  // Check for sharp money (big difference between bet % and dollar %)
+  const mlAwayDiff = Math.abs(publicMoney.public_money_ml_away_stake_pct - publicMoney.public_money_ml_away_bets_pct)
+  const mlHomeDiff = Math.abs(publicMoney.public_money_ml_home_stake_pct - publicMoney.public_money_ml_home_bets_pct)
+  const spreadAwayDiff = Math.abs(publicMoney.public_money_spread_away_stake_pct - publicMoney.public_money_spread_away_bets_pct)
+  const spreadHomeDiff = Math.abs(publicMoney.public_money_spread_home_stake_pct - publicMoney.public_money_spread_home_bets_pct)
+
+  // Find the biggest sharp money indicator
+  const sharpPlays = [
+    { diff: mlAwayDiff, team: game.away_team, type: 'ML', stake: publicMoney.public_money_ml_away_stake_pct, bets: publicMoney.public_money_ml_away_bets_pct },
+    { diff: mlHomeDiff, team: game.home_team, type: 'ML', stake: publicMoney.public_money_ml_home_stake_pct, bets: publicMoney.public_money_ml_home_bets_pct },
+    { diff: spreadAwayDiff, team: game.away_team, type: 'spread', stake: publicMoney.public_money_spread_away_stake_pct, bets: publicMoney.public_money_spread_away_bets_pct },
+    { diff: spreadHomeDiff, team: game.home_team, type: 'spread', stake: publicMoney.public_money_spread_home_stake_pct, bets: publicMoney.public_money_spread_home_bets_pct }
+  ]
+
+  const biggestSharp = sharpPlays.sort((a, b) => b.diff - a.diff)[0]
   
-  // Look for contrarian/fade plays (0-25% public backing with good ROI)
-  if (refereeStats.spread?.spread?.public_money) {
-    const contrarian = getContrarianBucket(refereeStats.spread.spread.public_money)
-    if (contrarian && contrarian.bucket.roi > 5 && contrarian.bucket.win_pct > 52) {
-      const spread = game.odds?.spread || 0
-      const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-      
-      trends.push({
-        type: 'public-fade',
-        label: `${game.away_team} ${spreadLabel}`,
-        value: `${contrarian.bucket.roi.toFixed(1)}% ROI (${contrarian.bucket.wins}-${contrarian.bucket.losses})`
-      })
-    }
-  }
-  
-  // Look for O/U contrarian plays
-  if (refereeStats.over_under?.over_under?.public_money_over) {
-    const overContrarian = getContrarianBucket(refereeStats.over_under.over_under.public_money_over)
-    if (overContrarian && overContrarian.bucket.roi > 5 && overContrarian.bucket.win_pct > 52) {
-      trends.push({
-        type: 'public-fade',
-        label: `${game.name} Over`,
-        value: `${overContrarian.bucket.roi.toFixed(1)}% ROI`
-      })
-    }
-  }
-  
-  if (refereeStats.over_under?.over_under?.public_money_under) {
-    const underContrarian = getContrarianBucket(refereeStats.over_under.over_under.public_money_under)
-    if (underContrarian && underContrarian.bucket.roi > 5 && underContrarian.bucket.win_pct > 52) {
-      trends.push({
-        type: 'public-fade',
-        label: `${game.name} Under`,
-        value: `${underContrarian.bucket.roi.toFixed(1)}% ROI`
-      })
-    }
-  }
-  
-  // Look for strong referee trends
-  if (refereeStats.over_under?.over_under?.over_percentage > 65) {
+  if (biggestSharp.diff > 15) {
+    const diffSign = biggestSharp.stake > biggestSharp.bets ? '+' : ''
     trends.push({
       type: 'sharp-money',
-      label: `${game.name} Over`,
-      value: `Ref ${refereeStats.referee_name?.split(' ').pop()} ${refereeStats.over_under.over_under.over_percentage.toFixed(0)}% O`
+      label: `${biggestSharp.team} ${biggestSharp.type}`,
+      value: `${diffSign}${Math.round(biggestSharp.diff)}% difference`
     })
   }
-  
-  if (refereeStats.over_under?.over_under?.under_percentage > 65) {
+
+  // Check for Vegas-backed plays (low public %, could indicate value)
+  // Only create spread trends if spread data is available (not 0, null, or undefined)
+  if (publicMoney.public_money_spread_away_bets_pct < 35 && 
+      publicMoney.away_team_point_spread !== null && 
+      publicMoney.away_team_point_spread !== undefined &&
+      publicMoney.away_team_point_spread !== 0) {
+    const spread = publicMoney.away_team_point_spread
+    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
     trends.push({
-      type: 'sharp-money',
-      label: `${game.name} Under`,
-      value: `Ref ${refereeStats.referee_name?.split(' ').pop()} ${refereeStats.over_under.over_under.under_percentage.toFixed(0)}% U`
+      type: 'vegas-backed',
+      label: `${game.away_team} ${spreadLabel}`,
+      value: `${Math.round(100 - publicMoney.public_money_spread_away_bets_pct)}% value`
     })
   }
-  
-  // Return top trends
+  if (publicMoney.public_money_spread_home_bets_pct < 35 && 
+      publicMoney.home_team_point_spread !== null && 
+      publicMoney.home_team_point_spread !== undefined &&
+      publicMoney.home_team_point_spread !== 0) {
+    const spread = publicMoney.home_team_point_spread
+    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
+    trends.push({
+      type: 'vegas-backed',
+      label: `${game.home_team} ${spreadLabel}`,
+      value: `${Math.round(100 - publicMoney.public_money_spread_home_bets_pct)}% value`
+    })
+  }
+
+  // Return top 2 trends
   return trends.slice(0, 2)
 }
 

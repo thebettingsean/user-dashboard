@@ -36,93 +36,65 @@ interface GamesResponse {
   league: string
 }
 
-// New unified API structure - all data in one endpoint
-interface PublicMoneyBucket {
-  losses: number
-  roi: number
-  total_bet: number
-  total_profit: number
-  win_pct: number
-  wins: number
-  total_games?: number
-  quadrant_name?: string
+// The actual API response structure - includes current data at top level + historical array
+interface PublicMoneyAPIResponse {
+  public_money_ml_away_bets_pct: number
+  public_money_ml_away_stake_pct: number
+  public_money_ml_home_bets_pct: number
+  public_money_ml_home_stake_pct: number
+  public_money_spread_away_bets_pct: number
+  public_money_spread_away_stake_pct: number
+  public_money_spread_home_bets_pct: number
+  public_money_spread_home_stake_pct: number
+  public_money_over_bets_pct: number
+  public_money_over_stake_pct: number
+  public_money_under_bets_pct: number
+  public_money_under_stake_pct: number
+  pregame_odds?: Array<any> // Large historical array we ignore
+  sharp_money_stats?: Array<any>
+  rlm_stats?: Array<any>
 }
 
-export interface RefereeStats {
+// The simplified data we extract and use
+export interface PublicMoneyData {
+  public_money_ml_away_bets_pct: number
+  public_money_ml_away_stake_pct: number
+  public_money_ml_home_bets_pct: number
+  public_money_ml_home_stake_pct: number
+  public_money_spread_away_bets_pct: number
+  public_money_spread_away_stake_pct: number
+  public_money_spread_home_bets_pct: number
+  public_money_spread_home_stake_pct: number
+  public_money_over_bets_pct: number
+  public_money_over_stake_pct: number
+  public_money_under_bets_pct: number
+  public_money_under_stake_pct: number
+  away_team_ml: number
+  home_team_ml: number
+  away_team_point_spread: number
+  home_team_point_spread: number
+}
+
+interface RefereeStats {
   referee_id: number
   referee_name: string
-  total_games: number
-  
-  // Moneyline stats with public money buckets
-  moneyline: {
-    ml: {
-      home_ml_wins: number
-      home_ml_losses: number
-      home_ml_roi: number
-      away_ml_wins: number
-      away_ml_losses: number
-      away_ml_roi: number
-      home_favorite_wins: number
-      home_favorite_losses: number
-      home_favorite_net_roi: number
-      away_favorite_wins: number
-      away_favorite_losses: number
-      away_favorite_net_roi: number
-      public_money: {
-        '0-25%': PublicMoneyBucket
-        '26-50%': PublicMoneyBucket
-        '51-75%': PublicMoneyBucket
-        '76-100%': PublicMoneyBucket
-      } | null
-    }
-  }
-  
-  // Over/Under stats with public money buckets  
   over_under: {
     over_under: {
       over_hits: number
       under_hits: number
       over_percentage: number
       under_percentage: number
-      over_profit: number
-      over_roi: number
-      under_profit: number
-      under_roi: number
-      public_money_over: {
-        '0-25%': PublicMoneyBucket
-        '26-50%': PublicMoneyBucket
-        '51-75%': PublicMoneyBucket
-        '76-100%': PublicMoneyBucket
-      } | null
-      public_money_under: {
-        '0-25%': PublicMoneyBucket
-        '26-50%': PublicMoneyBucket
-        '51-75%': PublicMoneyBucket
-        '76-100%': PublicMoneyBucket
-      } | null
     }
   }
-  
-  // Spread stats with public money buckets
   spread: {
     spread: {
       ats_wins: number
       ats_losses: number
-      ats_roi: number
       home_favorite_wins: number
       home_favorite_losses: number
-      home_favorite_net_roi: number
-      away_favorite_wins: number
-      away_favorite_losses: number
-      away_favorite_net_roi: number
-      public_money: {
-        '0-25%': PublicMoneyBucket
-        '26-50%': PublicMoneyBucket
-        '51-75%': PublicMoneyBucket
-        '76-100%': PublicMoneyBucket
-      } | null
     }
   }
+  total_games: number
 }
 
 // Fetch games for a given league and date range
@@ -152,7 +124,69 @@ export async function fetchGames(
   }
 }
 
-// Fetch referee stats for a specific game (now includes all public money data too!)
+// Fetch public money data for a specific game
+export async function fetchPublicMoney(
+  league: League,
+  gameId: string
+): Promise<PublicMoneyData | null> {
+  try {
+    const url = `${API_BASE_URL}/api/${league}/games/${gameId}/public-money`
+    console.log(`  → Fetching public money: ${url}`)
+    
+    const response = await fetch(url, {
+      headers: {
+        'insider-api-key': API_KEY,
+      },
+      // Don't use Next.js cache for this endpoint - response is too large (5MB+)
+      // We extract only the needed data (a few KB) from the response
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    })
+
+    if (!response.ok) {
+      console.error(`  ✗ HTTP ${response.status} for ${gameId}`)
+      return null
+    }
+
+    // The API returns a large object with current data at top level + historical pregame_odds array
+    // We ONLY extract the top-level current percentages to avoid processing 5MB+ of historical data
+    const fullResponse: PublicMoneyAPIResponse = await response.json()
+    
+    // Extract only the fields we need from the top level (current/latest data)
+    const currentData: PublicMoneyData = {
+      public_money_ml_away_bets_pct: fullResponse.public_money_ml_away_bets_pct,
+      public_money_ml_away_stake_pct: fullResponse.public_money_ml_away_stake_pct,
+      public_money_ml_home_bets_pct: fullResponse.public_money_ml_home_bets_pct,
+      public_money_ml_home_stake_pct: fullResponse.public_money_ml_home_stake_pct,
+      public_money_spread_away_bets_pct: fullResponse.public_money_spread_away_bets_pct,
+      public_money_spread_away_stake_pct: fullResponse.public_money_spread_away_stake_pct,
+      public_money_spread_home_bets_pct: fullResponse.public_money_spread_home_bets_pct,
+      public_money_spread_home_stake_pct: fullResponse.public_money_spread_home_stake_pct,
+      public_money_over_bets_pct: fullResponse.public_money_over_bets_pct,
+      public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
+      public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
+      public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
+      // These aren't in the response, so we'll derive from the game's odds
+      away_team_ml: 0, // Will be set from game.odds
+      home_team_ml: 0,
+      away_team_point_spread: 0,
+      home_team_point_spread: 0
+    }
+    
+    console.log(`  ✓ Extracted current public money data for ${gameId}`)
+    return currentData
+    
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      console.error(`  ✗ Timeout fetching public money for ${gameId}`)
+    } else {
+      console.error(`  ✗ Error fetching public money for ${gameId}:`, error)
+    }
+    return null
+  }
+}
+
+// Fetch referee stats for a specific game
 export async function fetchRefereeStats(
   league: League,
   gameId: string
@@ -174,16 +208,70 @@ export async function fetchRefereeStats(
       return null
     }
 
-    const data = await response.json()
+    const rawData = await response.json()
     
-    // Verify we have the expected unified structure
-    if (!data.referee_id || !data.over_under?.over_under) {
-      console.error(`  ✗ Invalid referee stats structure for ${gameId}`)
-      return null
+    // NFL/MLB structure: has over_under.over_under directly
+    if (rawData.over_under?.over_under) {
+      console.log(`  ✓ Got referee stats for ${gameId} (NFL/MLB structure)`)
+      return rawData
     }
     
-    console.log(`  ✓ Fetched referee stats for ${gameId} (${data.total_games || 0} games)`)
-    return data as RefereeStats
+    // NBA/other structure: has referee_odds.game_details with historical games
+    // We need to aggregate O/U stats from historical game data
+    if (rawData.referee_odds?.game_details?.game_details && Array.isArray(rawData.referee_odds.game_details.game_details)) {
+      console.log(`  → Parsing NBA-style referee stats for ${gameId}`)
+      const gameHistory = rawData.referee_odds.game_details.game_details
+      
+      // Aggregate over/under from game history
+      let overHits = 0
+      let underHits = 0
+      
+      for (const game of gameHistory) {
+        if (game.game_ou && game.total_score !== undefined) {
+          if (game.total_score > game.game_ou) {
+            overHits++
+          } else if (game.total_score < game.game_ou) {
+            underHits++
+          }
+          // Push = don't count
+        }
+      }
+      
+      const totalGames = overHits + underHits
+      if (totalGames < 10) {
+        console.log(`  ✗ Insufficient referee history for ${gameId} (${totalGames} games)`)
+        return null
+      }
+      
+      // Convert to NFL-style structure for consistency
+      const normalized: RefereeStats = {
+        referee_id: rawData.referee_id,
+        referee_name: rawData.referee_name,
+        over_under: {
+          over_under: {
+            over_hits: overHits,
+            under_hits: underHits,
+            over_percentage: Math.round((overHits / totalGames) * 100),
+            under_percentage: Math.round((underHits / totalGames) * 100)
+          }
+        },
+        spread: {
+          spread: {
+            ats_wins: 0,
+            ats_losses: 0,
+            home_favorite_wins: 0,
+            home_favorite_losses: 0
+          }
+        },
+        total_games: totalGames
+      }
+      
+      console.log(`  ✓ Parsed NBA referee stats: ${overHits}-${underHits} O/U (${totalGames} games)`)
+      return normalized
+    }
+    
+    console.log(`  ✗ Referee stats has unknown structure for ${gameId}`)
+    return null
   } catch (error) {
     if (error instanceof Error && error.name === 'TimeoutError') {
       console.error(`  ✗ Timeout fetching referee stats for ${gameId}`)
