@@ -14,7 +14,7 @@ export default function Navbar() {
       label: 'Analyst Picks',
       href: 'thebettinginsider.com/betting/about',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e211db4d96a6f3c78_1.svg',
-      description: 'Expert picks backed by data'
+      description: 'Daily expert picks'
     },
     {
       label: 'Referee Trends',

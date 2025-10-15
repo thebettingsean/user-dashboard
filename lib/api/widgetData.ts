@@ -1,9 +1,9 @@
 // lib/api/widgetData.ts
-import { fetchGames, fetchPublicMoney, fetchRefereeStats } from './sportsData'
+import { fetchGames, fetchRefereeStats, RefereeStats } from './sportsData'
 import { getSportPriority, getDateRangeForSport } from '../utils/sportSelector'
 import {
-  findMostPublicBets,
-  findTopTrends,
+  findMostPublicBetsFromRefereeStats,
+  findTopTrendsFromRefereeStats,
   findTopRefereeTrends,
   MostPublicBet,
   TopTrend,
@@ -54,40 +54,33 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
       
       console.log(`First game: ${games[0]?.name || 'N/A'}`)
       
-      // Get public money data for the first few games
-      const gamesWithData = []
+      // Fetch referee stats for games (now includes all public money buckets!)
+      const gamesWithData: Array<{ game: any, refereeStats: RefereeStats }> = []
       for (const game of games.slice(0, 5)) {
-        console.log(`Fetching public money for: ${game.name}`)
-        const publicMoney = await fetchPublicMoney(league, game.game_id)
-        if (publicMoney) {
-          // Add the odds data from the game to the public money data
-          publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
-          publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
-          // Handle null spreads gracefully
-          publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
-          publicMoney.home_team_point_spread = game.odds?.spread || 0
-          
-          console.log(`✓ Got public money data for ${game.name}`)
-          gamesWithData.push({ game, publicMoney })
+        console.log(`Fetching data for: ${game.name}`)
+        const refereeStats = await fetchRefereeStats(league, game.game_id)
+        if (refereeStats) {
+          console.log(`✓ Got referee stats (with public money) for ${game.name}`)
+          gamesWithData.push({ game, refereeStats })
         } else {
-          console.log(`✗ No public money data for ${game.name}`)
+          console.log(`✗ No data for ${game.name}`)
         }
       }
       
-      console.log(`Total games with public money data: ${gamesWithData.length}`)
+      console.log(`Total games with data: ${gamesWithData.length}`)
       
       if (gamesWithData.length === 0) {
-        console.log(`No public money data for ${league}, moving to next league`)
+        console.log(`No data for ${league}, moving to next league`)
         continue
       }
       
-      // Analyze all games to find most public bets across all games
+      // Analyze all games to find most public bets and trends from referee stats
       let allMostPublic: MostPublicBet[] = []
       let allTrends: TopTrend[] = []
       
-      for (const { game, publicMoney } of gamesWithData) {
-        const mostPublic = findMostPublicBets(game, publicMoney)
-        const trends = findTopTrends(game, publicMoney)
+      for (const { game, refereeStats } of gamesWithData) {
+        const mostPublic = findMostPublicBetsFromRefereeStats(game, refereeStats)
+        const trends = findTopTrendsFromRefereeStats(game, refereeStats)
         console.log(`Analysis for ${game.name}: ${mostPublic.length} public bets, ${trends.length} trends`)
         allMostPublic = [...allMostPublic, ...mostPublic]
         allTrends = [...allTrends, ...trends]
@@ -97,9 +90,8 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
       console.log(`Total trends found: ${allTrends.length}`)
       
       // We need at least 1 most public bet to show meaningful data
-      // Preseason/early games may only have trends but no public betting
       if (allMostPublic.length === 0) {
-        console.log(`No 'Most Public' bets for ${league} (may be preseason), moving to next league`)
+        console.log(`No 'Most Public' bets for ${league}, moving to next league`)
         continue
       }
       
