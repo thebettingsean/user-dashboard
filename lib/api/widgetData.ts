@@ -96,6 +96,13 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
       console.log(`Total most public bets found: ${allMostPublic.length}`)
       console.log(`Total trends found: ${allTrends.length}`)
       
+      // We need at least 1 most public bet to show meaningful data
+      // Preseason/early games may only have trends but no public betting
+      if (allMostPublic.length === 0) {
+        console.log(`No 'Most Public' bets for ${league} (may be preseason), moving to next league`)
+        continue
+      }
+      
       // Sort and get top 2 most public bets
       const topMostPublic = allMostPublic
         .sort((a, b) => b.betsPct - a.betsPct)

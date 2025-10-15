@@ -208,16 +208,70 @@ export async function fetchRefereeStats(
       return null
     }
 
-    const data = await response.json()
+    const rawData = await response.json()
     
-    // Validate that we have the required nested structure
-    if (!data || !data.over_under || !data.over_under.over_under) {
-      console.log(`  ✗ Referee stats missing required data structure for ${gameId}`)
-      return null
+    // NFL/MLB structure: has over_under.over_under directly
+    if (rawData.over_under?.over_under) {
+      console.log(`  ✓ Got referee stats for ${gameId} (NFL/MLB structure)`)
+      return rawData
     }
     
-    console.log(`  ✓ Got referee stats for ${gameId}`)
-    return data
+    // NBA/other structure: has referee_odds.game_details with historical games
+    // We need to aggregate O/U stats from historical game data
+    if (rawData.referee_odds?.game_details?.game_details && Array.isArray(rawData.referee_odds.game_details.game_details)) {
+      console.log(`  → Parsing NBA-style referee stats for ${gameId}`)
+      const gameHistory = rawData.referee_odds.game_details.game_details
+      
+      // Aggregate over/under from game history
+      let overHits = 0
+      let underHits = 0
+      
+      for (const game of gameHistory) {
+        if (game.game_ou && game.total_score !== undefined) {
+          if (game.total_score > game.game_ou) {
+            overHits++
+          } else if (game.total_score < game.game_ou) {
+            underHits++
+          }
+          // Push = don't count
+        }
+      }
+      
+      const totalGames = overHits + underHits
+      if (totalGames < 10) {
+        console.log(`  ✗ Insufficient referee history for ${gameId} (${totalGames} games)`)
+        return null
+      }
+      
+      // Convert to NFL-style structure for consistency
+      const normalized: RefereeStats = {
+        referee_id: rawData.referee_id,
+        referee_name: rawData.referee_name,
+        over_under: {
+          over_under: {
+            over_hits: overHits,
+            under_hits: underHits,
+            over_percentage: Math.round((overHits / totalGames) * 100),
+            under_percentage: Math.round((underHits / totalGames) * 100)
+          }
+        },
+        spread: {
+          spread: {
+            ats_wins: 0,
+            ats_losses: 0,
+            home_favorite_wins: 0,
+            home_favorite_losses: 0
+          }
+        },
+        total_games: totalGames
+      }
+      
+      console.log(`  ✓ Parsed NBA referee stats: ${overHits}-${underHits} O/U (${totalGames} games)`)
+      return normalized
+    }
+    
+    console.log(`  ✗ Referee stats has unknown structure for ${gameId}`)
+    return null
   } catch (error) {
     if (error instanceof Error && error.name === 'TimeoutError') {
       console.error(`  ✗ Timeout fetching referee stats for ${gameId}`)
