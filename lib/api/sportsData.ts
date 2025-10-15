@@ -69,6 +69,20 @@ export interface PublicMoneyData {
   public_money_over_stake_pct: number
   public_money_under_bets_pct: number
   public_money_under_stake_pct: number
+  sharp_money_stats: Array<{
+    bet_type: string
+    sharpness_level: string
+    stake_pct: number
+    difference?: number
+    sharpness_level_value?: number
+  }>
+  rlm_stats: Array<{
+    bet_type: string
+    rlm_strength: number
+    line_movement: number
+    rlm_strength_normalized: number
+    percentage: number
+  }>
   away_team_ml: number
   home_team_ml: number
   away_team_point_spread: number
@@ -166,6 +180,8 @@ export async function fetchPublicMoney(
       public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
       public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
       public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
+      sharp_money_stats: fullResponse.sharp_money_stats || [],
+      rlm_stats: fullResponse.rlm_stats || [],
       // These aren't in the response, so we'll derive from the game's odds
       away_team_ml: 0, // Will be set from game.odds
       home_team_ml: 0,

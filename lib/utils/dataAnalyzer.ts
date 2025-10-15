@@ -1,6 +1,23 @@
 // lib/utils/dataAnalyzer.ts
 
-interface PublicMoneyData {
+// API structures
+interface SharpMoneyIndicator {
+  bet_type: string
+  sharpness_level: string
+  stake_pct: number
+  difference?: number
+  sharpness_level_value?: number
+}
+
+interface RLMIndicator {
+  bet_type: string
+  rlm_strength: number
+  line_movement: number
+  rlm_strength_normalized: number
+  percentage: number
+}
+
+export interface PublicMoneyData {
   public_money_ml_away_bets_pct: number
   public_money_ml_away_stake_pct: number
   public_money_ml_home_bets_pct: number
@@ -13,6 +30,8 @@ interface PublicMoneyData {
   public_money_over_stake_pct: number
   public_money_under_bets_pct: number
   public_money_under_stake_pct: number
+  sharp_money_stats: SharpMoneyIndicator[]
+  rlm_stats: RLMIndicator[]
   away_team_ml: number
   home_team_ml: number
   away_team_point_spread: number
@@ -75,113 +94,130 @@ export interface RefereeTrend {
   percentage: number
 }
 
-// Analyze public money data to find the most public bets
+// Helper to format bet type labels
+function formatBetLabel(game: Game, betType: string, publicMoney: PublicMoneyData): string {
+  const parts = betType.toLowerCase().split('_')
+  
+  if (betType.includes('moneyline')) {
+    const team = betType.includes('home') ? game.home_team : game.away_team
+    return `${team} ML`
+  }
+  
+  if (betType.includes('spread')) {
+    const team = betType.includes('home') ? game.home_team : game.away_team
+    const spread = betType.includes('home') ? publicMoney.home_team_point_spread : publicMoney.away_team_point_spread
+    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
+    return `${team} ${spreadLabel}`
+  }
+  
+  if (betType === 'over') {
+    return `${game.name} Over`
+  }
+  
+  if (betType === 'under') {
+    return `${game.name} Under`
+  }
+  
+  return betType
+}
+
+// Get bet percentage from public money data
+function getBetPercentage(betType: string, publicMoney: PublicMoneyData): { bets: number, dollars: number } {
+  const typeMap: Record<string, { bets: number, dollars: number }> = {
+    'moneyline_away': { bets: publicMoney.public_money_ml_away_bets_pct, dollars: publicMoney.public_money_ml_away_stake_pct },
+    'moneyline_home': { bets: publicMoney.public_money_ml_home_bets_pct, dollars: publicMoney.public_money_ml_home_stake_pct },
+    'spread_away': { bets: publicMoney.public_money_spread_away_bets_pct, dollars: publicMoney.public_money_spread_away_stake_pct },
+    'spread_home': { bets: publicMoney.public_money_spread_home_bets_pct, dollars: publicMoney.public_money_spread_home_stake_pct },
+    'over': { bets: publicMoney.public_money_over_bets_pct, dollars: publicMoney.public_money_over_stake_pct },
+    'under': { bets: publicMoney.public_money_under_bets_pct, dollars: publicMoney.public_money_under_stake_pct }
+  }
+  
+  return typeMap[betType] || { bets: 0, dollars: 0 }
+}
+
+// Find the most public bets (highest percentages)
 export function findMostPublicBets(
   game: Game,
   publicMoney: PublicMoneyData
 ): MostPublicBet[] {
-  const bets = []
-
-  // Check moneyline
-  if (publicMoney.public_money_ml_away_bets_pct > 65) {
-    bets.push({
-      label: `${game.away_team} ML`,
-      betsPct: publicMoney.public_money_ml_away_bets_pct,
-      dollarsPct: publicMoney.public_money_ml_away_stake_pct
-    })
-  }
-  if (publicMoney.public_money_ml_home_bets_pct > 65) {
-    bets.push({
-      label: `${game.home_team} ML`,
-      betsPct: publicMoney.public_money_ml_home_bets_pct,
-      dollarsPct: publicMoney.public_money_ml_home_stake_pct
-    })
-  }
-
-  // Check spreads
-  if (publicMoney.public_money_spread_away_bets_pct > 65) {
-    const spread = publicMoney.away_team_point_spread
-    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-    bets.push({
-      label: `${game.away_team} ${spreadLabel}`,
-      betsPct: publicMoney.public_money_spread_away_bets_pct,
-      dollarsPct: publicMoney.public_money_spread_away_stake_pct
-    })
-  }
-  if (publicMoney.public_money_spread_home_bets_pct > 65) {
-    const spread = publicMoney.home_team_point_spread
-    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-    bets.push({
-      label: `${game.home_team} ${spreadLabel}`,
-      betsPct: publicMoney.public_money_spread_home_bets_pct,
-      dollarsPct: publicMoney.public_money_spread_home_stake_pct
-    })
-  }
-
-  // Sort by bet percentage (highest first) and return top 2
-  return bets.sort((a, b) => b.betsPct - a.betsPct).slice(0, 2)
+  const allBets = [
+    { type: 'moneyline_away', ...getBetPercentage('moneyline_away', publicMoney) },
+    { type: 'moneyline_home', ...getBetPercentage('moneyline_home', publicMoney) },
+    { type: 'spread_away', ...getBetPercentage('spread_away', publicMoney) },
+    { type: 'spread_home', ...getBetPercentage('spread_home', publicMoney) },
+    { type: 'over', ...getBetPercentage('over', publicMoney) },
+    { type: 'under', ...getBetPercentage('under', publicMoney) }
+  ]
+  
+  // Filter for bets with >60% public backing and sort by bet percentage
+  const publicBets = allBets
+    .filter(bet => bet.bets > 60)
+    .sort((a, b) => b.bets - a.bets)
+    .slice(0, 2)
+    .map(bet => ({
+      label: formatBetLabel(game, bet.type, publicMoney),
+      betsPct: Math.round(bet.bets),
+      dollarsPct: Math.round(bet.dollars)
+    }))
+  
+  return publicBets
 }
 
-// Find interesting trends (sharp money vs public, etc)
+// Find top trends using API indicators (Sharp Money and RLM/Vegas-backed)
 export function findTopTrends(
   game: Game,
   publicMoney: PublicMoneyData
 ): TopTrend[] {
   const trends: TopTrend[] = []
-
-  // Check for sharp money (big difference between bet % and dollar %)
-  const mlAwayDiff = Math.abs(publicMoney.public_money_ml_away_stake_pct - publicMoney.public_money_ml_away_bets_pct)
-  const mlHomeDiff = Math.abs(publicMoney.public_money_ml_home_stake_pct - publicMoney.public_money_ml_home_bets_pct)
-  const spreadAwayDiff = Math.abs(publicMoney.public_money_spread_away_stake_pct - publicMoney.public_money_spread_away_bets_pct)
-  const spreadHomeDiff = Math.abs(publicMoney.public_money_spread_home_stake_pct - publicMoney.public_money_spread_home_bets_pct)
-
-  // Find the biggest sharp money indicator
-  const sharpPlays = [
-    { diff: mlAwayDiff, team: game.away_team, type: 'ML', stake: publicMoney.public_money_ml_away_stake_pct, bets: publicMoney.public_money_ml_away_bets_pct },
-    { diff: mlHomeDiff, team: game.home_team, type: 'ML', stake: publicMoney.public_money_ml_home_stake_pct, bets: publicMoney.public_money_ml_home_bets_pct },
-    { diff: spreadAwayDiff, team: game.away_team, type: 'spread', stake: publicMoney.public_money_spread_away_stake_pct, bets: publicMoney.public_money_spread_away_bets_pct },
-    { diff: spreadHomeDiff, team: game.home_team, type: 'spread', stake: publicMoney.public_money_spread_home_stake_pct, bets: publicMoney.public_money_spread_home_bets_pct }
-  ]
-
-  const biggestSharp = sharpPlays.sort((a, b) => b.diff - a.diff)[0]
   
-  if (biggestSharp.diff > 15) {
-    const diffSign = biggestSharp.stake > biggestSharp.bets ? '+' : ''
-    trends.push({
-      type: 'sharp-money',
-      label: `${biggestSharp.team} ${biggestSharp.type}`,
-      value: `${diffSign}${Math.round(biggestSharp.diff)}% difference`
-    })
+  // 1. Find SHARP MONEY indicators from API
+  if (publicMoney.sharp_money_stats && publicMoney.sharp_money_stats.length > 0) {
+    const sharpBets = publicMoney.sharp_money_stats
+      .filter(stat => 
+        stat.sharpness_level && 
+        stat.sharpness_level.toLowerCase().includes('sharp') ||
+        stat.sharpness_level.toLowerCase().includes('big bettor')
+      )
+      .sort((a, b) => {
+        const valueA = a.sharpness_level_value || a.difference || 0
+        const valueB = b.sharpness_level_value || b.difference || 0
+        return valueB - valueA
+      })
+    
+    if (sharpBets.length > 0) {
+      const topSharp = sharpBets[0]
+      const label = formatBetLabel(game, topSharp.bet_type, publicMoney)
+      const value = topSharp.sharpness_level_value 
+        ? `${topSharp.sharpness_level_value.toFixed(1)} value`
+        : `${topSharp.sharpness_level}`
+      
+      trends.push({
+        type: 'sharp-money',
+        label,
+        value
+      })
+    }
   }
-
-  // Check for Vegas-backed plays (low public %, could indicate value)
-  // Only create spread trends if spread data is available (not 0, null, or undefined)
-  if (publicMoney.public_money_spread_away_bets_pct < 35 && 
-      publicMoney.away_team_point_spread !== null && 
-      publicMoney.away_team_point_spread !== undefined &&
-      publicMoney.away_team_point_spread !== 0) {
-    const spread = publicMoney.away_team_point_spread
-    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-    trends.push({
-      type: 'vegas-backed',
-      label: `${game.away_team} ${spreadLabel}`,
-      value: `${Math.round(100 - publicMoney.public_money_spread_away_bets_pct)}% value`
-    })
+  
+  // 2. Find RLM (Reverse Line Movement / Vegas-backed) indicators from API
+  if (publicMoney.rlm_stats && publicMoney.rlm_stats.length > 0) {
+    const rlmBets = publicMoney.rlm_stats
+      .filter(stat => stat.rlm_strength > 0.3) // Only significant RLM
+      .sort((a, b) => b.rlm_strength - a.rlm_strength)
+    
+    if (rlmBets.length > 0) {
+      const topRLM = rlmBets[0]
+      const label = formatBetLabel(game, topRLM.bet_type, publicMoney)
+      const value = `RLM ${(topRLM.rlm_strength * 100).toFixed(0)}%`
+      
+      trends.push({
+        type: 'vegas-backed',
+        label,
+        value
+      })
+    }
   }
-  if (publicMoney.public_money_spread_home_bets_pct < 35 && 
-      publicMoney.home_team_point_spread !== null && 
-      publicMoney.home_team_point_spread !== undefined &&
-      publicMoney.home_team_point_spread !== 0) {
-    const spread = publicMoney.home_team_point_spread
-    const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
-    trends.push({
-      type: 'vegas-backed',
-      label: `${game.home_team} ${spreadLabel}`,
-      value: `${Math.round(100 - publicMoney.public_money_spread_home_bets_pct)}% value`
-    })
-  }
-
-  // Return top 2 trends
+  
   return trends.slice(0, 2)
 }
 
@@ -192,7 +228,6 @@ export function findTopRefereeTrends(
   const trends: RefereeTrend[] = []
 
   for (const { game, refereeStats } of games) {
-    // Skip if no referee stats or insufficient data
     if (!refereeStats || !refereeStats.over_under || !refereeStats.over_under.over_under) {
       continue
     }
@@ -226,19 +261,16 @@ export function findTopRefereeTrends(
     }
   }
 
-  // Sort by percentage and return top 2
   return trends.sort((a, b) => b.percentage - a.percentage).slice(0, 2)
 }
 
-// Find team statistical edges (placeholder for now - can expand later)
+// Find team statistical edges (placeholder for now)
 export interface TeamTrend {
   description: string
   matchup: string
 }
 
 export function findTeamTrends(games: Game[]): TeamTrend[] {
-  // Placeholder implementation
-  // In the future, you can add team stats API calls here
   return [
     {
       description: 'Top offense vs weak defense',

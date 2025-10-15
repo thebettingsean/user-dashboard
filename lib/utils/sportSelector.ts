@@ -110,9 +110,10 @@ export function getDateRangeForSport(league: League): { from: string; to: string
     case 'nba':
     case 'mlb':
     case 'nhl':
-      // These sports play almost daily - show today through next 3 days
+      // These sports play almost daily - show TODAY ONLY first
+      // If no games today, the widget will fall back to next sport
       from.setDate(today.getDate())
-      to.setDate(today.getDate() + 3)
+      to.setDate(today.getDate()) // Only today, not +3 days
       break
   }
   
