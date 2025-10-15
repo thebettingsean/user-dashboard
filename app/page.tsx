@@ -131,7 +131,7 @@ export default function Home() {
             {welcomeMessage}
           </p>
           <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '1rem' }}>
-            Here are all of the tools you need to be a profitable bettor
+            These are the tools you need to be a profitable bettor
           </p>
           <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
         </div>
