@@ -36,7 +36,27 @@ interface GamesResponse {
   league: string
 }
 
-interface PublicMoneyData {
+// The actual API response structure - includes current data at top level + historical array
+interface PublicMoneyAPIResponse {
+  public_money_ml_away_bets_pct: number
+  public_money_ml_away_stake_pct: number
+  public_money_ml_home_bets_pct: number
+  public_money_ml_home_stake_pct: number
+  public_money_spread_away_bets_pct: number
+  public_money_spread_away_stake_pct: number
+  public_money_spread_home_bets_pct: number
+  public_money_spread_home_stake_pct: number
+  public_money_over_bets_pct: number
+  public_money_over_stake_pct: number
+  public_money_under_bets_pct: number
+  public_money_under_stake_pct: number
+  pregame_odds?: Array<any> // Large historical array we ignore
+  sharp_money_stats?: Array<any>
+  rlm_stats?: Array<any>
+}
+
+// The simplified data we extract and use
+export interface PublicMoneyData {
   public_money_ml_away_bets_pct: number
   public_money_ml_away_stake_pct: number
   public_money_ml_home_bets_pct: number
@@ -53,7 +73,6 @@ interface PublicMoneyData {
   home_team_ml: number
   away_team_point_spread: number
   home_team_point_spread: number
-  updated_at: string
 }
 
 interface RefereeStats {
@@ -112,27 +131,57 @@ export async function fetchPublicMoney(
 ): Promise<PublicMoneyData | null> {
   try {
     const url = `${API_BASE_URL}/api/${league}/games/${gameId}/public-money`
+    console.log(`  → Fetching public money: ${url}`)
+    
     const response = await fetch(url, {
       headers: {
         'insider-api-key': API_KEY,
       },
-      next: { revalidate: 1800 } // Cache for 30 minutes
+      // Don't use Next.js cache for this endpoint - response is too large (5MB+)
+      // We extract only the needed data (a few KB) from the response
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch public money for ${gameId}: ${response.status}`)
+      console.error(`  ✗ HTTP ${response.status} for ${gameId}`)
+      return null
     }
 
-    const data: PublicMoneyData[] = await response.json()
+    // The API returns a large object with current data at top level + historical pregame_odds array
+    // We ONLY extract the top-level current percentages to avoid processing 5MB+ of historical data
+    const fullResponse: PublicMoneyAPIResponse = await response.json()
     
-    // Return the most recent data point (last item in array)
-    if (data && data.length > 0) {
-      return data[data.length - 1]
+    // Extract only the fields we need from the top level (current/latest data)
+    const currentData: PublicMoneyData = {
+      public_money_ml_away_bets_pct: fullResponse.public_money_ml_away_bets_pct,
+      public_money_ml_away_stake_pct: fullResponse.public_money_ml_away_stake_pct,
+      public_money_ml_home_bets_pct: fullResponse.public_money_ml_home_bets_pct,
+      public_money_ml_home_stake_pct: fullResponse.public_money_ml_home_stake_pct,
+      public_money_spread_away_bets_pct: fullResponse.public_money_spread_away_bets_pct,
+      public_money_spread_away_stake_pct: fullResponse.public_money_spread_away_stake_pct,
+      public_money_spread_home_bets_pct: fullResponse.public_money_spread_home_bets_pct,
+      public_money_spread_home_stake_pct: fullResponse.public_money_spread_home_stake_pct,
+      public_money_over_bets_pct: fullResponse.public_money_over_bets_pct,
+      public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
+      public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
+      public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
+      // These aren't in the response, so we'll derive from the game's odds
+      away_team_ml: 0, // Will be set from game.odds
+      home_team_ml: 0,
+      away_team_point_spread: 0,
+      home_team_point_spread: 0
     }
     
-    return null
+    console.log(`  ✓ Extracted current public money data for ${gameId}`)
+    return currentData
+    
   } catch (error) {
-    console.error(`Error fetching public money for ${gameId}:`, error)
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      console.error(`  ✗ Timeout fetching public money for ${gameId}`)
+    } else {
+      console.error(`  ✗ Error fetching public money for ${gameId}:`, error)
+    }
     return null
   }
 }
@@ -144,21 +193,37 @@ export async function fetchRefereeStats(
 ): Promise<RefereeStats | null> {
   try {
     const url = `${API_BASE_URL}/api/${league}/games/${gameId}/referee-stats`
+    console.log(`  → Fetching referee stats: ${url}`)
+    
     const response = await fetch(url, {
       headers: {
         'insider-api-key': API_KEY,
       },
-      next: { revalidate: 86400 } // Cache for 24 hours
+      next: { revalidate: 86400 }, // Cache for 24 hours
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     })
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch referee stats for ${gameId}: ${response.status}`)
+      console.error(`  ✗ HTTP ${response.status} for ${gameId} referee stats`)
+      return null
     }
 
     const data = await response.json()
+    
+    // Validate that we have the required nested structure
+    if (!data || !data.over_under || !data.over_under.over_under) {
+      console.log(`  ✗ Referee stats missing required data structure for ${gameId}`)
+      return null
+    }
+    
+    console.log(`  ✓ Got referee stats for ${gameId}`)
     return data
   } catch (error) {
-    console.error(`Error fetching referee stats for ${gameId}:`, error)
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      console.error(`  ✗ Timeout fetching referee stats for ${gameId}`)
+    } else {
+      console.error(`  ✗ Error fetching referee stats for ${gameId}:`, error)
+    }
     return null
   }
 }
