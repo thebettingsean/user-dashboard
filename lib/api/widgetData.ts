@@ -61,10 +61,11 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
         const publicMoney = await fetchPublicMoney(league, game.game_id)
         if (publicMoney) {
           // Add the odds data from the game to the public money data
-          publicMoney.away_team_ml = game.odds.away_team_odds.moneyline
-          publicMoney.home_team_ml = game.odds.home_team_odds.moneyline
-          publicMoney.away_team_point_spread = -game.odds.spread // Away team gets negative of the spread
-          publicMoney.home_team_point_spread = game.odds.spread
+          publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
+          publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
+          // Handle null spreads gracefully
+          publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
+          publicMoney.home_team_point_spread = game.odds?.spread || 0
           
           console.log(`✓ Got public money data for ${game.name}`)
           gamesWithData.push({ game, publicMoney })

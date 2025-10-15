@@ -155,7 +155,11 @@ export function findTopTrends(
   }
 
   // Check for Vegas-backed plays (low public %, could indicate value)
-  if (publicMoney.public_money_spread_away_bets_pct < 35) {
+  // Only create spread trends if spread data is available (not 0, null, or undefined)
+  if (publicMoney.public_money_spread_away_bets_pct < 35 && 
+      publicMoney.away_team_point_spread !== null && 
+      publicMoney.away_team_point_spread !== undefined &&
+      publicMoney.away_team_point_spread !== 0) {
     const spread = publicMoney.away_team_point_spread
     const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
     trends.push({
@@ -164,7 +168,10 @@ export function findTopTrends(
       value: `${Math.round(100 - publicMoney.public_money_spread_away_bets_pct)}% value`
     })
   }
-  if (publicMoney.public_money_spread_home_bets_pct < 35) {
+  if (publicMoney.public_money_spread_home_bets_pct < 35 && 
+      publicMoney.home_team_point_spread !== null && 
+      publicMoney.home_team_point_spread !== undefined &&
+      publicMoney.home_team_point_spread !== 0) {
     const spread = publicMoney.home_team_point_spread
     const spreadLabel = spread > 0 ? `+${spread}` : spread.toString()
     trends.push({
