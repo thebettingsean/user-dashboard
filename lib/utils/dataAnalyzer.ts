@@ -202,13 +202,13 @@ export function findTopTrends(
   // 2. Find RLM (Reverse Line Movement / Vegas-backed) indicators from API
   if (publicMoney.rlm_stats && publicMoney.rlm_stats.length > 0) {
     const rlmBets = publicMoney.rlm_stats
-      .filter(stat => stat.rlm_strength_normalized > 0.3) // Only significant RLM (use normalized)
-      .sort((a, b) => b.rlm_strength_normalized - a.rlm_strength_normalized)
+      .filter(stat => stat.percentage > 30) // Only significant RLM (percentage already 0-100)
+      .sort((a, b) => b.percentage - a.percentage)
     
     if (rlmBets.length > 0) {
       const topRLM = rlmBets[0]
       const label = formatBetLabel(game, topRLM.bet_type, publicMoney)
-      const value = `RLM ${topRLM.rlm_strength_normalized.toFixed(1)}%`
+      const value = `RLM ${topRLM.percentage.toFixed(1)}%`
       
       trends.push({
         type: 'vegas-backed',
