@@ -39,23 +39,7 @@ export interface PublicMoneyData {
   home_team_point_spread: number
 }
 
-interface Game {
-  game_id: string
-  name: string
-  away_team: string
-  home_team: string
-  odds: {
-    spread: number
-    away_team_odds: {
-      moneyline: number
-      spread_odds: number
-    }
-    home_team_odds: {
-      moneyline: number
-      spread_odds: number
-    }
-  }
-}
+// Game interface now imported from '../api/sportsData' at top of file
 
 interface RefereeStats {
   referee_name: string
