@@ -159,7 +159,7 @@ export default function Home() {
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
           </p>
-          <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '0' }}>
+          <p style={{ fontSize: '0.85rem', color: '#ffffff', opacity: 0.6, marginBottom: '0' }}>
             These are the tools you need to be a profitable bettor
           </p>
         </div>
@@ -336,7 +336,7 @@ export default function Home() {
           padding: '1rem 0.5rem',
           textAlign: 'left' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: '#ffffff', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
@@ -370,7 +370,7 @@ export default function Home() {
           padding: '1rem 0.5rem',
           textAlign: 'left' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: '#ffffff', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
