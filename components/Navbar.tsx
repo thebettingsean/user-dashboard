@@ -113,17 +113,19 @@ export default function Navbar() {
     <>
       <style jsx>{`
         .navbar {
-          background: rgba(15, 23, 42, 0.75);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(15, 23, 42, 0.6);
+          border-bottom: 2px solid rgba(139, 92, 246, 0.15);
           position: sticky;
           top: 0;
           z-index: 1000;
-          backdrop-filter: blur(20px) saturate(180%);
-          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          backdrop-filter: blur(40px) saturate(200%);
+          -webkit-backdrop-filter: blur(40px) saturate(200%);
           min-height: 85px;
           display: flex;
           align-items: center;
-          box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
+          box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.5), 
+                      0 1px 0 0 rgba(255, 255, 255, 0.1) inset,
+                      0 -1px 0 0 rgba(139, 92, 246, 0.2) inset;
         }
 
         .navbar-content {
@@ -206,18 +208,20 @@ export default function Navbar() {
           top: 100%;
           left: 0;
           margin-top: 0.5rem;
-          background: rgba(20, 20, 20, 0.85);
-          backdrop-filter: blur(16px) saturate(180%);
-          -webkit-backdrop-filter: blur(16px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
-          padding: 0.5rem 0;
+          background: rgba(20, 20, 20, 0.7);
+          backdrop-filter: blur(30px) saturate(200%);
+          -webkit-backdrop-filter: blur(30px) saturate(200%);
+          border: 1.5px solid rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          padding: 0.75rem 0;
           min-width: 220px;
           opacity: 0;
           visibility: hidden;
           transform: translateY(-10px);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.6), 
+                      0 1px 0 0 rgba(255, 255, 255, 0.15) inset,
+                      0 0 0 1px rgba(139, 92, 246, 0.1) inset;
         }
 
         .nav-item:hover .dropdown {
@@ -383,25 +387,27 @@ export default function Navbar() {
         }
 
         .sign-in-button {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(59, 130, 246, 0.6);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1.5px solid rgba(139, 92, 246, 0.6);
           color: white;
-          padding: 0.6rem 1.5rem;
-          border-radius: 10px;
+          padding: 0.65rem 1.75rem;
+          border-radius: 12px;
           font-weight: 600;
           font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 16px 0 rgba(59, 130, 246, 0.2);
+          box-shadow: 0 4px 20px 0 rgba(139, 92, 246, 0.4), 
+                      inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .sign-in-button:hover {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.2) 100%);
-          border-color: rgba(59, 130, 246, 0.8);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(59, 130, 246, 0.3) 100%);
+          border-color: rgba(139, 92, 246, 0.8);
           transform: translateY(-2px);
-          box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.3);
+          box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.6), 
+                      inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .mobile-menu {

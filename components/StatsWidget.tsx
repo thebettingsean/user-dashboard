@@ -130,29 +130,35 @@ export default function StatsWidget() {
 }
 
 const widgetStyle = {
-  background: 'linear-gradient(135deg, rgba(24, 118, 53, 0.12) 0%, rgba(24, 118, 53, 0.04) 100%)',
-  border: '1px solid rgba(24, 118, 53, 0.2)',
-  borderRadius: '16px',
+  background: 'rgba(24, 118, 53, 0.08)',
+  backdropFilter: 'blur(30px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+  border: '1.5px solid rgba(24, 118, 53, 0.3)',
+  borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column' as const,
-  boxShadow: '0 8px 24px rgba(0,0,0,0.25)'
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(24, 118, 53, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.05) inset',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 
 const iconWrapper = {
   position: 'absolute' as const,
   top: '1rem',
   right: '1rem',
-  width: '48px',
-  height: '48px',
-  border: '1px solid rgba(24, 118, 53, 0.3)',
+  width: '52px',
+  height: '52px',
+  border: '1.5px solid rgba(24, 118, 53, 0.4)',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(24, 118, 53, 0.05)',
+  background: 'rgba(24, 118, 53, 0.15)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: '0 4px 16px rgba(24, 118, 53, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   zIndex: 2
 }
 
@@ -167,12 +173,16 @@ const titleStyle = {
 }
 
 const dateTag = {
-  background: 'rgba(24, 118, 53, 0.2)',
-  color: '#187635',
-  padding: '0.2rem 0.5rem',
-  borderRadius: '4px',
+  background: 'rgba(24, 118, 53, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  color: '#4ade80',
+  padding: '0.3rem 0.6rem',
+  borderRadius: '6px',
   fontSize: '0.65rem',
-  fontWeight: '700'
+  fontWeight: '700',
+  border: '1px solid rgba(24, 118, 53, 0.3)',
+  boxShadow: '0 2px 8px rgba(24, 118, 53, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
 }
 
 const taglineStyle = {
@@ -184,7 +194,13 @@ const taglineStyle = {
 const sectionStyle = {
   marginBottom: '1rem',
   paddingBottom: '0.75rem',
-  borderBottom: '1px solid rgba(255,255,255,0.05)'
+  borderBottom: '1px solid rgba(255,255,255,0.08)',
+  background: 'rgba(255, 255, 255, 0.02)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  padding: '0.75rem',
+  borderRadius: '12px',
+  border: '1px solid rgba(255, 255, 255, 0.05)'
 }
 
 const sectionTitle = {
@@ -196,8 +212,11 @@ const sectionTitle = {
 }
 
 const publicItemStyle = {
-  padding: '0.5rem 0',
-  borderBottom: '1px solid rgba(255,255,255,0.03)'
+  padding: '0.65rem 0.75rem',
+  borderBottom: '1px solid rgba(255,255,255,0.05)',
+  borderRadius: '8px',
+  transition: 'all 0.2s',
+  cursor: 'pointer'
 }
 
 const trendItemStyle = {
@@ -209,23 +228,31 @@ const trendItemStyle = {
 }
 
 const valueTag = {
-  background: 'rgba(59, 130, 246, 0.2)',
+  background: 'rgba(59, 130, 246, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
   color: '#60a5fa',
-  padding: '0.25rem 0.5rem',
-  borderRadius: '4px',
-  fontSize: '0.65rem',
+  padding: '0.35rem 0.65rem',
+  borderRadius: '8px',
+  fontSize: '0.7rem',
   fontWeight: '700',
-  whiteSpace: 'nowrap' as const
+  whiteSpace: 'nowrap' as const,
+  border: '1px solid rgba(59, 130, 246, 0.3)',
+  boxShadow: '0 2px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
 }
 
 const sharpTag = {
-  background: 'rgba(16, 185, 129, 0.2)',
-  color: '#10b981',
-  padding: '0.25rem 0.5rem',
-  borderRadius: '4px',
-  fontSize: '0.65rem',
+  background: 'rgba(16, 185, 129, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  color: '#34d399',
+  padding: '0.35rem 0.65rem',
+  borderRadius: '8px',
+  fontSize: '0.7rem',
   fontWeight: '700',
-  whiteSpace: 'nowrap' as const
+  whiteSpace: 'nowrap' as const,
+  border: '1px solid rgba(16, 185, 129, 0.3)',
+  boxShadow: '0 2px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
 }
 
 const viewAllStyle = {
