@@ -18,23 +18,27 @@ interface Player {
   hasProjections: boolean
   projectionData?: any
   props: any[]
-  historicalData: any[]
+  historicalData: Array<{
+    week: number
+    projected: number
+    actual: number
+  }>
+  avgAboveProjected?: number
+  trendingScore?: number
+  accuracyScore?: number
 }
 
 export default function FantasyPage() {
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([])
   const [selectedPlayers, setSelectedPlayers] = useState<Set<number>>(new Set())
-  const [currentSort, setCurrentSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({
-    column: 'points',
-    direction: 'desc'
-  })
+  const [sortBy, setSortBy] = useState('points')
   const [positionFilter, setPositionFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [historicalFilter, setHistoricalFilter] = useState('none')
   const [loading, setLoading] = useState(true)
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
   const [showComparison, setShowComparison] = useState(false)
-  const [showPosDropdown, setShowPosDropdown] = useState(false)
   const [showInfoModal, setShowInfoModal] = useState(false)
 
   const { isLoading: subLoading, isSubscribed } = useSubscription()
@@ -57,6 +61,38 @@ export default function FantasyPage() {
       console.error(`Error fetching ${table}:`, error)
       return []
     }
+  }
+
+  // Calculate historical metrics
+  const calculateHistoricalMetrics = (historicalData: any[]) => {
+    if (!historicalData || historicalData.length === 0) {
+      return { avgAboveProjected: 0, trendingScore: 0, accuracyScore: 0 }
+    }
+
+    const gamesWithActuals = historicalData.filter((w: any) => w.actual > 0)
+    
+    if (gamesWithActuals.length === 0) {
+      return { avgAboveProjected: 0, trendingScore: 0, accuracyScore: 0 }
+    }
+
+    // Avg above projected
+    const avgAboveProjected = gamesWithActuals.reduce((sum: number, w: any) => 
+      sum + (w.actual - w.projected), 0) / gamesWithActuals.length
+
+    // Trending score (increase in projections week-over-week)
+    let trendingScore = 0
+    if (historicalData.length >= 2) {
+      const firstWeek = historicalData[0].projected
+      const lastWeek = historicalData[historicalData.length - 1].projected
+      trendingScore = lastWeek - firstWeek
+    }
+
+    // Accuracy score (lower variance = more accurate)
+    const variance = gamesWithActuals.reduce((sum: number, w: any) => 
+      sum + Math.abs(w.actual - w.projected), 0) / gamesWithActuals.length
+    const accuracyScore = -variance // Negative so higher is better
+
+    return { avgAboveProjected, trendingScore, accuracyScore }
   }
 
   // Load all data
@@ -98,11 +134,12 @@ export default function FantasyPage() {
         })
       })
 
-      // Map players
+      // Map players with historical metrics
       const mappedPlayers = players.map((player: any) => {
         const ranking = rankings.find((r: any) => r.id === player.id)
         const projection = projections.get(player.id)
         const injury = injuries.get(player.id)
+        const historical = playerHistoricalMap.get(player.id) || []
 
         let points = 0
         let boost = 0
@@ -117,6 +154,8 @@ export default function FantasyPage() {
           hasProjections = true
         }
 
+        const metrics = calculateHistoricalMetrics(historical)
+
         return {
           id: player.id,
           name: player.name,
@@ -128,7 +167,8 @@ export default function FantasyPage() {
           hasProjections: hasProjections,
           projectionData: projection,
           props: playerProps.get(player.id) || [],
-          historicalData: playerHistoricalMap.get(player.id) || []
+          historicalData: historical,
+          ...metrics
         }
       })
 
@@ -155,81 +195,40 @@ export default function FantasyPage() {
 
       const matchesPosition = positionFilter ?
         player.position === positionFilter :
-        (searchQuery ? true : player.position !== 'QB')
+        true
 
       return matchesSearch && matchesPosition
     })
 
-    // Sort
-    filtered.sort((a, b) => {
-      let aVal: any, bVal: any
-
-      switch (currentSort.column) {
-        case 'name':
-          aVal = a.name
-          bVal = b.name
-          break
-        case 'position':
-          aVal = a.position
-          bVal = b.position
-          break
-        case 'points':
-          aVal = a.points
-          bVal = b.points
-          break
-        case 'boost':
-          aVal = a.boost
-          bVal = b.boost
-          break
-        case 'injury':
-          aVal = a.injury_status || 'ZZZ'
-          bVal = b.injury_status || 'ZZZ'
-          break
-        default:
-          aVal = a.points
-          bVal = b.points
-      }
-
-      if (typeof aVal === 'string') {
-        return currentSort.direction === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal)
-      }
-
-      return currentSort.direction === 'asc' ? aVal - bVal : bVal - aVal
-    })
+    // Apply historical filter
+    if (historicalFilter === 'above_projected') {
+      filtered = filtered.filter(p => p.avgAboveProjected && p.avgAboveProjected > 0)
+      filtered.sort((a, b) => (b.avgAboveProjected || 0) - (a.avgAboveProjected || 0))
+    } else if (historicalFilter === 'trending') {
+      filtered = filtered.filter(p => p.trendingScore && p.trendingScore > 0)
+      filtered.sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
+    } else if (historicalFilter === 'accurate') {
+      filtered = filtered.filter(p => p.accuracyScore !== undefined)
+      filtered.sort((a, b) => (b.accuracyScore || 0) - (a.accuracyScore || 0))
+    } else {
+      // Normal sorting
+      filtered.sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name)
+          case 'position':
+            return a.position.localeCompare(b.position)
+          case 'boost':
+            return b.boost - a.boost
+          case 'points':
+          default:
+            return b.points - a.points
+        }
+      })
+    }
 
     setFilteredPlayers(filtered)
-  }, [allPlayers, searchQuery, positionFilter, currentSort])
-
-  // Helper functions
-  const getPositionRank = (player: Player) => {
-    const posPlayers = allPlayers
-      .filter(p => p.position === player.position && p.hasProjections)
-      .sort((a, b) => b.points - a.points)
-
-    const rank = posPlayers.findIndex(p => p.id === player.id) + 1
-    return rank > 0 ? `${player.position}${rank}` : player.position
-  }
-
-  const getInjuryBadge = (status?: string) => {
-    if (!status) return null
-
-    const upper = status.toUpperCase()
-    if (upper.includes('QUESTIONABLE')) return <span className="injury-badge q">Q</span>
-    if (upper.includes('DOUBTFUL')) return <span className="injury-badge d">D</span>
-    if (upper.includes('OUT')) return <span className="injury-badge o">O</span>
-    if (upper.includes('INJURED')) return <span className="injury-badge ir">IR</span>
-    return null
-  }
-
-  const handleSort = (column: string) => {
-    if (currentSort.column === column) {
-      setCurrentSort({ column, direction: currentSort.direction === 'asc' ? 'desc' : 'asc' })
-    } else {
-      setCurrentSort({ column, direction: column === 'name' || column === 'position' ? 'asc' : 'desc' })
-    }
-  }
+  }, [allPlayers, searchQuery, positionFilter, sortBy, historicalFilter])
 
   const handlePlayerSelection = (playerId: number) => {
     if (!userHasAccess) return
@@ -251,12 +250,13 @@ export default function FantasyPage() {
     setSelectedPlayers(new Set())
   }
 
-  const handleRowClick = (player: Player, index: number) => {
-    if (userHasAccess || index < 2) {
-      setSelectedPlayer(player)
-    } else {
-      window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'
-    }
+  const getPositionRank = (player: Player) => {
+    const posPlayers = allPlayers
+      .filter(p => p.position === player.position && p.hasProjections)
+      .sort((a, b) => b.points - a.points)
+
+    const rank = posPlayers.findIndex(p => p.id === player.id) + 1
+    return rank > 0 ? rank : null
   }
 
   if (subLoading || loading) {
@@ -281,310 +281,236 @@ export default function FantasyPage() {
           </p>
         </header>
 
-        {/* Unlock CTA (for non-subscribed users) */}
+        {/* Unlock CTA */}
         {!userHasAccess && (
           <div style={styles.unlockCta}>
             <button
               style={styles.unlockButton}
               onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
             >
-              View Rankings Instantly
+              Unlock All Rankings
             </button>
           </div>
         )}
 
-        {/* Main Table Container */}
-        <div style={styles.tableContainer}>
-          {/* Controls */}
-          <div style={styles.controls}>
-            <div style={styles.controlsHeader}>
-              <button
-                style={styles.infoButton}
-                onClick={() => setShowInfoModal(true)}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
-              >
-                <svg style={{ width: '20px', height: '20px', color: 'rgba(255, 255, 255, 0.7)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </button>
-            </div>
-
-            <div style={styles.controlsRow}>
-              <div style={styles.searchContainer}>
-                <input
-                  type="text"
-                  style={styles.searchInput}
-                  placeholder="Search players..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={(e) => {
-                    if (!userHasAccess) {
-                      e.target.blur()
-                      window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'
-                    }
-                  }}
-                />
-              </div>
-
-              <div style={styles.controlBadges}>
-                {selectedPlayers.size > 0 && (
-                  <>
-                    <span style={styles.badge}>{selectedPlayers.size} selected</span>
-                    {selectedPlayers.size >= 2 && (
-                      <span
-                        style={{ ...styles.badge, ...styles.badgeGreen }}
-                        onClick={() => setShowComparison(true)}
-                      >
-                        View Comparison
-                      </span>
-                    )}
-                    <span style={styles.badge} onClick={clearSelection}>Clear</span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div style={styles.tableScroll}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.thCheckbox}>
-                    <input
-                      type="checkbox"
-                      style={styles.checkbox}
-                      disabled={!userHasAccess}
-                    />
-                  </th>
-                  <th style={styles.th} onClick={() => handleSort('rank')}>
-                    RK<span style={styles.sortIndicator}>↕</span>
-                  </th>
-                  <th style={styles.th} onClick={() => handleSort('name')}>
-                    PLAYER<span style={styles.sortIndicator}>↕</span>
-                  </th>
-                  <th style={{ ...styles.th, position: 'relative' as const }} onClick={() => handleSort('position')}>
-                    POS<span style={styles.sortIndicator}>↕</span>
-                    <div
-                      style={{
-                        ...styles.posDropdown,
-                        display: showPosDropdown ? 'block' : 'none'
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {['', 'QB', 'RB', 'WR', 'TE'].map(pos => (
-                        <div
-                          key={pos}
-                          style={{
-                            ...styles.posOption,
-                            background: positionFilter === pos ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                          }}
-                          onClick={() => {
-                            setPositionFilter(pos)
-                            setShowPosDropdown(false)
-                          }}
-                        >
-                          {pos || 'ALL'}
-                        </div>
-                      ))}
-                    </div>
-                  </th>
-                  <th style={styles.thHideMobile}>TEAM</th>
-                  <th style={styles.thHideMobile} onClick={() => handleSort('injury')}>
-                    STATUS<span style={styles.sortIndicator}>↕</span>
-                  </th>
-                  <th style={styles.th} onClick={() => handleSort('points')}>
-                    PTS<span style={{ ...styles.sortIndicator, opacity: 1, color: '#3b82f6' }}>↓</span>
-                  </th>
-                  <th style={styles.thHideMobile} onClick={() => handleSort('boost')}>
-                    WEIGHT<span style={styles.sortIndicator}>↕</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPlayers.map((player, index) => {
-                  const isLocked = !userHasAccess && index >= 2
-                  const isSelected = selectedPlayers.has(player.id)
-                  const posRank = getPositionRank(player)
-
-                  if (isLocked) {
-                    return (
-                      <tr
-                        key={player.id}
-                        style={styles.trLocked}
-                        onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
-                      >
-                        <td style={styles.td}>
-                          <input type="checkbox" style={{ ...styles.checkbox, opacity: 0.3 }} disabled />
-                        </td>
-                        <td style={styles.td}>{index + 1}</td>
-                        <td style={styles.td}>
-                          <span style={styles.lockedName}>Player Locked</span>
-                          <span style={styles.lockedTagline}>Fantasy package required</span>
-                        </td>
-                        <td style={styles.td}>
-                          <span style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
-                            {posRank}
-                          </span>
-                        </td>
-                        <td style={{ ...styles.td, ...styles.hideMobile }}>
-                          <span style={styles.lockedData}>--</span>
-                        </td>
-                        <td style={{ ...styles.td, ...styles.hideMobile }}>
-                          <span style={styles.lockedData}>-</span>
-                        </td>
-                        <td style={{ ...styles.td, textAlign: 'right' }}>{player.points.toFixed(1)}</td>
-                        <td style={{ ...styles.td, ...styles.hideMobile }}>
-                          <span style={styles.lockedData}>--%</span>
-                        </td>
-                      </tr>
-                    )
+        {/* Filters Container */}
+        <div style={styles.filtersContainer}>
+          <div style={styles.filtersRow}>
+            {/* Search */}
+            <div style={styles.searchContainer}>
+              <input
+                type="text"
+                style={styles.searchInput}
+                placeholder="Search players..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={(e) => {
+                  if (!userHasAccess) {
+                    e.target.blur()
+                    window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'
                   }
+                }}
+              />
+            </div>
 
-                  return (
-                    <tr
-                      key={player.id}
-                      style={{
-                        ...styles.tr,
-                        background: isSelected ? 'rgba(59, 130, 246, 0.08)' : 'transparent'
-                      }}
-                      onClick={(e) => {
-                        if ((e.target as HTMLElement).tagName !== 'INPUT') {
-                          handleRowClick(player, index)
-                        }
-                      }}
-                    >
-                      <td style={styles.td}>
-                        <input
-                          type="checkbox"
-                          style={styles.checkbox}
-                          checked={isSelected}
-                          onChange={() => handlePlayerSelection(player.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
-                      <td style={styles.td}>{index + 1}</td>
-                      <td style={styles.td}>
-                        <span style={styles.playerName}>{player.name}</span>
-                        <span style={styles.playerTeam}>({player.team || 'FA'})</span>
-                      </td>
-                      <td style={styles.td}>
-                        <span style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
-                          {posRank}
-                        </span>
-                      </td>
-                      <td style={{ ...styles.td, ...styles.hideMobile }}>{player.team || 'FA'}</td>
-                      <td style={{ ...styles.td, ...styles.hideMobile }}>{getInjuryBadge(player.injury_status) || '-'}</td>
-                      <td style={{ ...styles.td, fontWeight: '700', textAlign: 'right' }}>{player.points.toFixed(1)}</td>
-                      <td style={{ ...styles.td, ...styles.hideMobile, textAlign: 'right', fontWeight: '600', color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' }}>
-                        {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            {/* Position Filter */}
+            <select
+              style={styles.filterSelect}
+              value={positionFilter}
+              onChange={(e) => setPositionFilter(e.target.value)}
+            >
+              <option value="">All Positions</option>
+              <option value="QB">QB</option>
+              <option value="RB">RB</option>
+              <option value="WR">WR</option>
+              <option value="TE">TE</option>
+            </select>
+
+            {/* Sort By */}
+            <select
+              style={styles.filterSelect}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="points">Highest Points</option>
+              <option value="boost">Highest Boost</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="position">Position</option>
+            </select>
+
+            {/* Historical Filter */}
+            <select
+              style={styles.filterSelect}
+              value={historicalFilter}
+              onChange={(e) => setHistoricalFilter(e.target.value)}
+            >
+              <option value="none">All Players</option>
+              <option value="above_projected">Above Projected</option>
+              <option value="trending">Trending Up</option>
+              <option value="accurate">Most Accurate</option>
+            </select>
+
+            {/* Info Button */}
+            <button
+              style={styles.infoButton}
+              onClick={() => setShowInfoModal(true)}
+            >
+              <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </button>
           </div>
+
+          {/* Selection Controls */}
+          {selectedPlayers.size > 0 && (
+            <div style={styles.selectionControls}>
+              <span style={styles.badge}>{selectedPlayers.size} selected</span>
+              {selectedPlayers.size >= 2 && (
+                <span
+                  style={{ ...styles.badge, ...styles.badgeGreen }}
+                  onClick={() => setShowComparison(true)}
+                >
+                  Compare Players
+                </span>
+              )}
+              <span style={styles.badge} onClick={clearSelection}>Clear</span>
+            </div>
+          )}
         </div>
+
+        {/* Player Cards Grid */}
+        <div style={styles.cardsGrid}>
+          {filteredPlayers.map((player, index) => {
+            const isLocked = !userHasAccess && index >= 2
+            const isSelected = selectedPlayers.has(player.id)
+            const posRank = getPositionRank(player)
+
+            if (isLocked) {
+              return (
+                <div
+                  key={player.id}
+                  style={{ ...styles.card, ...styles.cardLocked }}
+                  onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
+                >
+                  <div style={styles.cardLockOverlay}>
+                    <div style={styles.lockIcon}>🔒</div>
+                    <div style={styles.lockText}>Fantasy Package Required</div>
+                  </div>
+                  <div style={{ filter: 'blur(4px)' }}>
+                    <div style={styles.cardHeader}>
+                      <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                        {player.position}{posRank}
+                      </div>
+                      <div style={styles.cardPoints}>{player.points.toFixed(1)}</div>
+                    </div>
+                    <div style={styles.cardBody}>
+                      <div style={styles.playerName}>Player Locked</div>
+                      <div style={styles.playerTeam}>• • •</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div
+                key={player.id}
+                style={{
+                  ...styles.card,
+                  border: isSelected ? '2px solid #3b82f6' : 'none'
+                }}
+                onClick={() => setSelectedPlayer(player)}
+              >
+                {/* Checkbox */}
+                <div
+                  style={styles.cardCheckbox}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handlePlayerSelection(player.id)
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {}}
+                    style={styles.checkbox}
+                  />
+                </div>
+
+                {/* Position Badge & Points */}
+                <div style={styles.cardHeader}>
+                  <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                    {player.position}{posRank}
+                  </div>
+                  <div style={styles.cardPoints}>{player.points.toFixed(1)}</div>
+                </div>
+
+                {/* Player Info */}
+                <div style={styles.cardBody}>
+                  <div style={styles.playerName}>{player.name}</div>
+                  <div style={styles.playerTeam}>{player.team || 'FA'}</div>
+                  {player.injury_status && (
+                    <div style={styles.injuryBadge}>
+                      {player.injury_status.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div style={styles.cardStats}>
+                  <div style={styles.cardStat}>
+                    <span style={styles.cardStatLabel}>Boost</span>
+                    <span style={{ 
+                      ...styles.cardStatValue, 
+                      color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
+                    }}>
+                      {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                    </span>
+                  </div>
+                  {player.avgAboveProjected !== undefined && player.avgAboveProjected !== 0 && (
+                    <div style={styles.cardStat}>
+                      <span style={styles.cardStatLabel}>vs Proj</span>
+                      <span style={{ 
+                        ...styles.cardStatValue, 
+                        color: player.avgAboveProjected > 0 ? '#10b981' : '#ef4444' 
+                      }}>
+                        {player.avgAboveProjected > 0 ? '+' : ''}{player.avgAboveProjected.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Empty State */}
+        {filteredPlayers.length === 0 && (
+          <div style={styles.emptyState}>
+            <p>No players found matching your filters</p>
+          </div>
+        )}
       </div>
 
       {/* Player Detail Modal */}
       {selectedPlayer && (
-        <div style={modalStyles.overlay} onClick={() => setSelectedPlayer(null)}>
-          <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
-            <button style={modalStyles.close} onClick={() => setSelectedPlayer(null)}>×</button>
-            
-            <div style={modalStyles.header}>
-              <h2 style={modalStyles.playerName}>{selectedPlayer.name}</h2>
-              <p style={modalStyles.playerInfo}>
-                {selectedPlayer.position} • {selectedPlayer.team || 'Free Agent'}
-                {selectedPlayer.injury_status ? ` • ${selectedPlayer.injury_status}` : ''}
-              </p>
-            </div>
-
-            <div style={modalStyles.statsGrid}>
-              <div style={modalStyles.statBox}>
-                <div style={modalStyles.statLabel}>Projected Points</div>
-                <div style={modalStyles.statValue}>{selectedPlayer.points.toFixed(1)}</div>
-              </div>
-              <div style={modalStyles.statBox}>
-                <div style={modalStyles.statLabel}>Odds Factor</div>
-                <div style={{ ...modalStyles.statValue, color: selectedPlayer.boost >= 0 ? '#10b981' : '#ef4444' }}>
-                  {selectedPlayer.boost >= 0 ? '+' : ''}{selectedPlayer.boost.toFixed(1)}%
-                </div>
-              </div>
-            </div>
-
-            {selectedPlayer.projectionData && (
-              <div style={modalStyles.propSection}>
-                <div style={modalStyles.propTitle}>Projection Details</div>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Full breakdown available in premium version
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <PlayerModal
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+        />
       )}
 
       {/* Comparison Modal */}
       {showComparison && (
-        <div style={modalStyles.overlay} onClick={() => setShowComparison(false)}>
-          <div style={{ ...modalStyles.content, maxWidth: '1200px', width: '95%' }} onClick={(e) => e.stopPropagation()}>
-            <button style={modalStyles.close} onClick={() => setShowComparison(false)}>×</button>
-            
-            <div style={modalStyles.header}>
-              <h2 style={modalStyles.playerName}>Player Comparison</h2>
-              <p style={modalStyles.playerInfo}>{selectedPlayers.size} players selected</p>
-            </div>
-
-            <div style={modalStyles.comparisonGrid}>
-              {Array.from(selectedPlayers).map(playerId => {
-                const player = allPlayers.find(p => p.id === playerId)
-                if (!player) return null
-
-                return (
-                  <div key={player.id} style={modalStyles.comparisonCard}>
-                    <div style={modalStyles.comparisonHeader}>
-                      <div style={modalStyles.comparisonName}>{player.name}</div>
-                      <div style={modalStyles.comparisonInfo}>{player.position} • {player.team}</div>
-                    </div>
-                    <div style={modalStyles.comparisonStats}>
-                      <div style={modalStyles.comparisonStatRow}>
-                        <span style={modalStyles.comparisonStatLabel}>Projected Points</span>
-                        <span style={modalStyles.comparisonStatValue}>{player.points.toFixed(1)}</span>
-                      </div>
-                      <div style={modalStyles.comparisonStatRow}>
-                        <span style={modalStyles.comparisonStatLabel}>Odds Boost</span>
-                        <span style={{ ...modalStyles.comparisonStatValue, color: player.boost >= 0 ? '#10b981' : '#ef4444' }}>
-                          {player.boost >= 0 ? '+' : ''}{player.boost.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
+        <ComparisonModal
+          players={Array.from(selectedPlayers).map(id => allPlayers.find(p => p.id === id)!).filter(Boolean)}
+          onClose={() => setShowComparison(false)}
+        />
       )}
 
       {/* Info Modal */}
       {showInfoModal && (
-        <div style={modalStyles.overlay} onClick={() => setShowInfoModal(false)}>
-          <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
-            <button style={modalStyles.close} onClick={() => setShowInfoModal(false)}>×</button>
-            <h3 style={{ color: '#fff', marginBottom: '1rem' }}>About</h3>
-            <p style={{ color: '#e5e7eb', fontSize: '0.8rem', lineHeight: 1.6 }}>
-              <b>PTS:</b> Final projection w/ odds<br />
-              <b>Weight:</b> odds boost from base proj.<br />
-              <b>Check Box:</b> Compare up to 4 players<br /><br />
-              <b>Data:</b> Live from Odds API updated every 30min<br /><br />
-              <b>Soon:</b> Week-to-week projection changes, Player vs average tracking, Projection vs actual results
-            </p>
-          </div>
-        </div>
+        <InfoModal onClose={() => setShowInfoModal(false)} />
       )}
 
       <style jsx>{`
@@ -592,216 +518,213 @@ export default function FantasyPage() {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-
-        .injury-badge {
-          display: inline-block;
-          padding: 0.125rem 0.375rem;
-          border-radius: 3px;
-          fontSize: 0.625rem;
-          fontWeight: 700;
-          textTransform: uppercase;
-        }
-
-        .injury-badge.q {
-          background: rgba(245, 158, 11, 0.2);
-          color: #f59e0b;
-        }
-
-        .injury-badge.d {
-          background: rgba(239, 68, 68, 0.2);
-          color: #ef4444;
-        }
-
-        .injury-badge.o,
-        .injury-badge.ir {
-          background: rgba(239, 68, 68, 0.3);
-          color: #ef4444;
-        }
-
-        @media (max-width: 768px) {
-          .hide-mobile {
-            display: none !important;
-          }
-        }
       `}</style>
     </div>
   )
 }
 
-const modalStyles = {
-  overlay: {
-    display: 'flex',
-    position: 'fixed' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0, 0, 0, 0.9)',
-    backdropFilter: 'blur(8px)',
-    zIndex: 10000,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '1rem'
-  },
-  content: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: 'none',
-    borderRadius: '24px',
-    padding: '1.5rem',
-    maxWidth: '90%',
-    width: '650px',
-    maxHeight: '85vh',
-    overflowY: 'auto' as const,
-    position: 'relative' as const,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-  },
-  close: {
-    position: 'absolute' as const,
-    top: '0.75rem',
-    right: '0.75rem',
-    background: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    color: 'rgba(255, 255, 255, 0.7)',
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    transition: 'all 0.2s'
-  },
-  header: {
-    marginBottom: '1rem',
-    paddingBottom: '0.75rem',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
-  },
-  playerName: {
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: '0.25rem'
-  },
-  playerInfo: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '0.75rem'
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '0.75rem',
-    marginBottom: '1rem'
-  },
-  statBox: {
-    background: 'rgba(0, 0, 0, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    padding: '0.75rem'
-  },
-  statLabel: {
-    fontSize: '0.625rem',
-    color: 'rgba(255, 255, 255, 0.6)',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-    marginBottom: '0.125rem'
-  },
-  statValue: {
-    fontSize: '1rem',
-    fontWeight: '700',
-    color: '#ffffff'
-  },
-  propSection: {
-    marginBottom: '1rem',
-    background: 'rgba(0, 0, 0, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    padding: '0.75rem'
-  },
-  propTitle: {
-    fontSize: '0.7rem',
-    fontWeight: '600',
-    color: '#60a5fa',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em'
-  },
-  comparisonGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '1rem',
-    marginTop: '1rem'
-  },
-  comparisonCard: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    borderRadius: '12px',
-    padding: '1rem'
-  },
-  comparisonHeader: {
-    marginBottom: '1rem',
-    paddingBottom: '0.5rem',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
-  },
-  comparisonName: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: '0.25rem'
-  },
-  comparisonInfo: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '0.625rem'
-  },
-  comparisonStats: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem'
-  },
-  comparisonStatRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.375rem 0',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-  },
-  comparisonStatLabel: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '0.6875rem'
-  },
-  comparisonStatValue: {
-    fontWeight: '600',
-    color: '#ffffff',
-    fontSize: '0.75rem'
-  }
+// Player Modal Component
+function PlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
+        <button style={modalStyles.close} onClick={onClose}>×</button>
+        
+        <div style={modalStyles.header}>
+          <h2 style={modalStyles.playerName}>{player.name}</h2>
+          <p style={modalStyles.playerInfo}>
+            {player.position} • {player.team || 'Free Agent'}
+            {player.injury_status ? ` • ${player.injury_status}` : ''}
+          </p>
+        </div>
+
+        {/* Main Stats */}
+        <div style={modalStyles.statsGrid}>
+          <div style={modalStyles.statBox}>
+            <div style={modalStyles.statLabel}>Projected Points</div>
+            <div style={modalStyles.statValue}>{player.points.toFixed(1)}</div>
+          </div>
+          <div style={modalStyles.statBox}>
+            <div style={modalStyles.statLabel}>Odds Boost</div>
+            <div style={{ ...modalStyles.statValue, color: player.boost >= 0 ? '#10b981' : '#ef4444' }}>
+              {player.boost >= 0 ? '+' : ''}{player.boost.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Historical Performance */}
+        {player.historicalData && player.historicalData.length > 0 && (
+          <div style={modalStyles.section}>
+            <div style={modalStyles.sectionTitle}>Historical Performance</div>
+            
+            {/* Overall Averages */}
+            {player.avgAboveProjected !== undefined && (
+              <div style={modalStyles.historicalSummary}>
+                <div style={modalStyles.historicalStat}>
+                  <span style={modalStyles.historicalLabel}>Avg vs Projected</span>
+                  <span style={{ 
+                    ...modalStyles.historicalValue, 
+                    color: player.avgAboveProjected > 0 ? '#10b981' : '#ef4444' 
+                  }}>
+                    {player.avgAboveProjected > 0 ? '+' : ''}{player.avgAboveProjected.toFixed(1)} pts
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Week by week */}
+            <div style={modalStyles.weeklyList}>
+              {player.historicalData.slice().reverse().map(week => (
+                <div key={week.week} style={modalStyles.weekRow}>
+                  <div style={modalStyles.weekLabel}>Week {week.week}</div>
+                  <div style={modalStyles.weekStats}>
+                    <span style={modalStyles.weekStat}>
+                      Proj: {week.projected.toFixed(1)}
+                    </span>
+                    <span style={modalStyles.weekStat}>
+                      Actual: {week.actual > 0 ? week.actual.toFixed(1) : 'TBD'}
+                    </span>
+                    {week.actual > 0 && (
+                      <span style={{ 
+                        ...modalStyles.weekDiff, 
+                        color: week.actual >= week.projected ? '#10b981' : '#ef4444' 
+                      }}>
+                        {week.actual >= week.projected ? '+' : ''}{(week.actual - week.projected).toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Projection Details */}
+        {player.projectionData && (
+          <div style={modalStyles.section}>
+            <div style={modalStyles.sectionTitle}>Full Projections Available in Premium</div>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem' }}>
+              Upgrade to see detailed prop breakdowns, odds analysis, and more
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
+// Comparison Modal Component  
+function ComparisonModal({ players, onClose }: { players: Player[]; onClose: () => void }) {
+  const topPlayer = players.reduce((prev, current) => 
+    (current.points > prev.points) ? current : prev
+  )
+
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={{ ...modalStyles.content, maxWidth: '1200px', width: '95%' }} onClick={(e) => e.stopPropagation()}>
+        <button style={modalStyles.close} onClick={onClose}>×</button>
+        
+        <div style={modalStyles.header}>
+          <h2 style={modalStyles.playerName}>Start: {topPlayer.name} ({topPlayer.points.toFixed(1)} pts)</h2>
+          <p style={modalStyles.playerInfo}>Comparing {players.length} players</p>
+        </div>
+
+        <div style={modalStyles.comparisonGrid}>
+          {players.map(player => {
+            const isTop = player.id === topPlayer.id
+
+            return (
+              <div key={player.id} style={modalStyles.comparisonCard}>
+                <div style={modalStyles.comparisonHeader}>
+                  <div style={modalStyles.comparisonName}>
+                    {player.name} {isTop ? '👑' : ''}
+                  </div>
+                  <div style={modalStyles.comparisonInfo}>{player.position} • {player.team}</div>
+                </div>
+                <div style={modalStyles.comparisonStats}>
+                  <div style={modalStyles.comparisonStatRow}>
+                    <span>Projected Points</span>
+                    <span style={{ fontWeight: '700', color: isTop ? '#10b981' : '#fff' }}>
+                      {player.points.toFixed(1)}
+                    </span>
+                  </div>
+                  <div style={modalStyles.comparisonStatRow}>
+                    <span>Odds Boost</span>
+                    <span style={{ color: player.boost >= 0 ? '#10b981' : '#ef4444' }}>
+                      {player.boost >= 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                    </span>
+                  </div>
+                  {player.avgAboveProjected !== undefined && player.avgAboveProjected !== 0 && (
+                    <div style={modalStyles.comparisonStatRow}>
+                      <span>Avg vs Projected</span>
+                      <span style={{ color: player.avgAboveProjected > 0 ? '#10b981' : '#ef4444' }}>
+                        {player.avgAboveProjected > 0 ? '+' : ''}{player.avgAboveProjected.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Info Modal Component
+function InfoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
+        <button style={modalStyles.close} onClick={onClose}>×</button>
+        <h3 style={{ color: '#fff', marginBottom: '1rem' }}>About Fantasy Rankings</h3>
+        <div style={{ color: '#e5e7eb', fontSize: '0.875rem', lineHeight: 1.6 }}>
+          <p style={{ marginBottom: '0.75rem' }}>
+            <strong>Points:</strong> Final projection incorporating Vegas betting lines<br />
+            <strong>Boost:</strong> Percentage increase/decrease from base projection due to odds<br />
+            <strong>vs Proj:</strong> Player's average performance above/below projections
+          </p>
+          <p style={{ marginBottom: '0.75rem' }}>
+            <strong>Filters:</strong><br />
+            • <strong>Above Projected:</strong> Players consistently outperforming projections<br />
+            • <strong>Trending Up:</strong> Players with increasing projections week-over-week<br />
+            • <strong>Most Accurate:</strong> Players with smallest variance between projected and actual
+          </p>
+          <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+            Data updates every 30 minutes from live betting markets
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Helper function
 function getPosBadgeStyle(position: string) {
-  const styles: any = {
-    display: 'inline-block',
+  const base = {
     padding: '0.25rem 0.5rem',
-    borderRadius: '4px',
+    borderRadius: '6px',
     fontSize: '0.75rem',
-    fontWeight: '600',
-    textAlign: 'center' as const,
-    minWidth: '48px'
+    fontWeight: '700',
+    textAlign: 'center' as const
   }
 
   switch (position) {
     case 'QB':
-      return { ...styles, background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }
+      return { ...base, background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }
     case 'RB':
-      return { ...styles, background: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }
+      return { ...base, background: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }
     case 'WR':
-      return { ...styles, background: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6' }
+      return { ...base, background: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6' }
     case 'TE':
-      return { ...styles, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }
+      return { ...base, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }
     default:
-      return styles
+      return base
   }
 }
 
+// Styles
 const styles = {
   page: {
     minHeight: '100vh',
@@ -852,74 +775,73 @@ const styles = {
     margin: '0 auto'
   },
   unlockCta: {
-    marginBottom: '1.5rem',
+    marginBottom: '2rem',
     textAlign: 'center' as const
   },
   unlockButton: {
-    display: 'inline-block',
-    padding: '0.625rem 1.5rem',
+    padding: '0.75rem 2rem',
     background: 'linear-gradient(135deg, #047857, #10b981, #34d399)',
     color: '#ffffff',
-    fontSize: '0.875rem',
+    fontSize: '0.9375rem',
     fontWeight: '600',
     borderRadius: '25px',
     border: 'none',
     cursor: 'pointer',
-    letterSpacing: '0.01em',
-    boxShadow: '0 3px 10px rgba(16, 185, 129, 0.25)',
+    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
     transition: 'all 0.3s ease'
   },
-  tableContainer: {
+  filtersContainer: {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: 'none',
     borderRadius: '24px',
-    overflow: 'hidden',
+    padding: '1.5rem',
+    marginBottom: '2rem',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
   },
-  controls: {
-    padding: '1.25rem',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-  },
-  controlsHeader: {
+  filtersRow: {
     display: 'flex',
-    justifyContent: 'flex-end',
-    marginBottom: '0.75rem'
-  },
-  infoButton: {
-    padding: '0.5rem',
-    borderRadius: '8px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  controlsRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     gap: '1rem',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
+    alignItems: 'center'
   },
   searchContainer: {
-    flex: 1,
-    minWidth: '250px',
-    maxWidth: '500px'
+    flex: '1',
+    minWidth: '200px'
   },
   searchInput: {
     width: '100%',
-    padding: '0.625rem 1rem',
+    padding: '0.75rem 1rem',
     background: 'rgba(255, 255, 255, 0.05)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
+    borderRadius: '12px',
     color: '#ffffff',
     fontSize: '0.875rem'
   },
-  controlBadges: {
+  filterSelect: {
+    padding: '0.75rem 1rem',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    color: '#ffffff',
+    fontSize: '0.875rem',
+    cursor: 'pointer',
+    minWidth: '150px'
+  },
+  infoButton: {
+    padding: '0.75rem',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    color: 'rgba(255, 255, 255, 0.7)',
+    transition: 'all 0.2s'
+  },
+  selectionControls: {
     display: 'flex',
     gap: '0.75rem',
-    alignItems: 'center'
+    marginTop: '1rem',
+    flexWrap: 'wrap' as const
   },
   badge: {
     padding: '0.5rem 1rem',
@@ -929,137 +851,318 @@ const styles = {
     fontSize: '0.8125rem',
     color: '#3b82f6',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    whiteSpace: 'nowrap' as const
+    transition: 'all 0.2s'
   },
   badgeGreen: {
     background: 'rgba(16, 185, 129, 0.1)',
     borderColor: 'rgba(16, 185, 129, 0.3)',
     color: '#10b981'
   },
-  tableScroll: {
-    overflowX: 'auto' as const,
-    width: '100%'
+  cardsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '1.5rem'
   },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    fontSize: '0.8125rem'
-  },
-  th: {
-    padding: '0.875rem 0.75rem',
-    textAlign: 'left' as const,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '0.75rem',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
+  card: {
+    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    borderRadius: '20px',
+    padding: '1.5rem',
     cursor: 'pointer',
-    userSelect: 'none' as const,
-    whiteSpace: 'nowrap' as const
+    transition: 'all 0.3s ease',
+    position: 'relative' as const,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
   },
-  thCheckbox: {
-    width: '40px',
-    padding: '0.875rem 0.5rem'
+  cardLocked: {
+    cursor: 'not-allowed'
   },
-  thHideMobile: {
-    padding: '0.875rem 0.75rem',
-    textAlign: 'left' as const,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: '0.75rem',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em'
+  cardLockOverlay: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'rgba(0, 0, 0, 0.6)',
+    backdropFilter: 'blur(2px)',
+    borderRadius: '20px',
+    zIndex: 1
   },
-  sortIndicator: {
-    display: 'inline-block',
-    marginLeft: '0.25rem',
-    fontSize: '0.625rem',
-    opacity: 0.3
+  lockIcon: {
+    fontSize: '3rem',
+    marginBottom: '0.5rem'
   },
-  tr: {
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    transition: 'background 0.2s',
-    cursor: 'pointer'
+  lockText: {
+    color: '#f59e0b',
+    fontSize: '0.875rem',
+    fontWeight: '600'
   },
-  trLocked: {
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    transition: 'background 0.2s',
-    cursor: 'pointer',
-    opacity: 0.7
-  },
-  td: {
-    padding: '0.75rem',
-    color: '#ffffff',
-    fontSize: '0.8125rem'
+  cardCheckbox: {
+    position: 'absolute' as const,
+    top: '1rem',
+    left: '1rem',
+    zIndex: 2
   },
   checkbox: {
-    width: '18px',
-    height: '18px',
+    width: '20px',
+    height: '20px',
     cursor: 'pointer',
     accentColor: '#3b82f6'
   },
-  playerName: {
-    fontWeight: '600',
-    color: '#ffffff',
-    display: 'block',
-    marginBottom: '0.125rem'
-  },
-  playerTeam: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: '0.75rem'
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem'
   },
   posBadge: {
+    padding: '0.25rem 0.5rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
+    fontWeight: '700'
+  },
+  cardPoints: {
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  cardBody: {
+    marginBottom: '1rem'
+  },
+  playerName: {
+    fontSize: '1.125rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: '0.25rem'
+  },
+  playerTeam: {
+    fontSize: '0.875rem',
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: '0.5rem'
+  },
+  injuryBadge: {
     display: 'inline-block',
     padding: '0.25rem 0.5rem',
-    borderRadius: '4px',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    textAlign: 'center' as const,
-    minWidth: '48px'
-  },
-  lockedName: {
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontStyle: 'italic',
-    display: 'block'
-  },
-  lockedTagline: {
+    background: 'rgba(245, 158, 11, 0.2)',
     color: '#f59e0b',
-    fontSize: '0.7rem',
-    opacity: 0.8
-  },
-  lockedData: {
-    filter: 'blur(4px)',
-    userSelect: 'none' as const,
-    pointerEvents: 'none' as const
-  },
-  hideMobile: {
-    '@media (max-width: 768px)': {
-      display: 'none'
-    }
-  },
-  posDropdown: {
-    position: 'absolute' as const,
-    top: '100%',
-    left: 0,
-    background: 'rgba(30, 41, 59, 0.98)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
-    padding: '0.5rem',
-    marginTop: '0.25rem',
-    zIndex: 100,
-    minWidth: '100px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-  },
-  posOption: {
-    padding: '0.5rem',
     borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    color: '#ffffff',
+    fontSize: '0.625rem',
+    fontWeight: '700'
+  },
+  cardStats: {
+    display: 'flex',
+    gap: '1rem'
+  },
+  cardStat: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.25rem'
+  },
+  cardStatLabel: {
+    fontSize: '0.6875rem',
+    color: 'rgba(255, 255, 255, 0.6)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em'
+  },
+  cardStatValue: {
     fontSize: '0.875rem',
-    textAlign: 'center' as const
+    fontWeight: '700'
+  },
+  emptyState: {
+    textAlign: 'center' as const,
+    padding: '4rem 2rem',
+    color: 'rgba(255, 255, 255, 0.5)'
   }
 }
 
+const modalStyles = {
+  overlay: {
+    display: 'flex',
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.9)',
+    backdropFilter: 'blur(8px)',
+    zIndex: 10000,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1rem'
+  },
+  content: {
+    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    borderRadius: '24px',
+    padding: '2rem',
+    maxWidth: '90%',
+    width: '700px',
+    maxHeight: '85vh',
+    overflowY: 'auto' as const,
+    position: 'relative' as const,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+  },
+  close: {
+    position: 'absolute' as const,
+    top: '1rem',
+    right: '1rem',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    color: 'rgba(255, 255, 255, 0.7)',
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    fontSize: '1.25rem',
+    transition: 'all 0.2s'
+  },
+  header: {
+    marginBottom: '1.5rem',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+  },
+  playerName: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: '0.5rem'
+  },
+  playerInfo: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: '0.875rem'
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '1rem',
+    marginBottom: '1.5rem'
+  },
+  statBox: {
+    background: 'rgba(0, 0, 0, 0.4)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    padding: '1rem'
+  },
+  statLabel: {
+    fontSize: '0.6875rem',
+    color: 'rgba(255, 255, 255, 0.6)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    marginBottom: '0.5rem'
+  },
+  statValue: {
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    color: '#ffffff'
+  },
+  section: {
+    marginBottom: '1.5rem',
+    background: 'rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    padding: '1rem'
+  },
+  sectionTitle: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: '#60a5fa',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    marginBottom: '1rem'
+  },
+  historicalSummary: {
+    marginBottom: '1rem',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+  },
+  historicalStat: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  historicalLabel: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: '0.875rem'
+  },
+  historicalValue: {
+    fontWeight: '700',
+    fontSize: '1rem'
+  },
+  weeklyList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.75rem'
+  },
+  weekRow: {
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '8px',
+    padding: '0.75rem'
+  },
+  weekLabel: {
+    color: '#60a5fa',
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    marginBottom: '0.5rem'
+  },
+  weekStats: {
+    display: 'flex',
+    gap: '1rem',
+    fontSize: '0.8125rem'
+  },
+  weekStat: {
+    color: 'rgba(255, 255, 255, 0.7)'
+  },
+  weekDiff: {
+    fontWeight: '700'
+  },
+  comparisonGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '1rem',
+    marginTop: '1rem'
+  },
+  comparisonCard: {
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '12px',
+    padding: '1rem'
+  },
+  comparisonHeader: {
+    marginBottom: '1rem',
+    paddingBottom: '0.75rem',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.15)'
+  },
+  comparisonName: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: '0.25rem'
+  },
+  comparisonInfo: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: '0.75rem'
+  },
+  comparisonStats: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem'
+  },
+  comparisonStatRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.5rem 0',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    fontSize: '0.8125rem',
+    color: 'rgba(255, 255, 255, 0.8)'
+  }
+}

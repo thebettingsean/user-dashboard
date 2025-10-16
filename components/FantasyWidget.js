@@ -135,7 +135,7 @@ export default function FantasyWidget() {
   }
 
   return (
-    <a href="https://www.thebettinginsider.com/fantasy/weekly-rankings" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+    <a href="/fantasy" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg" 
