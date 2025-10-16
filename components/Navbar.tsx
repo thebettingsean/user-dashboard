@@ -113,16 +113,17 @@ export default function Navbar() {
     <>
       <style jsx>{`
         .navbar {
-          background: rgba(15, 23, 42, 0.95);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(15, 23, 42, 0.75);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
           position: sticky;
           top: 0;
           z-index: 1000;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
           min-height: 85px;
           display: flex;
           align-items: center;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.3), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
         }
 
         .navbar-content {
@@ -205,16 +206,18 @@ export default function Navbar() {
           top: 100%;
           left: 0;
           margin-top: 0.5rem;
-          background: rgba(20, 20, 20, 0.98);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
+          background: rgba(20, 20, 20, 0.85);
+          backdrop-filter: blur(16px) saturate(180%);
+          -webkit-backdrop-filter: blur(16px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 12px;
           padding: 0.5rem 0;
           min-width: 220px;
           opacity: 0;
           visibility: hidden;
           transform: translateY(-10px);
-          transition: all 0.2s;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.1) inset;
         }
 
         .nav-item:hover .dropdown {
@@ -235,24 +238,27 @@ export default function Navbar() {
         }
 
         .premium-card {
-          background: rgba(40, 40, 40, 0.95);
+          background: rgba(40, 40, 40, 0.7);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           border: 1.5px solid rgba(255, 255, 255, 0.15);
           border-radius: 12px;
           padding: 0;
           text-align: center;
-          transition: all 0.3s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           text-decoration: none;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.4);
         }
 
         .premium-card:hover {
-          transform: translateY(-3px);
+          transform: translateY(-4px);
+          background: rgba(50, 50, 50, 0.8);
           border-color: rgba(255, 255, 255, 0.3);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.6);
         }
 
         .premium-card-icon-wrapper {
@@ -310,15 +316,20 @@ export default function Navbar() {
           padding: 0.85rem 1.15rem;
           color: white;
           text-decoration: none;
-          transition: all 0.2s;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
         }
 
         .free-tool-item:hover {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
         }
 
         .free-tool-icon {
@@ -372,20 +383,25 @@ export default function Navbar() {
         }
 
         .sign-in-button {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
-          border: 0.5px solid rgba(59, 130, 246, 0.6);
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.15) 100%);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(59, 130, 246, 0.6);
           color: white;
           padding: 0.6rem 1.5rem;
-          border-radius: 8px;
+          border-radius: 10px;
           font-weight: 600;
           font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 16px 0 rgba(59, 130, 246, 0.2);
         }
 
         .sign-in-button:hover {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 100%);
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.2) 100%);
           border-color: rgba(59, 130, 246, 0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 24px 0 rgba(59, 130, 246, 0.3);
         }
 
         .mobile-menu {
@@ -393,15 +409,17 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(15, 23, 42, 0.98);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
           max-height: 0;
           overflow: hidden;
           opacity: 0;
           transform: translateY(-10px);
-          transition: all 0.35s ease;
-          backdrop-filter: blur(10px);
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 900;
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
         }
 
         .mobile-menu.open {

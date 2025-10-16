@@ -123,17 +123,50 @@ export default function Home() {
         .accordion-content {
           margin-top: 0.75rem;
         }
+        
+        /* Glassmorphism enhancements */
+        .glass-card {
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5);
+          transform: translateY(-2px);
+        }
+        
+        .glass-section {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+        }
       `}</style>
 
       <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '3rem' }}>
+        <div style={{ 
+          marginBottom: '3rem',
+          background: 'rgba(255, 255, 255, 0.02)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '16px',
+          padding: '1.5rem 1.25rem',
+          boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.25)'
+        }}>
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
           </p>
-          <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.85rem', opacity: 0.6, marginBottom: '0' }}>
             These are the tools you need to be a profitable bettor
           </p>
-          <hr style={{ border: 'none', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '2rem' }} />
         </div>
         
         {/* MOBILE VIEW - Accordion */}
@@ -149,14 +182,15 @@ export default function Home() {
               <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                 <div 
                   onClick={() => toggleWidget(widget.id)}
+                  className="glass-card"
                   style={{ 
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '1rem 1.25rem',
-                    border: `0.5px solid ${widget.borderColor}`,
+                    border: `1px solid ${widget.borderColor}`,
                     background: widget.background,
-                    borderRadius: '12px',
+                    borderRadius: '14px',
                     cursor: 'pointer',
                     color: 'white'
                   }}
@@ -186,14 +220,15 @@ export default function Home() {
               <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                 <div 
                   onClick={() => toggleWidget(widget.id)}
+                  className="glass-card"
                   style={{ 
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '1rem 1.25rem',
-                    border: `0.5px solid ${widget.borderColor}`,
+                    border: `1px solid ${widget.borderColor}`,
                     background: widget.background,
-                    borderRadius: '12px',
+                    borderRadius: '14px',
                     cursor: 'pointer',
                     color: 'white'
                   }}
@@ -285,7 +320,16 @@ export default function Home() {
         </div>
 
         {/* Rest of your existing code */}
-        <div style={{ marginTop: '4rem' }}>
+        <div style={{ 
+          marginTop: '4rem',
+          background: 'rgba(255, 255, 255, 0.02)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '16px',
+          padding: '2rem 1.5rem',
+          boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.25)'
+        }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
@@ -315,7 +359,16 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ marginTop: '3rem' }}>
+        <div style={{ 
+          marginTop: '3rem',
+          background: 'rgba(255, 255, 255, 0.02)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: '16px',
+          padding: '2rem 1.5rem',
+          boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.25)'
+        }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
@@ -414,17 +467,20 @@ function getWelcomeMessage(firstName: string | null): string {
 }
 
 const toolLinkStyle = {
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '8px',
+  background: 'rgba(255,255,255,0.04)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: '10px',
   padding: '1rem',
   color: 'white',
   textDecoration: 'none',
-  transition: 'all 0.2s',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  fontSize: '0.9rem'
+  fontSize: '0.9rem',
+  boxShadow: '0 2px 8px 0 rgba(0, 0, 0, 0.2)'
 }
 
 const helpLinkStyle = {

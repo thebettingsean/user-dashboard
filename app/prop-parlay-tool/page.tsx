@@ -580,8 +580,21 @@ function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: st
 }
 
 function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { combo: any, rank: number, bookLogo: string, affiliateLink: string | null, selectedBook: string }) {
+  const [isHovered, setIsHovered] = React.useState(false)
+  
   return (
-    <div style={styles.parlayCard}>
+    <div 
+      style={{
+        ...styles.parlayCard,
+        ...(isHovered && {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+          borderColor: 'rgba(59,130,246,0.6)'
+        })
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div style={styles.parlayCardHeader}>
         <div style={styles.rankCircle}>
           <img src={TITLE_ICON} alt={`Parlay #${rank}`} style={styles.rankIcon} />
@@ -667,7 +680,8 @@ const styles = {
     minHeight: '100vh',
     background: 'linear-gradient(180deg, #334155 0%, #1f2937 15%, #1f2937 100%)',
     padding: '1.5rem 1rem',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    position: 'relative' as const
   },
   container: {
     maxWidth: '1400px',
@@ -726,24 +740,31 @@ const styles = {
     letterSpacing: '0.05em'
   },
   bookSelect: {
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'rgba(255,255,255,0.05)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    border: '1px solid rgba(255,255,255,0.15)',
     color: '#e5e7eb',
-    borderRadius: '8px',
+    borderRadius: '10px',
     padding: '0.5rem 0.75rem',
     fontSize: '0.8rem',
     outline: 'none',
     cursor: 'pointer',
-    minWidth: '160px'
+    minWidth: '160px',
+    boxShadow: '0 2px 8px 0 rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.2s'
   },
   viewToggle: {
     display: 'flex',
     gap: '0.4rem',
     marginBottom: '1.25rem',
-    background: 'rgba(255,255,255,0.05)',
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     padding: '0.3rem',
-    borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)'
+    borderRadius: '10px',
+    border: '1px solid rgba(255,255,255,0.12)',
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.25)'
   },
   toggleBtn: {
     flex: 1,
@@ -758,8 +779,11 @@ const styles = {
     transition: 'all 0.2s'
   },
   toggleBtnActive: {
-    background: 'rgba(96,165,250,0.15)',
-    color: '#60a5fa'
+    background: 'rgba(96,165,250,0.2)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    color: '#60a5fa',
+    boxShadow: '0 2px 8px 0 rgba(96,165,250,0.3)'
   },
   filterRow: {
     marginBottom: '1.25rem'
@@ -768,15 +792,18 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.6rem',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255,255,255,0.12)',
     color: '#e5e7eb',
-    borderRadius: '8px',
+    borderRadius: '10px',
     padding: '0.65rem 1rem',
     fontSize: '0.8rem',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    width: '100%'
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    width: '100%',
+    boxShadow: '0 2px 8px 0 rgba(0, 0, 0, 0.2)'
   },
   filterIcon: {
     width: '16px',
@@ -784,14 +811,17 @@ const styles = {
     opacity: 0.7
   },
   filterDropdown: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: '8px',
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: '12px',
     padding: '0.85rem',
     marginBottom: '1.25rem',
     display: 'grid',
     gap: '0.85rem',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3)'
   },
   filterSection: {
     display: 'flex',
@@ -820,10 +850,14 @@ const styles = {
     gap: '0.5rem'
   },
   tableRow: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(59,130,246,0.35)',
-    borderRadius: '10px',
-    overflow: 'hidden'
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(59,130,246,0.4)',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.25)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   },
   tableRowHeader: {
     display: 'flex',
@@ -966,11 +1000,14 @@ const styles = {
     gap: '0.85rem'
   },
   parlayCard: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(59,130,246,0.35)',
-    borderRadius: '12px',
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(59,130,246,0.4)',
+    borderRadius: '14px',
     padding: '1rem',
-    transition: 'all 0.25s'
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3)'
   },
   parlayCardHeader: {
     display: 'flex',
