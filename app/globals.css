@@ -16,10 +16,8 @@
 
 body {
   background: linear-gradient(135deg, 
-    #cbd5e1 0%,      /* Light silver-blue */
-    #334155 30%,     /* Medium slate */
-    #1e293b 60%,     /* Dark slate-blue */
-    #0a0f1a 100%     /* Almost black */
+    #1e3a5f 0%,      /* Slightly lighter blue (top-left) */
+    #0e172a 100%     /* Dark blue (bottom-right) */
   );
   background-attachment: fixed;
   color: var(--w);
