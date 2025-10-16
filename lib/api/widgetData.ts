@@ -186,6 +186,26 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   }
 }
 
+// Helper: Fetch referee stats for multiple games in parallel
+async function fetchRefereeStatsParallel(league: League, games: any[]) {
+  const gamesWithRefs = games.filter(g => g.referee_id) // Only games with referees
+  
+  const promises = gamesWithRefs.map(async (game) => {
+    try {
+      const refereeStats = await fetchRefereeStats(league, game.game_id)
+      if (refereeStats && refereeStats.over_under) {
+        return { game, refereeStats }
+      }
+    } catch (error) {
+      console.error(`Error fetching referee stats for ${game.game_id}:`, error)
+    }
+    return null
+  })
+  
+  const results = await Promise.all(promises)
+  return results.filter(r => r !== null) as Array<{ game: any, refereeStats: any }>
+}
+
 // Get data for the Matchup Data widget
 export async function getMatchupWidgetData(): Promise<MatchupWidgetData> {
   const dayOfWeek = new Date().getDay()
@@ -200,79 +220,90 @@ export async function getMatchupWidgetData(): Promise<MatchupWidgetData> {
   const leagues = [primary, ...fallbacks]
   console.log('Will try leagues in order:', leagues)
   
-  for (const league of leagues) {
-    console.log(`\n--- Trying league: ${league.toUpperCase()} ---`)
-    try {
+  // Cache games to avoid re-fetching
+  const gamesCache = new Map<League, any[]>()
+  const refereeCache = new Map<League, Array<{ game: any, refereeStats: any }>>()
+  
+  // Helper to get games with referee stats
+  async function getGamesWithReferees(league: League) {
+    if (refereeCache.has(league)) {
+      return refereeCache.get(league)!
+    }
+    
+    if (!gamesCache.has(league)) {
       const { from, to } = getDateRangeForSport(league)
-      console.log(`Date range: ${from} to ${to}`)
-      
       const games = await fetchGames(league, from, to)
-      console.log(`Found ${games.length} games for ${league}`)
-      
-      if (games.length === 0) {
-        console.log(`No games for ${league}, moving to next league`)
-        continue
-      }
-      
-      console.log(`First game: ${games[0]?.name || 'N/A'}`)
-      
-      // Get referee stats for games that have referees assigned
-      const gamesWithRefs = []
-      for (const game of games.slice(0, 5)) {
-        if (game.referee_id) {
-          console.log(`Fetching referee stats for: ${game.name} (Ref ID: ${game.referee_id})`)
-          try {
-            const refereeStats = await fetchRefereeStats(league, game.game_id)
-            if (refereeStats && refereeStats.over_under) {
-              console.log(`✓ Got referee stats for ${game.name}`)
-              gamesWithRefs.push({ game, refereeStats })
-            } else {
-              console.log(`✗ Referee stats missing over_under data for ${game.name}`)
-            }
-          } catch (error) {
-            console.error(`✗ Error fetching referee stats for ${game.game_id}:`, error)
-            continue
-          }
-        } else {
-          console.log(`Skipping ${game.name} - no referee assigned yet`)
-        }
-      }
-      
-      console.log(`Total games with referee stats: ${gamesWithRefs.length}`)
+      gamesCache.set(league, games)
+    }
+    
+    const games = gamesCache.get(league)!
+    if (games.length === 0) {
+      return []
+    }
+    
+    // Fetch referee stats in parallel for first 3 games with referees
+    const gamesWithRefs = await fetchRefereeStatsParallel(league, games.slice(0, 3))
+    refereeCache.set(league, gamesWithRefs)
+    
+    return gamesWithRefs
+  }
+  
+  // PHASE 1: Find referee trends
+  let refereeTrends: RefereeTrend[] = []
+  let refereeLeague = ''
+  
+  console.log('\n🎯 PHASE 1: Finding Referee Trends')
+  for (const league of leagues) {
+    console.log(`\n--- Checking ${league.toUpperCase()} for referee data ---`)
+    try {
+      const gamesWithRefs = await getGamesWithReferees(league)
       
       if (gamesWithRefs.length === 0) {
-        console.log(`No referee stats for ${league}, moving to next league`)
+        console.log(`No games with referee data for ${league}`)
         continue
       }
       
-      // Find top referee trends
-      const refereeTrends = findTopRefereeTrends(gamesWithRefs)
-      console.log(`Found ${refereeTrends.length} referee trends`)
+      console.log(`Found ${gamesWithRefs.length} games with referee data`)
       
-      // Placeholder team trends
-      const teamTrends = [
-        { description: 'Eagles rush offense', matchup: '#1 vs #28 defense' },
-        { description: 'Ravens home favorite', matchup: '9-1 ATS L10' }
-      ]
+      const trends = findTopRefereeTrends(gamesWithRefs)
       
-      console.log(`SUCCESS: Returning ${league.toUpperCase()} data`)
-      console.log('=== MATCHUP WIDGET DEBUG END ===\n')
-      
-      return {
-        refereeTrends,
-        teamTrends,
-        league: league.toUpperCase()
+      if (trends.length > 0) {
+        refereeTrends = trends
+        refereeLeague = league.toUpperCase()
+        console.log(`✅ Found ${trends.length} referee trends in ${league.toUpperCase()}`)
+        break
+      } else {
+        console.log(`No significant referee trends for ${league}`)
       }
     } catch (error) {
       console.error(`ERROR in ${league}:`, error)
-      continue
     }
   }
   
-  console.log('WARNING: All leagues failed, returning sample data')
+  // PHASE 2: Find team trends (placeholder - can be expanded later)
+  const teamTrends = [
+    { description: 'Top matchup edge', matchup: 'Check insider data' },
+    { description: 'Statistical advantage', matchup: 'Historical trend' }
+  ]
+  
+  // Return data if we found anything
+  if (refereeTrends.length > 0 || teamTrends.length > 0) {
+    const displayLeague = refereeLeague || 'NBA'
+    console.log(`\n✅ SUCCESS: Returning matchup data`)
+    console.log(`  Referee trends from: ${refereeLeague || 'None'}`)
+    console.log('=== MATCHUP WIDGET DEBUG END ===\n')
+    
+    return {
+      refereeTrends,
+      teamTrends,
+      league: displayLeague
+    }
+  }
+  
+  console.log('WARNING: No matchup data found, returning sample data')
   console.log('=== MATCHUP WIDGET DEBUG END ===\n')
   
-  // Fallback to sample data if no league has data
+  // Fallback to sample data
   return {
     refereeTrends: [
       { game: 'LAR/SEA', referee: 'Johnson', trend: 'Under 8-2 L10', percentage: 80 },
