@@ -153,13 +153,7 @@ export default function Home() {
       <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ 
         marginBottom: '2rem',
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(35px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-        border: 'none',
-        borderRadius: '20px',
-        padding: '1.5rem 1.25rem',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        padding: '0.5rem 1.25rem',
         textAlign: 'center' as const
       }}>
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
@@ -323,13 +317,7 @@ export default function Home() {
         {/* Rest of your existing code */}
         <div style={{ 
           marginTop: '2rem',
-          background: 'rgba(255, 255, 255, 0.08)',
-          backdropFilter: 'blur(35px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-          border: '1.5px solid rgba(255, 255, 255, 0.15)',
-          borderRadius: '20px',
-          padding: '2rem 1.5rem',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          padding: '1rem 0.5rem',
           textAlign: 'center' as const
         }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -363,13 +351,7 @@ export default function Home() {
 
         <div style={{ 
           marginTop: '2rem',
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(35px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-          border: 'none',
-          borderRadius: '20px',
-          padding: '2rem 1.5rem',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          padding: '1rem 0.5rem',
           textAlign: 'center' as const
         }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
