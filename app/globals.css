@@ -17,7 +17,8 @@
 body {
   background: linear-gradient(135deg, 
     #000000 0%,      /* Black (top-left) */
-    #0e172a 100%     /* Dark blue (bottom-right) */
+    #0a1018 40%,     /* Transition zone */
+    #0e172a 100%     /* Dark blue (bottom-right, more dominant) */
   );
   background-attachment: fixed;
   color: var(--w);
