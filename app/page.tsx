@@ -150,16 +150,17 @@ export default function Home() {
         }
       `}</style>
 
-      <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ 
-        marginBottom: '3rem',
-        background: 'rgba(255, 255, 255, 0.04)',
-        backdropFilter: 'blur(25px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(25px) saturate(180%)',
-        border: '1.5px solid rgba(255, 255, 255, 0.1)',
+        marginBottom: '2rem',
+        background: 'rgba(255, 255, 255, 0.08)',
+        backdropFilter: 'blur(35px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(35px) saturate(180%)',
+        border: '1.5px solid rgba(255, 255, 255, 0.15)',
         borderRadius: '20px',
         padding: '1.5rem 1.25rem',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        textAlign: 'center' as const
       }}>
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
@@ -321,16 +322,17 @@ export default function Home() {
 
         {/* Rest of your existing code */}
         <div style={{ 
-          marginTop: '4rem',
-          background: 'rgba(255, 255, 255, 0.02)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: '16px',
+          marginTop: '2rem',
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(35px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(35px) saturate(180%)',
+          border: '1.5px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '20px',
           padding: '2rem 1.5rem',
-          boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          textAlign: 'center' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
@@ -360,16 +362,17 @@ export default function Home() {
         </div>
 
         <div style={{ 
-          marginTop: '3rem',
-          background: 'rgba(255, 255, 255, 0.02)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: '16px',
+          marginTop: '2rem',
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(35px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(35px) saturate(180%)',
+          border: '1.5px solid rgba(255, 255, 255, 0.15)',
+          borderRadius: '20px',
           padding: '2rem 1.5rem',
-          boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          textAlign: 'center' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
