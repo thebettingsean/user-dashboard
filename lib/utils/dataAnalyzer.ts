@@ -231,9 +231,27 @@ function calculateWinPct(wins: number, losses: number): number {
 export function findTopRefereeTrends(
   games: Array<{ game: Game; refereeStats: any }>
 ): RefereeTrend[] {
+  if (games.length === 0) return []
+  
+  // Find the earliest game date to prioritize soonest games
+  const earliestDate = games.reduce((earliest, { game }) => {
+    const gameDate = new Date(game.game_date).getTime()
+    return gameDate < earliest ? gameDate : earliest
+  }, new Date(games[0].game.game_date).getTime())
+  
+  // Only analyze games on the earliest date (ignore later games)
+  const soonestGames = games.filter(({ game }) => {
+    const gameDate = new Date(game.game_date)
+    const earlyDate = new Date(earliestDate)
+    // Same day (ignoring time)
+    return gameDate.toDateString() === earlyDate.toDateString()
+  })
+  
+  console.log(`📅 Analyzing ${soonestGames.length} games from earliest date (${new Date(earliestDate).toDateString()})`)
+  
   const allTrends: RefereeTrend[] = []
 
-  for (const { game, refereeStats } of games) {
+  for (const { game, refereeStats } of soonestGames) {
     if (!refereeStats || refereeStats.total_games < 10) continue
 
     const refName = refereeStats.referee_name?.split(' ').pop() || 'Unknown'
