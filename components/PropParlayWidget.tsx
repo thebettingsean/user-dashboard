@@ -172,15 +172,18 @@ export default function PropParlayWidget() {
 }
 
 const widgetStyle = {
-  background: 'linear-gradient(135deg, rgba(94, 23, 235, 0.12) 0%, rgba(94, 23, 235, 0.04) 100%)',
-  border: '1px solid rgba(94, 23, 235, 0.2)',
-  borderRadius: '16px',
+  background: 'rgba(94, 23, 235, 0.08)',
+  backdropFilter: 'blur(30px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+  border: '1.5px solid rgba(94, 23, 235, 0.3)',
+  borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column' as const,
-  boxShadow: '0 8px 24px rgba(0,0,0,0.25)'
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 23, 235, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.05) inset',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 
 const iconWrapper = {

@@ -15,7 +15,11 @@
 }
 
 body {
-  background: linear-gradient(180deg, var(--d3) 0%, var(--d2) 15%, var(--d2) 100%);
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
+    radial-gradient(ellipse 60% 80% at 100% 50%, rgba(236, 72, 153, 0.2), transparent),
+    radial-gradient(ellipse 60% 80% at 0% 50%, rgba(59, 130, 246, 0.2), transparent),
+    linear-gradient(180deg, #1a1f2e 0%, #0f1419 50%, #0a0e14 100%);
   color: var(--w);
   min-height: 100vh;
   margin: 0;
@@ -24,35 +28,47 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphic animated background orbs */
+/* Multiple animated glassmorphic orbs */
 body::before,
 body::after {
   content: '';
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.15;
+  filter: blur(140px);
+  opacity: 0.25;
   z-index: 0;
-  animation: float 20s ease-in-out infinite;
+  animation: float 25s ease-in-out infinite;
   pointer-events: none;
 }
 
 body::before {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%);
-  top: -200px;
-  right: -200px;
-  animation-delay: -5s;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, rgba(59, 130, 246, 0.3) 40%, transparent 70%);
+  top: -300px;
+  right: -300px;
+  animation-delay: -8s;
 }
 
 body::after {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(249, 115, 22, 0.2) 50%, transparent 100%);
-  bottom: -150px;
-  left: -150px;
-  animation-delay: -10s;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(249, 115, 22, 0.3) 40%, transparent 70%);
+  bottom: -250px;
+  left: -250px;
+  animation-delay: -15s;
+}
+
+/* Additional floating orbs */
+@media (min-width: 768px) {
+  body {
+    background: 
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.4), transparent),
+      radial-gradient(ellipse 60% 80% at 100% 50%, rgba(236, 72, 153, 0.3), transparent),
+      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(59, 130, 246, 0.3), transparent),
+      radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15), transparent),
+      linear-gradient(180deg, #1a1f2e 0%, #0f1419 50%, #0a0e14 100%);
+  }
 }
 
 @keyframes float {
