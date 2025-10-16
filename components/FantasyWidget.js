@@ -212,14 +212,17 @@ const iconWrapper = {
   position: 'absolute',
   top: '1rem',
   right: '1rem',
-  width: '48px',
-  height: '48px',
-  border: '1px solid rgba(186, 19, 47, 0.3)',
+  width: '52px',
+  height: '52px',
+  border: '1.5px solid rgba(186, 19, 47, 0.4)',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(186, 19, 47, 0.05)',
+  background: 'rgba(186, 19, 47, 0.15)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: '0 4px 16px rgba(186, 19, 47, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   zIndex: 2
 }
 
@@ -234,12 +237,16 @@ const titleStyle = {
 }
 
 const weekTag = {
-  background: 'rgba(186, 19, 47, 0.2)',
-  color: '#ba132f',
-  padding: '0.2rem 0.5rem',
-  borderRadius: '4px',
+  background: 'rgba(186, 19, 47, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  color: '#ef4444',
+  padding: '0.3rem 0.6rem',
+  borderRadius: '6px',
   fontSize: '0.65rem',
-  fontWeight: '700'
+  fontWeight: '700',
+  border: '1px solid rgba(186, 19, 47, 0.3)',
+  boxShadow: '0 2px 8px rgba(186, 19, 47, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
 }
 
 const taglineStyle = {

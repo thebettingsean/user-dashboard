@@ -190,14 +190,17 @@ const iconWrapper = {
   position: 'absolute' as const,
   top: '1rem',
   right: '1rem',
-  width: '48px',
-  height: '48px',
-  border: '1px solid rgba(94, 23, 235, 0.3)',
+  width: '52px',
+  height: '52px',
+  border: '1.5px solid rgba(94, 23, 235, 0.4)',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(94, 23, 235, 0.05)',
+  background: 'rgba(94, 23, 235, 0.15)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: '0 4px 16px rgba(94, 23, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   zIndex: 2
 }
 
