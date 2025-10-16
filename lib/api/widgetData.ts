@@ -79,8 +79,15 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
       return []
     }
     
-    // OPTIMIZATION: Only fetch 3 games instead of 5, and do it in parallel
-    const gamesWithData = await fetchPublicMoneyParallel(league, games.slice(0, 3))
+    // Sort games by date (earliest first) to prioritize soonest games
+    const sortedGames = [...games].sort((a, b) => {
+      const dateA = new Date(a.game_date).getTime()
+      const dateB = new Date(b.game_date).getTime()
+      return dateA - dateB
+    })
+    
+    // OPTIMIZATION: Only fetch 3 games instead of 5, and do it in parallel (chronologically)
+    const gamesWithData = await fetchPublicMoneyParallel(league, sortedGames.slice(0, 3))
     publicMoneyCache.set(league, gamesWithData)
     
     return gamesWithData
@@ -241,8 +248,15 @@ export async function getMatchupWidgetData(): Promise<MatchupWidgetData> {
       return []
     }
     
-    // Fetch referee stats in parallel for first 3 games with referees
-    const gamesWithRefs = await fetchRefereeStatsParallel(league, games.slice(0, 3))
+    // Sort games by date (earliest first) to prioritize soonest games
+    const sortedGames = [...games].sort((a, b) => {
+      const dateA = new Date(a.game_date).getTime()
+      const dateB = new Date(b.game_date).getTime()
+      return dateA - dateB
+    })
+    
+    // Fetch referee stats in parallel for first 3 games with referees (chronologically)
+    const gamesWithRefs = await fetchRefereeStatsParallel(league, sortedGames.slice(0, 3))
     refereeCache.set(league, gamesWithRefs)
     
     return gamesWithRefs
