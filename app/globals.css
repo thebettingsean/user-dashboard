@@ -15,11 +15,14 @@
 }
 
 body {
-  background: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
-    radial-gradient(ellipse 60% 80% at 100% 50%, rgba(236, 72, 153, 0.2), transparent),
-    radial-gradient(ellipse 60% 80% at 0% 50%, rgba(59, 130, 246, 0.2), transparent),
-    linear-gradient(180deg, #1a1f2e 0%, #0f1419 50%, #0a0e14 100%);
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.95) 0%, 
+    rgba(40, 40, 40, 0.9) 25%, 
+    rgba(60, 60, 60, 0.85) 50%,
+    rgba(40, 40, 40, 0.9) 75%, 
+    rgba(0, 0, 0, 0.95) 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
   color: var(--w);
   min-height: 100vh;
   margin: 0;
@@ -28,47 +31,35 @@ body {
   overflow-x: hidden;
 }
 
-/* Multiple animated glassmorphic orbs */
+/* Subtle floating orbs for depth */
 body::before,
 body::after {
   content: '';
   position: fixed;
   border-radius: 50%;
-  filter: blur(140px);
-  opacity: 0.25;
+  filter: blur(150px);
+  opacity: 0.08;
   z-index: 0;
-  animation: float 25s ease-in-out infinite;
+  animation: float 30s ease-in-out infinite;
   pointer-events: none;
 }
 
 body::before {
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, rgba(59, 130, 246, 0.3) 40%, transparent 70%);
-  top: -300px;
-  right: -300px;
-  animation-delay: -8s;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  top: -200px;
+  right: 10%;
+  animation-delay: -10s;
 }
 
 body::after {
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, rgba(249, 115, 22, 0.3) 40%, transparent 70%);
-  bottom: -250px;
-  left: -250px;
-  animation-delay: -15s;
-}
-
-/* Additional floating orbs */
-@media (min-width: 768px) {
-  body {
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.4), transparent),
-      radial-gradient(ellipse 60% 80% at 100% 50%, rgba(236, 72, 153, 0.3), transparent),
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(59, 130, 246, 0.3), transparent),
-      radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15), transparent),
-      linear-gradient(180deg, #1a1f2e 0%, #0f1419 50%, #0a0e14 100%);
-  }
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  bottom: -150px;
+  left: 10%;
+  animation-delay: -20s;
 }
 
 @keyframes float {

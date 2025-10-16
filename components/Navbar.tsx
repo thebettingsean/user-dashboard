@@ -207,9 +207,7 @@ export default function Navbar() {
           top: 100%;
           left: 0;
           margin-top: 0.5rem;
-          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(80, 80, 80, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
-          background-size: 200% 200%;
-          animation: gradientShift 8s ease infinite;
+          background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(50px) saturate(180%);
           -webkit-backdrop-filter: blur(50px) saturate(180%);
           border: none;
@@ -415,9 +413,7 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(80, 80, 80, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
-          background-size: 200% 200%;
-          animation: gradientShift 8s ease infinite;
+          background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(50px) saturate(180%);
           -webkit-backdrop-filter: blur(50px) saturate(180%);
           border-bottom: none;

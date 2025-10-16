@@ -153,9 +153,7 @@ export default function Home() {
       <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ 
         marginBottom: '2rem',
-        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-        backgroundSize: '200% 200%',
-        animation: 'gradientShift 8s ease infinite',
+        background: 'rgba(255, 255, 255, 0.05)',
         backdropFilter: 'blur(35px) saturate(180%)',
         WebkitBackdropFilter: 'blur(35px) saturate(180%)',
         border: 'none',
@@ -365,9 +363,7 @@ export default function Home() {
 
         <div style={{ 
           marginTop: '2rem',
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-          backgroundSize: '200% 200%',
-          animation: 'gradientShift 8s ease infinite',
+          background: 'rgba(255, 255, 255, 0.05)',
           backdropFilter: 'blur(35px) saturate(180%)',
           WebkitBackdropFilter: 'blur(35px) saturate(180%)',
           border: 'none',

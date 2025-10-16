@@ -779,9 +779,7 @@ const styles = {
     transition: 'all 0.2s'
   },
   toggleBtnActive: {
-    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-    backgroundSize: '200% 200%',
-    animation: 'gradientShift 8s ease infinite',
+    background: 'rgba(255, 255, 255, 0.08)',
     backdropFilter: 'blur(20px) saturate(180%)',
     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
     color: '#60a5fa',
@@ -794,9 +792,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.6rem',
-    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-    backgroundSize: '200% 200%',
-    animation: 'gradientShift 8s ease infinite',
+    background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(20px) saturate(180%)',
     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
     border: 'none',
@@ -815,9 +811,7 @@ const styles = {
     opacity: 0.7
   },
   filterDropdown: {
-    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-    backgroundSize: '200% 200%',
-    animation: 'gradientShift 8s ease infinite',
+    background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(20px) saturate(180%)',
     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
     border: 'none',
@@ -856,9 +850,7 @@ const styles = {
     gap: '0.5rem'
   },
   tableRow: {
-    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-    backgroundSize: '200% 200%',
-    animation: 'gradientShift 8s ease infinite',
+    background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(35px) saturate(180%)',
     WebkitBackdropFilter: 'blur(35px) saturate(180%)',
     border: 'none',
@@ -1008,9 +1000,7 @@ const styles = {
     gap: '0.85rem'
   },
   parlayCard: {
-    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
-    backgroundSize: '200% 200%',
-    animation: 'gradientShift 8s ease infinite',
+    background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(35px) saturate(180%)',
     WebkitBackdropFilter: 'blur(35px) saturate(180%)',
     border: 'none',
