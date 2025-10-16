@@ -38,97 +38,119 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   const leagues = [primary, ...fallbacks]
   console.log('Will try leagues in order:', leagues)
   
+  // SEPARATE CASCADE: Find "Most Public" bets across all sports
+  let topMostPublic: MostPublicBet[] = []
+  let mostPublicLeague = ''
+  
+  console.log('\n🎯 PHASE 1: Finding Most Public Bets')
   for (const league of leagues) {
-    console.log(`\n--- Trying league: ${league.toUpperCase()} ---`)
+    console.log(`\n--- Checking ${league.toUpperCase()} for public bets ---`)
     try {
       const { from, to } = getDateRangeForSport(league)
-      console.log(`Date range: ${from} to ${to}`)
-      
       const games = await fetchGames(league, from, to)
-      console.log(`Found ${games.length} games for ${league}`)
       
       if (games.length === 0) {
-        console.log(`No games for ${league}, moving to next league`)
+        console.log(`No games for ${league}`)
         continue
       }
       
-      console.log(`First game: ${games[0]?.name || 'N/A'}`)
-      
-      // Get public money data for the first few games
       const gamesWithData = []
       for (const game of games.slice(0, 5)) {
-        console.log(`Fetching public money for: ${game.name}`)
         const publicMoney = await fetchPublicMoney(league, game.game_id)
         if (publicMoney) {
-          // Add the odds data from the game to the public money data
           publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
           publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
-          // Handle null spreads gracefully
           publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
           publicMoney.home_team_point_spread = game.odds?.spread || 0
-          
-          console.log(`✓ Got public money data for ${game.name}`)
           gamesWithData.push({ game, publicMoney })
-        } else {
-          console.log(`✗ No public money data for ${game.name}`)
         }
       }
       
-      console.log(`Total games with public money data: ${gamesWithData.length}`)
-      
-      if (gamesWithData.length === 0) {
-        console.log(`No public money data for ${league}, moving to next league`)
-        continue
-      }
-      
-      // Analyze all games to find most public bets across all games
       let allMostPublic: MostPublicBet[] = []
-      let allTrends: TopTrend[] = []
-      
       for (const { game, publicMoney } of gamesWithData) {
         const mostPublic = findMostPublicBets(game, publicMoney)
-        const trends = findTopTrends(game, publicMoney)
-        console.log(`Analysis for ${game.name}: ${mostPublic.length} public bets, ${trends.length} trends`)
         allMostPublic = [...allMostPublic, ...mostPublic]
-        allTrends = [...allTrends, ...trends]
       }
       
-      console.log(`Total most public bets found: ${allMostPublic.length}`)
-      console.log(`Total trends found: ${allTrends.length}`)
-      
-      // We need at least 1 most public bet to show meaningful data
-      // Preseason/early games may only have trends but no public betting
-      if (allMostPublic.length === 0) {
-        console.log(`No 'Most Public' bets for ${league} (may be preseason), moving to next league`)
-        continue
-      }
-      
-      // Sort and get top 2 most public bets
-      const topMostPublic = allMostPublic
-        .sort((a, b) => b.betsPct - a.betsPct)
-        .slice(0, 2)
-      
-      // Get top 2 trends
-      const topTrends = allTrends.slice(0, 2)
-      
-      console.log(`SUCCESS: Returning ${league.toUpperCase()} data`)
-      console.log('=== STATS WIDGET DEBUG END ===\n')
-      
-      return {
-        mostPublic: topMostPublic,
-        topTrends,
-        league: league.toUpperCase()
+      if (allMostPublic.length > 0) {
+        topMostPublic = allMostPublic.sort((a, b) => b.betsPct - a.betsPct).slice(0, 2)
+        mostPublicLeague = league.toUpperCase()
+        console.log(`✅ Found ${allMostPublic.length} public bets in ${league.toUpperCase()}`)
+        break
+      } else {
+        console.log(`No public bets for ${league}, trying next sport`)
       }
     } catch (error) {
       console.error(`ERROR in ${league}:`, error)
-      continue
     }
   }
   
-  console.log('WARNING: All leagues failed, returning sample data')
+  // SEPARATE CASCADE: Find trends/indicators across all sports
+  let topTrends: TopTrend[] = []
+  let trendsLeague = ''
+  
+  console.log('\n📊 PHASE 2: Finding Trends/Indicators')
+  for (const league of leagues) {
+    console.log(`\n--- Checking ${league.toUpperCase()} for indicators ---`)
+    try {
+      const { from, to } = getDateRangeForSport(league)
+      const games = await fetchGames(league, from, to)
+      
+      if (games.length === 0) {
+        console.log(`No games for ${league}`)
+        continue
+      }
+      
+      const gamesWithData = []
+      for (const game of games.slice(0, 5)) {
+        const publicMoney = await fetchPublicMoney(league, game.game_id)
+        if (publicMoney) {
+          publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
+          publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
+          publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
+          publicMoney.home_team_point_spread = game.odds?.spread || 0
+          gamesWithData.push({ game, publicMoney })
+        }
+      }
+      
+      let allTrends: TopTrend[] = []
+      for (const { game, publicMoney } of gamesWithData) {
+        const trends = findTopTrends(game, publicMoney)
+        allTrends = [...allTrends, ...trends]
+      }
+      
+      if (allTrends.length > 0) {
+        topTrends = allTrends.slice(0, 2)
+        trendsLeague = league.toUpperCase()
+        console.log(`✅ Found ${allTrends.length} indicators in ${league.toUpperCase()}`)
+        break
+      } else {
+        console.log(`No indicators for ${league}, trying next sport`)
+      }
+    } catch (error) {
+      console.error(`ERROR in ${league}:`, error)
+    }
+  }
+  
+  // If we have either most public OR trends, return it
+  if (topMostPublic.length > 0 || topTrends.length > 0) {
+    const displayLeague = mostPublicLeague || trendsLeague
+    console.log(`\n✅ SUCCESS: Returning data`)
+    console.log(`  Most Public from: ${mostPublicLeague || 'None'}`)
+    console.log(`  Trends from: ${trendsLeague || 'None'}`)
+    console.log('=== STATS WIDGET DEBUG END ===\n')
+    
+    return {
+      mostPublic: topMostPublic.length > 0 ? topMostPublic : [],
+      topTrends: topTrends.length > 0 ? topTrends : [],
+      league: displayLeague
+    }
+  }
+  
+  console.log('WARNING: No data found, returning sample data')
   console.log('=== STATS WIDGET DEBUG END ===\n')
   
-  // Fallback to sample data if no league has data
+  // Fallback to sample data if nothing found
   return {
     mostPublic: [
       { label: 'Cowboys ML', betsPct: 75, dollarsPct: 80 },
