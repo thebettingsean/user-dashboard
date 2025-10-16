@@ -83,9 +83,9 @@ export default function PicksWidget() {
 }
 
 const widgetStyle = {
-  background: 'rgba(255, 255, 255, 0.05)',
-  backdropFilter: 'blur(35px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(35px) saturate(180%)',
+  background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+  backdropFilter: 'blur(50px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(50px) saturate(180%)',
   border: 'none',
   borderRadius: '24px',
   padding: '1.5rem',
@@ -93,7 +93,7 @@ const widgetStyle = {
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 
