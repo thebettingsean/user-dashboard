@@ -240,9 +240,9 @@ export default function Navbar() {
         }
 
         .premium-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(35px) saturate(180%);
-          -webkit-backdrop-filter: blur(35px) saturate(180%);
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(40px) saturate(180%);
+          -webkit-backdrop-filter: blur(40px) saturate(180%);
           border: none;
           border-radius: 16px;
           padding: 0;
@@ -253,20 +253,20 @@ export default function Navbar() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
         }
 
         .premium-card:hover {
           transform: translateY(-4px);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.12);
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
         }
 
         .premium-card-icon-wrapper {
           width: 100%;
           height: 80px;
           overflow: hidden;
-          border-radius: 12px 12px 0 0;
+          border-radius: 16px 16px 0 0;
         }
 
         .premium-card-icon {
@@ -281,9 +281,10 @@ export default function Navbar() {
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.3);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
+          border-radius: 0 0 16px 16px;
         }
 
         .premium-card-label {
@@ -495,16 +496,16 @@ export default function Navbar() {
         }
 
         .mobile-premium-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(35px) saturate(180%);
-          -webkit-backdrop-filter: blur(35px) saturate(180%);
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(40px) saturate(180%);
+          -webkit-backdrop-filter: blur(40px) saturate(180%);
           border: none;
           border-radius: 12px;
           overflow: hidden;
           text-decoration: none;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -523,9 +524,10 @@ export default function Navbar() {
 
         .mobile-premium-card-text {
           padding: 0.5rem 0.6rem;
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.3);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
+          border-radius: 0 0 12px 12px;
         }
 
         .mobile-premium-card-label {

@@ -153,7 +153,7 @@ export default function Home() {
       <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
       <div style={{ 
         marginBottom: '2rem',
-        padding: '0.5rem 1.25rem',
+        padding: '0.5rem 0',
         textAlign: 'left' as const,
         position: 'relative',
         zIndex: 1
@@ -335,7 +335,7 @@ export default function Home() {
 
         <div style={{ 
           marginTop: '2rem',
-          padding: '1rem 0.5rem',
+          padding: '1rem 0',
           textAlign: 'left' as const,
           position: 'relative',
           zIndex: 1
@@ -371,7 +371,7 @@ export default function Home() {
 
         <div style={{ 
           marginTop: '2rem',
-          padding: '1rem 0.5rem',
+          padding: '1rem 0',
           textAlign: 'left' as const,
           position: 'relative',
           zIndex: 1

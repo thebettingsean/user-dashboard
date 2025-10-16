@@ -26,13 +26,13 @@ export default function PicksWidget() {
     setLoading(false)
   }
 
-  const topUnitsPicks = picks.slice(0, 3)
+  const topUnitsPicks = picks.slice(0, 2)
   const hottestBettor = picks.reduce((acc, pick) => {
     if (!acc || (pick.bettors?.win_streak > acc.bettors?.win_streak)) return pick
     return acc
   }, null)
   const hottestBettorPicks = hottestBettor ? 
-    picks.filter(p => p.bettors?.name === hottestBettor.bettors?.name).slice(0, 3) : []
+    picks.filter(p => p.bettors?.name === hottestBettor.bettors?.name).slice(0, 2) : []
 
   return (
     <a href="https://www.thebettinginsider.com/betting/dashboard" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>

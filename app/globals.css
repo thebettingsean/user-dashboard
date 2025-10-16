@@ -15,7 +15,7 @@
 }
 
 body {
-  background: #000000;
+  background: #0e172a;
   color: var(--w);
   min-height: 100vh;
   margin: 0;
@@ -33,10 +33,10 @@ body::before {
   width: 100%;
   height: 100%;
   background: radial-gradient(ellipse 120% 100% at 50% 40%, 
-    rgba(30, 30, 35, 1) 0%,
-    rgba(15, 15, 20, 1) 40%,
-    rgba(5, 5, 10, 1) 70%,
-    rgba(0, 0, 0, 1) 100%);
+    rgba(20, 30, 50, 0.8) 0%,
+    rgba(14, 23, 42, 1) 40%,
+    rgba(10, 18, 35, 1) 70%,
+    rgba(14, 23, 42, 1) 100%);
   z-index: 0;
   pointer-events: none;
 }
