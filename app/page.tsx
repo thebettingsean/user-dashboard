@@ -150,11 +150,13 @@ export default function Home() {
         }
       `}</style>
 
-      <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
       <div style={{ 
         marginBottom: '2rem',
         padding: '0.5rem 1.25rem',
-        textAlign: 'left' as const
+        textAlign: 'left' as const,
+        position: 'relative',
+        zIndex: 1
       }}>
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
@@ -334,7 +336,9 @@ export default function Home() {
         <div style={{ 
           marginTop: '2rem',
           padding: '1rem 0.5rem',
-          textAlign: 'left' as const
+          textAlign: 'left' as const,
+          position: 'relative',
+          zIndex: 1
         }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: '#ffffff', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
@@ -368,7 +372,9 @@ export default function Home() {
         <div style={{ 
           marginTop: '2rem',
           padding: '1rem 0.5rem',
-          textAlign: 'left' as const
+          textAlign: 'left' as const,
+          position: 'relative',
+          zIndex: 1
         }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: '#ffffff', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
