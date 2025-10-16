@@ -207,10 +207,12 @@ export default function Navbar() {
           top: 100%;
           left: 0;
           margin-top: 0.5rem;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(35px) saturate(180%);
-          -webkit-backdrop-filter: blur(35px) saturate(180%);
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(80, 80, 80, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
+          background-size: 200% 200%;
+          animation: gradientShift 8s ease infinite;
+          backdrop-filter: blur(50px) saturate(180%);
+          -webkit-backdrop-filter: blur(50px) saturate(180%);
+          border: none;
           border-radius: 16px;
           padding: 0.75rem 0;
           min-width: 220px;
@@ -218,7 +220,7 @@ export default function Navbar() {
           visibility: hidden;
           transform: translateY(-10px);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.4), 
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
                       inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
@@ -413,17 +415,19 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(15, 23, 42, 0.85);
-          backdrop-filter: blur(20px) saturate(180%);
-          -webkit-backdrop-filter: blur(20px) saturate(180%);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(80, 80, 80, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
+          background-size: 200% 200%;
+          animation: gradientShift 8s ease infinite;
+          backdrop-filter: blur(50px) saturate(180%);
+          -webkit-backdrop-filter: blur(50px) saturate(180%);
+          border-bottom: none;
           max-height: 0;
           overflow: hidden;
           opacity: 0;
           transform: translateY(-10px);
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 900;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .mobile-menu.open {

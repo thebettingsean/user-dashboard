@@ -130,10 +130,12 @@ export default function StatsWidget() {
 }
 
 const widgetStyle = {
-  background: 'rgba(255, 255, 255, 0.08)',
+  background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+  backgroundSize: '200% 200%',
+  animation: 'gradientShift 8s ease infinite',
   backdropFilter: 'blur(35px) saturate(180%)',
   WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-  border: '1.5px solid rgba(255, 255, 255, 0.15)',
+  border: 'none',
   borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,

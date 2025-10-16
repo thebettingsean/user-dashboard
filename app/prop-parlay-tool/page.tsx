@@ -779,11 +779,13 @@ const styles = {
     transition: 'all 0.2s'
   },
   toggleBtnActive: {
-    background: 'rgba(96,165,250,0.2)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
     color: '#60a5fa',
-    boxShadow: '0 2px 8px 0 rgba(96,165,250,0.3)'
+    boxShadow: '0 4px 16px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
   },
   filterRow: {
     marginBottom: '1.25rem'
@@ -792,18 +794,20 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.6rem',
-    background: 'rgba(255,255,255,0.04)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: 'none',
     color: '#e5e7eb',
-    borderRadius: '10px',
-    padding: '0.65rem 1rem',
+    borderRadius: '12px',
+    padding: '0.7rem 1rem',
     fontSize: '0.8rem',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     width: '100%',
-    boxShadow: '0 2px 8px 0 rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
   },
   filterIcon: {
     width: '16px',
@@ -811,17 +815,19 @@ const styles = {
     opacity: 0.7
   },
   filterDropdown: {
-    background: 'rgba(255,255,255,0.04)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: '12px',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: 'none',
+    borderRadius: '14px',
     padding: '0.85rem',
     marginBottom: '1.25rem',
     display: 'grid',
     gap: '0.85rem',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3)'
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.1)'
   },
   filterSection: {
     display: 'flex',
@@ -850,10 +856,12 @@ const styles = {
     gap: '0.5rem'
   },
   tableRow: {
-    background: 'rgba(255,255,255,0.08)',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
     backdropFilter: 'blur(35px) saturate(180%)',
     WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-    border: '1.5px solid rgba(255,255,255,0.15)',
+    border: 'none',
     borderRadius: '16px',
     overflow: 'hidden',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
@@ -1000,10 +1008,12 @@ const styles = {
     gap: '0.85rem'
   },
   parlayCard: {
-    background: 'rgba(255,255,255,0.08)',
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
     backdropFilter: 'blur(35px) saturate(180%)',
     WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-    border: '1.5px solid rgba(255,255,255,0.15)',
+    border: 'none',
     borderRadius: '18px',
     padding: '1rem',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

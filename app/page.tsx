@@ -153,10 +153,12 @@ export default function Home() {
       <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
       <div style={{ 
         marginBottom: '2rem',
-        background: 'rgba(255, 255, 255, 0.08)',
+        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+        backgroundSize: '200% 200%',
+        animation: 'gradientShift 8s ease infinite',
         backdropFilter: 'blur(35px) saturate(180%)',
         WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-        border: '1.5px solid rgba(255, 255, 255, 0.15)',
+        border: 'none',
         borderRadius: '20px',
         padding: '1.5rem 1.25rem',
         boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
@@ -363,10 +365,12 @@ export default function Home() {
 
         <div style={{ 
           marginTop: '2rem',
-          background: 'rgba(255, 255, 255, 0.08)',
+          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(100, 100, 100, 0.15) 50%, rgba(0, 0, 0, 0.3) 100%)',
+          backgroundSize: '200% 200%',
+          animation: 'gradientShift 8s ease infinite',
           backdropFilter: 'blur(35px) saturate(180%)',
           WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-          border: '1.5px solid rgba(255, 255, 255, 0.15)',
+          border: 'none',
           borderRadius: '20px',
           padding: '2rem 1.5rem',
           boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
