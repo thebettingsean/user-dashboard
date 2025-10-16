@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 
 // Supabase configuration
@@ -35,11 +35,12 @@ export default function FantasyPage() {
   const [sortBy, setSortBy] = useState('points')
   const [positionFilter, setPositionFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [historicalFilter, setHistoricalFilter] = useState('none')
   const [loading, setLoading] = useState(true)
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
   const [showComparison, setShowComparison] = useState(false)
   const [showInfoModal, setShowInfoModal] = useState(false)
+  const [showPosDropdown, setShowPosDropdown] = useState(false)
+  const [showSortDropdown, setShowSortDropdown] = useState(false)
 
   const { isLoading: subLoading, isSubscribed } = useSubscription()
   const userHasAccess = isSubscribed
@@ -75,11 +76,9 @@ export default function FantasyPage() {
       return { avgAboveProjected: 0, trendingScore: 0, accuracyScore: 0 }
     }
 
-    // Avg above projected
     const avgAboveProjected = gamesWithActuals.reduce((sum: number, w: any) => 
       sum + (w.actual - w.projected), 0) / gamesWithActuals.length
 
-    // Trending score (increase in projections week-over-week)
     let trendingScore = 0
     if (historicalData.length >= 2) {
       const firstWeek = historicalData[0].projected
@@ -87,10 +86,9 @@ export default function FantasyPage() {
       trendingScore = lastWeek - firstWeek
     }
 
-    // Accuracy score (lower variance = more accurate)
     const variance = gamesWithActuals.reduce((sum: number, w: any) => 
       sum + Math.abs(w.actual - w.projected), 0) / gamesWithActuals.length
-    const accuracyScore = -variance // Negative so higher is better
+    const accuracyScore = -variance
 
     return { avgAboveProjected, trendingScore, accuracyScore }
   }
@@ -107,7 +105,6 @@ export default function FantasyPage() {
         fetchData('player_weekly_history', '?season=eq.2025&select=*&order=week.asc&limit=50000')
       ])
 
-      // Build maps
       const projections = new Map()
       projectionsData.forEach((p: any) => projections.set(p.player_id, p))
 
@@ -134,7 +131,6 @@ export default function FantasyPage() {
         })
       })
 
-      // Map players with historical metrics
       const mappedPlayers = players.map((player: any) => {
         const ranking = rankings.find((r: any) => r.id === player.id)
         const projection = projections.get(player.id)
@@ -200,37 +196,27 @@ export default function FantasyPage() {
       return matchesSearch && matchesPosition
     })
 
-    // Apply historical filter
-    if (historicalFilter === 'above_projected') {
-      filtered = filtered.filter(p => p.avgAboveProjected && p.avgAboveProjected > 0)
-      filtered.sort((a, b) => (b.avgAboveProjected || 0) - (a.avgAboveProjected || 0))
-    } else if (historicalFilter === 'trending') {
-      filtered = filtered.filter(p => p.trendingScore && p.trendingScore > 0)
-      filtered.sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
-    } else if (historicalFilter === 'accurate') {
-      filtered = filtered.filter(p => p.accuracyScore !== undefined)
-      filtered.sort((a, b) => (b.accuracyScore || 0) - (a.accuracyScore || 0))
-    } else {
-      // Normal sorting
-      filtered.sort((a, b) => {
-        switch (sortBy) {
-          case 'name':
-            return a.name.localeCompare(b.name)
-          case 'position':
-            return a.position.localeCompare(b.position)
-          case 'boost':
-            return b.boost - a.boost
-          case 'points':
-          default:
-            return b.points - a.points
-        }
-      })
-    }
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'points':
+          return b.points - a.points
+        case 'above_avg':
+          return (b.avgAboveProjected || 0) - (a.avgAboveProjected || 0)
+        case 'trending':
+          return (b.trendingScore || 0) - (a.trendingScore || 0)
+        case 'accurate':
+          return (b.accuracyScore || 0) - (a.accuracyScore || 0)
+        default:
+          return b.points - a.points
+      }
+    })
 
     setFilteredPlayers(filtered)
-  }, [allPlayers, searchQuery, positionFilter, sortBy, historicalFilter])
+  }, [allPlayers, searchQuery, positionFilter, sortBy])
 
-  const handlePlayerSelection = (playerId: number) => {
+  const handlePlayerSelection = (playerId: number, e: React.MouseEvent) => {
+    e.stopPropagation()
     if (!userHasAccess) return
 
     const newSelected = new Set(selectedPlayers)
@@ -313,42 +299,107 @@ export default function FantasyPage() {
               />
             </div>
 
-            {/* Position Filter */}
-            <select
-              style={styles.filterSelect}
-              value={positionFilter}
-              onChange={(e) => setPositionFilter(e.target.value)}
-            >
-              <option value="">All Positions</option>
-              <option value="QB">QB</option>
-              <option value="RB">RB</option>
-              <option value="WR">WR</option>
-              <option value="TE">TE</option>
-            </select>
+            {/* Position Filter Button */}
+            <div style={{ position: 'relative' }}>
+              <button
+                style={styles.filterButton}
+                onClick={() => {
+                  setShowPosDropdown(!showPosDropdown)
+                  setShowSortDropdown(false)
+                }}
+              >
+                POS
+                <svg style={styles.filterIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              {showPosDropdown && (
+                <div style={styles.dropdown}>
+                  {['', 'QB', 'RB', 'WR', 'TE'].map(pos => (
+                    <div
+                      key={pos}
+                      style={{
+                        ...styles.dropdownItem,
+                        background: positionFilter === pos ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                      }}
+                      onClick={() => {
+                        setPositionFilter(pos)
+                        setShowPosDropdown(false)
+                      }}
+                    >
+                      {pos || 'All'}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* Sort By */}
-            <select
-              style={styles.filterSelect}
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="points">Highest Points</option>
-              <option value="boost">Highest Boost</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="position">Position</option>
-            </select>
-
-            {/* Historical Filter */}
-            <select
-              style={styles.filterSelect}
-              value={historicalFilter}
-              onChange={(e) => setHistoricalFilter(e.target.value)}
-            >
-              <option value="none">All Players</option>
-              <option value="above_projected">Above Projected</option>
-              <option value="trending">Trending Up</option>
-              <option value="accurate">Most Accurate</option>
-            </select>
+            {/* Sort Filter Button */}
+            <div style={{ position: 'relative' }}>
+              <button
+                style={styles.filterButton}
+                onClick={() => {
+                  setShowSortDropdown(!showSortDropdown)
+                  setShowPosDropdown(false)
+                }}
+              >
+                <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                </svg>
+              </button>
+              {showSortDropdown && (
+                <div style={styles.dropdown}>
+                  <div
+                    style={{
+                      ...styles.dropdownItem,
+                      background: sortBy === 'points' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                    }}
+                    onClick={() => {
+                      setSortBy('points')
+                      setShowSortDropdown(false)
+                    }}
+                  >
+                    Highest Pts
+                  </div>
+                  <div
+                    style={{
+                      ...styles.dropdownItem,
+                      background: sortBy === 'above_avg' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                    }}
+                    onClick={() => {
+                      setSortBy('above_avg')
+                      setShowSortDropdown(false)
+                    }}
+                  >
+                    Highest Above Avg
+                  </div>
+                  <div
+                    style={{
+                      ...styles.dropdownItem,
+                      background: sortBy === 'trending' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                    }}
+                    onClick={() => {
+                      setSortBy('trending')
+                      setShowSortDropdown(false)
+                    }}
+                  >
+                    Trending
+                  </div>
+                  <div
+                    style={{
+                      ...styles.dropdownItem,
+                      background: sortBy === 'accurate' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                    }}
+                    onClick={() => {
+                      setSortBy('accurate')
+                      setShowSortDropdown(false)
+                    }}
+                  >
+                    Most Accurate
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Info Button */}
             <button
@@ -378,8 +429,8 @@ export default function FantasyPage() {
           )}
         </div>
 
-        {/* Player Cards Grid */}
-        <div style={styles.cardsGrid}>
+        {/* Player List */}
+        <div style={styles.playerList}>
           {filteredPlayers.map((player, index) => {
             const isLocked = !userHasAccess && index >= 2
             const isSelected = selectedPlayers.has(player.id)
@@ -389,24 +440,26 @@ export default function FantasyPage() {
               return (
                 <div
                   key={player.id}
-                  style={{ ...styles.card, ...styles.cardLocked }}
+                  style={styles.playerRowLocked}
                   onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
                 >
-                  <div style={styles.cardLockOverlay}>
-                    <div style={styles.lockIcon}>🔒</div>
-                    <div style={styles.lockText}>Fantasy Package Required</div>
-                  </div>
-                  <div style={{ filter: 'blur(4px)' }}>
-                    <div style={styles.cardHeader}>
-                      <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
-                        {player.position}{posRank}
-                      </div>
-                      <div style={styles.cardPoints}>{player.points.toFixed(1)}</div>
-                    </div>
-                    <div style={styles.cardBody}>
+                  <div style={{ filter: 'blur(4px)', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <input type="checkbox" style={styles.checkbox} disabled />
+                    <div style={{ flex: 1 }}>
                       <div style={styles.playerName}>Player Locked</div>
-                      <div style={styles.playerTeam}>• • •</div>
+                      <div style={styles.teamName}>• • •</div>
                     </div>
+                    <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                      {player.position}
+                    </div>
+                  </div>
+                  <div style={{ filter: 'blur(4px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                    <div style={styles.points}>{player.points.toFixed(1)}</div>
+                    <div style={styles.boost}>--</div>
+                  </div>
+                  <div style={styles.lockOverlay}>
+                    <div style={styles.lockIcon}>🔒</div>
+                    <div style={styles.lockText}>Unlock Required</div>
                   </div>
                 </div>
               )
@@ -416,68 +469,43 @@ export default function FantasyPage() {
               <div
                 key={player.id}
                 style={{
-                  ...styles.card,
-                  border: isSelected ? '2px solid #3b82f6' : 'none'
+                  ...styles.playerRow,
+                  background: isSelected ? 'rgba(59, 130, 246, 0.08)' : styles.playerRow.background
                 }}
                 onClick={() => setSelectedPlayer(player)}
               >
-                {/* Checkbox */}
-                <div
-                  style={styles.cardCheckbox}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handlePlayerSelection(player.id)
-                  }}
-                >
+                {/* Left Side: Checkbox, Name, Position */}
+                <div style={styles.playerLeft}>
                   <input
                     type="checkbox"
+                    style={styles.checkbox}
                     checked={isSelected}
                     onChange={() => {}}
-                    style={styles.checkbox}
+                    onClick={(e) => handlePlayerSelection(player.id, e)}
                   />
-                </div>
-
-                {/* Position Badge & Points */}
-                <div style={styles.cardHeader}>
+                  <div style={styles.playerInfo}>
+                    <div style={styles.playerName}>{player.name}</div>
+                    <div style={styles.teamName}>{player.team || 'FA'}</div>
+                  </div>
                   <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
                     {player.position}{posRank}
                   </div>
-                  <div style={styles.cardPoints}>{player.points.toFixed(1)}</div>
-                </div>
-
-                {/* Player Info */}
-                <div style={styles.cardBody}>
-                  <div style={styles.playerName}>{player.name}</div>
-                  <div style={styles.playerTeam}>{player.team || 'FA'}</div>
                   {player.injury_status && (
                     <div style={styles.injuryBadge}>
-                      {player.injury_status.toUpperCase()}
+                      {player.injury_status.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
 
-                {/* Stats */}
-                <div style={styles.cardStats}>
-                  <div style={styles.cardStat}>
-                    <span style={styles.cardStatLabel}>Boost</span>
-                    <span style={{ 
-                      ...styles.cardStatValue, 
-                      color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
-                    }}>
-                      {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
-                    </span>
+                {/* Right Side: Points, Boost */}
+                <div style={styles.playerRight}>
+                  <div style={styles.points}>{player.points.toFixed(1)}</div>
+                  <div style={{ 
+                    ...styles.boost, 
+                    color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
+                  }}>
+                    {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
                   </div>
-                  {player.avgAboveProjected !== undefined && player.avgAboveProjected !== 0 && (
-                    <div style={styles.cardStat}>
-                      <span style={styles.cardStatLabel}>vs Proj</span>
-                      <span style={{ 
-                        ...styles.cardStatValue, 
-                        color: player.avgAboveProjected > 0 ? '#10b981' : '#ef4444' 
-                      }}>
-                        {player.avgAboveProjected > 0 ? '+' : ''}{player.avgAboveProjected.toFixed(1)}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             )
@@ -492,7 +520,7 @@ export default function FantasyPage() {
         )}
       </div>
 
-      {/* Player Detail Modal */}
+      {/* Modals */}
       {selectedPlayer && (
         <PlayerModal
           player={selectedPlayer}
@@ -500,7 +528,6 @@ export default function FantasyPage() {
         />
       )}
 
-      {/* Comparison Modal */}
       {showComparison && (
         <ComparisonModal
           players={Array.from(selectedPlayers).map(id => allPlayers.find(p => p.id === id)!).filter(Boolean)}
@@ -508,7 +535,6 @@ export default function FantasyPage() {
         />
       )}
 
-      {/* Info Modal */}
       {showInfoModal && (
         <InfoModal onClose={() => setShowInfoModal(false)} />
       )}
@@ -523,7 +549,7 @@ export default function FantasyPage() {
   )
 }
 
-// Player Modal Component
+// Modals remain the same
 function PlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
   return (
     <div style={modalStyles.overlay} onClick={onClose}>
@@ -538,7 +564,6 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
           </p>
         </div>
 
-        {/* Main Stats */}
         <div style={modalStyles.statsGrid}>
           <div style={modalStyles.statBox}>
             <div style={modalStyles.statLabel}>Projected Points</div>
@@ -552,12 +577,10 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
           </div>
         </div>
 
-        {/* Historical Performance */}
         {player.historicalData && player.historicalData.length > 0 && (
           <div style={modalStyles.section}>
             <div style={modalStyles.sectionTitle}>Historical Performance</div>
             
-            {/* Overall Averages */}
             {player.avgAboveProjected !== undefined && (
               <div style={modalStyles.historicalSummary}>
                 <div style={modalStyles.historicalStat}>
@@ -572,18 +595,13 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
               </div>
             )}
 
-            {/* Week by week */}
             <div style={modalStyles.weeklyList}>
               {player.historicalData.slice().reverse().map(week => (
                 <div key={week.week} style={modalStyles.weekRow}>
                   <div style={modalStyles.weekLabel}>Week {week.week}</div>
                   <div style={modalStyles.weekStats}>
-                    <span style={modalStyles.weekStat}>
-                      Proj: {week.projected.toFixed(1)}
-                    </span>
-                    <span style={modalStyles.weekStat}>
-                      Actual: {week.actual > 0 ? week.actual.toFixed(1) : 'TBD'}
-                    </span>
+                    <span style={modalStyles.weekStat}>Proj: {week.projected.toFixed(1)}</span>
+                    <span style={modalStyles.weekStat}>Actual: {week.actual > 0 ? week.actual.toFixed(1) : 'TBD'}</span>
                     {week.actual > 0 && (
                       <span style={{ 
                         ...modalStyles.weekDiff, 
@@ -599,7 +617,6 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
           </div>
         )}
 
-        {/* Projection Details */}
         {player.projectionData && (
           <div style={modalStyles.section}>
             <div style={modalStyles.sectionTitle}>Full Projections Available in Premium</div>
@@ -613,7 +630,6 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
   )
 }
 
-// Comparison Modal Component  
 function ComparisonModal({ players, onClose }: { players: Player[]; onClose: () => void }) {
   const topPlayer = players.reduce((prev, current) => 
     (current.points > prev.points) ? current : prev
@@ -672,7 +688,6 @@ function ComparisonModal({ players, onClose }: { players: Player[]; onClose: () 
   )
 }
 
-// Info Modal Component
 function InfoModal({ onClose }: { onClose: () => void }) {
   return (
     <div style={modalStyles.overlay} onClick={onClose}>
@@ -687,8 +702,8 @@ function InfoModal({ onClose }: { onClose: () => void }) {
           </p>
           <p style={{ marginBottom: '0.75rem' }}>
             <strong>Filters:</strong><br />
-            • <strong>Above Projected:</strong> Players consistently outperforming projections<br />
-            • <strong>Trending Up:</strong> Players with increasing projections week-over-week<br />
+            • <strong>Highest Above Avg:</strong> Players consistently outperforming projections<br />
+            • <strong>Trending:</strong> Players with increasing projections week-over-week<br />
             • <strong>Most Accurate:</strong> Players with smallest variance between projected and actual
           </p>
           <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>
@@ -700,10 +715,9 @@ function InfoModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-// Helper function
 function getPosBadgeStyle(position: string) {
   const base = {
-    padding: '0.25rem 0.5rem',
+    padding: '0.375rem 0.625rem',
     borderRadius: '6px',
     fontSize: '0.75rem',
     fontWeight: '700',
@@ -724,7 +738,6 @@ function getPosBadgeStyle(position: string) {
   }
 }
 
-// Styles
 const styles = {
   page: {
     minHeight: '100vh',
@@ -733,7 +746,7 @@ const styles = {
     color: '#ffffff'
   },
   container: {
-    maxWidth: '1400px',
+    maxWidth: '1200px',
     margin: '0 auto',
     width: '100%',
     position: 'relative' as const,
@@ -794,14 +807,14 @@ const styles = {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    borderRadius: '24px',
-    padding: '1.5rem',
-    marginBottom: '2rem',
+    borderRadius: '20px',
+    padding: '1.25rem',
+    marginBottom: '1.5rem',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
   },
   filtersRow: {
     display: 'flex',
-    gap: '1rem',
+    gap: '0.75rem',
     flexWrap: 'wrap' as const,
     alignItems: 'center'
   },
@@ -818,15 +831,23 @@ const styles = {
     color: '#ffffff',
     fontSize: '0.875rem'
   },
-  filterSelect: {
+  filterButton: {
     padding: '0.75rem 1rem',
     background: 'rgba(255, 255, 255, 0.05)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '12px',
     color: '#ffffff',
     fontSize: '0.875rem',
+    fontWeight: '600',
     cursor: 'pointer',
-    minWidth: '150px'
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s'
+  },
+  filterIcon: {
+    width: '16px',
+    height: '16px'
   },
   infoButton: {
     padding: '0.75rem',
@@ -835,7 +856,32 @@ const styles = {
     borderRadius: '12px',
     cursor: 'pointer',
     color: 'rgba(255, 255, 255, 0.7)',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  dropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    left: 0,
+    marginTop: '0.5rem',
+    background: 'rgba(30, 41, 59, 0.98)',
+    backdropFilter: 'blur(50px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '12px',
+    padding: '0.5rem',
+    minWidth: '180px',
+    zIndex: 100,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+  },
+  dropdownItem: {
+    padding: '0.75rem 1rem',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+    color: '#ffffff',
+    fontSize: '0.875rem'
   },
   selectionControls: {
     display: 'flex',
@@ -858,54 +904,63 @@ const styles = {
     borderColor: 'rgba(16, 185, 129, 0.3)',
     color: '#10b981'
   },
-  cardsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1.5rem'
+  playerList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.75rem'
   },
-  card: {
+  playerRow: {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    borderRadius: '20px',
-    padding: '1.5rem',
+    borderRadius: '16px',
+    padding: '1rem 1.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     cursor: 'pointer',
-    transition: 'all 0.3s ease',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+  },
+  playerRowLocked: {
+    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    borderRadius: '16px',
+    padding: '1rem 1.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     position: 'relative' as const,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    opacity: 0.7
   },
-  cardLocked: {
-    cursor: 'not-allowed'
-  },
-  cardLockOverlay: {
+  lockOverlay: {
     position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    justifyContent: 'center',
-    background: 'rgba(0, 0, 0, 0.6)',
-    backdropFilter: 'blur(2px)',
-    borderRadius: '20px',
-    zIndex: 1
+    zIndex: 2
   },
   lockIcon: {
-    fontSize: '3rem',
-    marginBottom: '0.5rem'
+    fontSize: '1.5rem'
   },
   lockText: {
     color: '#f59e0b',
-    fontSize: '0.875rem',
-    fontWeight: '600'
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    marginTop: '0.25rem'
   },
-  cardCheckbox: {
-    position: 'absolute' as const,
-    top: '1rem',
-    left: '1rem',
-    zIndex: 2
+  playerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    flex: 1
   },
   checkbox: {
     width: '20px',
@@ -913,65 +968,51 @@ const styles = {
     cursor: 'pointer',
     accentColor: '#3b82f6'
   },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '1rem'
+  playerInfo: {
+    flex: 1,
+    minWidth: 0
+  },
+  playerName: {
+    fontSize: '1rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: '0.125rem',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  },
+  teamName: {
+    fontSize: '0.8125rem',
+    color: 'rgba(255, 255, 255, 0.6)'
   },
   posBadge: {
-    padding: '0.25rem 0.5rem',
+    padding: '0.375rem 0.625rem',
     borderRadius: '6px',
     fontSize: '0.75rem',
     fontWeight: '700'
   },
-  cardPoints: {
-    fontSize: '2rem',
-    fontWeight: '800',
-    color: '#ffffff'
-  },
-  cardBody: {
-    marginBottom: '1rem'
-  },
-  playerName: {
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: '0.25rem'
-  },
-  playerTeam: {
-    fontSize: '0.875rem',
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginBottom: '0.5rem'
-  },
   injuryBadge: {
-    display: 'inline-block',
     padding: '0.25rem 0.5rem',
     background: 'rgba(245, 158, 11, 0.2)',
     color: '#f59e0b',
-    borderRadius: '4px',
-    fontSize: '0.625rem',
+    borderRadius: '6px',
+    fontSize: '0.6875rem',
     fontWeight: '700'
   },
-  cardStats: {
-    display: 'flex',
-    gap: '1rem'
-  },
-  cardStat: {
-    flex: 1,
+  playerRight: {
     display: 'flex',
     flexDirection: 'column' as const,
+    alignItems: 'flex-end',
     gap: '0.25rem'
   },
-  cardStatLabel: {
-    fontSize: '0.6875rem',
-    color: 'rgba(255, 255, 255, 0.6)',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em'
+  points: {
+    fontSize: '1.5rem',
+    fontWeight: '800',
+    color: '#ffffff'
   },
-  cardStatValue: {
-    fontSize: '0.875rem',
-    fontWeight: '700'
+  boost: {
+    fontSize: '0.8125rem',
+    fontWeight: '600'
   },
   emptyState: {
     textAlign: 'center' as const,
