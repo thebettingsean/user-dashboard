@@ -2,9 +2,9 @@
 const API_BASE_URL = 'https://api.trendlinelabs.ai'
 const API_KEY = process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
 
-type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+export type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
 
-interface Game {
+export interface Game {
   game_id: string
   name: string
   game_date: string

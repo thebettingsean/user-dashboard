@@ -1,4 +1,5 @@
 // lib/utils/dataAnalyzer.ts
+import { Game } from '../api/sportsData'
 
 // API structures
 interface SharpMoneyIndicator {
