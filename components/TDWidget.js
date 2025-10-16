@@ -118,41 +118,39 @@ export default function TDWidget() {
   }
 
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg" 
-             style={{ width: '36px', height: '36px' }} alt="" />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Anytime TD Leaders
-        <span style={weekTag}>Week {currentWeek}</span>  
-      </h2>
-      <p style={taglineStyle}>Best value touchdown plays</p>
-      
-      {loading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
-      ) : (
-        <div style={{ marginBottom: '1rem', flex: 1 }}>
-          <div style={headerRow}>
-            <span>Player</span>
-            <span>Odds</span>
-            <span>Edge</span>
-          </div>
-          {players.map((p, idx) => (
-            <div key={idx} style={tdItemStyle}>
-              <span>{p.player_name}</span>
-              <span style={{ fontWeight: '600' }}>{p.book?.odds_american > 0 ? '+' : ''}{p.book?.odds_american}</span>
-              <strong style={{ color: '#10b981' }}>+{p.edge?.probability_points_pct?.toFixed(1)}%</strong>
-            </div>
-          ))}
+    <a href="https://www.thebettinginsider.com/tools/nfl-anytime-td-tool" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg" 
+               style={{ width: '36px', height: '36px' }} alt="" />
         </div>
-      )}
-      
-      <a href="https://www.thebettinginsider.com/tools/nfl-anytime-td-tool" style={viewAllStyle}>
-        All top TD's →
-      </a>
-    </div>
+        
+        <h2 style={titleStyle}>
+          Anytime TD Leaders
+          <span style={weekTag}>Week {currentWeek}</span>  
+        </h2>
+        <p style={taglineStyle}>Best value touchdown plays</p>
+        
+        {loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
+        ) : (
+          <div style={{ marginBottom: '1rem', flex: 1, paddingBottom: '1rem' }}>
+            <div style={headerRow}>
+              <span>Player</span>
+              <span>Odds</span>
+              <span>Edge</span>
+            </div>
+            {players.map((p, idx) => (
+              <div key={idx} style={tdItemStyle}>
+                <span>{p.player_name}</span>
+                <span style={{ fontWeight: '600' }}>{p.book?.odds_american > 0 ? '+' : ''}{p.book?.odds_american}</span>
+                <strong style={{ color: '#10b981' }}>+{p.edge?.probability_points_pct?.toFixed(1)}%</strong>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </a>
   )
 }
 

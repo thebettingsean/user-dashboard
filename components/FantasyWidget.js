@@ -135,61 +135,59 @@ export default function FantasyWidget() {
   }
 
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg" 
-             style={{ width: '36px', height: '36px' }} />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Weekly Fantasy
-        <span style={weekTag}>Week {week}</span>
-      </h2>
-      <p style={taglineStyle}>Vegas-backed start/sit tool</p>
-      
-      {loading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
-      ) : (
-        <div style={{ flex: 1 }}>
-          <div style={sectionStyle}>
-            <h4 style={sectionTitle}>Quarterbacks</h4>
-            {players.qb.map(p => (
-              <div key={p.id} style={playerItemStyle}>
-                <span>{p.name}</span>
-                <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
-                <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div style={sectionStyle}>
-            <h4 style={sectionTitle}>Running Backs</h4>
-            {players.rb.map(p => (
-              <div key={p.id} style={playerItemStyle}>
-                <span>{p.name}</span>
-                <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
-                <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div style={{...sectionStyle, borderBottom: 'none'}}>
-            <h4 style={sectionTitle}>Wide Receivers</h4>
-            {players.wr.map(p => (
-              <div key={p.id} style={playerItemStyle}>
-                <span>{p.name}</span>
-                <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
-                <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
-              </div>
-            ))}
-          </div>
+    <a href="https://www.thebettinginsider.com/fantasy/weekly-rankings" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg" 
+               style={{ width: '36px', height: '36px' }} />
         </div>
-      )}
-      
-      <a href="https://www.thebettinginsider.com/fantasy/weekly-rankings" style={viewAllStyle}>
-        More Projections →
-      </a>
-    </div>
+        
+        <h2 style={titleStyle}>
+          Weekly Fantasy
+          <span style={weekTag}>Week {week}</span>
+        </h2>
+        <p style={taglineStyle}>Vegas-backed start/sit tool</p>
+        
+        {loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
+        ) : (
+          <div style={{ flex: 1 }}>
+            <div style={sectionStyle}>
+              <h4 style={sectionTitle}>Quarterbacks</h4>
+              {players.qb.map(p => (
+                <div key={p.id} style={playerItemStyle}>
+                  <span>{p.name}</span>
+                  <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
+                  <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div style={sectionStyle}>
+              <h4 style={sectionTitle}>Running Backs</h4>
+              {players.rb.map(p => (
+                <div key={p.id} style={playerItemStyle}>
+                  <span>{p.name}</span>
+                  <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
+                  <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+              <h4 style={sectionTitle}>Wide Receivers</h4>
+              {players.wr.map(p => (
+                <div key={p.id} style={playerItemStyle}>
+                  <span>{p.name}</span>
+                  <span style={{ color: '#10b981', fontSize: '0.75rem' }}>+{Math.random()*10|0}%</span>
+                  <strong>{p.fantasy_points_ppr?.toFixed(1)}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </a>
   )
 }
 

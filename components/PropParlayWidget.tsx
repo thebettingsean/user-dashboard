@@ -120,54 +120,52 @@ export default function PropParlayWidget() {
   }
 
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img 
-          src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg" 
-          alt="Prop" 
-          style={{ width: '36px', height: '36px' }}
-        />
-      </div>
-      
-      <h2 style={titleStyle}>Perfect Prop Parlays</h2>
-      <p style={taglineStyle}>100% hit rate props</p>
-      
-      {loading ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>Loading...</div>
+    <a href="/prop-parlay-tool" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img 
+            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg" 
+            alt="Prop" 
+            style={{ width: '36px', height: '36px' }}
+          />
         </div>
-      ) : !topSGP ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>No parlays available</div>
-        </div>
-      ) : (
-        <div style={{ flex: 1 }}>
-          <div style={sgpHeaderStyle}>
-            <div style={sgpBadge}>TOP SGP</div>
-            <div style={sgpGame}>{topSGP.game}</div>
-            <div style={sgpOdds}>{formatOdds(topSGP.totalOdds)}</div>
+        
+        <h2 style={titleStyle}>Perfect Prop Parlays</h2>
+        <p style={taglineStyle}>100% hit rate props</p>
+        
+        {loading ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>Loading...</div>
           </div>
+        ) : !topSGP ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem' }}>No parlays available</div>
+          </div>
+        ) : (
+          <div style={{ flex: 1, paddingBottom: '1rem' }}>
+            <div style={sgpHeaderStyle}>
+              <div style={sgpBadge}>TOP SGP</div>
+              <div style={sgpGame}>{topSGP.game}</div>
+              <div style={sgpOdds}>{formatOdds(topSGP.totalOdds)}</div>
+            </div>
 
-          {topSGP.legs.map((leg: any, i: number) => {
-            const bestOdds = Math.max(...leg.bookmakers.map((b: any) => b.odds))
-            const isLast = i === topSGP.legs.length - 1
-            
-            return (
-              <div key={i} style={{...sectionStyle, ...(isLast ? {borderBottom: 'none'} : {})}}>
-                <h4 style={sectionTitle}>LEG {i + 1}: {leg.player}</h4>
-                <p style={{ fontSize: '0.75rem', lineHeight: '1.4', opacity: 0.8 }}>
-                  {formatMarket(leg.market)} O{leg.line} • {formatOdds(bestOdds)}
-                </p>
-              </div>
-            )
-          })}
-        </div>
-      )}
-      
-      <a href="/prop-parlay-tool" style={viewAllStyle}>
-        More 100% parlays →
-      </a>
-    </div>
+            {topSGP.legs.map((leg: any, i: number) => {
+              const bestOdds = Math.max(...leg.bookmakers.map((b: any) => b.odds))
+              const isLast = i === topSGP.legs.length - 1
+              
+              return (
+                <div key={i} style={{...sectionStyle, ...(isLast ? {borderBottom: 'none', paddingBottom: '0'} : {})}}>
+                  <h4 style={sectionTitle}>LEG {i + 1}: {leg.player}</h4>
+                  <p style={{ fontSize: '0.75rem', lineHeight: '1.4', opacity: 0.8 }}>
+                    {formatMarket(leg.market)} O{leg.line} • {formatOdds(bestOdds)}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </a>
   )
 }
 

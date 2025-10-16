@@ -75,7 +75,7 @@ export default function StatsWidget() {
   }
   
   return (
-    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 

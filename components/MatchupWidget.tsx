@@ -75,7 +75,7 @@ export default function MatchupWidget() {
   }
   
   return (
-    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 

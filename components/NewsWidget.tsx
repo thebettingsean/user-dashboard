@@ -43,32 +43,30 @@ export default function NewsWidget() {
   }
 
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg" 
-             style={{ width: '36px', height: '36px' }} />
-      </div>
-      
-      <h2 style={titleStyle}>
-        {loading ? 'Loading...' : report ? report.title : 'Stay in the Know'}
-        {report && <span style={dateTag}>{weekRange}</span>}
-      </h2>
-      <p style={taglineStyle}>
-        {report ? `By ${report.author}` : 'Our outlook on the week'}
-      </p>
-      
-      <div style={{ flex: 1 }}>
-        <div style={sectionStyle}>
-          <p style={{ fontSize: '0.85rem', lineHeight: '1.5', opacity: 0.85 }}>
-            {loading ? 'Loading report...' : report ? report.summary : 'No report available this week.'}
-          </p>
+    <a href={reportUrl} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          {loading ? 'Loading...' : report ? report.title : 'Stay in the Know'}
+          {report && <span style={dateTag}>{weekRange}</span>}
+        </h2>
+        <p style={taglineStyle}>
+          {report ? `By ${report.author}` : 'Our outlook on the week'}
+        </p>
+        
+        <div style={{ flex: 1 }}>
+          <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+            <p style={{ fontSize: '0.85rem', lineHeight: '1.5', opacity: 0.85 }}>
+              {loading ? 'Loading report...' : report ? report.summary : 'No report available this week.'}
+            </p>
+          </div>
         </div>
       </div>
-      
-      <a href={reportUrl} style={viewAllStyle}>
-        {report ? 'read full report →' : 'read more →'}
-      </a>
-    </div>
+    </a>
   )
 }
 

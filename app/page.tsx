@@ -485,7 +485,7 @@ const toolLinkStyle = {
 }
 
 const helpLinkStyle = {
-  color: 'rgba(255,255,255,0.6)',
+  color: '#ffffff',
   textDecoration: 'none',
   fontSize: '0.85rem',
   transition: 'color 0.2s'
