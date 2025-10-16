@@ -221,47 +221,155 @@ export function findTopTrends(
   return trends.slice(0, 2)
 }
 
-// Analyze referee stats to find top O/U trends
+// Helper to calculate win percentage from wins-losses
+function calculateWinPct(wins: number, losses: number): number {
+  const total = wins + losses
+  return total > 0 ? (wins / total) * 100 : 0
+}
+
+// Analyze referee stats to find top trends across ALL categories
 export function findTopRefereeTrends(
-  games: Array<{ game: Game; refereeStats: RefereeStats | null }>
+  games: Array<{ game: Game; refereeStats: any }>
 ): RefereeTrend[] {
-  const trends: RefereeTrend[] = []
+  const allTrends: RefereeTrend[] = []
 
   for (const { game, refereeStats } of games) {
-    if (!refereeStats || !refereeStats.over_under || !refereeStats.over_under.over_under) {
-      continue
+    if (!refereeStats || refereeStats.total_games < 10) continue
+
+    const refName = refereeStats.referee_name?.split(' ').pop() || 'Unknown'
+    const gameLabel = `${game.away_team.split(' ').pop()}/${game.home_team.split(' ').pop()}`
+
+    // 1. Check O/U Overall
+    const ou = refereeStats.over_under?.over_under
+    if (ou) {
+      const overWinPct = calculateWinPct(ou.over_hits || 0, ou.under_hits || 0)
+      const underWinPct = calculateWinPct(ou.under_hits || 0, ou.over_hits || 0)
+      
+      if (overWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Over ${ou.over_hits}-${ou.under_hits}`,
+          percentage: Math.round(overWinPct)
+        })
+      }
+      if (underWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Under ${ou.under_hits}-${ou.over_hits}`,
+          percentage: Math.round(underWinPct)
+        })
+      }
+
+      // Check O/U Public Money buckets
+      const checkPublicMoneyBuckets = (buckets: any, betType: string) => {
+        if (!buckets) return
+        Object.entries(buckets).forEach(([range, stats]: [string, any]) => {
+          const wins = stats.wins || 0
+          const losses = stats.losses || 0
+          const total = wins + losses
+          if (total >= 10) { // Need at least 10 games in this bucket
+            const winPct = calculateWinPct(wins, losses)
+            if (winPct >= 60) {
+              allTrends.push({
+                game: gameLabel,
+                referee: refName,
+                trend: `${betType} (Public ${range}) ${wins}-${losses}`,
+                percentage: Math.round(winPct)
+              })
+            }
+          }
+        })
+      }
+
+      checkPublicMoneyBuckets(ou.public_money_over, 'Over')
+      checkPublicMoneyBuckets(ou.public_money_under, 'Under')
     }
-    
-    if (refereeStats.total_games < 10) continue
 
-    const overHits = refereeStats.over_under.over_under.over_hits || 0
-    const underHits = refereeStats.over_under.over_under.under_hits || 0
-    const totalGames = refereeStats.total_games
-    const overPct = refereeStats.over_under.over_under.over_percentage || 0
-    const underPct = refereeStats.over_under.over_under.under_percentage || 0
+    // 2. Check Spread trends
+    const spread = refereeStats.spread?.spread
+    if (spread) {
+      const atsWinPct = calculateWinPct(spread.ats_wins || 0, spread.ats_losses || 0)
+      if (atsWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `ATS ${spread.ats_wins}-${spread.ats_losses}`,
+          percentage: Math.round(atsWinPct)
+        })
+      }
 
-    // Strong over trend
-    if (overPct > 60) {
-      trends.push({
-        game: `${game.away_team.split(' ').pop()}/${game.home_team.split(' ').pop()}`,
-        referee: refereeStats.referee_name?.split(' ').pop() || 'Unknown',
-        trend: `Over ${overHits}-${underHits} L${totalGames}`,
-        percentage: Math.round(overPct)
-      })
+      // Home/Away favorites
+      const homeFavWinPct = calculateWinPct(spread.home_favorite_wins || 0, spread.home_favorite_losses || 0)
+      if (homeFavWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Home Fav ${spread.home_favorite_wins}-${spread.home_favorite_losses}`,
+          percentage: Math.round(homeFavWinPct)
+        })
+      }
+
+      const awayFavWinPct = calculateWinPct(spread.away_favorite_wins || 0, spread.away_favorite_losses || 0)
+      if (awayFavWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Away Fav ${spread.away_favorite_wins}-${spread.away_favorite_losses}`,
+          percentage: Math.round(awayFavWinPct)
+        })
+      }
     }
 
-    // Strong under trend
-    if (underPct > 60) {
-      trends.push({
-        game: `${game.away_team.split(' ').pop()}/${game.home_team.split(' ').pop()}`,
-        referee: refereeStats.referee_name?.split(' ').pop() || 'Unknown',
-        trend: `Under ${underHits}-${overHits} L${totalGames}`,
-        percentage: Math.round(underPct)
-      })
+    // 3. Check Moneyline trends
+    const ml = refereeStats.moneyline?.ml
+    if (ml) {
+      const homeMlWinPct = calculateWinPct(ml.home_ml_wins || 0, ml.home_ml_losses || 0)
+      if (homeMlWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Home ML ${ml.home_ml_wins}-${ml.home_ml_losses}`,
+          percentage: Math.round(homeMlWinPct)
+        })
+      }
+
+      const awayMlWinPct = calculateWinPct(ml.away_ml_wins || 0, ml.away_ml_losses || 0)
+      if (awayMlWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Away ML ${ml.away_ml_wins}-${ml.away_ml_losses}`,
+          percentage: Math.round(awayMlWinPct)
+        })
+      }
+
+      // Check favorites/underdogs
+      const homeFavMlWinPct = calculateWinPct(ml.home_favorite_wins || 0, ml.home_favorite_losses || 0)
+      if (homeFavMlWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Home Fav ML ${ml.home_favorite_wins}-${ml.home_favorite_losses}`,
+          percentage: Math.round(homeFavMlWinPct)
+        })
+      }
+
+      const awayFavMlWinPct = calculateWinPct(ml.away_favorite_wins || 0, ml.away_favorite_losses || 0)
+      if (awayFavMlWinPct >= 60) {
+        allTrends.push({
+          game: gameLabel,
+          referee: refName,
+          trend: `Away Fav ML ${ml.away_favorite_wins}-${ml.away_favorite_losses}`,
+          percentage: Math.round(awayFavMlWinPct)
+        })
+      }
     }
   }
 
-  return trends.sort((a, b) => b.percentage - a.percentage).slice(0, 2)
+  // Sort by win percentage and return top 2
+  return allTrends.sort((a, b) => b.percentage - a.percentage).slice(0, 2)
 }
 
 // Find team statistical edges (placeholder for now)
