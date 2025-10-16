@@ -240,11 +240,11 @@ export default function Navbar() {
         }
 
         .premium-card {
-          background: rgba(40, 40, 40, 0.7);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
-          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(35px) saturate(180%);
+          -webkit-backdrop-filter: blur(35px) saturate(180%);
+          border: none;
+          border-radius: 16px;
           padding: 0;
           text-align: center;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -253,14 +253,13 @@ export default function Navbar() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .premium-card:hover {
           transform: translateY(-4px);
-          background: rgba(50, 50, 50, 0.8);
-          border-color: rgba(255, 255, 255, 0.3);
-          box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.6);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .premium-card-icon-wrapper {
@@ -282,7 +281,9 @@ export default function Navbar() {
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
-          background: rgba(30, 30, 30, 0.8);
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
         .premium-card-label {
@@ -413,9 +414,9 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(50px) saturate(180%);
-          -webkit-backdrop-filter: blur(50px) saturate(180%);
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(80px) saturate(180%);
+          -webkit-backdrop-filter: blur(80px) saturate(180%);
           border-bottom: none;
           max-height: 0;
           overflow: hidden;
@@ -454,7 +455,9 @@ export default function Navbar() {
         }
 
         .mobile-dropdown {
-          background: rgba(0, 0, 0, 0.3);
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(60px) saturate(180%);
+          -webkit-backdrop-filter: blur(60px) saturate(180%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -492,13 +495,17 @@ export default function Navbar() {
         }
 
         .mobile-premium-card {
-          background: rgba(40, 40, 40, 0.95);
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
-          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(35px) saturate(180%);
+          -webkit-backdrop-filter: blur(35px) saturate(180%);
+          border: none;
+          border-radius: 12px;
           overflow: hidden;
           text-decoration: none;
           display: flex;
           flex-direction: column;
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .mobile-premium-card-icon-wrapper {
@@ -516,7 +523,9 @@ export default function Navbar() {
 
         .mobile-premium-card-text {
           padding: 0.5rem 0.6rem;
-          background: rgba(30, 30, 30, 0.8);
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
         .mobile-premium-card-label {
@@ -537,7 +546,9 @@ export default function Navbar() {
           padding: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          background: rgba(0, 0, 0, 0.3) !important;
+          background: rgba(0, 0, 0, 0.6) !important;
+          backdrop-filter: blur(60px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
           margin: 0 !important;
         }
 
