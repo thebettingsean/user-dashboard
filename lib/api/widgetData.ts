@@ -24,6 +24,25 @@ export interface MatchupWidgetData {
   league: string
 }
 
+// Helper: Fetch public money for multiple games in parallel
+async function fetchPublicMoneyParallel(league: League, games: any[]) {
+  const promises = games.map(async (game) => {
+    const publicMoney = await fetchPublicMoney(league, game.game_id)
+    if (publicMoney) {
+      // Add odds data
+      publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
+      publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
+      publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
+      publicMoney.home_team_point_spread = game.odds?.spread || 0
+      return { game, publicMoney }
+    }
+    return null
+  })
+  
+  const results = await Promise.all(promises)
+  return results.filter(r => r !== null) as Array<{ game: any, publicMoney: any }>
+}
+
 // Get data for the Public Betting widget
 export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   const dayOfWeek = new Date().getDay()
@@ -38,7 +57,36 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   const leagues = [primary, ...fallbacks]
   console.log('Will try leagues in order:', leagues)
   
-  // SEPARATE CASCADE: Find "Most Public" bets across all sports
+  // OPTIMIZATION: Cache games and public money data across both phases
+  const gamesCache = new Map<League, any[]>()
+  const publicMoneyCache = new Map<League, Array<{ game: any, publicMoney: any }>>()
+  
+  // Helper to get or fetch games with public money
+  async function getGamesWithData(league: League): Promise<Array<{ game: any, publicMoney: any }>> {
+    if (publicMoneyCache.has(league)) {
+      return publicMoneyCache.get(league)!
+    }
+    
+    // Fetch games if not cached
+    if (!gamesCache.has(league)) {
+      const { from, to } = getDateRangeForSport(league)
+      const games = await fetchGames(league, from, to)
+      gamesCache.set(league, games)
+    }
+    
+    const games = gamesCache.get(league)!
+    if (games.length === 0) {
+      return []
+    }
+    
+    // OPTIMIZATION: Only fetch 3 games instead of 5, and do it in parallel
+    const gamesWithData = await fetchPublicMoneyParallel(league, games.slice(0, 3))
+    publicMoneyCache.set(league, gamesWithData)
+    
+    return gamesWithData
+  }
+  
+  // PHASE 1: Find "Most Public" bets
   let topMostPublic: MostPublicBet[] = []
   let mostPublicLeague = ''
   
@@ -46,24 +94,11 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   for (const league of leagues) {
     console.log(`\n--- Checking ${league.toUpperCase()} for public bets ---`)
     try {
-      const { from, to } = getDateRangeForSport(league)
-      const games = await fetchGames(league, from, to)
+      const gamesWithData = await getGamesWithData(league)
       
-      if (games.length === 0) {
-        console.log(`No games for ${league}`)
+      if (gamesWithData.length === 0) {
+        console.log(`No games/data for ${league}`)
         continue
-      }
-      
-      const gamesWithData = []
-      for (const game of games.slice(0, 5)) {
-        const publicMoney = await fetchPublicMoney(league, game.game_id)
-        if (publicMoney) {
-          publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
-          publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
-          publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
-          publicMoney.home_team_point_spread = game.odds?.spread || 0
-          gamesWithData.push({ game, publicMoney })
-        }
       }
       
       let allMostPublic: MostPublicBet[] = []
@@ -85,7 +120,7 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
     }
   }
   
-  // SEPARATE CASCADE: Find trends/indicators across all sports
+  // PHASE 2: Find trends/indicators (reuses cached data!)
   let topTrends: TopTrend[] = []
   let trendsLeague = ''
   
@@ -93,24 +128,11 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
   for (const league of leagues) {
     console.log(`\n--- Checking ${league.toUpperCase()} for indicators ---`)
     try {
-      const { from, to } = getDateRangeForSport(league)
-      const games = await fetchGames(league, from, to)
+      const gamesWithData = await getGamesWithData(league) // Uses cache!
       
-      if (games.length === 0) {
-        console.log(`No games for ${league}`)
+      if (gamesWithData.length === 0) {
+        console.log(`No games/data for ${league}`)
         continue
-      }
-      
-      const gamesWithData = []
-      for (const game of games.slice(0, 5)) {
-        const publicMoney = await fetchPublicMoney(league, game.game_id)
-        if (publicMoney) {
-          publicMoney.away_team_ml = game.odds?.away_team_odds?.moneyline || 0
-          publicMoney.home_team_ml = game.odds?.home_team_odds?.moneyline || 0
-          publicMoney.away_team_point_spread = game.odds?.spread ? -game.odds.spread : 0
-          publicMoney.home_team_point_spread = game.odds?.spread || 0
-          gamesWithData.push({ game, publicMoney })
-        }
       }
       
       let allTrends: TopTrend[] = []
