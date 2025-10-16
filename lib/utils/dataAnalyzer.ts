@@ -149,9 +149,9 @@ export function findMostPublicBets(
     { type: 'under', ...getBetPercentage('under', publicMoney) }
   ]
   
-  // Filter for bets with >60% public backing and sort by bet percentage
+  // Filter for bets with >55% public backing and sort by bet percentage
   const publicBets = allBets
-    .filter(bet => bet.bets > 60)
+    .filter(bet => bet.bets > 55)
     .sort((a, b) => b.bets - a.bets)
     .slice(0, 2)
     .map(bet => ({
@@ -188,7 +188,7 @@ export function findTopTrends(
       const topSharp = sharpBets[0]
       const label = formatBetLabel(game, topSharp.bet_type, publicMoney)
       const value = topSharp.sharpness_level_value 
-        ? `${topSharp.sharpness_level_value.toFixed(1)} value`
+        ? `${topSharp.sharpness_level_value.toFixed(1)}% value`
         : `${topSharp.sharpness_level}`
       
       trends.push({
@@ -202,13 +202,13 @@ export function findTopTrends(
   // 2. Find RLM (Reverse Line Movement / Vegas-backed) indicators from API
   if (publicMoney.rlm_stats && publicMoney.rlm_stats.length > 0) {
     const rlmBets = publicMoney.rlm_stats
-      .filter(stat => stat.rlm_strength > 0.3) // Only significant RLM
-      .sort((a, b) => b.rlm_strength - a.rlm_strength)
+      .filter(stat => stat.rlm_strength_normalized > 0.3) // Only significant RLM (use normalized)
+      .sort((a, b) => b.rlm_strength_normalized - a.rlm_strength_normalized)
     
     if (rlmBets.length > 0) {
       const topRLM = rlmBets[0]
       const label = formatBetLabel(game, topRLM.bet_type, publicMoney)
-      const value = `RLM ${(topRLM.rlm_strength * 100).toFixed(0)}%`
+      const value = `RLM ${topRLM.rlm_strength_normalized.toFixed(1)}%`
       
       trends.push({
         type: 'vegas-backed',
