@@ -154,7 +154,7 @@ export default function Home() {
       <div style={{ 
         marginBottom: '2rem',
         padding: '0.5rem 1.25rem',
-        textAlign: 'center' as const
+        textAlign: 'left' as const
       }}>
           <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
             {welcomeMessage}
@@ -163,6 +163,14 @@ export default function Home() {
             These are the tools you need to be a profitable bettor
           </p>
         </div>
+        
+        {/* Divider line */}
+        <div style={{ 
+          width: '100%', 
+          height: '1px', 
+          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
+          marginBottom: '2rem'
+        }} />
         
         {/* MOBILE VIEW - Accordion */}
         <div className="mobile-view">
@@ -183,7 +191,7 @@ export default function Home() {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '1rem 1.25rem',
-                    border: `1px solid ${widget.borderColor}`,
+                    border: `0.5px solid ${widget.borderColor}`,
                     background: widget.background,
                     borderRadius: '14px',
                     cursor: 'pointer',
@@ -221,7 +229,7 @@ export default function Home() {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '1rem 1.25rem',
-                    border: `1px solid ${widget.borderColor}`,
+                    border: `0.5px solid ${widget.borderColor}`,
                     background: widget.background,
                     borderRadius: '14px',
                     cursor: 'pointer',
@@ -315,12 +323,20 @@ export default function Home() {
         </div>
 
         {/* Rest of your existing code */}
+        {/* Divider line after Premium NFL tools */}
+        <div style={{ 
+          width: '100%', 
+          height: '1px', 
+          background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
+          margin: '2rem 0'
+        }} />
+
         <div style={{ 
           marginTop: '2rem',
           padding: '1rem 0.5rem',
-          textAlign: 'center' as const
+          textAlign: 'left' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Try our FREE mini betting tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
@@ -352,9 +368,9 @@ export default function Home() {
         <div style={{ 
           marginTop: '2rem',
           padding: '1rem 0.5rem',
-          textAlign: 'center' as const
+          textAlign: 'left' as const
         }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Get Help
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c5a2af4dfb7b59b39_7.svg" 
                  style={{ width: '28px', height: '28px', opacity: 0.7 }} alt="" />
