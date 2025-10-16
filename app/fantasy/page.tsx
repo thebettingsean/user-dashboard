@@ -820,7 +820,8 @@ const styles = {
   },
   searchContainer: {
     flex: '1',
-    minWidth: '200px'
+    minWidth: '200px',
+    marginRight: '0.75rem'
   },
   searchInput: {
     width: '100%',
@@ -872,7 +873,7 @@ const styles = {
     borderRadius: '12px',
     padding: '0.5rem',
     minWidth: '180px',
-    zIndex: 100,
+    zIndex: 1000,
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
   },
   dropdownItem: {
@@ -960,7 +961,9 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '1rem',
-    flex: 1
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden'
   },
   checkbox: {
     width: '20px',
@@ -969,7 +972,6 @@ const styles = {
     accentColor: '#3b82f6'
   },
   playerInfo: {
-    flex: 1,
     minWidth: 0
   },
   playerName: {
@@ -1029,8 +1031,9 @@ const modalStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.9)',
-    backdropFilter: 'blur(8px)',
+    background: 'rgba(0, 0, 0, 0.95)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
     zIndex: 10000,
     alignItems: 'center',
     justifyContent: 'center',
