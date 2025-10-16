@@ -75,57 +75,55 @@ export default function StatsWidget() {
   }
   
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 
-             style={{ width: '36px', height: '36px' }} />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Public Betting
-        <span style={dateTag}>{today}</span> 
-      </h2>
-      <p style={taglineStyle}>See where the money is going • {data.league}</p>
-      
-      <div style={{ flex: 1 }}>
-        <div style={sectionStyle}>
-          <h4 style={sectionTitle}>Most Public</h4>
-          {data.mostPublic.map((bet, index) => (
-            <div key={index} style={publicItemStyle}>
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.2rem' }}>
-                  {bet.label}
-                </div>
-                <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>
-                  {Math.round(bet.betsPct)}% of bets, {Math.round(bet.dollarsPct)}% of dollars
+    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Public Betting
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>See where the money is going • {data.league}</p>
+        
+        <div style={{ flex: 1 }}>
+          <div style={sectionStyle}>
+            <h4 style={sectionTitle}>Most Public</h4>
+            {data.mostPublic.map((bet, index) => (
+              <div key={index} style={publicItemStyle}>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.2rem' }}>
+                    {bet.label}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                    {Math.round(bet.betsPct)}% of bets, {Math.round(bet.dollarsPct)}% of dollars
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div style={{...sectionStyle, borderBottom: 'none'}}>
-          <h4 style={sectionTitle}>Top Trends</h4>
-          {data.topTrends.map((trend, index) => (
-            <div key={index} style={trendItemStyle}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.8rem' }}>
-                  {trend.type === 'vegas-backed' ? 'Vegas backed:' : 'Big money:'}
+          <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+            <h4 style={sectionTitle}>Top Trends</h4>
+            {data.topTrends.map((trend, index) => (
+              <div key={index} style={trendItemStyle}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.8rem' }}>
+                    {trend.type === 'vegas-backed' ? 'Vegas backed:' : 'Big money:'}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{trend.label}</div>
                 </div>
-                <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{trend.label}</div>
+                <div style={trend.type === 'vegas-backed' ? valueTag : sharpTag}>
+                  {trend.value}
+                </div>
               </div>
-              <div style={trend.type === 'vegas-backed' ? valueTag : sharpTag}>
-                {trend.value}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-      
-      <a href="https://app.thebettinginsider.com" style={viewAllStyle}>
-        All public betting insights →
-      </a>
-    </div>
+    </a>
   )
 }
 

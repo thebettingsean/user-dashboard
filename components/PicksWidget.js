@@ -35,52 +35,50 @@ export default function PicksWidget() {
     picks.filter(p => p.bettors?.name === hottestBettor.bettors?.name).slice(0, 3) : []
 
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 
-             style={{ width: '36px', height: '36px' }} />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Our Bets Today
-        <span style={dateTag}>{today}</span>
-      </h2>
-      <p style={taglineStyle}>Top spots from the Insider team</p>
-      
-      {loading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
-      ) : (
-        <div style={{ flex: 1 }}>
-          <div style={hottestBettor ? sectionStyle : {...sectionStyle, borderBottom: 'none'}}>
-            <h4 style={sectionTitle}>Most at Risk</h4>
-            {topUnitsPicks.map(pick => (
-              <div key={pick.id} style={pickItemStyle}>
-                <span style={unitsStyle}>{pick.units}u</span>
-                <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
-              </div>
-            ))}
-          </div>
-
-          {hottestBettor && (
-            <div style={{...sectionStyle, borderBottom: 'none'}}>
-              <h4 style={sectionTitle}>
-                Hottest: {hottestBettor.bettors?.name} ({hottestBettor.bettors?.record})
-              </h4>
-              {hottestBettorPicks.map(pick => (
+    <a href="https://www.thebettinginsider.com/betting/dashboard" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Our Bets Today
+          <span style={dateTag}>{today}</span>
+        </h2>
+        <p style={taglineStyle}>Top spots from the Insider team</p>
+        
+        {loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
+        ) : (
+          <div style={{ flex: 1 }}>
+            <div style={hottestBettor ? sectionStyle : {...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+              <h4 style={sectionTitle}>Most at Risk</h4>
+              {topUnitsPicks.map(pick => (
                 <div key={pick.id} style={pickItemStyle}>
                   <span style={unitsStyle}>{pick.units}u</span>
                   <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
-      
-      <a href="https://www.thebettinginsider.com/betting/dashboard" style={viewAllStyle}>
-        All picks + write-ups →
-      </a>
-    </div>
+
+            {hottestBettor && (
+              <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+                <h4 style={sectionTitle}>
+                  Hottest: {hottestBettor.bettors?.name} ({hottestBettor.bettors?.record})
+                </h4>
+                {hottestBettorPicks.map(pick => (
+                  <div key={pick.id} style={pickItemStyle}>
+                    <span style={unitsStyle}>{pick.units}u</span>
+                    <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </a>
   )
 }
 

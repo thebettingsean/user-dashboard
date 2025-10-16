@@ -75,49 +75,47 @@ export default function MatchupWidget() {
   }
   
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 
-             style={{ width: '36px', height: '36px' }} />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Matchup Data
-        <span style={dateTag}>{today}</span> 
-      </h2>
-      <p style={taglineStyle}>Referee and team statistical edges • {data.league}</p>
-      
-      <div style={{ flex: 1 }}>
-        <div style={sectionStyle}>
-          <h4 style={sectionTitle}>Top Referee Trends</h4>
-          {data.refereeTrends.map((ref, index) => (
-            <div key={index} style={refItemStyle}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                  {ref.game} • {ref.referee}
+    <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 
+               style={{ width: '36px', height: '36px' }} />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Matchup Data
+          <span style={dateTag}>{today}</span> 
+        </h2>
+        <p style={taglineStyle}>Referee and team statistical edges • {data.league}</p>
+        
+        <div style={{ flex: 1 }}>
+          <div style={sectionStyle}>
+            <h4 style={sectionTitle}>Top Referee Trends</h4>
+            {data.refereeTrends.map((ref, index) => (
+              <div key={index} style={refItemStyle}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                    {ref.game} • {ref.referee}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{ref.trend}</div>
                 </div>
-                <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{ref.trend}</div>
+                <div style={trendBadge}>{ref.percentage}%</div>
               </div>
-              <div style={trendBadge}>{ref.percentage}%</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div style={{...sectionStyle, borderBottom: 'none'}}>
-          <h4 style={sectionTitle}>Top Team Trends</h4>
-          {data.teamTrends.map((team, index) => (
-            <div key={index} style={teamItemStyle}>
-              <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{team.description}</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{team.matchup}</div>
-            </div>
-          ))}
+          <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+            <h4 style={sectionTitle}>Top Team Trends</h4>
+            {data.teamTrends.map((team, index) => (
+              <div key={index} style={teamItemStyle}>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{team.description}</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>{team.matchup}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      
-      <a href="https://app.thebettinginsider.com" style={viewAllStyle}>
-        All matchup insights →
-      </a>
-    </div>
+    </a>
   )
 }
 
