@@ -26,9 +26,17 @@ interface Player {
   avgAboveProjected?: number
   trendingScore?: number
   accuracyScore?: number
+  // Pre-draft specific fields
+  overall_rank?: number
+  espn_rank?: number
+  projected_games_missed?: number
+  playoff_tier?: string
+  playoff_sos_score?: number
+  injuryRisk?: string
 }
 
 export default function FantasyPage() {
+  const [mode, setMode] = useState<'in-season' | 'pre-draft'>('in-season')
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([])
   const [selectedPlayers, setSelectedPlayers] = useState<Set<number>>(new Set())
@@ -125,13 +133,21 @@ export default function FantasyPage() {
   // Load all data
   async function loadAllData() {
     try {
+      // Use different tables based on mode
+      const playersTable = mode === 'pre-draft' ? 'pre_draft_players' : 'all_players'
+      const rankingsTable = mode === 'pre-draft' ? 'pre_draft_rankings' : 'weekly_rankings'
+      const projectionsTable = mode === 'pre-draft' ? 'pre_draft_projections' : 'all_player_projections'
+      
+      const weekQuery = mode === 'pre-draft' ? '' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`
+      const propsQuery = mode === 'pre-draft' ? '?select=*&limit=2000' : '?select=*&limit=2000'
+      
       const [players, rankings, projectionsData, propsData, injuriesData, historicalData] = await Promise.all([
-        fetchData('all_players', '?select=*&limit=2000'),
-        fetchData('weekly_rankings', `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
-        fetchData('all_player_projections', `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
-        fetchData('player_props', '?select=*&limit=2000'),
+        fetchData(playersTable, '?select=*&limit=2000'),
+        fetchData(rankingsTable, mode === 'pre-draft' ? '?select=*&order=overall_rank.asc&limit=500' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
+        fetchData(projectionsTable, mode === 'pre-draft' ? '?select=*&order=overall_rank.asc&limit=500' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
+        fetchData('player_props', propsQuery),
         fetchData('player_injuries', '?select=*&limit=500'),
-        fetchData('player_weekly_history', '?season=eq.2025&select=*&order=week.asc&limit=50000')
+        mode === 'in-season' ? fetchData('player_weekly_history', '?season=eq.2025&select=*&order=week.asc&limit=50000') : Promise.resolve([])
       ])
 
       const projections = new Map()
@@ -170,16 +186,29 @@ export default function FantasyPage() {
         let boost = 0
         let hasProjections = false
 
-        if (projection) {
-          points = parseFloat(projection.total_boosted_pts) || parseFloat(projection.fantasy_points_ppr) || 0
-          boost = parseFloat(projection.overall_odds_boost_pct) || 0
-          hasProjections = true
-        } else if (ranking) {
-          points = parseFloat(ranking.fantasy_points_ppr) || 0
-          hasProjections = true
+        if (mode === 'pre-draft') {
+          // For pre-draft, use fantasy_score from rankings/players
+          points = parseFloat(ranking?.fantasy_score || player.fantasy_score || 0)
+          hasProjections = !!(ranking || player.fantasy_score)
+        } else {
+          if (projection) {
+            points = parseFloat(projection.total_boosted_pts) || parseFloat(projection.fantasy_points_ppr) || 0
+            boost = parseFloat(projection.overall_odds_boost_pct) || 0
+            hasProjections = true
+          } else if (ranking) {
+            points = parseFloat(ranking.fantasy_points_ppr) || 0
+            hasProjections = true
+          }
         }
 
         const metrics = calculateHistoricalMetrics(historical)
+        
+        // Calculate injury risk for pre-draft
+        const getInjuryRisk = (gamesMissed: number) => {
+          if (!gamesMissed || gamesMissed < 1) return 'None'
+          if (gamesMissed <= 2) return 'Moderate'
+          return 'High'
+        }
 
         return {
           id: player.id,
@@ -193,7 +222,14 @@ export default function FantasyPage() {
           projectionData: projection,
           props: playerProps.get(player.id) || [],
           historicalData: historical,
-          ...metrics
+          ...metrics,
+          // Pre-draft specific fields
+          overall_rank: ranking?.overall_rank || player.overall_rank,
+          espn_rank: ranking?.espn_rank || player.espn_rank,
+          projected_games_missed: ranking?.projected_games_missed || player.projected_games_missed,
+          playoff_tier: ranking?.playoff_tier || player.playoff_tier,
+          playoff_sos_score: ranking?.playoff_sos_score || player.playoff_sos_score,
+          injuryRisk: getInjuryRisk(parseFloat(ranking?.projected_games_missed || player.projected_games_missed || 0))
         }
       })
 
@@ -207,7 +243,7 @@ export default function FantasyPage() {
 
   useEffect(() => {
     loadAllData()
-  }, [])
+  }, [mode])
 
   // Filter and sort players
   useEffect(() => {
@@ -247,6 +283,31 @@ export default function FantasyPage() {
           }
         case 'trending':
           return (b.trendingScore || 0) - (a.trendingScore || 0)
+        // Pre-draft filters
+        case 'espn_higher':
+          // Filter where ESPN ranked player higher (espn_rank < overall_rank)
+          const aEspnHigher = a.espn_rank && a.overall_rank && a.espn_rank < a.overall_rank
+          const bEspnHigher = b.espn_rank && b.overall_rank && b.espn_rank < b.overall_rank
+          if (aEspnHigher && !bEspnHigher) return -1
+          if (!aEspnHigher && bEspnHigher) return 1
+          // Sort by biggest difference
+          const aDiff = Math.abs((a.overall_rank || 999) - (a.espn_rank || 999))
+          const bDiff = Math.abs((b.overall_rank || 999) - (b.espn_rank || 999))
+          return bDiff - aDiff
+        case 'vegas_higher':
+          // Filter where Vegas ranked player higher (overall_rank < espn_rank)
+          const aVegasHigher = a.espn_rank && a.overall_rank && a.overall_rank < a.espn_rank
+          const bVegasHigher = b.espn_rank && b.overall_rank && b.overall_rank < b.espn_rank
+          if (aVegasHigher && !bVegasHigher) return -1
+          if (!aVegasHigher && bVegasHigher) return 1
+          // Sort by biggest difference
+          const aVDiff = Math.abs((a.espn_rank || 999) - (a.overall_rank || 999))
+          const bVDiff = Math.abs((b.espn_rank || 999) - (b.overall_rank || 999))
+          return bVDiff - aVDiff
+        case 'injury':
+          return (b.projected_games_missed || 0) - (a.projected_games_missed || 0)
+        case 'playoff':
+          return (b.playoff_sos_score || 0) - (a.playoff_sos_score || 0)
         default:
           return b.points - a.points
       }
@@ -285,6 +346,16 @@ export default function FantasyPage() {
     return rank > 0 ? rank : null
   }
 
+  const getPositionColor = (position: string) => {
+    const colors: { [key: string]: string } = {
+      'QB': '#3b82f6',  // Blue
+      'RB': '#10b981',  // Green
+      'WR': '#8b5cf6',  // Purple
+      'TE': '#f59e0b'   // Orange/Amber
+    }
+    return colors[position] || 'rgba(255, 255, 255, 0.2)'
+  }
+
   if (subLoading || loading) {
     return (
       <div style={styles.page}>
@@ -301,10 +372,40 @@ export default function FantasyPage() {
       <div style={styles.container}>
         {/* Header */}
         <header style={styles.header}>
-          <h1 style={styles.title}>Week {CURRENT_WEEK} Vegas Backed Fantasy Rankings</h1>
+          <h1 style={styles.title}>
+            {mode === 'in-season' ? `Week ${CURRENT_WEEK} ` : ''}Vegas Backed Fantasy Rankings
+          </h1>
           <p style={styles.subtitle}>
-            We took Vegas's billion-dollar betting lines and converted them into the best weekly fantasy rankings on the internet.
+            We took Vegas's billion-dollar betting lines and converted them into the best {mode === 'in-season' ? 'weekly ' : ''}fantasy rankings on the internet.
           </p>
+          
+          {/* Mode Toggle */}
+          <div style={styles.modeToggle}>
+            <button
+              style={{
+                ...styles.modeButton,
+                ...(mode === 'in-season' ? styles.modeButtonActive : {})
+              }}
+              onClick={() => {
+                setMode('in-season')
+                setSortBy('points') // Reset sort when changing modes
+              }}
+            >
+              In-Season
+            </button>
+            <button
+              style={{
+                ...styles.modeButton,
+                ...(mode === 'pre-draft' ? styles.modeButtonActive : {})
+              }}
+              onClick={() => {
+                setMode('pre-draft')
+                setSortBy('points') // Reset sort when changing modes
+              }}
+            >
+              Pre-Draft
+            </button>
+          </div>
         </header>
 
         {/* Unlock CTA */}
@@ -403,42 +504,98 @@ export default function FantasyPage() {
                     >
                       Highest Pts
                     </div>
-                    <div
-                      style={{
-                        ...styles.dropdownItem,
-                        background: sortBy === 'above_avg' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                      }}
-                      onClick={() => {
-                        setSortBy('above_avg')
-                        setShowSortDropdown(false)
-                      }}
-                    >
-                      Highest Above Avg
-                    </div>
-                    <div
-                      style={{
-                        ...styles.dropdownItem,
-                        background: sortBy === 'trending' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                      }}
-                      onClick={() => {
-                        setSortBy('trending')
-                        setShowSortDropdown(false)
-                      }}
-                    >
-                      Trending
-                    </div>
-                    <div
-                      style={{
-                        ...styles.dropdownItem,
-                        background: sortBy === 'accurate' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                      }}
-                      onClick={() => {
-                        setSortBy('accurate')
-                        setShowSortDropdown(false)
-                      }}
-                    >
-                      Most Accurate
-                    </div>
+                    
+                    {mode === 'in-season' ? (
+                      <>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'above_avg' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('above_avg')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          Highest Above Avg
+                        </div>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'trending' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('trending')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          Trending
+                        </div>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'accurate' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('accurate')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          Most Accurate
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'espn_higher' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('espn_higher')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          ESPN Diff (ESPN Higher)
+                        </div>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'vegas_higher' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('vegas_higher')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          ESPN Diff (Vegas Higher)
+                        </div>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'injury' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('injury')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          Injury Risk
+                        </div>
+                        <div
+                          style={{
+                            ...styles.dropdownItem,
+                            background: sortBy === 'playoff' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                          }}
+                          onClick={() => {
+                            setSortBy('playoff')
+                            setShowSortDropdown(false)
+                          }}
+                        >
+                          Playoff Path
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -483,7 +640,10 @@ export default function FantasyPage() {
               return (
                 <div
                   key={player.id}
-                  style={styles.playerRowLocked}
+                  style={{
+                    ...styles.playerRowLocked,
+                    borderLeft: `3px solid ${getPositionColor(player.position)}`
+                  }}
                   onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
                 >
                   <div style={{ filter: 'blur(4px)', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -517,7 +677,8 @@ export default function FantasyPage() {
                 key={player.id}
                 style={{
                   ...styles.playerRow,
-                  background: isSelected ? 'rgba(59, 130, 246, 0.08)' : styles.playerRow.background
+                  background: isSelected ? 'rgba(59, 130, 246, 0.08)' : styles.playerRow.background,
+                  borderLeft: `3px solid ${getPositionColor(player.position)}`
                 }}
                 onClick={() => setSelectedPlayer(player)}
               >
@@ -832,7 +993,34 @@ const styles = {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: '1rem',
     maxWidth: '700px',
-    margin: '0 auto'
+    margin: '0 auto',
+    marginBottom: '2rem'
+  },
+  modeToggle: {
+    display: 'flex',
+    gap: '0.75rem',
+    justifyContent: 'center',
+    marginTop: '2rem'
+  },
+  modeButton: {
+    background: 'rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    color: '#ffffff',
+    padding: '0.75rem 2rem',
+    borderRadius: '25px',
+    fontSize: '0.9375rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em'
+  },
+  modeButtonActive: {
+    background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
+    borderColor: '#60a5fa',
+    boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)'
   },
   unlockCta: {
     marginBottom: '2rem',
