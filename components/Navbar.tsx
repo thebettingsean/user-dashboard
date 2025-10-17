@@ -667,7 +667,22 @@ export default function Navbar() {
         }
       `}</style>
 
-      <nav className="navbar">
+      <nav 
+        className="navbar"
+        style={{
+          background: 'rgba(255, 255, 255, 0.08)',
+          borderBottom: '1.5px solid rgba(255, 255, 255, 0.15)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          minHeight: '85px',
+          display: 'flex',
+          alignItems: 'center',
+          boxShadow: '0 4px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+        }}
+      >
         <div className="navbar-content">
           <button
             className="hamburger"
