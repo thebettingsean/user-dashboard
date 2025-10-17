@@ -380,6 +380,35 @@ export default function FantasyPage() {
     return colors[position] || 'rgba(255, 255, 255, 0.2)'
   }
 
+  const getInjuryRiskColor = (risk: string | undefined) => {
+    if (risk === 'None') return '#10b981'  // Green
+    if (risk === 'Moderate') return '#f59e0b'  // Orange
+    if (risk === 'High') return '#ef4444'  // Red
+    return '#ffffff'
+  }
+
+  const getPlayoffPathColor = (tier: string | undefined) => {
+    const colors: { [key: string]: string } = {
+      'Good': '#10b981',      // Green (Easy)
+      'Solid': '#eab308',     // Yellow
+      'Average': '#f59e0b',   // Orange
+      'Tough': '#f87171',     // Light Red
+      'Brutal': '#ef4444'     // Red (Difficult)
+    }
+    return colors[tier || ''] || '#ffffff'
+  }
+
+  const getPlayoffPathDisplay = (tier: string | undefined) => {
+    const display: { [key: string]: string } = {
+      'Good': 'Easy',
+      'Solid': 'Moderate',
+      'Average': 'Average',
+      'Tough': 'Challenging',
+      'Brutal': 'Difficult'
+    }
+    return display[tier || ''] || tier || 'N/A'
+  }
+
   if (subLoading || loading) {
     return (
       <div style={styles.page}>
@@ -729,16 +758,44 @@ export default function FantasyPage() {
                   )}
                 </div>
 
-                {/* Right Side: Points, Boost */}
-                <div style={styles.playerRight}>
-                  <div style={styles.points}>{player.points.toFixed(1)}</div>
-                  <div style={{ 
-                    ...styles.boost, 
-                    color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
-                  }}>
-                    {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                {/* Right Side: Stats based on mode */}
+                {mode === 'pre-draft' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    {/* Desktop only stats */}
+                    <div className="pre-draft-desktop-stats" style={styles.preDraftStats}>
+                      <div style={styles.statItem}>
+                        <div style={styles.statLabel}>ESPN</div>
+                        <div style={styles.statValue}>{player.espn_rank || '--'}</div>
+                      </div>
+                      <div style={styles.statItem}>
+                        <div style={styles.statLabel}>Injury Risk</div>
+                        <div style={{ ...styles.statValue, color: getInjuryRiskColor(player.injuryRisk) }}>
+                          {player.injuryRisk || 'None'}
+                        </div>
+                      </div>
+                      <div style={styles.statItem}>
+                        <div style={styles.statLabel}>Playoff Path</div>
+                        <div style={{ ...styles.statValue, color: getPlayoffPathColor(player.playoff_tier) }}>
+                          {getPlayoffPathDisplay(player.playoff_tier)}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={styles.playerRight}>
+                      <div style={styles.points}>{player.points.toFixed(1)}</div>
+                      <div style={{ ...styles.boost, opacity: 0.5 }}>pts</div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div style={styles.playerRight}>
+                    <div style={styles.points}>{player.points.toFixed(1)}</div>
+                    <div style={{ 
+                      ...styles.boost, 
+                      color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
+                    }}>
+                      {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -756,6 +813,7 @@ export default function FantasyPage() {
       {selectedPlayer && (
         <PlayerModal
           player={selectedPlayer}
+          mode={mode}
           onClose={() => setSelectedPlayer(null)}
         />
       )}
@@ -776,13 +834,52 @@ export default function FantasyPage() {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        
+        .pre-draft-desktop-stats {
+          display: none;
+        }
+        
+        @media (min-width: 768px) {
+          .pre-draft-desktop-stats {
+            display: flex !important;
+          }
+        }
       `}</style>
     </div>
   )
 }
 
 // Modals remain the same
-function PlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
+function PlayerModal({ player, mode, onClose }: { player: Player; mode: 'in-season' | 'pre-draft'; onClose: () => void }) {
+  const getInjuryRiskColor = (risk: string | undefined) => {
+    if (risk === 'None') return '#10b981'
+    if (risk === 'Moderate') return '#f59e0b'
+    if (risk === 'High') return '#ef4444'
+    return '#ffffff'
+  }
+
+  const getPlayoffPathColor = (tier: string | undefined) => {
+    const colors: { [key: string]: string } = {
+      'Good': '#10b981',
+      'Solid': '#eab308',
+      'Average': '#f59e0b',
+      'Tough': '#f87171',
+      'Brutal': '#ef4444'
+    }
+    return colors[tier || ''] || '#ffffff'
+  }
+
+  const getPlayoffPathDisplay = (tier: string | undefined) => {
+    const display: { [key: string]: string } = {
+      'Good': 'Easy',
+      'Solid': 'Moderate',
+      'Average': 'Average',
+      'Tough': 'Challenging',
+      'Brutal': 'Difficult'
+    }
+    return display[tier || ''] || tier || 'N/A'
+  }
+
   return (
     <div style={modalStyles.overlay} onClick={onClose}>
       <div style={modalStyles.content} onClick={(e) => e.stopPropagation()}>
@@ -796,18 +893,86 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
           </p>
         </div>
 
-        <div style={modalStyles.statsGrid}>
-          <div style={modalStyles.statBox}>
-            <div style={modalStyles.statLabel}>Projected Points</div>
-            <div style={modalStyles.statValue}>{player.points.toFixed(1)}</div>
-          </div>
-          <div style={modalStyles.statBox}>
-            <div style={modalStyles.statLabel}>Odds Boost</div>
-            <div style={{ ...modalStyles.statValue, color: player.boost >= 0 ? '#10b981' : '#ef4444' }}>
-              {player.boost >= 0 ? '+' : ''}{player.boost.toFixed(1)}%
+        {mode === 'pre-draft' ? (
+          <>
+            {/* Pre-Draft Mode Stats */}
+            <div style={modalStyles.statsGrid}>
+              <div style={modalStyles.statBox}>
+                <div style={modalStyles.statLabel}>Vegas Rank</div>
+                <div style={modalStyles.statValue}>{player.overall_rank || '--'}</div>
+              </div>
+              <div style={modalStyles.statBox}>
+                <div style={modalStyles.statLabel}>ESPN Rank</div>
+                <div style={modalStyles.statValue}>{player.espn_rank || '--'}</div>
+              </div>
+              <div style={modalStyles.statBox}>
+                <div style={modalStyles.statLabel}>Projected Points</div>
+                <div style={modalStyles.statValue}>{player.points.toFixed(1)}</div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            {/* ESPN vs Vegas Comparison */}
+            {player.espn_rank && player.overall_rank && (
+              <div style={modalStyles.section}>
+                <div style={modalStyles.sectionTitle}>Ranking Comparison</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.6)' }}>Difference</span>
+                    <span style={{ 
+                      color: player.espn_rank > player.overall_rank ? '#10b981' : '#ef4444',
+                      fontWeight: '600'
+                    }}>
+                      {player.espn_rank > player.overall_rank ? 'Vegas Higher' : 'ESPN Higher'} ({Math.abs(player.espn_rank - player.overall_rank)} spots)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Player Status & Playoff Outlook */}
+            <div style={modalStyles.section}>
+              <div style={modalStyles.sectionTitle}>Player Status & Playoff Outlook</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Injury Risk</span>
+                  <span style={{ color: getInjuryRiskColor(player.injuryRisk), fontWeight: '600' }}>
+                    {player.injuryRisk || 'None'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Projected Games Missed</span>
+                  <span style={{ fontWeight: '600' }}>{player.projected_games_missed || '0.0'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Playoff Path</span>
+                  <span style={{ color: getPlayoffPathColor(player.playoff_tier), fontWeight: '600' }}>
+                    {getPlayoffPathDisplay(player.playoff_tier)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Playoff SOS Score</span>
+                  <span style={{ fontWeight: '600' }}>{player.playoff_sos_score || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* In-Season Mode Stats */}
+            <div style={modalStyles.statsGrid}>
+              <div style={modalStyles.statBox}>
+                <div style={modalStyles.statLabel}>Projected Points</div>
+                <div style={modalStyles.statValue}>{player.points.toFixed(1)}</div>
+              </div>
+              <div style={modalStyles.statBox}>
+                <div style={modalStyles.statLabel}>Odds Boost</div>
+                <div style={{ ...modalStyles.statValue, color: player.boost >= 0 ? '#10b981' : '#ef4444' }}>
+                  {player.boost >= 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {player.historicalData && player.historicalData.length > 0 && (
           <div style={modalStyles.section}>
@@ -1022,19 +1187,20 @@ const styles = {
   },
   modeToggle: {
     display: 'flex',
-    gap: '0.75rem',
-    justifyContent: 'center',
-    marginTop: '2rem'
+    gap: '0.5rem',
+    justifyContent: 'flex-start',
+    marginTop: '1.5rem',
+    marginBottom: '1rem'
   },
   modeButton: {
     background: 'rgba(255, 255, 255, 0.08)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border: '1px solid rgba(255, 255, 255, 0.15)',
-    color: '#ffffff',
-    padding: '0.75rem 2rem',
-    borderRadius: '25px',
-    fontSize: '0.9375rem',
+    color: 'rgba(255, 255, 255, 0.7)',
+    padding: '0.5rem 1.25rem',
+    borderRadius: '20px',
+    fontSize: '0.8125rem',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1042,9 +1208,31 @@ const styles = {
     letterSpacing: '0.05em'
   },
   modeButtonActive: {
-    background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-    borderColor: '#60a5fa',
-    boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)'
+    background: 'linear-gradient(135deg, #0c2340, #1e3a8a)',
+    borderColor: '#1e40af',
+    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.4)',
+    color: '#ffffff'
+  },
+  preDraftStats: {
+    display: 'flex',
+    gap: '1.5rem',
+    alignItems: 'center'
+  },
+  statItem: {
+    textAlign: 'center' as const,
+    minWidth: '70px'
+  },
+  statLabel: {
+    fontSize: '0.625rem',
+    color: 'rgba(255, 255, 255, 0.5)',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    marginBottom: '0.125rem'
+  },
+  statValue: {
+    fontSize: '0.875rem',
+    fontWeight: '700',
+    color: '#ffffff'
   },
   unlockCta: {
     marginBottom: '2rem',
