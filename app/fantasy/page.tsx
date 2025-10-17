@@ -45,7 +45,36 @@ export default function FantasyPage() {
   const { isLoading: subLoading, isSubscribed } = useSubscription()
   const userHasAccess = isSubscribed
 
-  const CURRENT_WEEK = 7
+  // NFL Week Schedule
+  const NFL_SCHEDULE = [
+    { week: 1, start: new Date('2025-09-02'), end: new Date('2025-09-08T23:59:59') },
+    { week: 2, start: new Date('2025-09-09'), end: new Date('2025-09-15T23:59:59') },
+    { week: 3, start: new Date('2025-09-16'), end: new Date('2025-09-22T23:59:59') },
+    { week: 4, start: new Date('2025-09-23'), end: new Date('2025-09-29T23:59:59') },
+    { week: 5, start: new Date('2025-09-30'), end: new Date('2025-10-06T23:59:59') },
+    { week: 6, start: new Date('2025-10-07'), end: new Date('2025-10-13T23:59:59') },
+    { week: 7, start: new Date('2025-10-14'), end: new Date('2025-10-20T23:59:59') },
+    { week: 8, start: new Date('2025-10-21'), end: new Date('2025-10-27T23:59:59') },
+    { week: 9, start: new Date('2025-10-28'), end: new Date('2025-11-03T23:59:59') },
+    { week: 10, start: new Date('2025-11-04'), end: new Date('2025-11-10T23:59:59') },
+    { week: 11, start: new Date('2025-11-11'), end: new Date('2025-11-17T23:59:59') },
+    { week: 12, start: new Date('2025-11-18'), end: new Date('2025-11-24T23:59:59') },
+    { week: 13, start: new Date('2025-11-25'), end: new Date('2025-12-01T23:59:59') },
+    { week: 14, start: new Date('2025-12-02'), end: new Date('2025-12-08T23:59:59') },
+    { week: 15, start: new Date('2025-12-09'), end: new Date('2025-12-15T23:59:59') },
+    { week: 16, start: new Date('2025-12-16'), end: new Date('2025-12-22T23:59:59') },
+    { week: 17, start: new Date('2025-12-23'), end: new Date('2025-12-29T23:59:59') },
+    { week: 18, start: new Date('2025-12-30'), end: new Date('2026-01-05T23:59:59') }
+  ]
+
+  // Get current week based on schedule
+  const getCurrentWeek = () => {
+    const now = new Date()
+    const currentWeek = NFL_SCHEDULE.find(w => now >= w.start && now <= w.end)
+    return currentWeek ? currentWeek.week : 7 // Default to week 7 if not found
+  }
+
+  const CURRENT_WEEK = getCurrentWeek()
 
   // Fetch data from Supabase
   async function fetchData(table: string, query = '') {
@@ -202,11 +231,22 @@ export default function FantasyPage() {
         case 'points':
           return b.points - a.points
         case 'above_avg':
-          return (b.avgAboveProjected || 0) - (a.avgAboveProjected || 0)
+        case 'accurate':
+          // For these filters, prioritize players with 10+ pts projected, then sort by metric
+          const aHigh = a.points >= 10
+          const bHigh = b.points >= 10
+          
+          if (aHigh && !bHigh) return -1
+          if (!aHigh && bHigh) return 1
+          
+          // Both in same tier, sort by actual metric
+          if (sortBy === 'above_avg') {
+            return (b.avgAboveProjected || 0) - (a.avgAboveProjected || 0)
+          } else {
+            return (b.accuracyScore || 0) - (a.accuracyScore || 0)
+          }
         case 'trending':
           return (b.trendingScore || 0) - (a.trendingScore || 0)
-        case 'accurate':
-          return (b.accuracyScore || 0) - (a.accuracyScore || 0)
         default:
           return b.points - a.points
       }
@@ -282,7 +322,7 @@ export default function FantasyPage() {
         {/* Filters Container */}
         <div style={styles.filtersContainer}>
           <div style={styles.filtersRow}>
-            {/* Search */}
+            {/* Search - Left Side */}
             <div style={styles.searchContainer}>
               <input
                 type="text"
@@ -299,117 +339,120 @@ export default function FantasyPage() {
               />
             </div>
 
-            {/* Position Filter Button */}
-            <div style={{ position: 'relative' }}>
-              <button
-                style={styles.filterButton}
-                onClick={() => {
-                  setShowPosDropdown(!showPosDropdown)
-                  setShowSortDropdown(false)
-                }}
-              >
-                POS
-                <svg style={styles.filterIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </button>
-              {showPosDropdown && (
-                <div style={styles.dropdown}>
-                  {['', 'QB', 'RB', 'WR', 'TE'].map(pos => (
+            {/* Filter Buttons - Right Side */}
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              {/* Position Filter Button */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  style={styles.filterButton}
+                  onClick={() => {
+                    setShowPosDropdown(!showPosDropdown)
+                    setShowSortDropdown(false)
+                  }}
+                >
+                  POS
+                  <svg style={styles.filterIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                {showPosDropdown && (
+                  <div style={styles.dropdown}>
+                    {['', 'QB', 'RB', 'WR', 'TE'].map(pos => (
+                      <div
+                        key={pos}
+                        style={{
+                          ...styles.dropdownItem,
+                          background: positionFilter === pos ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                        }}
+                        onClick={() => {
+                          setPositionFilter(pos)
+                          setShowPosDropdown(false)
+                        }}
+                      >
+                        {pos || 'All'}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Sort Filter Button */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  style={styles.filterButton}
+                  onClick={() => {
+                    setShowSortDropdown(!showSortDropdown)
+                    setShowPosDropdown(false)
+                  }}
+                >
+                  <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                  </svg>
+                </button>
+                {showSortDropdown && (
+                  <div style={styles.dropdown}>
                     <div
-                      key={pos}
                       style={{
                         ...styles.dropdownItem,
-                        background: positionFilter === pos ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                        background: sortBy === 'points' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
                       }}
                       onClick={() => {
-                        setPositionFilter(pos)
-                        setShowPosDropdown(false)
+                        setSortBy('points')
+                        setShowSortDropdown(false)
                       }}
                     >
-                      {pos || 'All'}
+                      Highest Pts
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div
+                      style={{
+                        ...styles.dropdownItem,
+                        background: sortBy === 'above_avg' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                      }}
+                      onClick={() => {
+                        setSortBy('above_avg')
+                        setShowSortDropdown(false)
+                      }}
+                    >
+                      Highest Above Avg
+                    </div>
+                    <div
+                      style={{
+                        ...styles.dropdownItem,
+                        background: sortBy === 'trending' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                      }}
+                      onClick={() => {
+                        setSortBy('trending')
+                        setShowSortDropdown(false)
+                      }}
+                    >
+                      Trending
+                    </div>
+                    <div
+                      style={{
+                        ...styles.dropdownItem,
+                        background: sortBy === 'accurate' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                      }}
+                      onClick={() => {
+                        setSortBy('accurate')
+                        setShowSortDropdown(false)
+                      }}
+                    >
+                      Most Accurate
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Sort Filter Button */}
-            <div style={{ position: 'relative' }}>
+              {/* Info Button */}
               <button
-                style={styles.filterButton}
-                onClick={() => {
-                  setShowSortDropdown(!showSortDropdown)
-                  setShowPosDropdown(false)
-                }}
+                style={styles.infoButton}
+                onClick={() => setShowInfoModal(true)}
               >
-                <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </button>
-              {showSortDropdown && (
-                <div style={styles.dropdown}>
-                  <div
-                    style={{
-                      ...styles.dropdownItem,
-                      background: sortBy === 'points' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                    }}
-                    onClick={() => {
-                      setSortBy('points')
-                      setShowSortDropdown(false)
-                    }}
-                  >
-                    Highest Pts
-                  </div>
-                  <div
-                    style={{
-                      ...styles.dropdownItem,
-                      background: sortBy === 'above_avg' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                    }}
-                    onClick={() => {
-                      setSortBy('above_avg')
-                      setShowSortDropdown(false)
-                    }}
-                  >
-                    Highest Above Avg
-                  </div>
-                  <div
-                    style={{
-                      ...styles.dropdownItem,
-                      background: sortBy === 'trending' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                    }}
-                    onClick={() => {
-                      setSortBy('trending')
-                      setShowSortDropdown(false)
-                    }}
-                  >
-                    Trending
-                  </div>
-                  <div
-                    style={{
-                      ...styles.dropdownItem,
-                      background: sortBy === 'accurate' ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
-                    }}
-                    onClick={() => {
-                      setSortBy('accurate')
-                      setShowSortDropdown(false)
-                    }}
-                  >
-                    Most Accurate
-                  </div>
-                </div>
-              )}
             </div>
-
-            {/* Info Button */}
-            <button
-              style={styles.infoButton}
-              onClick={() => setShowInfoModal(true)}
-            >
-              <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </button>
           </div>
 
           {/* Selection Controls */}
@@ -821,14 +864,13 @@ const styles = {
   filtersRow: {
     display: 'flex',
     gap: '0.75rem',
-    flexWrap: 'wrap' as const,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   searchContainer: {
     flex: '0 1 400px',
     minWidth: '200px',
-    maxWidth: '400px',
-    marginRight: '1rem'
+    maxWidth: '400px'
   },
   searchInput: {
     width: '100%',
