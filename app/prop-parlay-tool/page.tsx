@@ -678,7 +678,8 @@ function formatBookName(name: string) {
 const styles = {
   wrapper: {
     minHeight: '100vh',
-    background: 'transparent',
+    background: 'linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%)',
+    backgroundAttachment: 'fixed' as const,
     padding: '1.5rem 1rem',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     position: 'relative' as const

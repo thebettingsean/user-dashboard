@@ -1140,7 +1140,9 @@ const styles = {
     minHeight: '100vh',
     padding: '10rem 1rem 2rem 1rem',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    color: '#ffffff'
+    color: '#ffffff',
+    background: 'linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%)',
+    backgroundAttachment: 'fixed' as const
   },
   container: {
     maxWidth: '1200px',
