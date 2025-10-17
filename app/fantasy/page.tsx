@@ -133,21 +133,59 @@ export default function FantasyPage() {
   // Load all data
   async function loadAllData() {
     try {
-      // Use different tables based on mode
-      const playersTable = mode === 'pre-draft' ? 'pre_draft_players' : 'all_players'
-      const rankingsTable = mode === 'pre-draft' ? 'pre_draft_rankings' : 'weekly_rankings'
-      const projectionsTable = mode === 'pre-draft' ? 'pre_draft_projections' : 'all_player_projections'
-      
-      const weekQuery = mode === 'pre-draft' ? '' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`
-      const propsQuery = mode === 'pre-draft' ? '?select=*&limit=2000' : '?select=*&limit=2000'
-      
+      if (mode === 'pre-draft') {
+        // Pre-draft mode: use 'players' table (like the HTML code)
+        const [players, playerBreakdowns, markets, marketTypes] = await Promise.all([
+          fetchData('players', '?select=*&order=overall_rank.asc&limit=2000'),
+          fetchData('player_betting_breakdown', '?select=*&limit=2000'),
+          fetchData('betting_markets', '?select=*&limit=2000'),
+          fetchData('market_types', '?select=*&limit=500')
+        ])
+
+        const mappedPlayers = players.map((player: any) => {
+          const getInjuryRisk = (gamesMissed: number) => {
+            if (!gamesMissed || gamesMissed < 1) return 'None'
+            if (gamesMissed <= 2) return 'Moderate'
+            return 'High'
+          }
+
+          return {
+            id: player.id,
+            name: player.name,
+            position: player.position,
+            team: player.team,
+            injury_status: null,
+            points: parseFloat(player.fantasy_score || 0),
+            boost: 0,
+            hasProjections: true,
+            projectionData: null,
+            props: [],
+            historicalData: [],
+            avgAboveProjected: 0,
+            trendingScore: 0,
+            accuracyScore: 0,
+            overall_rank: player.overall_rank,
+            espn_rank: player.espn_rank,
+            projected_games_missed: player.projected_games_missed,
+            playoff_tier: player.playoff_tier,
+            playoff_sos_score: player.playoff_sos_score,
+            injuryRisk: getInjuryRisk(parseFloat(player.projected_games_missed || 0))
+          }
+        })
+
+        setAllPlayers(mappedPlayers)
+        setLoading(false)
+        return
+      }
+
+      // In-season mode: use existing tables
       const [players, rankings, projectionsData, propsData, injuriesData, historicalData] = await Promise.all([
-        fetchData(playersTable, '?select=*&limit=2000'),
-        fetchData(rankingsTable, mode === 'pre-draft' ? '?select=*&order=overall_rank.asc&limit=500' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
-        fetchData(projectionsTable, mode === 'pre-draft' ? '?select=*&order=overall_rank.asc&limit=500' : `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
-        fetchData('player_props', propsQuery),
+        fetchData('all_players', '?select=*&limit=2000'),
+        fetchData('weekly_rankings', `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
+        fetchData('all_player_projections', `?week=eq.${CURRENT_WEEK}&select=*&limit=500`),
+        fetchData('player_props', '?select=*&limit=2000'),
         fetchData('player_injuries', '?select=*&limit=500'),
-        mode === 'in-season' ? fetchData('player_weekly_history', '?season=eq.2025&select=*&order=week.asc&limit=50000') : Promise.resolve([])
+        fetchData('player_weekly_history', '?season=eq.2025&select=*&order=week.asc&limit=50000')
       ])
 
       const projections = new Map()
@@ -186,29 +224,16 @@ export default function FantasyPage() {
         let boost = 0
         let hasProjections = false
 
-        if (mode === 'pre-draft') {
-          // For pre-draft, use fantasy_score from rankings/players
-          points = parseFloat(ranking?.fantasy_score || player.fantasy_score || 0)
-          hasProjections = !!(ranking || player.fantasy_score)
-        } else {
-          if (projection) {
-            points = parseFloat(projection.total_boosted_pts) || parseFloat(projection.fantasy_points_ppr) || 0
-            boost = parseFloat(projection.overall_odds_boost_pct) || 0
-            hasProjections = true
-          } else if (ranking) {
-            points = parseFloat(ranking.fantasy_points_ppr) || 0
-            hasProjections = true
-          }
+        if (projection) {
+          points = parseFloat(projection.total_boosted_pts) || parseFloat(projection.fantasy_points_ppr) || 0
+          boost = parseFloat(projection.overall_odds_boost_pct) || 0
+          hasProjections = true
+        } else if (ranking) {
+          points = parseFloat(ranking.fantasy_points_ppr) || 0
+          hasProjections = true
         }
 
         const metrics = calculateHistoricalMetrics(historical)
-        
-        // Calculate injury risk for pre-draft
-        const getInjuryRisk = (gamesMissed: number) => {
-          if (!gamesMissed || gamesMissed < 1) return 'None'
-          if (gamesMissed <= 2) return 'Moderate'
-          return 'High'
-        }
 
         return {
           id: player.id,
@@ -223,13 +248,12 @@ export default function FantasyPage() {
           props: playerProps.get(player.id) || [],
           historicalData: historical,
           ...metrics,
-          // Pre-draft specific fields
-          overall_rank: ranking?.overall_rank || player.overall_rank,
-          espn_rank: ranking?.espn_rank || player.espn_rank,
-          projected_games_missed: ranking?.projected_games_missed || player.projected_games_missed,
-          playoff_tier: ranking?.playoff_tier || player.playoff_tier,
-          playoff_sos_score: ranking?.playoff_sos_score || player.playoff_sos_score,
-          injuryRisk: getInjuryRisk(parseFloat(ranking?.projected_games_missed || player.projected_games_missed || 0))
+          overall_rank: null,
+          espn_rank: null,
+          projected_games_missed: null,
+          playoff_tier: null,
+          playoff_sos_score: null,
+          injuryRisk: null
         }
       })
 
