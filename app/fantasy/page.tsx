@@ -1142,7 +1142,10 @@ const styles = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     background: 'linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%)',
-    backgroundAttachment: 'fixed' as const
+    backgroundAttachment: 'fixed',
+    position: 'relative' as const,
+    width: '100%',
+    overflow: 'hidden'
   },
   container: {
     maxWidth: '1200px',
