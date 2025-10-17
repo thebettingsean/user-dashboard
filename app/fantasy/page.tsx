@@ -1142,7 +1142,8 @@ const styles = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     position: 'relative' as const,
-    width: '100%'
+    width: '100%',
+    background: 'transparent'
   },
   container: {
     maxWidth: '1200px',
