@@ -112,21 +112,6 @@ export default function Navbar() {
   return (
     <>
       <style jsx>{`
-        .navbar {
-          background: rgba(255, 255, 255, 0.08);
-          border-bottom: 1.5px solid rgba(255, 255, 255, 0.15);
-          position: sticky;
-          top: 0;
-          z-index: 1000;
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
-          min-height: 85px;
-          display: flex;
-          align-items: center;
-          box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.35), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
         .navbar-content {
           max-width: 1400px;
           margin: 0 auto;
