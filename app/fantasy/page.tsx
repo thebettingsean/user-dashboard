@@ -1141,7 +1141,6 @@ const styles = {
     padding: '10rem 1rem 2rem 1rem',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
-    position: 'relative' as const,
     width: '100%',
     background: 'transparent'
   },
