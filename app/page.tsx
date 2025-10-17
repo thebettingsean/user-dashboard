@@ -105,6 +105,12 @@ export default function Home() {
 
   return (
     <>
+      <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative' }}>
+        {/* Floating orbs */}
+        <div className="orb-3"></div>
+        <div className="orb-4"></div>
+        <div className="orb-5"></div>
+
       <style jsx>{`
         .mobile-view {
           display: block;
@@ -405,6 +411,7 @@ export default function Home() {
             </a>
           </div>
         </div>
+      </div>
       </div>
     </>
   )
