@@ -35,41 +35,42 @@ body {
   content: '';
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
+  filter: blur(120px);
   pointer-events: none;
   z-index: 0;
 }
 
 .dashboard-orbs::before {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
-  top: 10%;
-  left: 5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.8) 0%, rgba(59, 130, 246, 0.4) 40%, transparent 70%);
+  top: 5%;
+  left: -10%;
+  opacity: 0.35;
   animation: float1 25s ease-in-out infinite;
 }
 
 .dashboard-orbs::after {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, transparent 70%);
-  bottom: 15%;
-  right: 8%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, rgba(139, 92, 246, 0.35) 40%, transparent 70%);
+  bottom: 10%;
+  right: -5%;
+  opacity: 0.3;
   animation: float2 30s ease-in-out infinite;
 }
 
 /* Additional orbs using pseudo-elements on a container */
 .orb-3 {
   position: fixed;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.3) 40%, transparent 70%);
   border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.12;
-  top: 50%;
-  right: 20%;
+  filter: blur(100px);
+  opacity: 0.25;
+  top: 45%;
+  right: 10%;
   pointer-events: none;
   z-index: 0;
   animation: float3 28s ease-in-out infinite;
@@ -77,14 +78,14 @@ body {
 
 .orb-4 {
   position: fixed;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.3) 40%, transparent 70%);
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.1;
-  bottom: 30%;
-  left: 15%;
+  filter: blur(90px);
+  opacity: 0.22;
+  bottom: 25%;
+  left: 10%;
   pointer-events: none;
   z-index: 0;
   animation: float4 22s ease-in-out infinite;
@@ -92,14 +93,14 @@ body {
 
 .orb-5 {
   position: fixed;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.5) 0%, rgba(99, 102, 241, 0.25) 40%, transparent 70%);
   border-radius: 50%;
-  filter: blur(50px);
-  opacity: 0.08;
-  top: 35%;
-  left: 40%;
+  filter: blur(80px);
+  opacity: 0.2;
+  top: 30%;
+  left: 35%;
   pointer-events: none;
   z-index: 0;
   animation: float5 20s ease-in-out infinite;
@@ -110,10 +111,10 @@ body {
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(-30px, 50px) scale(1.05);
+    transform: translate(-60px, 80px) scale(1.1);
   }
   66% {
-    transform: translate(40px, -40px) scale(0.95);
+    transform: translate(70px, -70px) scale(0.9);
   }
 }
 
@@ -122,10 +123,10 @@ body {
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(50px, -30px) scale(1.08);
+    transform: translate(80px, -50px) scale(1.15);
   }
   66% {
-    transform: translate(-40px, 40px) scale(0.92);
+    transform: translate(-60px, 60px) scale(0.85);
   }
 }
 
@@ -134,10 +135,10 @@ body {
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(-40px, -50px) scale(1.06);
+    transform: translate(-70px, -80px) scale(1.12);
   }
   66% {
-    transform: translate(35px, 45px) scale(0.94);
+    transform: translate(65px, 75px) scale(0.88);
   }
 }
 
@@ -146,10 +147,10 @@ body {
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(45px, 35px) scale(1.04);
+    transform: translate(75px, 55px) scale(1.08);
   }
   66% {
-    transform: translate(-35px, -45px) scale(0.96);
+    transform: translate(-55px, -65px) scale(0.92);
   }
 }
 
@@ -158,10 +159,10 @@ body {
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(-25px, 40px) scale(1.07);
+    transform: translate(-50px, 70px) scale(1.14);
   }
   66% {
-    transform: translate(30px, -30px) scale(0.93);
+    transform: translate(60px, -60px) scale(0.86);
   }
 }
 
