@@ -458,8 +458,12 @@ export default function FantasyPage() {
                     <div style={styles.boost}>--</div>
                   </div>
                   <div style={styles.lockOverlay}>
-                    <div style={styles.lockIcon}>🔒</div>
-                    <div style={styles.lockText}>Unlock Required</div>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg" 
+                      alt="Locked" 
+                      style={styles.lockIcon}
+                    />
+                    <div style={styles.lockText}>Package Required</div>
                   </div>
                 </div>
               )
@@ -810,7 +814,9 @@ const styles = {
     borderRadius: '20px',
     padding: '1.25rem',
     marginBottom: '1.5rem',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    position: 'relative' as const,
+    zIndex: 100
   },
   filtersRow: {
     display: 'flex',
@@ -819,9 +825,10 @@ const styles = {
     alignItems: 'center'
   },
   searchContainer: {
-    flex: '1',
+    flex: '0 1 400px',
     minWidth: '200px',
-    marginRight: '0.75rem'
+    maxWidth: '400px',
+    marginRight: '1rem'
   },
   searchInput: {
     width: '100%',
@@ -867,14 +874,15 @@ const styles = {
     top: '100%',
     left: 0,
     marginTop: '0.5rem',
-    background: 'rgba(30, 41, 59, 0.98)',
-    backdropFilter: 'blur(50px)',
+    background: 'rgba(10, 15, 25, 0.95)',
+    backdropFilter: 'blur(60px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(60px) saturate(180%)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '12px',
     padding: '0.5rem',
     minWidth: '180px',
     zIndex: 1000,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)'
+    boxShadow: '0 12px 48px rgba(0, 0, 0, 0.8)'
   },
   dropdownItem: {
     padding: '0.75rem 1rem',
@@ -908,7 +916,9 @@ const styles = {
   playerList: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '0.75rem',
+    position: 'relative' as const,
+    zIndex: 1
   },
   playerRow: {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
@@ -949,13 +959,14 @@ const styles = {
     zIndex: 2
   },
   lockIcon: {
-    fontSize: '1.5rem'
+    width: '40px',
+    height: '40px',
+    marginBottom: '0.5rem'
   },
   lockText: {
     color: '#f59e0b',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    marginTop: '0.25rem'
+    fontSize: '0.8125rem',
+    fontWeight: '600'
   },
   playerLeft: {
     display: 'flex',
