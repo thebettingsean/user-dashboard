@@ -29,6 +29,142 @@ body {
   overflow-x: hidden;
 }
 
+/* Floating orbs - only visible on main dashboard */
+.dashboard-orbs::before,
+.dashboard-orbs::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-orbs::before {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  top: 10%;
+  left: 5%;
+  animation: float1 25s ease-in-out infinite;
+}
+
+.dashboard-orbs::after {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, transparent 70%);
+  bottom: 15%;
+  right: 8%;
+  animation: float2 30s ease-in-out infinite;
+}
+
+/* Additional orbs using pseudo-elements on a container */
+.orb-3 {
+  position: fixed;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.12;
+  top: 50%;
+  right: 20%;
+  pointer-events: none;
+  z-index: 0;
+  animation: float3 28s ease-in-out infinite;
+}
+
+.orb-4 {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.1;
+  bottom: 30%;
+  left: 15%;
+  pointer-events: none;
+  z-index: 0;
+  animation: float4 22s ease-in-out infinite;
+}
+
+.orb-5 {
+  position: fixed;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.08;
+  top: 35%;
+  left: 40%;
+  pointer-events: none;
+  z-index: 0;
+  animation: float5 20s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-30px, 50px) scale(1.05);
+  }
+  66% {
+    transform: translate(40px, -40px) scale(0.95);
+  }
+}
+
+@keyframes float2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -30px) scale(1.08);
+  }
+  66% {
+    transform: translate(-40px, 40px) scale(0.92);
+  }
+}
+
+@keyframes float3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-40px, -50px) scale(1.06);
+  }
+  66% {
+    transform: translate(35px, 45px) scale(0.94);
+  }
+}
+
+@keyframes float4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(45px, 35px) scale(1.04);
+  }
+  66% {
+    transform: translate(-35px, -45px) scale(0.96);
+  }
+}
+
+@keyframes float5 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-25px, 40px) scale(1.07);
+  }
+  66% {
+    transform: translate(30px, -30px) scale(0.93);
+  }
+}
+
 /* Spinner animation for loading states */
 @keyframes spin {
   to {
