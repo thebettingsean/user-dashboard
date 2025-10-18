@@ -474,10 +474,10 @@ export default function FantasyPage() {
         )}
 
         {/* Filters Container */}
-        <div style={styles.filtersContainer}>
-          <div style={styles.filtersRow}>
+        <div style={styles.filtersContainer} className="filters-container-mobile">
+          <div style={styles.filtersRow} className="filters-row-mobile">
             {/* Search - Left Side */}
-            <div style={styles.searchContainer} className="search-container-desktop">
+            <div style={styles.searchContainer} className="search-container-desktop search-container-mobile">
               <input
                 type="text"
                 style={styles.searchInput}
@@ -494,11 +494,12 @@ export default function FantasyPage() {
             </div>
 
             {/* Filter Buttons - Right Side */}
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
               {/* Position Filter Button */}
               <div style={{ position: 'relative' }}>
                 <button
                   style={styles.filterButton}
+                  className="filter-button-mobile"
                   onClick={() => {
                     setShowPosDropdown(!showPosDropdown)
                     setShowSortDropdown(false)
@@ -534,6 +535,7 @@ export default function FantasyPage() {
               <div style={{ position: 'relative' }}>
                 <button
                   style={styles.filterButton}
+                  className="filter-button-mobile"
                   onClick={() => {
                     setShowSortDropdown(!showSortDropdown)
                     setShowPosDropdown(false)
@@ -921,7 +923,7 @@ export default function FantasyPage() {
           }
         }
         
-        /* Mobile filter adjustments */
+        /* Desktop filter adjustments */
         @media (min-width: 768px) {
           .search-container-desktop {
             flex: 0 1 400px !important;
@@ -948,6 +950,30 @@ export default function FantasyPage() {
           
           .mobile-player-layout > div:last-child {
             flex-shrink: 0 !important;
+          }
+          
+          /* Mobile filters container */
+          .filters-container-mobile {
+            padding: 0.875rem !important;
+            border-radius: 16px !important;
+          }
+          
+          /* Mobile search - much shorter and left-aligned */
+          .search-container-mobile {
+            flex: 0 0 auto !important;
+            max-width: 60% !important;
+            min-width: 0 !important;
+            margin-bottom: 0.5rem !important;
+          }
+          
+          /* Mobile filter buttons - smaller and wrapped */
+          .filters-row-mobile {
+            gap: 0.5rem !important;
+          }
+          
+          .filter-button-mobile {
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.8125rem !important;
           }
         }
       `}</style>
@@ -1248,14 +1274,16 @@ const styles = {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     width: '100%',
-    background: 'transparent'
+    background: 'transparent',
+    overflowX: 'hidden' as const
   },
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
     width: '100%',
     position: 'relative' as const,
-    zIndex: 1
+    zIndex: 1,
+    overflowX: 'hidden' as const
   },
   loading: {
     textAlign: 'center' as const,
@@ -1367,18 +1395,22 @@ const styles = {
     marginBottom: '1.5rem',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     position: 'relative' as const,
-    zIndex: 100
+    zIndex: 100,
+    width: '100%',
+    maxWidth: '100%',
+    boxSizing: 'border-box' as const
   },
   filtersRow: {
     display: 'flex',
     gap: '0.75rem',
     alignItems: 'center',
     justifyContent: 'space-between',
-    flexWrap: 'wrap' as const
+    flexWrap: 'wrap' as const,
+    width: '100%'
   },
   searchContainer: {
     flex: '1 1 100%',
-    minWidth: '200px',
+    minWidth: 0,
     maxWidth: '100%',
     marginBottom: '0.75rem'
   },
@@ -1389,7 +1421,8 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '12px',
     color: '#ffffff',
-    fontSize: '0.875rem'
+    fontSize: '0.875rem',
+    boxSizing: 'border-box' as const
   },
   filterButton: {
     padding: '0.75rem 1rem',
