@@ -672,8 +672,10 @@ export default function Navbar() {
         style={{
           background: 'rgba(255, 255, 255, 0.08)',
           borderBottom: '1.5px solid rgba(255, 255, 255, 0.15)',
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 1000,
           backdropFilter: 'blur(40px) saturate(180%)',
           WebkitBackdropFilter: 'blur(40px) saturate(180%)',

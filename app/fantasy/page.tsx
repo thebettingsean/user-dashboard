@@ -477,7 +477,7 @@ export default function FantasyPage() {
         <div style={styles.filtersContainer}>
           <div style={styles.filtersRow}>
             {/* Search - Left Side */}
-            <div style={styles.searchContainer}>
+            <div style={styles.searchContainer} className="search-container-desktop">
               <input
                 type="text"
                 style={styles.searchInput}
@@ -910,6 +910,15 @@ export default function FantasyPage() {
             display: flex !important;
           }
         }
+        
+        /* Mobile filter adjustments */
+        @media (min-width: 768px) {
+          .search-container-desktop {
+            flex: 0 1 400px !important;
+            max-width: 400px !important;
+            margin-bottom: 0 !important;
+          }
+        }
       `}</style>
     </div>
   )
@@ -1333,12 +1342,14 @@ const styles = {
     display: 'flex',
     gap: '0.75rem',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    flexWrap: 'wrap' as const
   },
   searchContainer: {
-    flex: '0 1 400px',
+    flex: '1 1 100%',
     minWidth: '200px',
-    maxWidth: '400px'
+    maxWidth: '100%',
+    marginBottom: '0.75rem'
   },
   searchInput: {
     width: '100%',
