@@ -421,7 +421,7 @@ export default function FantasyPage() {
   }
 
   return (
-    <div style={styles.page}>
+    <div style={{...styles.page, isolation: 'auto'}}>
       <div style={styles.container}>
         {/* Header */}
         <header style={styles.header}>

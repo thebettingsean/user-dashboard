@@ -680,7 +680,9 @@ export default function Navbar() {
           minHeight: '85px',
           display: 'flex',
           alignItems: 'center',
-          boxShadow: '0 4px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          boxShadow: '0 4px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          willChange: 'backdrop-filter',
+          transform: 'translateZ(0)'
         }}
       >
         <div className="navbar-content">
