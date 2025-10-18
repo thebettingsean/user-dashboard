@@ -45,8 +45,6 @@ export default function AnytimeTDPage() {
   console.log('userHasAccess:', typeof userHasAccess === 'function' ? userHasAccess() : userHasAccess)
   console.log('isSignedIn:', isSignedIn)
   console.log('currentFilter:', currentFilter, 'searchQuery:', searchQuery)
-  console.log('filteredPlayers.length:', filteredPlayers.length)
-  console.log('Will render?', !(loading && allPlayers.length === 0))
 
   // Fetch data
   useEffect(() => {
@@ -135,6 +133,10 @@ export default function AnytimeTDPage() {
     return Array.from(byTeam.values())
       .sort((a, b) => b.totalEdge - a.totalEdge)
   }, [filteredPlayers])
+
+  console.log('filteredPlayers.length:', filteredPlayers.length)
+  console.log('topTeams.length:', topTeams.length)
+  console.log('Will render?', !(loading && allPlayers.length === 0))
 
   // Helper functions
   const formatAmericanOdds = (odds: number | undefined) => {
