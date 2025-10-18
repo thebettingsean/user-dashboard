@@ -44,6 +44,9 @@ export default function AnytimeTDPage() {
   console.log('subLoading:', subLoading, 'loading:', loading, 'allPlayers.length:', allPlayers.length)
   console.log('userHasAccess:', typeof userHasAccess === 'function' ? userHasAccess() : userHasAccess)
   console.log('isSignedIn:', isSignedIn)
+  console.log('currentFilter:', currentFilter, 'searchQuery:', searchQuery)
+  console.log('filteredPlayers.length:', filteredPlayers.length)
+  console.log('Will render?', !(loading && allPlayers.length === 0))
 
   // Fetch data
   useEffect(() => {
@@ -216,10 +219,13 @@ export default function AnytimeTDPage() {
         ) : (
           // Players View (responsive grid)
           <div style={styles.grid}>
+            {console.log('Rendering grid with filteredPlayers.length:', filteredPlayers.length)}
             {filteredPlayers.length === 0 ? (
               <div style={styles.empty}>No players match your filters.</div>
             ) : (
-              filteredPlayers.map((player, idx) => (
+              filteredPlayers.map((player, idx) => {
+                console.log(`Rendering player ${idx}:`, player.player_name)
+                return (
                 <PlayerCard
                   key={`${player.player_name}-${idx}`}
                   player={player}
@@ -228,7 +234,7 @@ export default function AnytimeTDPage() {
                   formatGameTime={formatGameTime}
                   getHeatClass={getHeatClass}
                 />
-              ))
+              )})
             )}
           </div>
         )}
