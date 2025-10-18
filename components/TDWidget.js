@@ -118,7 +118,7 @@ export default function TDWidget() {
   }
 
   return (
-    <a href="https://www.thebettinginsider.com/tools/nfl-anytime-td-tool" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+    <a href="/anytime-td" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg" 
