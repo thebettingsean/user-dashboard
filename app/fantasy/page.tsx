@@ -700,7 +700,7 @@ export default function FantasyPage() {
                   onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
                 >
                   {/* Desktop View */}
-                  <div className="desktop-player-layout" style={{ filter: 'blur(4px)', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div className="desktop-player-layout" style={{ filter: 'blur(4px)' }}>
                     <input type="checkbox" style={styles.checkbox} disabled />
                     <div style={{ flex: 1 }}>
                       <div style={styles.playerName}>Player Locked</div>
@@ -716,7 +716,7 @@ export default function FantasyPage() {
                   </div>
 
                   {/* Mobile View */}
-                  <div className="mobile-player-layout" style={{ filter: 'blur(4px)', display: 'none', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div className="mobile-player-layout" style={{ filter: 'blur(4px)' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                         <span style={styles.playerName}>Player Locked</span>
@@ -754,7 +754,7 @@ export default function FantasyPage() {
                 onClick={() => setSelectedPlayer(player)}
               >
                 {/* Desktop View */}
-                <div className="desktop-player-layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div className="desktop-player-layout">
                   {/* Left Side: Checkbox, Name, Position */}
                   <div style={styles.playerLeft}>
                     <input
@@ -819,7 +819,7 @@ export default function FantasyPage() {
                 </div>
 
                 {/* Mobile View - Simplified */}
-                <div className="mobile-player-layout" style={{ display: 'none', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="mobile-player-layout">
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                       <span style={styles.playerName}>{player.name}</span>
@@ -878,12 +878,20 @@ export default function FantasyPage() {
         
         /* Desktop layout - show by default */
         .desktop-player-layout {
-          display: flex !important;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          flex: 1;
+          gap: 1rem;
         }
         
         /* Mobile layout - hidden by default */
         .mobile-player-layout {
-          display: none !important;
+          display: none;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
         }
         
         @media (min-width: 768px) {
