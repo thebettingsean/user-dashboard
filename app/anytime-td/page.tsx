@@ -42,6 +42,8 @@ export default function AnytimeTDPage() {
 
   console.log('AnytimeTDPage component rendered')
   console.log('subLoading:', subLoading, 'loading:', loading, 'allPlayers.length:', allPlayers.length)
+  console.log('userHasAccess:', typeof userHasAccess === 'function' ? userHasAccess() : userHasAccess)
+  console.log('isSignedIn:', isSignedIn)
 
   // Fetch data
   useEffect(() => {
@@ -155,18 +157,8 @@ export default function AnytimeTDPage() {
     return 'heat-low'
   }
 
-  if (subLoading) {
-    return (
-      <div style={styles.page} className="td-page-mobile">
-        <div style={styles.loading}>
-          <div style={styles.spinner}></div>
-          <p>Checking subscription...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
+  // Only show loading if we're actually loading AND don't have data yet
+  if (loading && allPlayers.length === 0) {
     return (
       <div style={styles.page} className="td-page-mobile">
         <div style={styles.loading}>
