@@ -717,16 +717,21 @@ export default function FantasyPage() {
 
                   {/* Mobile View */}
                   <div className="mobile-player-layout" style={{ filter: 'blur(4px)' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                        <span style={styles.playerName}>Player Locked</span>
-                        <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <span style={{ ...styles.playerName, fontSize: '0.875rem', lineHeight: '1.2' }}>Player Locked</span>
+                        <div style={{ 
+                          ...styles.posBadge, 
+                          ...getPosBadgeStyle(player.position),
+                          padding: '0.125rem 0.375rem',
+                          fontSize: '0.625rem'
+                        }}>
                           {player.position}
                         </div>
                       </div>
-                      <div style={styles.teamName}>• • •</div>
+                      <div style={{ ...styles.teamName, fontSize: '0.6875rem' }}>• • •</div>
                     </div>
-                    <div style={{ ...styles.points, flexShrink: 0 }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '800', color: '#ffffff', flexShrink: 0, marginLeft: '0.5rem' }}>
                       {player.points.toFixed(1)}
                     </div>
                   </div>
@@ -820,16 +825,21 @@ export default function FantasyPage() {
 
                 {/* Mobile View - Simplified */}
                 <div className="mobile-player-layout">
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                      <span style={styles.playerName}>{player.name}</span>
-                      <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                      <span style={{ ...styles.playerName, fontSize: '0.875rem', lineHeight: '1.2' }}>{player.name}</span>
+                      <div style={{ 
+                        ...styles.posBadge, 
+                        ...getPosBadgeStyle(player.position),
+                        padding: '0.125rem 0.375rem',
+                        fontSize: '0.625rem'
+                      }}>
                         {player.position}
                       </div>
                     </div>
-                    <div style={styles.teamName}>{player.team || 'FA'}</div>
+                    <div style={{ ...styles.teamName, fontSize: '0.6875rem' }}>{player.team || 'FA'}</div>
                   </div>
-                  <div style={{ ...styles.points, flexShrink: 0 }}>
+                  <div style={{ fontSize: '1.125rem', fontWeight: '800', color: '#ffffff', flexShrink: 0, marginLeft: '0.5rem' }}>
                     {player.points.toFixed(1)}
                   </div>
                 </div>
@@ -923,8 +933,11 @@ export default function FantasyPage() {
         /* Mobile responsive adjustments */
         @media (max-width: 767px) {
           .mobile-player-layout {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
             padding: 0 !important;
-            gap: 0.5rem !important;
           }
           
           .mobile-player-layout > div:first-child {
@@ -935,7 +948,6 @@ export default function FantasyPage() {
           
           .mobile-player-layout > div:last-child {
             flex-shrink: 0 !important;
-            min-width: auto !important;
           }
         }
       `}</style>
