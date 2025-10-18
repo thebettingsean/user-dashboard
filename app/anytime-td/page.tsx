@@ -40,8 +40,12 @@ export default function AnytimeTDPage() {
   const [currentFilter, setCurrentFilter] = useState<FilterMode>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
+  console.log('AnytimeTDPage component rendered')
+  console.log('subLoading:', subLoading, 'loading:', loading, 'allPlayers.length:', allPlayers.length)
+
   // Fetch data
   useEffect(() => {
+    console.log('useEffect running - fetching data')
     fetchData()
     const interval = setInterval(fetchData, 3600000) // Refresh every hour
     return () => clearInterval(interval)
@@ -151,7 +155,18 @@ export default function AnytimeTDPage() {
     return 'heat-low'
   }
 
-  if (subLoading || loading) {
+  if (subLoading) {
+    return (
+      <div style={styles.page} className="td-page-mobile">
+        <div style={styles.loading}>
+          <div style={styles.spinner}></div>
+          <p>Checking subscription...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
     return (
       <div style={styles.page} className="td-page-mobile">
         <div style={styles.loading}>
