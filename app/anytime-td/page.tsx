@@ -33,7 +33,7 @@ type FilterMode = 'all' | 'top-team' | 'plus-money'
 
 export default function AnytimeTDPage() {
   const { isSignedIn } = useUser()
-  const { hasAccess: userHasAccess, loading: subLoading } = useSubscription()
+  const { hasAccess: userHasAccess, isLoading: subLoading } = useSubscription()
 
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
