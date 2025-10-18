@@ -411,7 +411,7 @@ export default function FantasyPage() {
 
   if (subLoading || loading) {
     return (
-      <div style={styles.page}>
+      <div style={styles.page} className="fantasy-page-mobile">
         <div style={styles.loading}>
           <div style={styles.spinner}></div>
           <p>Loading rankings...</p>
@@ -421,7 +421,7 @@ export default function FantasyPage() {
   }
 
   return (
-    <div style={{...styles.page, isolation: 'auto'}}>
+    <div style={{...styles.page, isolation: 'auto'}} className="fantasy-page-mobile">
       <div style={styles.container}>
         {/* Header */}
         <header style={styles.header}>
@@ -943,6 +943,11 @@ export default function FantasyPage() {
             padding: 0 !important;
             width: 100% !important;
             overflow-x: hidden !important;
+          }
+          
+          /* Reduce top spacing on mobile */
+          .fantasy-page-mobile {
+            padding-top: 7rem !important;
           }
           
           .mobile-player-layout {
