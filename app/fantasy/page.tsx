@@ -699,7 +699,8 @@ export default function FantasyPage() {
                   }}
                   onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
                 >
-                  <div style={{ filter: 'blur(4px)', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {/* Desktop View */}
+                  <div className="desktop-player-layout" style={{ filter: 'blur(4px)', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <input type="checkbox" style={styles.checkbox} disabled />
                     <div style={{ flex: 1 }}>
                       <div style={styles.playerName}>Player Locked</div>
@@ -708,11 +709,28 @@ export default function FantasyPage() {
                     <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
                       {player.position}
                     </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem', marginLeft: 'auto' }}>
+                      <div style={styles.points}>{player.points.toFixed(1)}</div>
+                      <div style={styles.boost}>--</div>
+                    </div>
                   </div>
-                  <div style={{ filter: 'blur(4px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
-                    <div style={styles.points}>{player.points.toFixed(1)}</div>
-                    <div style={styles.boost}>--</div>
+
+                  {/* Mobile View */}
+                  <div className="mobile-player-layout" style={{ filter: 'blur(4px)', display: 'none', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        <span style={styles.playerName}>Player Locked</span>
+                        <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                          {player.position}
+                        </div>
+                      </div>
+                      <div style={styles.teamName}>• • •</div>
+                    </div>
+                    <div style={{ ...styles.points, flexShrink: 0 }}>
+                      {player.points.toFixed(1)}
+                    </div>
                   </div>
+
                   <div style={styles.lockOverlay}>
                     <img 
                       src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e6b622181cbd67efdee7b9_LOCK%20SVG.svg" 
@@ -735,67 +753,86 @@ export default function FantasyPage() {
                 }}
                 onClick={() => setSelectedPlayer(player)}
               >
-                {/* Left Side: Checkbox, Name, Position */}
-                <div style={styles.playerLeft}>
-                  <input
-                    type="checkbox"
-                    style={styles.checkbox}
-                    checked={isSelected}
-                    onChange={() => {}}
-                    onClick={(e) => handlePlayerSelection(player.id, e)}
-                  />
-                  <div style={styles.playerInfo}>
-                    <div style={styles.playerName}>{player.name}</div>
-                    <div style={styles.teamName}>{player.team || 'FA'}</div>
+                {/* Desktop View */}
+                <div className="desktop-player-layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  {/* Left Side: Checkbox, Name, Position */}
+                  <div style={styles.playerLeft}>
+                    <input
+                      type="checkbox"
+                      style={styles.checkbox}
+                      checked={isSelected}
+                      onChange={() => {}}
+                      onClick={(e) => handlePlayerSelection(player.id, e)}
+                    />
+                    <div style={styles.playerInfo}>
+                      <div style={styles.playerName}>{player.name}</div>
+                      <div style={styles.teamName}>{player.team || 'FA'}</div>
+                    </div>
+                    <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                      {player.position}{posRank}
+                    </div>
+                    {player.injury_status && (
+                      <div style={styles.injuryBadge}>
+                        {player.injury_status.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
-                    {player.position}{posRank}
-                  </div>
-                  {player.injury_status && (
-                    <div style={styles.injuryBadge}>
-                      {player.injury_status.charAt(0).toUpperCase()}
+
+                  {/* Right Side: Stats based on mode */}
+                  {mode === 'pre-draft' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                      {/* Desktop only stats */}
+                      <div className="pre-draft-desktop-stats" style={styles.preDraftStats}>
+                        <div style={styles.statItem}>
+                          <div style={styles.statLabel}>ESPN</div>
+                          <div style={styles.statValue}>{player.espn_rank || '--'}</div>
+                        </div>
+                        <div style={styles.statItem}>
+                          <div style={styles.statLabel}>Injury Risk</div>
+                          <div style={{ ...styles.statValue, color: getInjuryRiskColor(player.injuryRisk) }}>
+                            {player.injuryRisk || 'None'}
+                          </div>
+                        </div>
+                        <div style={styles.statItem}>
+                          <div style={styles.statLabel}>Playoff Path</div>
+                          <div style={{ ...styles.statValue, color: getPlayoffPathColor(player.playoff_tier) }}>
+                            {getPlayoffPathDisplay(player.playoff_tier)}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={styles.playerRight}>
+                        <div style={styles.points}>{player.points.toFixed(1)}</div>
+                        <div style={{ ...styles.boost, opacity: 0.5 }}>pts</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={styles.playerRight}>
+                      <div style={styles.points}>{player.points.toFixed(1)}</div>
+                      <div style={{ 
+                        ...styles.boost, 
+                        color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
+                      }}>
+                        {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Right Side: Stats based on mode */}
-                {mode === 'pre-draft' ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    {/* Desktop only stats */}
-                    <div className="pre-draft-desktop-stats" style={styles.preDraftStats}>
-                      <div style={styles.statItem}>
-                        <div style={styles.statLabel}>ESPN</div>
-                        <div style={styles.statValue}>{player.espn_rank || '--'}</div>
-                      </div>
-                      <div style={styles.statItem}>
-                        <div style={styles.statLabel}>Injury Risk</div>
-                        <div style={{ ...styles.statValue, color: getInjuryRiskColor(player.injuryRisk) }}>
-                          {player.injuryRisk || 'None'}
-                        </div>
-                      </div>
-                      <div style={styles.statItem}>
-                        <div style={styles.statLabel}>Playoff Path</div>
-                        <div style={{ ...styles.statValue, color: getPlayoffPathColor(player.playoff_tier) }}>
-                          {getPlayoffPathDisplay(player.playoff_tier)}
-                        </div>
+                {/* Mobile View - Simplified */}
+                <div className="mobile-player-layout" style={{ display: 'none', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                      <span style={styles.playerName}>{player.name}</span>
+                      <div style={{ ...styles.posBadge, ...getPosBadgeStyle(player.position) }}>
+                        {player.position}
                       </div>
                     </div>
-                    <div style={styles.playerRight}>
-                      <div style={styles.points}>{player.points.toFixed(1)}</div>
-                      <div style={{ ...styles.boost, opacity: 0.5 }}>pts</div>
-                    </div>
+                    <div style={styles.teamName}>{player.team || 'FA'}</div>
                   </div>
-                ) : (
-                  <div style={styles.playerRight}>
-                    <div style={styles.points}>{player.points.toFixed(1)}</div>
-                    <div style={{ 
-                      ...styles.boost, 
-                      color: player.boost > 0 ? '#10b981' : player.boost < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)' 
-                    }}>
-                      {player.boost > 0 ? '+' : ''}{player.boost.toFixed(1)}%
-                    </div>
+                  <div style={{ ...styles.points, flexShrink: 0 }}>
+                    {player.points.toFixed(1)}
                   </div>
-                )}
+                </div>
               </div>
             )
           })}
@@ -839,8 +876,29 @@ export default function FantasyPage() {
           display: none;
         }
         
+        /* Desktop layout - show by default */
+        .desktop-player-layout {
+          display: flex !important;
+        }
+        
+        /* Mobile layout - hidden by default */
+        .mobile-player-layout {
+          display: none !important;
+        }
+        
         @media (min-width: 768px) {
           .pre-draft-desktop-stats {
+            display: flex !important;
+          }
+        }
+        
+        /* Mobile: Hide desktop layout, show mobile layout */
+        @media (max-width: 767px) {
+          .desktop-player-layout {
+            display: none !important;
+          }
+          
+          .mobile-player-layout {
             display: flex !important;
           }
         }
