@@ -934,6 +934,17 @@ export default function FantasyPage() {
         
         /* Mobile responsive adjustments */
         @media (max-width: 767px) {
+          * {
+            box-sizing: border-box !important;
+          }
+          
+          body, html {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
+          }
+          
           .mobile-player-layout {
             display: flex !important;
             align-items: center !important;
@@ -956,6 +967,8 @@ export default function FantasyPage() {
           .filters-container-mobile {
             padding: 0.875rem !important;
             border-radius: 16px !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
           }
           
           /* Mobile search - much shorter and left-aligned */
@@ -1270,12 +1283,13 @@ function getPosBadgeStyle(position: string) {
 const styles = {
   page: {
     minHeight: '100vh',
-    padding: '10rem 1rem 2rem 1rem',
+    padding: '10rem 0.75rem 2rem 0.75rem',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     width: '100%',
     background: 'transparent',
-    overflowX: 'hidden' as const
+    overflowX: 'hidden' as const,
+    margin: 0
   },
   container: {
     maxWidth: '1200px',
@@ -1301,7 +1315,9 @@ const styles = {
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '3rem'
+    marginBottom: '3rem',
+    width: '100%',
+    margin: '0 auto 3rem auto'
   },
   title: {
     fontSize: 'clamp(2rem, 5vw, 4rem)',
@@ -1312,7 +1328,9 @@ const styles = {
     WebkitTextFillColor: 'transparent',
     marginBottom: '2rem',
     letterSpacing: '-0.02em',
-    lineHeight: 1.2
+    lineHeight: 1.2,
+    margin: '0 auto 2rem auto',
+    width: '100%'
   },
   subtitle: {
     color: 'rgba(255, 255, 255, 0.7)',
