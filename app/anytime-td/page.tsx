@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useSubscription } from '@/lib/hooks/useSubscription'
 
-const API_URL = 'https://actual-anytime-touchdown-final-tool-production.up.railway.app/anytime-td-adjusted'
+const API_URL = '/api/anytime-td'
 
 interface Player {
   player_name: string
@@ -465,27 +465,31 @@ const styles = {
     animation: 'fadeInUp 0.9s ease-out'
   },
   filterSelect: {
-    background: 'rgba(255, 255, 255, 0.06)',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     color: '#e5e7eb',
     borderRadius: '12px',
     padding: '0.6rem 0.75rem',
     fontSize: '0.85rem',
     outline: 'none',
-    backdropFilter: 'blur(16px)',
     minHeight: '40px',
     cursor: 'pointer',
     boxSizing: 'border-box' as const
   },
   searchInput: {
-    background: 'rgba(255, 255, 255, 0.06)',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(50px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     color: '#e5e7eb',
     borderRadius: '12px',
     padding: '0.6rem 0.75rem',
     fontSize: '0.85rem',
     outline: 'none',
-    backdropFilter: 'blur(16px)',
     minHeight: '40px',
     width: 'min(520px, 92vw)',
     boxSizing: 'border-box' as const
