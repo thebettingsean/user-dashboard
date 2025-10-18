@@ -919,6 +919,25 @@ export default function FantasyPage() {
             margin-bottom: 0 !important;
           }
         }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 767px) {
+          .mobile-player-layout {
+            padding: 0 !important;
+            gap: 0.5rem !important;
+          }
+          
+          .mobile-player-layout > div:first-child {
+            flex: 1 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+          }
+          
+          .mobile-player-layout > div:last-child {
+            flex-shrink: 0 !important;
+            min-width: auto !important;
+          }
+        }
       `}</style>
     </div>
   )
@@ -1445,21 +1464,22 @@ const styles = {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    borderRadius: '16px',
-    padding: '1rem 1.25rem',
+    borderRadius: '12px',
+    padding: '0.75rem 0.875rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     cursor: 'pointer',
     transition: 'all 0.2s',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    overflow: 'hidden'
   },
   playerRowLocked: {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    borderRadius: '16px',
-    padding: '1rem 1.25rem',
+    borderRadius: '12px',
+    padding: '0.75rem 0.875rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1467,7 +1487,8 @@ const styles = {
     transition: 'all 0.2s',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     position: 'relative' as const,
-    opacity: 0.7
+    opacity: 0.7,
+    overflow: 'hidden'
   },
   lockOverlay: {
     position: 'absolute' as const,
@@ -1507,7 +1528,7 @@ const styles = {
     minWidth: 0
   },
   playerName: {
-    fontSize: '1rem',
+    fontSize: '0.9375rem',
     fontWeight: '700',
     color: '#ffffff',
     marginBottom: '0.125rem',
@@ -1516,14 +1537,18 @@ const styles = {
     textOverflow: 'ellipsis'
   },
   teamName: {
-    fontSize: '0.8125rem',
-    color: 'rgba(255, 255, 255, 0.6)'
+    fontSize: '0.75rem',
+    color: 'rgba(255, 255, 255, 0.6)',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   posBadge: {
-    padding: '0.375rem 0.625rem',
+    padding: '0.25rem 0.5rem',
     borderRadius: '6px',
-    fontSize: '0.75rem',
-    fontWeight: '700'
+    fontSize: '0.6875rem',
+    fontWeight: '700',
+    flexShrink: 0
   },
   injuryBadge: {
     padding: '0.25rem 0.5rem',
@@ -1540,9 +1565,10 @@ const styles = {
     gap: '0.25rem'
   },
   points: {
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     fontWeight: '800',
-    color: '#ffffff'
+    color: '#ffffff',
+    flexShrink: 0
   },
   boost: {
     fontSize: '0.8125rem',
