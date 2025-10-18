@@ -49,8 +49,25 @@ export default function AnytimeTDPage() {
 
   async function fetchData() {
     try {
+      console.log('Fetching TD data from:', API_URL)
       const res = await fetch(API_URL)
+      
+      console.log('Response status:', res.status)
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('API error:', errorText)
+        throw new Error(`Failed to fetch: ${res.status}`)
+      }
+
       const data = await res.json()
+      console.log('Received data:', data)
+      console.log('Players count:', data.players?.length || 0)
+
+      if (data.error) {
+        console.error('API returned error:', data.error, data.details)
+        throw new Error(data.error)
+      }
 
       const players = (data.players || [])
         .filter((p: Player) => (p?.edge?.probability_points_pct ?? 0) > 0)
@@ -58,6 +75,7 @@ export default function AnytimeTDPage() {
           (b.edge?.probability_points_pct ?? 0) - (a.edge?.probability_points_pct ?? 0)
         )
 
+      console.log('Filtered players with edge:', players.length)
       setAllPlayers(players)
       setLoading(false)
     } catch (err) {
