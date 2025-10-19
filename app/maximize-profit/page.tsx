@@ -54,7 +54,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="quick-start"
           title="⚡ Quick Start (10 Minutes)"
-          color="#10b981"
+          color="#3b82f6"
           isExpanded={expandedSections.has('quick-start')}
           onToggle={() => toggleSection('quick-start')}
         >
@@ -87,7 +87,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-1"
           title="Chapter 1 — Analyst Picks: Get In, Size Right, Stay Synced"
-          color="#f59e0b"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-1')}
           onToggle={() => toggleSection('chapter-1')}
         >
@@ -212,7 +212,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-3"
           title="Chapter 3 — Tools: Turn Signals into Tickets"
-          color="#8b5cf6"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-3')}
           onToggle={() => toggleSection('chapter-3')}
         >
@@ -248,7 +248,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-4"
           title="Chapter 4 — The Weekly Report: Your Map for the Week"
-          color="#06b6d4"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-4')}
           onToggle={() => toggleSection('chapter-4')}
         >
@@ -286,7 +286,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-5"
           title="Chapter 5 — Putting It Together (Signal Ladder)"
-          color="#ef4444"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-5')}
           onToggle={() => toggleSection('chapter-5')}
         >
@@ -326,7 +326,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-6"
           title="Chapter 6 — Profit Playbooks (Step‑by‑Step)"
-          color="#ec4899"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-6')}
           onToggle={() => toggleSection('chapter-6')}
         >
@@ -400,7 +400,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-7"
           title="Chapter 7 — Best Practices (That Actually Move ROI)"
-          color="#14b8a6"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-7')}
           onToggle={() => toggleSection('chapter-7')}
         >
@@ -422,7 +422,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-8"
           title="Chapter 8 — Free Tools to Lock Your Foundation"
-          color="#f97316"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-8')}
           onToggle={() => toggleSection('chapter-8')}
         >
@@ -485,7 +485,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-9"
           title="Chapter 9 — Routines by Experience Level"
-          color="#a855f7"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-9')}
           onToggle={() => toggleSection('chapter-9')}
         >
@@ -524,7 +524,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="chapter-10"
           title="Chapter 10 — FAQ (Fast Fixes)"
-          color="#84cc16"
+          color="#3b82f6"
           isExpanded={expandedSections.has('chapter-10')}
           onToggle={() => toggleSection('chapter-10')}
         >
