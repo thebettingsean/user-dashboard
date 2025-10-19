@@ -25,24 +25,20 @@ export default function MaximizeProfitWidget() {
           Learn how to win with our tools
         </p>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between' }}>
-          <div style={contentBoxStyle}>
-            <p style={guideTextStyle}>
-              📚 Complete member profit guide
-            </p>
-            <p style={guideDescStyle}>
-              Step-by-step playbooks, best practices, and daily routines to maximize your edge
-            </p>
-          </div>
+        <div style={usernameBoxStyle}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          Complete member profit guide
+        </div>
 
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between' }}>
           <div style={chaptersBoxStyle}>
             <h3 style={chaptersHeaderStyle}>Quick Chapters:</h3>
             <ol style={chaptersListStyle}>
               <li>Analyst Picks & Notifications</li>
               <li>Premium Data Suite</li>
               <li>Tools & Playbooks</li>
-              <li>Weekly Report Strategy</li>
-              <li>Best Practices & Routines</li>
             </ol>
           </div>
 
@@ -101,30 +97,17 @@ const taglineStyle = {
   marginBottom: '1rem'
 }
 
-const contentBoxStyle = {
-  padding: '1rem',
+const usernameBoxStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0.5rem 0.75rem',
   background: 'rgba(0, 87, 45, 0.15)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  borderRadius: '10px',
-  border: '1px solid rgba(0, 87, 45, 0.3)',
-  textAlign: 'center' as const,
-  boxShadow: '0 2px 8px rgba(0, 87, 45, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-}
-
-const guideTextStyle = {
-  fontSize: '0.9rem', 
-  fontWeight: '700',
-  margin: '0 0 0.5rem 0',
-  color: '#fff'
-}
-
-const guideDescStyle = {
-  fontSize: '0.75rem',
-  lineHeight: '1.4',
-  opacity: 0.75,
-  margin: 0,
-  color: '#fff'
+  borderRadius: '8px',
+  color: 'rgba(255, 255, 255, 0.9)',
+  fontSize: '0.85rem',
+  fontWeight: '500',
+  marginBottom: '1rem',
+  border: '1px solid rgba(0, 87, 45, 0.25)'
 }
 
 const chaptersBoxStyle = {
