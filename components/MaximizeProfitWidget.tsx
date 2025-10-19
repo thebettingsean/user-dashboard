@@ -11,7 +11,7 @@ export default function MaximizeProfitWidget() {
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img 
-            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg" 
+            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5587d5070371cf5332631_MAXIMIZE%20PROFIT!.svg" 
             style={{ width: '36px', height: '36px' }} 
             alt="Maximize Profit" 
           />

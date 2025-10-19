@@ -109,7 +109,7 @@ export default function Home() {
     { 
       id: 'maximize', 
       title: 'Maximize Profit', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5587d5070371cf5332631_MAXIMIZE%20PROFIT!.svg',
       borderColor: 'rgba(0, 87, 45, 0.6)',
       background: 'linear-gradient(135deg, rgba(0, 87, 45, 0.15) 0%, rgba(0, 87, 45, 0.08) 100%)',
       component: <MaximizeProfitWidget /> 
