@@ -10,7 +10,8 @@ import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
 import PropParlayWidget from '../components/PropParlayWidget'
-import PlaceholderWidget from '../components/PlaceholderWidget'
+import DiscordWidget from '../components/DiscordWidget'
+import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
 
 export default function Home() {
   const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
@@ -106,20 +107,20 @@ export default function Home() {
       component: <NewsWidget /> 
     },
     { 
-      id: 'placeholder1', 
-      title: 'Coming Soon', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      borderColor: 'rgba(150, 150, 150, 0.6)',
-      background: 'linear-gradient(135deg, rgba(150, 150, 150, 0.15) 0%, rgba(150, 150, 150, 0.08) 100%)',
-      component: <PlaceholderWidget title="Resource 2" /> 
+      id: 'discord', 
+      title: 'Connect Discord', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg',
+      borderColor: 'rgba(88, 100, 241, 0.6)',
+      background: 'linear-gradient(135deg, rgba(88, 100, 241, 0.15) 0%, rgba(88, 100, 241, 0.08) 100%)',
+      component: <DiscordWidget /> 
     },
     { 
-      id: 'placeholder2', 
-      title: 'Coming Soon', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      borderColor: 'rgba(150, 150, 150, 0.6)',
-      background: 'linear-gradient(135deg, rgba(150, 150, 150, 0.15) 0%, rgba(150, 150, 150, 0.08) 100%)',
-      component: <PlaceholderWidget title="Resource 3" /> 
+      id: 'maximize', 
+      title: 'Maximize Profit', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e5660d5f68b1cd1592e_10.svg',
+      borderColor: 'rgba(0, 87, 45, 0.6)',
+      background: 'linear-gradient(135deg, rgba(0, 87, 45, 0.15) 0%, rgba(0, 87, 45, 0.08) 100%)',
+      component: <MaximizeProfitWidget /> 
     }
   ]
 
@@ -416,12 +417,12 @@ export default function Home() {
             </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <PlaceholderWidget title="Resource 2" />
+                <DiscordWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <PlaceholderWidget title="Resource 3" />
+                <MaximizeProfitWidget />
               </LockedWidget>
             </div>
           </div>
