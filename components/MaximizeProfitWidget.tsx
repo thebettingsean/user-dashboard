@@ -39,6 +39,7 @@ export default function MaximizeProfitWidget() {
               <li>Analyst Picks & Notifications</li>
               <li>Premium Data Suite</li>
               <li>Tools & Playbooks</li>
+              <li>Best Practices & Routines</li>
             </ol>
           </div>
 
