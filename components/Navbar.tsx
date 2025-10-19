@@ -56,7 +56,7 @@ export default function Navbar() {
     },
     {
       label: 'Top TD Leaders',
-      href: 'https://www.thebettinginsider.com/tools/nfl-anytime-td-tool',
+      href: 'https://dashboard.thebettinginsider.com/anytime-td',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg'
     },
     {
