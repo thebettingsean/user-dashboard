@@ -13,37 +13,37 @@ export default function Navbar() {
     {
       label: 'Analyst Picks',
       href: 'thebettinginsider.com/betting/about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e211db4d96a6f3c78_1.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341bf633265eece6ad8_1.svg',
       description: 'Expert picks backed by data'
     },
     {
       label: 'Referee Trends',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e3d1f4d0174905c00_6.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341844abdf579f4465a_6.svg',
       description: 'Historical referee data'
     },
     {
       label: 'Matchup Data',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9406088227a3da1f24af7_2.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f3418b44f7c3ab7044a0_3.svg',
       description: 'Detailed team data'
     },
     {
       label: 'Public Betting',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405eadd52d3bb0504f91_3.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f34134dc0a249b187f72_2.svg',
       description: 'See where the money is going'
     },
     {
       label: 'Prop Data',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e0e2b65da9f879088_5.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f3415bdb636a2b19ea73_5.svg',
       description: 'Player prop insights and angles'
     },
     {
       label: 'Fantasy Football',
       href: 'thebettinginsider.com/fantasy/home',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e9405e9aedfdf2c023d1fa_4.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341ac250343d66f62bd_4.svg',
       description: 'Start/Sit, Waiver, Trade tools'
     }
   ]

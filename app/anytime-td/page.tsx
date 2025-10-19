@@ -544,9 +544,7 @@ const styles = {
     borderRadius: '18px',
     padding: '1rem',
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    opacity: 0,
-    transform: 'translateY(24px)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
   },
   cardTopFive: {
     background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(34, 197, 94, 0.22) 45%, rgba(22, 163, 74, 0.28) 100%)',
@@ -631,9 +629,7 @@ const styles = {
     borderRadius: '18px',
     padding: '0.95rem 1rem',
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    opacity: 0,
-    transform: 'translateY(24px)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
   },
   teamRow: {
     display: 'flex',
