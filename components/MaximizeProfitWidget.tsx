@@ -25,7 +25,7 @@ export default function MaximizeProfitWidget() {
           Learn how to win with our tools
         </p>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'flex-end' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between' }}>
           <div style={contentBoxStyle}>
             <p style={guideTextStyle}>
               📚 Complete member profit guide
@@ -34,6 +34,21 @@ export default function MaximizeProfitWidget() {
               Step-by-step playbooks, best practices, and daily routines to maximize your edge
             </p>
           </div>
+
+          <div style={chaptersBoxStyle}>
+            <h3 style={chaptersHeaderStyle}>Quick Chapters:</h3>
+            <ol style={chaptersListStyle}>
+              <li>Analyst Picks & Notifications</li>
+              <li>Premium Data Suite</li>
+              <li>Tools & Playbooks</li>
+              <li>Weekly Report Strategy</li>
+              <li>Best Practices & Routines</li>
+            </ol>
+          </div>
+
+          <button style={viewButtonStyle}>
+            View Full Guide
+          </button>
         </div>
       </div>
     </Link>
@@ -110,5 +125,47 @@ const guideDescStyle = {
   opacity: 0.75,
   margin: 0,
   color: '#fff'
+}
+
+const chaptersBoxStyle = {
+  background: 'rgba(0, 87, 45, 0.08)',
+  borderRadius: '10px',
+  padding: '1rem',
+  border: '1px solid rgba(0, 87, 45, 0.2)',
+  marginTop: '1rem'
+}
+
+const chaptersHeaderStyle = {
+  fontSize: '0.85rem',
+  fontWeight: '700',
+  color: 'rgba(255, 255, 255, 0.95)',
+  marginBottom: '0.5rem',
+  margin: '0 0 0.5rem 0'
+}
+
+const chaptersListStyle = {
+  margin: '0',
+  paddingLeft: '1.25rem',
+  fontSize: '0.75rem',
+  lineHeight: '1.6',
+  color: 'rgba(255, 255, 255, 0.75)'
+}
+
+const viewButtonStyle = {
+  background: 'rgba(0, 87, 45, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  border: '1px solid rgba(0, 87, 45, 0.3)',
+  borderRadius: '10px',
+  padding: '0.875rem 1.5rem',
+  color: '#ffffff',
+  fontSize: '0.85rem',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  boxShadow: '0 2px 8px rgba(0, 87, 45, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  textAlign: 'center' as const,
+  width: '100%',
+  marginTop: '1rem'
 }
 
