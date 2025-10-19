@@ -1,32 +1,42 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function MaximizeProfitWidget() {
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <img 
-          src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg" 
-          style={{ width: '36px', height: '36px' }} 
-          alt="Maximize Profit" 
-        />
-      </div>
-      
-      <h2 style={titleStyle}>
-        Maximize Profit
-      </h2>
-      
-      <p style={taglineStyle}>
-        Learn how to win with our tools
-      </p>
+    <Link 
+      href="/maximize-profit"
+      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+    >
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img 
+            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg" 
+            style={{ width: '36px', height: '36px' }} 
+            alt="Maximize Profit" 
+          />
+        </div>
+        
+        <h2 style={titleStyle}>
+          Maximize Profit
+        </h2>
+        
+        <p style={taglineStyle}>
+          Learn how to win with our tools
+        </p>
 
-      <div style={{ flex: 1 }}>
-        <div style={contentBoxStyle}>
-          <p style={comingSoonTextStyle}>
-            Content coming soon
-          </p>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'flex-end' }}>
+          <div style={contentBoxStyle}>
+            <p style={guideTextStyle}>
+              📚 Complete member profit guide
+            </p>
+            <p style={guideDescStyle}>
+              Step-by-step playbooks, best practices, and daily routines to maximize your edge
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -87,9 +97,17 @@ const contentBoxStyle = {
   boxShadow: '0 2px 8px rgba(0, 87, 45, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
 }
 
-const comingSoonTextStyle = {
-  fontSize: '0.8rem', 
-  opacity: 0.6,
+const guideTextStyle = {
+  fontSize: '0.9rem', 
+  fontWeight: '700',
+  margin: '0 0 0.5rem 0',
+  color: '#fff'
+}
+
+const guideDescStyle = {
+  fontSize: '0.75rem',
+  lineHeight: '1.4',
+  opacity: 0.75,
   margin: 0,
   color: '#fff'
 }
