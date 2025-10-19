@@ -10,6 +10,7 @@ import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
 import PropParlayWidget from '../components/PropParlayWidget'
+import PlaceholderWidget from '../components/PlaceholderWidget'
 
 export default function Home() {
   const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
@@ -65,14 +66,6 @@ export default function Home() {
       borderColor: 'rgba(217, 217, 217, 0.6)',
       background: 'linear-gradient(135deg, rgba(217, 217, 217, 0.15) 0%, rgba(217, 217, 217, 0.08) 100%)',
       component: <MatchupWidget /> 
-    },
-    { 
-      id: 'news', 
-      title: 'News & Insights', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      borderColor: 'rgba(56, 182, 255, 0.6)',
-      background: 'linear-gradient(135deg, rgba(56, 182, 255, 0.15) 0%, rgba(56, 182, 255, 0.08) 100%)',
-      component: <NewsWidget /> 
     }
   ]
 
@@ -100,6 +93,33 @@ export default function Home() {
       borderColor: 'rgba(255, 117, 31, 0.6)',
       background: 'linear-gradient(135deg, rgba(255, 117, 31, 0.15) 0%, rgba(255, 117, 31, 0.08) 100%)',
       component: <TDWidget /> 
+    }
+  ]
+
+  const row3Widgets = [
+    { 
+      id: 'news', 
+      title: 'The Weekly Report', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
+      borderColor: 'rgba(56, 182, 255, 0.6)',
+      background: 'linear-gradient(135deg, rgba(56, 182, 255, 0.15) 0%, rgba(56, 182, 255, 0.08) 100%)',
+      component: <NewsWidget /> 
+    },
+    { 
+      id: 'placeholder1', 
+      title: 'Coming Soon', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
+      borderColor: 'rgba(150, 150, 150, 0.6)',
+      background: 'linear-gradient(135deg, rgba(150, 150, 150, 0.15) 0%, rgba(150, 150, 150, 0.08) 100%)',
+      component: <PlaceholderWidget title="Resource 2" /> 
+    },
+    { 
+      id: 'placeholder2', 
+      title: 'Coming Soon', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
+      borderColor: 'rgba(150, 150, 150, 0.6)',
+      background: 'linear-gradient(135deg, rgba(150, 150, 150, 0.15) 0%, rgba(150, 150, 150, 0.08) 100%)',
+      component: <PlaceholderWidget title="Resource 3" /> 
     }
   ]
 
@@ -257,6 +277,50 @@ export default function Home() {
               </div>
             ))}
           </div>
+
+          {/* Divider line */}
+          <div style={{ 
+            width: '100%', 
+            height: '1px', 
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
+            marginBottom: '2rem'
+          }} />
+
+          {/* Row 3: Premium Resources */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9 }}>
+            Premium Resources
+          </h3>
+          <div style={{ marginBottom: '2rem' }}>
+            {row3Widgets.map(widget => (
+              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
+                <div 
+                  onClick={() => toggleWidget(widget.id)}
+                  className="glass-card"
+                  style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1rem 1.25rem',
+                    border: `0.5px solid ${widget.borderColor}`,
+                    background: widget.background,
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    color: 'white'
+                  }}
+                >
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
+                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
+                </div>
+                {expandedWidgets.has(widget.id) && (
+                  <div className="accordion-content">
+                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                      {widget.component}
+                    </LockedWidget>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* DESKTOP VIEW - Horizontal Scroll Rows */}
@@ -291,11 +355,6 @@ export default function Home() {
                 <MatchupWidget />
               </LockedWidget>
             </div>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <NewsWidget />
-              </LockedWidget>
-            </div>
           </div>
 
           {/* Row 2: Premium NFL Tools */}
@@ -325,6 +384,44 @@ export default function Home() {
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <TDWidget />
+              </LockedWidget>
+            </div>
+          </div>
+
+          {/* Divider line */}
+          <div style={{ 
+            width: '100%', 
+            height: '1px', 
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
+            marginBottom: '2rem'
+          }} />
+
+          {/* Row 3: Premium Resources */}
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9 }}>
+            Premium Resources
+          </h3>
+          <div style={{ 
+            display: 'flex', 
+            gap: '1.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '1rem',
+            marginBottom: '1.5rem',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+          }}>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <NewsWidget />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PlaceholderWidget title="Resource 2" />
+              </LockedWidget>
+            </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <PlaceholderWidget title="Resource 3" />
               </LockedWidget>
             </div>
           </div>
