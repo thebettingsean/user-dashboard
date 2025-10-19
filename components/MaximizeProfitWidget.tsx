@@ -5,7 +5,7 @@ export default function MaximizeProfitWidget() {
     <div style={widgetStyle}>
       <div style={iconWrapper}>
         <img 
-          src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e5660d5f68b1cd1592e_10.svg" 
+          src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg" 
           style={{ width: '36px', height: '36px' }} 
           alt="Maximize Profit" 
         />

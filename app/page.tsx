@@ -107,20 +107,20 @@ export default function Home() {
       component: <NewsWidget /> 
     },
     { 
+      id: 'maximize', 
+      title: 'Maximize Profit', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f52280504a85f461104f88_NEW%20WIDGET%20SVG%27S-5.svg',
+      borderColor: 'rgba(0, 87, 45, 0.6)',
+      background: 'linear-gradient(135deg, rgba(0, 87, 45, 0.15) 0%, rgba(0, 87, 45, 0.08) 100%)',
+      component: <MaximizeProfitWidget /> 
+    },
+    { 
       id: 'discord', 
       title: 'Connect Discord', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg',
       borderColor: 'rgba(88, 100, 241, 0.6)',
       background: 'linear-gradient(135deg, rgba(88, 100, 241, 0.15) 0%, rgba(88, 100, 241, 0.08) 100%)',
       component: <DiscordWidget /> 
-    },
-    { 
-      id: 'maximize', 
-      title: 'Maximize Profit', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e5660d5f68b1cd1592e_10.svg',
-      borderColor: 'rgba(0, 87, 45, 0.6)',
-      background: 'linear-gradient(135deg, rgba(0, 87, 45, 0.15) 0%, rgba(0, 87, 45, 0.08) 100%)',
-      component: <MaximizeProfitWidget /> 
     }
   ]
 
@@ -417,12 +417,12 @@ export default function Home() {
             </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <DiscordWidget />
+                <MaximizeProfitWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <MaximizeProfitWidget />
+                <DiscordWidget />
               </LockedWidget>
             </div>
           </div>
