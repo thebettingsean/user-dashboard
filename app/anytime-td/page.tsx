@@ -221,13 +221,10 @@ export default function AnytimeTDPage() {
         ) : (
           // Players View (responsive grid)
           <div style={styles.grid}>
-            {console.log('Rendering grid with filteredPlayers.length:', filteredPlayers.length)}
             {filteredPlayers.length === 0 ? (
               <div style={styles.empty}>No players match your filters.</div>
             ) : (
-              filteredPlayers.map((player, idx) => {
-                console.log(`Rendering player ${idx}:`, player.player_name)
-                return (
+              filteredPlayers.map((player, idx) => (
                 <PlayerCard
                   key={`${player.player_name}-${idx}`}
                   player={player}
@@ -236,7 +233,7 @@ export default function AnytimeTDPage() {
                   formatGameTime={formatGameTime}
                   getHeatClass={getHeatClass}
                 />
-              )})
+              ))
             )}
           </div>
         )}
