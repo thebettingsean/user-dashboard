@@ -54,7 +54,7 @@ export default function MaximizeProfitPage() {
         <Section
           id="quick-start"
           title="⚡ Quick Start (10 Minutes)"
-          color="#3b82f6"
+          color=""
           isExpanded={expandedSections.has('quick-start')}
           onToggle={() => toggleSection('quick-start')}
         >
@@ -640,19 +640,30 @@ interface SectionProps {
 }
 
 function Section({ id, title, color, isExpanded, onToggle, children }: SectionProps) {
+  // Quick Start gets special yellow/orange gradient
+  const isQuickStart = id === 'quick-start'
+  const gradientBorder = isQuickStart 
+    ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' 
+    : 'linear-gradient(135deg, #3b82f6, #60a5fa)'
+  
+  const sectionStyle = {
+    ...styles.section,
+    backgroundImage: `linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15), ${gradientBorder}`
+  }
+
   return (
-    <div style={{ ...styles.section, borderColor: color }}>
+    <div style={sectionStyle}>
       <div 
         style={styles.sectionHeader}
         onClick={onToggle}
       >
-        <h2 style={{ ...styles.sectionTitle, color }}>
+        <h2 style={styles.sectionTitle}>
           {title}
         </h2>
         <div style={{ 
           ...styles.expandIcon, 
           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          color 
+          color: '#ffffff'
         }}>
           ▼
         </div>
@@ -764,10 +775,12 @@ const styles = {
     WebkitBackdropFilter: 'blur(50px) saturate(180%)',
     borderRadius: '16px',
     marginBottom: '1.5rem',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid transparent',
+    backgroundImage: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15), linear-gradient(135deg, #3b82f6, #60a5fa)',
+    backgroundOrigin: 'border-box',
+    backgroundClip: 'padding-box, padding-box, border-box',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    overflow: 'hidden',
-    borderLeft: '4px solid'
+    overflow: 'hidden'
   },
   sectionHeader: {
     padding: '1.25rem 1.5rem',
@@ -780,12 +793,14 @@ const styles = {
   sectionTitle: {
     fontSize: '1.25rem',
     fontWeight: '700',
-    margin: 0
+    margin: 0,
+    color: '#ffffff'
   },
   expandIcon: {
     fontSize: '1rem',
     transition: 'transform 0.3s ease',
-    fontWeight: '700'
+    fontWeight: '700',
+    color: '#ffffff'
   },
   sectionContent: {
     padding: '0 1.5rem 1.5rem 1.5rem',
