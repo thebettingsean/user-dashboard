@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { supabase } from '../../lib/supabase'
-import useSubscription from '../../lib/hooks/useSubscription'
+import { useSubscription } from '../../lib/hooks/useSubscription'
 
 // Types
 interface Bettor {
