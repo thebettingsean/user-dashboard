@@ -226,11 +226,23 @@ body {
 .navbar .dropdown-item {
   width: 100% !important;
   padding: 0.9rem 1.25rem !important;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: none !important;
+  position: relative !important;
 }
 
-.navbar .dropdown-item:last-child {
-  border-bottom: none !important;
+.navbar .dropdown-item::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 40px !important;
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.navbar .dropdown-item:last-child::after {
+  display: none !important;
 }
 
 /* Dashboard subdropdown - ensure vertical layout */
@@ -243,12 +255,24 @@ body {
   display: block !important;
   width: 100% !important;
   padding: 0.75rem 1.25rem !important;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: none !important;
   white-space: nowrap !important;
+  position: relative !important;
 }
 
-.navbar .subdropdown-item:last-child {
-  border-bottom: none !important;
+.navbar .subdropdown-item::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 40px !important;
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.navbar .subdropdown-item:last-child::after {
+  display: none !important;
 }
 
 .navbar .subdropdown-header {
@@ -267,12 +291,24 @@ body {
   width: 100% !important;
   padding: 0.9rem 1.5rem 0.9rem 3rem !important;
   margin: 0 !important;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: none !important;
   white-space: normal !important;
+  position: relative !important;
 }
 
-.navbar .mobile-dropdown-item:last-child {
-  border-bottom: none !important;
+.navbar .mobile-dropdown-item::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 40px !important;
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.navbar .mobile-dropdown-item:last-child::after {
+  display: none !important;
 }
 
 /* Mobile dashboard subdropdown - ensure vertical layout */
@@ -285,12 +321,24 @@ body {
   display: block !important;
   width: 100% !important;
   padding: 0.75rem 1.5rem 0.75rem 4rem !important;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: none !important;
   white-space: nowrap !important;
+  position: relative !important;
 }
 
-.navbar .mobile-subdropdown-item:last-child {
-  border-bottom: none !important;
+.navbar .mobile-subdropdown-item::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 40px !important;
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.navbar .mobile-subdropdown-item:last-child::after {
+  display: none !important;
 }
 
 .navbar .mobile-subdropdown-header {
