@@ -369,18 +369,7 @@ export default function Navbar() {
         }
 
         .dropdown-item.has-sub {
-          display: flex !important;
-          justify-content: space-between !important;
-          align-items: center !important;
-          padding-right: 2rem !important;
-        }
-
-        .dropdown-item.has-sub::after {
-          content: '▶' !important;
-          font-size: 0.65rem !important;
-          opacity: 0.6 !important;
-          position: absolute !important;
-          right: 1rem !important;
+          cursor: pointer;
         }
 
         /* Dashboard sub-dropdown */
@@ -558,10 +547,7 @@ export default function Navbar() {
         }
 
         .mobile-dropdown-item.has-sub {
-          display: flex !important;
-          justify-content: space-between !important;
-          align-items: center !important;
-          overflow: hidden !important;
+          cursor: pointer;
         }
 
         /* Mobile dashboard sub-dropdown */
