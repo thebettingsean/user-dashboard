@@ -369,16 +369,18 @@ export default function Navbar() {
         }
 
         .dropdown-item.has-sub {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          flex-direction: row !important;
         }
 
         .dropdown-item.has-sub::after {
           content: '▶';
           font-size: 0.65rem;
           opacity: 0.6;
-          margin-left: 1rem;
+          margin-left: 0.5rem;
+          flex-shrink: 0;
         }
 
         /* Dashboard sub-dropdown */
