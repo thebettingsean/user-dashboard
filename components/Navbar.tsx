@@ -372,6 +372,11 @@ export default function Navbar() {
           cursor: pointer;
         }
 
+        .dropdown-item.has-sub:hover {
+          background: none !important;
+          text-decoration: underline;
+        }
+
         /* Dashboard sub-dropdown */
         .dashboard-subdropdown {
           position: absolute;
@@ -548,6 +553,11 @@ export default function Navbar() {
 
         .mobile-dropdown-item.has-sub {
           cursor: pointer;
+        }
+
+        .mobile-dropdown-item.has-sub:hover {
+          background: none !important;
+          text-decoration: underline;
         }
 
         /* Mobile dashboard sub-dropdown */
