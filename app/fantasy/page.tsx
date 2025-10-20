@@ -466,7 +466,7 @@ export default function FantasyPage() {
           <div style={styles.unlockCta}>
             <button
               style={styles.unlockButton}
-              onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
+              onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
             >
               Unlock All Rankings
             </button>
@@ -487,7 +487,7 @@ export default function FantasyPage() {
                 onFocus={(e) => {
                   if (!userHasAccess) {
                     e.target.blur()
-                    window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'
+                    window.location.href = 'https://thebettinginsider.com/pricing'
                   }
                 }}
               />
@@ -699,7 +699,7 @@ export default function FantasyPage() {
                     ...styles.playerRowLocked,
                     borderLeft: `3px solid ${getPositionColor(player.position)}`
                   }}
-                  onClick={() => window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1RyElj07WIhZOuSI4lM0RnqM'}
+                  onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
                 >
                   {/* Desktop View */}
                   <div className="desktop-player-layout" style={{ filter: 'blur(4px)' }}>

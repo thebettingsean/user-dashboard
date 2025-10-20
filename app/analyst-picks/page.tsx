@@ -499,7 +499,7 @@ export default function AnalystPicksPage() {
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" fill="#f59e0b"/>
                   </svg>
                   <span>🔒 Premium Analysis Locked</span>
-                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://stripe.thebettinginsider.com/checkout/price_1R600p07WIhZOuSIrNk4pLau?trial=true', '_blank') }}>
+                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://thebettinginsider.com/pricing', '_blank') }}>
                     Unlock Now
                   </button>
                 </div>
@@ -592,7 +592,7 @@ export default function AnalystPicksPage() {
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" fill="#f59e0b"/>
                   </svg>
                   <span>🔒 Premium Consensus Analysis Locked</span>
-                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://stripe.thebettinginsider.com/checkout/price_1R600p07WIhZOuSIrNk4pLau?trial=true', '_blank') }}>
+                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://thebettinginsider.com/pricing', '_blank') }}>
                     Unlock Now
                   </button>
                 </div>
@@ -671,7 +671,7 @@ export default function AnalystPicksPage() {
 
             {bettor.hasPremium && !hasAccess && (
               <a 
-                href="https://stripe.thebettinginsider.com/checkout/price_1R600p07WIhZOuSIrNk4pLau?trial=true" 
+                href="https://thebettinginsider.com/pricing" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={styles.unlockWidgetButton}
@@ -813,7 +813,7 @@ export default function AnalystPicksPage() {
             <p style={styles.ctaText}>Just click below</p>
             <div style={styles.ctaArrow}>↓</div>
             <a 
-              href="https://stripe.thebettinginsider.com/checkout/price_1R600p07WIhZOuSIrNk4pLau?trial=true" 
+              href="https://thebettinginsider.com/pricing" 
               target="_blank" 
               rel="noopener noreferrer"
               style={styles.ctaButton}
