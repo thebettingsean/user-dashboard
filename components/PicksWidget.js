@@ -35,7 +35,7 @@ export default function PicksWidget() {
     picks.filter(p => p.bettors?.name === hottestBettor.bettors?.name).slice(0, 2) : []
 
   return (
-    <a href="https://www.thebettinginsider.com/betting/dashboard" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+    <a href="https://dashboard.thebettinginsider.com/analyst-picks" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 

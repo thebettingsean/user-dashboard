@@ -8,43 +8,44 @@ export default function Navbar() {
   const { isSignedIn, isLoaded } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [dashboardSubOpen, setDashboardSubOpen] = useState(false)
 
   const premiumFeatures = [
     {
       label: 'Analyst Picks',
       href: 'thebettinginsider.com/betting/about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341bf633265eece6ad8_1.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e2f7f68a9d80033122_1.svg',
       description: 'Expert picks backed by data'
-    },
-    {
-      label: 'Referee Trends',
-      href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341844abdf579f4465a_6.svg',
-      description: 'Historical referee data'
-    },
-    {
-      label: 'Matchup Data',
-      href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f3418b44f7c3ab7044a0_3.svg',
-      description: 'Detailed team data'
     },
     {
       label: 'Public Betting',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f34134dc0a249b187f72_2.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3e85df3d969700cf1_2.svg',
       description: 'See where the money is going'
     },
     {
-      label: 'Prop Data',
+      label: 'Matchup Data',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f3415bdb636a2b19ea73_5.svg',
-      description: 'Player prop insights and angles'
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3b2585150b82c6baa_3.svg',
+      description: 'Detailed team data'
     },
     {
       label: 'Fantasy Football',
       href: 'thebettinginsider.com/fantasy/home',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f4f341ac250343d66f62bd_4.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e324225a9738395c91_4.svg',
       description: 'Start/Sit, Waiver, Trade tools'
+    },
+    {
+      label: 'Prop Data',
+      href: 'thebettinginsider.com/stats-about',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3e5402543f8b5458a_5.svg',
+      description: 'Player prop insights and angles'
+    },
+    {
+      label: 'Referee Trends',
+      href: 'thebettinginsider.com/stats-about',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3ebdab11d2f519eb1_6.svg',
+      description: 'Historical referee data'
     }
   ]
 
@@ -81,6 +82,18 @@ export default function Navbar() {
     }
   ]
 
+  // Dashboard quick jump links - order matches the widgets on the dashboard
+  const dashboardLinks = [
+    { label: 'Home', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg' },
+    { label: 'Analyst Picks', href: 'https://dashboard.thebettinginsider.com/analyst-picks', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e2f7f68a9d80033122_1.svg' },
+    { label: 'Public Betting', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3e85df3d969700cf1_2.svg' },
+    { label: 'Matchup Data', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3b2585150b82c6baa_3.svg' },
+    { label: 'Prop Parlay Tool', href: 'https://dashboard.thebettinginsider.com/prop-parlay-tool', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg' },
+    { label: 'Fantasy Football', href: 'https://dashboard.thebettinginsider.com/fantasy', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e324225a9738395c91_4.svg' },
+    { label: 'Top TD Scorers', href: 'https://dashboard.thebettinginsider.com/anytime-td', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5dd3c882be50e10645_4.svg' },
+    { label: 'The Weekly Report', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg' }
+  ]
+
   const navItems = [
     {
       id: 'premium',
@@ -99,7 +112,7 @@ export default function Navbar() {
       label: 'Insider HQ',
       href: '#',
       dropdown: [
-        { label: 'Your Dashboard', href: 'https://dashboard.thebettinginsider.com' },
+        { label: 'Your Dashboard', href: 'https://dashboard.thebettinginsider.com', hasSubDropdown: true },
         { label: 'Contact Us', href: 'https://www.thebettinginsider.com/contact-us' },
         { label: 'Articles', href: '#' },
         { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' },
@@ -249,16 +262,18 @@ export default function Navbar() {
 
         .premium-card-icon-wrapper {
           width: 100%;
-          height: 80px;
+          height: 65px;
           overflow: hidden;
           border-radius: 16px 16px 0 0;
+          background: #000000;
         }
 
         .premium-card-icon {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           display: block;
+          padding: 0.5rem;
         }
 
         .premium-card-text {
@@ -344,11 +359,81 @@ export default function Navbar() {
           text-decoration: none;
           font-size: 0.85rem;
           transition: all 0.2s;
+          position: relative;
         }
 
         .dropdown-item:hover {
           background: rgba(255, 255, 255, 0.05);
           color: rgba(255, 255, 255, 0.8);
+        }
+
+        .dropdown-item.has-sub::after {
+          content: '▶';
+          position: absolute;
+          right: 1rem;
+          font-size: 0.65rem;
+          opacity: 0.6;
+        }
+
+        /* Dashboard sub-dropdown */
+        .dashboard-subdropdown {
+          position: absolute;
+          left: 100%;
+          top: -0.75rem;
+          margin-left: 0.5rem;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(50px) saturate(180%);
+          -webkit-backdrop-filter: blur(50px) saturate(180%);
+          border: none;
+          border-radius: 16px;
+          padding: 0.75rem 0;
+          min-width: 220px;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateX(-10px);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
+                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-item.has-sub:hover .dashboard-subdropdown {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(0);
+        }
+
+        .subdropdown-header {
+          padding: 0.5rem 1.25rem;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          margin-bottom: 0.25rem;
+        }
+
+        .subdropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1.25rem;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 0.85rem;
+          transition: all 0.2s;
+        }
+
+        .subdropdown-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .subdropdown-icon {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          flex-shrink: 0;
         }
 
         .auth-section {
@@ -400,9 +485,9 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(80px) saturate(180%);
-          -webkit-backdrop-filter: blur(80px) saturate(180%);
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(100px) saturate(180%);
+          -webkit-backdrop-filter: blur(100px) saturate(180%);
           border-bottom: none;
           max-height: 0;
           overflow: hidden;
@@ -441,16 +526,16 @@ export default function Navbar() {
         }
 
         .mobile-dropdown {
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(60px) saturate(180%);
-          -webkit-backdrop-filter: blur(60px) saturate(180%);
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(80px) saturate(180%);
+          -webkit-backdrop-filter: blur(80px) saturate(180%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
         }
 
         .mobile-dropdown.open {
-          max-height: 600px;
+          max-height: 800px;
           overflow-y: auto;
         }
 
@@ -471,6 +556,63 @@ export default function Navbar() {
         .mobile-dropdown-item:hover {
           background: rgba(255, 255, 255, 0.05);
           color: white;
+        }
+
+        .mobile-dropdown-item.has-sub {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        /* Mobile dashboard sub-dropdown */
+        .mobile-dashboard-subdropdown {
+          background: rgba(0, 0, 0, 0.9);
+          backdrop-filter: blur(80px) saturate(180%);
+          -webkit-backdrop-filter: blur(80px) saturate(180%);
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s;
+        }
+
+        .mobile-dashboard-subdropdown.open {
+          max-height: 600px;
+        }
+
+        .mobile-subdropdown-header {
+          padding: 0.75rem 1.5rem 0.5rem 4rem;
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .mobile-subdropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1.5rem 0.75rem 4rem;
+          color: rgba(255, 255, 255, 0.6);
+          text-decoration: none;
+          font-size: 0.85rem;
+          transition: all 0.2s;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-subdropdown-item:last-child {
+          border-bottom: none;
+        }
+
+        .mobile-subdropdown-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: white;
+        }
+
+        .mobile-subdropdown-icon {
+          width: 16px;
+          height: 16px;
+          object-fit: contain;
+          flex-shrink: 0;
         }
 
         .mobile-premium-grid {
@@ -496,15 +638,17 @@ export default function Navbar() {
 
         .mobile-premium-card-icon-wrapper {
           width: 100%;
-          height: 60px;
+          height: 50px;
           overflow: hidden;
           border-radius: 8px 8px 0 0;
+          background: #000000;
         }
 
         .mobile-premium-card-icon {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
+          padding: 0.35rem;
         }
 
         .mobile-premium-card-text {
@@ -533,9 +677,9 @@ export default function Navbar() {
           padding: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          background: rgba(0, 0, 0, 0.6) !important;
-          backdrop-filter: blur(60px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
+          background: rgba(0, 0, 0, 0.8) !important;
+          backdrop-filter: blur(80px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(80px) saturate(180%) !important;
           margin: 0 !important;
         }
 
@@ -772,15 +916,40 @@ export default function Navbar() {
                   <div key={item.id} className="nav-item has-dropdown">
                     <span>{item.label}</span>
                     <div className="dropdown">
-                      {item.dropdown.map((dropItem, idx) => (
-                        <Link
-                          key={idx}
-                          href={dropItem.href}
-                          className="dropdown-item"
-                        >
-                          {dropItem.label}
-                        </Link>
-                      ))}
+                      {item.dropdown.map((dropItem, idx) => {
+                        if (dropItem.hasSubDropdown) {
+                          return (
+                            <div
+                              key={idx}
+                              className="dropdown-item has-sub"
+                            >
+                              {dropItem.label}
+                              <div className="dashboard-subdropdown">
+                                <div className="subdropdown-header">Quick jump to...</div>
+                                {dashboardLinks.map((link, linkIdx) => (
+                                  <Link
+                                    key={linkIdx}
+                                    href={link.href}
+                                    className="subdropdown-item"
+                                  >
+                                    <img src={link.icon} alt={link.label} className="subdropdown-icon" />
+                                    {link.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        }
+                        return (
+                          <Link
+                            key={idx}
+                            href={dropItem.href}
+                            className="dropdown-item"
+                          >
+                            {dropItem.label}
+                          </Link>
+                        )
+                      })}
                     </div>
                   </div>
                 )
@@ -910,16 +1079,50 @@ export default function Navbar() {
                       openDropdown === item.id ? 'open' : ''
                     }`}
                   >
-                    {item.dropdown.map((dropItem, idx) => (
-                      <Link
-                        key={idx}
-                        href={dropItem.href}
-                        className="mobile-dropdown-item"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {dropItem.label}
-                      </Link>
-                    ))}
+                    {item.dropdown.map((dropItem, idx) => {
+                      if (dropItem.hasSubDropdown) {
+                        return (
+                          <div key={idx}>
+                            <div
+                              className="mobile-dropdown-item has-sub"
+                              onClick={() => setDashboardSubOpen(!dashboardSubOpen)}
+                            >
+                              <span>{dropItem.label}</span>
+                              <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
+                                {dashboardSubOpen ? '▲' : '▼'}
+                              </span>
+                            </div>
+                            <div className={`mobile-dashboard-subdropdown ${dashboardSubOpen ? 'open' : ''}`}>
+                              <div className="mobile-subdropdown-header">Quick jump to...</div>
+                              {dashboardLinks.map((link, linkIdx) => (
+                                <Link
+                                  key={linkIdx}
+                                  href={link.href}
+                                  className="mobile-subdropdown-item"
+                                  onClick={() => {
+                                    setMobileMenuOpen(false)
+                                    setDashboardSubOpen(false)
+                                  }}
+                                >
+                                  <img src={link.icon} alt={link.label} className="mobile-subdropdown-icon" />
+                                  {link.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      }
+                      return (
+                        <Link
+                          key={idx}
+                          href={dropItem.href}
+                          className="mobile-dropdown-item"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {dropItem.label}
+                        </Link>
+                      )
+                    })}
                   </div>
                 </>
               ) : null}
