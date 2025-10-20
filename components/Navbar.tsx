@@ -478,9 +478,9 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(0, 0, 0, 0.75);
-          backdrop-filter: blur(120px) saturate(180%);
-          -webkit-backdrop-filter: blur(120px) saturate(180%);
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(200px) saturate(200%);
+          -webkit-backdrop-filter: blur(200px) saturate(200%);
           border-bottom: none;
           max-height: 0;
           overflow: hidden;
@@ -521,9 +521,9 @@ export default function Navbar() {
         }
 
         .mobile-dropdown {
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(100px) saturate(180%);
-          -webkit-backdrop-filter: blur(100px) saturate(180%);
+          background: rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(180px) saturate(200%);
+          -webkit-backdrop-filter: blur(180px) saturate(200%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -566,9 +566,9 @@ export default function Navbar() {
 
         /* Mobile dashboard sub-dropdown */
         .mobile-dashboard-subdropdown {
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(120px) saturate(180%);
-          -webkit-backdrop-filter: blur(120px) saturate(180%);
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(200px) saturate(200%);
+          -webkit-backdrop-filter: blur(200px) saturate(200%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -593,7 +593,7 @@ export default function Navbar() {
           padding: 0.75rem 1.5rem 0.75rem 4rem;
           color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
-          font-size: 0.8rem;
+          font-size: 0.7rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -671,9 +671,9 @@ export default function Navbar() {
           padding: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          background: rgba(0, 0, 0, 0.8) !important;
-          backdrop-filter: blur(100px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(100px) saturate(180%) !important;
+          background: rgba(255, 255, 255, 0.06) !important;
+          backdrop-filter: blur(180px) saturate(200%) !important;
+          -webkit-backdrop-filter: blur(180px) saturate(200%) !important;
           margin: 0 !important;
         }
 
