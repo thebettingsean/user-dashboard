@@ -478,9 +478,9 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(100px) saturate(180%);
-          -webkit-backdrop-filter: blur(100px) saturate(180%);
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(50px) saturate(180%);
+          -webkit-backdrop-filter: blur(50px) saturate(180%);
           border-bottom: none;
           max-height: 0;
           overflow: hidden;
@@ -488,7 +488,8 @@ export default function Navbar() {
           transform: translateY(-10px);
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 900;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
+                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .mobile-menu.open {
@@ -509,6 +510,7 @@ export default function Navbar() {
           color: rgba(255, 255, 255, 0.8);
           text-decoration: none;
           font-weight: 500;
+          font-size: 0.9rem;
           cursor: pointer;
           transition: all 0.2s;
         }
@@ -519,9 +521,9 @@ export default function Navbar() {
         }
 
         .mobile-dropdown {
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(80px) saturate(180%);
-          -webkit-backdrop-filter: blur(80px) saturate(180%);
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(60px) saturate(180%);
+          -webkit-backdrop-filter: blur(60px) saturate(180%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -533,7 +535,9 @@ export default function Navbar() {
         }
 
         .mobile-dropdown-item {
-          display: block;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           padding: 0.75rem 1.5rem 0.75rem 3rem;
           color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
@@ -562,9 +566,9 @@ export default function Navbar() {
 
         /* Mobile dashboard sub-dropdown */
         .mobile-dashboard-subdropdown {
-          background: rgba(0, 0, 0, 0.9);
-          backdrop-filter: blur(80px) saturate(180%);
-          -webkit-backdrop-filter: blur(80px) saturate(180%);
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(60px) saturate(180%);
+          -webkit-backdrop-filter: blur(60px) saturate(180%);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -572,12 +576,13 @@ export default function Navbar() {
 
         .mobile-dashboard-subdropdown.open {
           max-height: 600px;
+          overflow-y: auto;
         }
 
         .mobile-subdropdown-header {
           padding: 0.75rem 1.5rem 0.5rem 4rem;
           color: rgba(255, 255, 255, 0.5);
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -588,7 +593,7 @@ export default function Navbar() {
           padding: 0.75rem 1.5rem 0.75rem 4rem;
           color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
-          font-size: 0.85rem;
+          font-size: 0.9rem;
           transition: all 0.2s;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -666,9 +671,9 @@ export default function Navbar() {
           padding: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          background: rgba(0, 0, 0, 0.8) !important;
-          backdrop-filter: blur(80px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(80px) saturate(180%) !important;
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(60px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
           margin: 0 !important;
         }
 
@@ -1074,9 +1079,10 @@ export default function Navbar() {
                             <div
                               className="mobile-dropdown-item has-sub"
                               onClick={() => setDashboardSubOpen(!dashboardSubOpen)}
+                              style={{ gap: '2rem' }}
                             >
                               <span>{dropItem.label}</span>
-                              <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
+                              <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
                                 {dashboardSubOpen ? '▲' : '▼'}
                               </span>
                             </div>
