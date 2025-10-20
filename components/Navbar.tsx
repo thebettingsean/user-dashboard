@@ -262,18 +262,19 @@ export default function Navbar() {
 
         .premium-card-icon-wrapper {
           width: 100%;
-          height: 65px;
+          height: 80px;
           overflow: hidden;
           border-radius: 16px 16px 0 0;
-          background: #000000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .premium-card-icon {
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: cover;
           display: block;
-          padding: 0.5rem;
         }
 
         .premium-card-text {
@@ -367,12 +368,17 @@ export default function Navbar() {
           color: rgba(255, 255, 255, 0.8);
         }
 
+        .dropdown-item.has-sub {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
         .dropdown-item.has-sub::after {
           content: '▶';
-          position: absolute;
-          right: 1rem;
           font-size: 0.65rem;
           opacity: 0.6;
+          margin-left: 1rem;
         }
 
         /* Dashboard sub-dropdown */
@@ -414,9 +420,7 @@ export default function Navbar() {
         }
 
         .subdropdown-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
+          display: block;
           padding: 0.75rem 1.25rem;
           color: #ffffff;
           text-decoration: none;
@@ -427,13 +431,6 @@ export default function Navbar() {
         .subdropdown-item:hover {
           background: rgba(255, 255, 255, 0.05);
           color: rgba(255, 255, 255, 0.8);
-        }
-
-        .subdropdown-icon {
-          width: 18px;
-          height: 18px;
-          object-fit: contain;
-          flex-shrink: 0;
         }
 
         .auth-section {
@@ -588,9 +585,7 @@ export default function Navbar() {
         }
 
         .mobile-subdropdown-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
+          display: block;
           padding: 0.75rem 1.5rem 0.75rem 4rem;
           color: rgba(255, 255, 255, 0.6);
           text-decoration: none;
@@ -606,13 +601,6 @@ export default function Navbar() {
         .mobile-subdropdown-item:hover {
           background: rgba(255, 255, 255, 0.05);
           color: white;
-        }
-
-        .mobile-subdropdown-icon {
-          width: 16px;
-          height: 16px;
-          object-fit: contain;
-          flex-shrink: 0;
         }
 
         .mobile-premium-grid {
@@ -638,17 +626,19 @@ export default function Navbar() {
 
         .mobile-premium-card-icon-wrapper {
           width: 100%;
-          height: 50px;
+          height: 60px;
           overflow: hidden;
           border-radius: 8px 8px 0 0;
-          background: #000000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .mobile-premium-card-icon {
           width: 100%;
           height: 100%;
-          object-fit: contain;
-          padding: 0.35rem;
+          object-fit: cover;
+          display: block;
         }
 
         .mobile-premium-card-text {
@@ -932,7 +922,6 @@ export default function Navbar() {
                                     href={link.href}
                                     className="subdropdown-item"
                                   >
-                                    <img src={link.icon} alt={link.label} className="subdropdown-icon" />
                                     {link.label}
                                   </Link>
                                 ))}
@@ -1104,7 +1093,6 @@ export default function Navbar() {
                                     setDashboardSubOpen(false)
                                   }}
                                 >
-                                  <img src={link.icon} alt={link.label} className="mobile-subdropdown-icon" />
                                   {link.label}
                                 </Link>
                               ))}
