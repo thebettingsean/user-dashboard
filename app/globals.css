@@ -230,26 +230,6 @@ body {
   position: relative !important;
 }
 
-.navbar .dropdown-item::before {
-  content: '' !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 40px !important;
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.navbar .dropdown-item:last-child::before {
-  display: none !important;
-}
-
-/* Keep arrow for has-sub items using ::after */
-.navbar .dropdown-item.has-sub::before {
-  display: block !important;
-}
-
 /* Dashboard subdropdown - ensure vertical layout */
 .navbar .dashboard-subdropdown {
   display: flex !important;
@@ -262,22 +242,6 @@ body {
   padding: 0.75rem 1.25rem !important;
   border-bottom: none !important;
   white-space: nowrap !important;
-  position: relative !important;
-}
-
-.navbar .subdropdown-item::before {
-  content: '' !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 40px !important;
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.navbar .subdropdown-item:last-child::before {
-  display: none !important;
 }
 
 .navbar .subdropdown-header {
@@ -298,27 +262,6 @@ body {
   margin: 0 !important;
   border-bottom: none !important;
   white-space: normal !important;
-  position: relative !important;
-}
-
-.navbar .mobile-dropdown-item::before {
-  content: '' !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 40px !important;
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.navbar .mobile-dropdown-item:last-child::before {
-  display: none !important;
-}
-
-/* Keep arrow for mobile has-sub items */
-.navbar .mobile-dropdown-item.has-sub::before {
-  display: block !important;
 }
 
 /* Mobile dashboard subdropdown - ensure vertical layout */
@@ -333,22 +276,6 @@ body {
   padding: 0.75rem 1.5rem 0.75rem 4rem !important;
   border-bottom: none !important;
   white-space: nowrap !important;
-  position: relative !important;
-}
-
-.navbar .mobile-subdropdown-item::before {
-  content: '' !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 40px !important;
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.navbar .mobile-subdropdown-item:last-child::before {
-  display: none !important;
 }
 
 .navbar .mobile-subdropdown-header {

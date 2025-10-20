@@ -372,17 +372,15 @@ export default function Navbar() {
           display: flex !important;
           justify-content: space-between !important;
           align-items: center !important;
-          flex-direction: row !important;
-          overflow: hidden !important;
+          padding-right: 2rem !important;
         }
 
         .dropdown-item.has-sub::after {
-          content: '▶';
-          font-size: 0.65rem;
-          opacity: 0.6;
-          margin-left: auto;
-          padding-left: 0.75rem;
-          flex-shrink: 0;
+          content: '▶' !important;
+          font-size: 0.65rem !important;
+          opacity: 0.6 !important;
+          position: absolute !important;
+          right: 1rem !important;
         }
 
         /* Dashboard sub-dropdown */
