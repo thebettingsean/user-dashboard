@@ -230,7 +230,7 @@ body {
   position: relative !important;
 }
 
-.navbar .dropdown-item::after {
+.navbar .dropdown-item::before {
   content: '' !important;
   position: absolute !important;
   bottom: 0 !important;
@@ -241,8 +241,13 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.navbar .dropdown-item:last-child::after {
+.navbar .dropdown-item:last-child::before {
   display: none !important;
+}
+
+/* Keep arrow for has-sub items using ::after */
+.navbar .dropdown-item.has-sub::before {
+  display: block !important;
 }
 
 /* Dashboard subdropdown - ensure vertical layout */
@@ -260,7 +265,7 @@ body {
   position: relative !important;
 }
 
-.navbar .subdropdown-item::after {
+.navbar .subdropdown-item::before {
   content: '' !important;
   position: absolute !important;
   bottom: 0 !important;
@@ -271,7 +276,7 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.navbar .subdropdown-item:last-child::after {
+.navbar .subdropdown-item:last-child::before {
   display: none !important;
 }
 
@@ -296,7 +301,7 @@ body {
   position: relative !important;
 }
 
-.navbar .mobile-dropdown-item::after {
+.navbar .mobile-dropdown-item::before {
   content: '' !important;
   position: absolute !important;
   bottom: 0 !important;
@@ -307,8 +312,13 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.navbar .mobile-dropdown-item:last-child::after {
+.navbar .mobile-dropdown-item:last-child::before {
   display: none !important;
+}
+
+/* Keep arrow for mobile has-sub items */
+.navbar .mobile-dropdown-item.has-sub::before {
+  display: block !important;
 }
 
 /* Mobile dashboard subdropdown - ensure vertical layout */
@@ -326,7 +336,7 @@ body {
   position: relative !important;
 }
 
-.navbar .mobile-subdropdown-item::after {
+.navbar .mobile-subdropdown-item::before {
   content: '' !important;
   position: absolute !important;
   bottom: 0 !important;
@@ -337,7 +347,7 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.navbar .mobile-subdropdown-item:last-child::after {
+.navbar .mobile-subdropdown-item:last-child::before {
   display: none !important;
 }
 
