@@ -64,6 +64,38 @@ div[class*="userButton"] [class*="menuItem"] * {
   color: #ffffff !important;
 }
 
+/* Mobile Optimization for Subscription Management Pages */
+@media (max-width: 768px) {
+  /* Force proper box sizing on mobile */
+  * {
+    box-sizing: border-box !important;
+  }
+
+  /* Prevent horizontal overflow */
+  body, html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  /* Ensure buttons don't overflow */
+  button {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+  }
+
+  /* Make text inputs responsive */
+  input, textarea, select {
+    max-width: 100% !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+  }
+
+  /* Adjust padding for mobile */
+  [style*="padding"] {
+    padding-left: clamp(1rem, 4vw, 2rem) !important;
+    padding-right: clamp(1rem, 4vw, 2rem) !important;
+  }
+}
+
 /* Floating orbs - only visible on main dashboard */
 .dashboard-orbs::before,
 .dashboard-orbs::after {

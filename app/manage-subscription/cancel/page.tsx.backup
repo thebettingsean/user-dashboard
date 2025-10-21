@@ -93,7 +93,7 @@ export default function CancelPage() {
       }
 
       const data = await response.json()
-      alert(`✓ ${data.message}`)
+      alert(`✅ ${data.message}`)
       router.push('/manage-subscription')
     } catch (err: any) {
       alert(`Error: ${err.message}`)
@@ -128,6 +128,7 @@ export default function CancelPage() {
 
   const handleToggleReason = (code: string) => {
     if (code === 'H') {
+      // "Other" - can only be selected alone
       if (selectedReasons.includes('H')) {
         setSelectedReasons([])
         setOtherText('')
@@ -135,6 +136,7 @@ export default function CancelPage() {
         setSelectedReasons(['H'])
       }
     } else {
+      // Remove "Other" if selecting anything else
       const filteredReasons = selectedReasons.filter(r => r !== 'H')
       
       if (filteredReasons.includes(code)) {
@@ -171,8 +173,7 @@ export default function CancelPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit reasons')
+        throw new Error('Failed to submit reasons')
       }
 
       setStep('final_offer')
@@ -200,7 +201,7 @@ export default function CancelPage() {
       }
 
       const data = await response.json()
-      alert(`✓ ${data.message}`)
+      alert(`✅ ${data.message}`)
       router.push('/manage-subscription')
     } catch (err: any) {
       alert(`Error: ${err.message}`)
@@ -245,7 +246,7 @@ export default function CancelPage() {
         <div style={styles.container}>
           <div style={styles.loading}>
             <div style={styles.spinner}></div>
-            <p style={{fontSize: '0.85rem'}}>Loading...</p>
+            <p>Loading...</p>
           </div>
         </div>
       </div>
@@ -263,13 +264,7 @@ export default function CancelPage() {
           </header>
 
           <div style={styles.offerCard}>
-            <div style={styles.offerIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="8" width="18" height="12" rx="2" ry="2"/>
-                <path d="M7 8V6a4 4 0 0 1 8 0v2"/>
-                <line x1="12" y1="13" x2="12" y2="16"/>
-              </svg>
-            </div>
+            <div style={styles.offerIcon}>🎁</div>
             <h2 style={styles.offerTitle}>Special Offer Just for You</h2>
             <p style={styles.offerMessage}>{offer.offerMessage}</p>
 
@@ -285,14 +280,14 @@ export default function CancelPage() {
                 onClick={handleAcceptFirstOffer}
                 disabled={processing}
               >
-                {processing ? 'Processing...' : 'Accept Offer'}
+                {processing ? 'Processing...' : '✅ Accept Offer'}
               </button>
               <button
                 style={processing ? styles.declineButtonDisabled : styles.declineButton}
                 onClick={handleDeclineFirstOffer}
                 disabled={processing}
               >
-                {processing ? 'Processing...' : 'Continue to Cancel'}
+                {processing ? 'Processing...' : 'No Thanks, Continue to Cancel'}
               </button>
             </div>
           </div>
@@ -348,7 +343,7 @@ export default function CancelPage() {
                 placeholder="Please tell us more..."
                 value={otherText}
                 onChange={(e) => setOtherText(e.target.value)}
-                rows={3}
+                rows={4}
               />
             )}
 
@@ -376,11 +371,7 @@ export default function CancelPage() {
           </header>
 
           <div style={styles.finalOfferCard}>
-            <div style={styles.finalOfferIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            </div>
+            <div style={styles.finalOfferIcon}>💎</div>
             <h2 style={styles.finalOfferTitle}>50% OFF FOR LIFE</h2>
             <p style={styles.finalOfferMessage}>
               This is our final offer. Get lifetime access to all premium features at <strong>HALF THE PRICE</strong>.
@@ -393,7 +384,7 @@ export default function CancelPage() {
                 onClick={handleAcceptFinalOffer}
                 disabled={processing}
               >
-                {processing ? 'Processing...' : 'Accept 50% Off'}
+                {processing ? 'Processing...' : '🎉 Accept 50% Off'}
               </button>
               <button
                 style={processing ? styles.declineButtonDisabled : styles.declineButton}
@@ -415,14 +406,7 @@ export default function CancelPage() {
       <div style={styles.page}>
         <div style={styles.container}>
           <div style={styles.confirmedCard}>
-            <div style={styles.confirmedIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
-                <line x1="9" y1="9" x2="9.01" y2="9"/>
-                <line x1="15" y1="9" x2="15.01" y2="9"/>
-              </svg>
-            </div>
+            <div style={styles.confirmedIcon}>😢</div>
             <h1 style={styles.confirmedTitle}>Subscription Cancelled</h1>
             <p style={styles.confirmedMessage}>
               Your subscription has been cancelled and will end on <strong>{cancelsOn}</strong>.
@@ -452,12 +436,12 @@ export default function CancelPage() {
 const styles = {
   page: {
     minHeight: '100vh',
-    padding: '10rem 1.5rem 3rem',
+    padding: '10rem 2rem 4rem',
     background: 'transparent',
     color: '#ffffff'
   },
   container: {
-    maxWidth: '700px',
+    maxWidth: '800px',
     margin: '0 auto',
     width: '100%'
   },
@@ -467,27 +451,27 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '60vh',
-    gap: '1rem'
+    gap: '1.5rem'
   },
   spinner: {
-    width: '40px',
-    height: '40px',
-    border: '3px solid rgba(255, 255, 255, 0.1)',
+    width: '50px',
+    height: '50px',
+    border: '4px solid rgba(255, 255, 255, 0.1)',
     borderTopColor: '#3b82f6',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '2rem'
+    marginBottom: '3rem'
   },
   title: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
+    fontSize: '2.5rem',
+    fontWeight: '800',
     marginBottom: '0.5rem'
   },
   subtitle: {
-    fontSize: '0.85rem',
+    fontSize: '1.1rem',
     color: 'rgba(255, 255, 255, 0.7)'
   },
   offerCard: {
@@ -495,47 +479,46 @@ const styles = {
     backdropFilter: 'blur(50px) saturate(180%)',
     border: '2px solid rgba(251, 191, 36, 0.4)',
     borderRadius: '16px',
-    padding: '2rem 1.5rem',
-    marginBottom: '1.5rem',
+    padding: '3rem 2rem',
+    marginBottom: '2rem',
     textAlign: 'center' as const
   },
   offerIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
+    fontSize: '4rem',
+    marginBottom: '1rem'
   },
   offerTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.75rem',
     fontWeight: '700',
-    marginBottom: '0.75rem',
+    marginBottom: '1rem',
     color: '#fbbf24'
   },
   offerMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '1.25rem',
+    fontSize: '1.1rem',
+    lineHeight: '1.6',
+    marginBottom: '1.5rem',
     color: 'rgba(255, 255, 255, 0.9)'
   },
   renewalInfo: {
     background: 'rgba(251, 191, 36, 0.1)',
     border: '1px solid rgba(251, 191, 36, 0.3)',
-    padding: '0.75rem',
+    padding: '1rem',
     borderRadius: '8px',
-    marginBottom: '1.5rem',
-    fontSize: '0.85rem'
+    marginBottom: '2rem',
+    fontSize: '1rem'
   },
   offerButtons: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '1rem'
   },
   acceptButton: {
     background: 'linear-gradient(135deg, #10b981, #34d399)',
     color: '#fff',
     border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -545,9 +528,9 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.1)',
     color: 'rgba(255, 255, 255, 0.5)',
     border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
     fontWeight: '700',
     cursor: 'not-allowed'
   },
@@ -555,9 +538,9 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.05)',
     color: 'rgba(255, 255, 255, 0.7)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1rem',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
@@ -566,9 +549,9 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.05)',
     color: 'rgba(255, 255, 255, 0.3)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1rem',
     fontWeight: '600',
     cursor: 'not-allowed'
   },
@@ -577,72 +560,71 @@ const styles = {
     backdropFilter: 'blur(50px) saturate(180%)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '16px',
-    padding: '1.5rem',
-    marginBottom: '1.5rem'
+    padding: '2rem',
+    marginBottom: '2rem'
   },
   reasonsTitle: {
-    fontSize: '1rem',
+    fontSize: '1.25rem',
     fontWeight: '700',
-    marginBottom: '1.25rem',
+    marginBottom: '1.5rem',
     textAlign: 'center' as const
   },
   reasonsList: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem',
-    marginBottom: '1.25rem'
+    gap: '1rem',
+    marginBottom: '1.5rem'
   },
   reasonLabel: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
-    padding: '0.85rem',
+    padding: '1rem',
     background: 'rgba(255, 255, 255, 0.05)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '8px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    fontSize: '0.85rem'
+    fontSize: '1rem'
   },
   reasonLabelSelected: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
-    padding: '0.85rem',
+    padding: '1rem',
     background: 'rgba(59, 130, 246, 0.2)',
     border: '2px solid rgba(59, 130, 246, 0.5)',
     borderRadius: '8px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    fontSize: '0.85rem',
+    fontSize: '1rem',
     fontWeight: '600'
   },
   reasonCheckbox: {
-    width: '18px',
-    height: '18px',
+    width: '20px',
+    height: '20px',
     cursor: 'pointer'
   },
   otherTextarea: {
     width: '100%',
-    padding: '0.85rem',
+    padding: '1rem',
     background: 'rgba(255, 255, 255, 0.05)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '8px',
     color: '#fff',
-    fontSize: '0.85rem',
+    fontSize: '1rem',
     fontFamily: 'inherit',
     resize: 'vertical' as const,
-    marginBottom: '1.25rem',
-    boxSizing: 'border-box' as const
+    marginBottom: '1.5rem'
   },
   submitButton: {
     width: '100%',
     background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
     color: '#fff',
     border: 'none',
-    padding: '0.85rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
+    padding: '1rem',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
@@ -652,9 +634,9 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.1)',
     color: 'rgba(255, 255, 255, 0.5)',
     border: 'none',
-    padding: '0.85rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
+    padding: '1rem',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
     fontWeight: '700',
     cursor: 'not-allowed'
   },
@@ -663,82 +645,80 @@ const styles = {
     backdropFilter: 'blur(50px) saturate(180%)',
     border: '2px solid rgba(139, 92, 246, 0.5)',
     borderRadius: '16px',
-    padding: '2rem 1.5rem',
-    marginBottom: '1.5rem',
+    padding: '3rem 2rem',
+    marginBottom: '2rem',
     textAlign: 'center' as const
   },
   finalOfferIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
+    fontSize: '4rem',
+    marginBottom: '1rem'
   },
   finalOfferTitle: {
-    fontSize: '1.5rem',
+    fontSize: '2rem',
     fontWeight: '800',
-    marginBottom: '0.75rem',
+    marginBottom: '1rem',
     color: '#a78bfa',
-    letterSpacing: '0.5px'
+    letterSpacing: '1px'
   },
   finalOfferMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '1.5rem',
+    fontSize: '1.1rem',
+    lineHeight: '1.6',
+    marginBottom: '2rem',
     color: 'rgba(255, 255, 255, 0.9)'
   },
   finalOfferButtons: {
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '1rem'
   },
   confirmedCard: {
     background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
     backdropFilter: 'blur(50px) saturate(180%)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '16px',
-    padding: '2rem 1.5rem',
+    padding: '3rem 2rem',
     textAlign: 'center' as const
   },
   confirmedIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
+    fontSize: '4rem',
+    marginBottom: '1rem'
   },
   confirmedTitle: {
-    fontSize: '1.5rem',
+    fontSize: '2rem',
     fontWeight: '700',
-    marginBottom: '0.75rem'
+    marginBottom: '1rem'
   },
   confirmedMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '0.75rem',
+    fontSize: '1.1rem',
+    lineHeight: '1.6',
+    marginBottom: '1rem',
     color: 'rgba(255, 255, 255, 0.9)'
   },
   confirmedSubMessage: {
-    fontSize: '0.85rem',
-    lineHeight: '1.5',
-    marginBottom: '0.75rem',
+    fontSize: '1rem',
+    lineHeight: '1.6',
+    marginBottom: '1rem',
     color: 'rgba(255, 255, 255, 0.7)'
   },
   backToDashboardButton: {
     background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
     color: '#fff',
     border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1.1rem',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    marginTop: '1.5rem'
+    marginTop: '2rem'
   },
   backButton: {
     background: 'rgba(255, 255, 255, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     color: '#fff',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    fontSize: '1rem',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -747,3 +727,4 @@ const styles = {
     width: 'fit-content'
   }
 }
+
