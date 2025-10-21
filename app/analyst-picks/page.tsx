@@ -384,8 +384,8 @@ export default function AnalystPicksPage() {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     return (
-      <div style={styles.dateBar}>
-        <div style={styles.monthLabel}>{months[today.getMonth()]}</div>
+      <div style={styles.dateBar} className="analyst-picks-date-bar">
+        <div style={styles.monthLabel} className="analyst-picks-month-label">{months[today.getMonth()]}</div>
         <div style={styles.datesContainer}>
           <div style={styles.dateScrollWrapper}>
             {dates.map((date, index) => {
@@ -461,8 +461,8 @@ export default function AnalystPicksPage() {
       <div key={pickId} style={pickClass}>
         <div style={styles.pickMain} onClick={() => togglePick(pickId)}>
           <div style={styles.pickTitleInfo}>
-            <span style={styles.unitBadge}>{pick.units}u</span>
-            <span style={hasAccessToPick ? styles.pickTitle : styles.pickTitleLocked}>
+            <span style={styles.unitBadge} className="analyst-picks-unit-badge">{pick.units}u</span>
+            <span style={hasAccessToPick ? styles.pickTitle : styles.pickTitleLocked} className="analyst-picks-pick-title">
               {truncatedTitle}
               {!hasAccessToPick && (
                 <svg style={styles.lockIcon} viewBox="0 0 24 24">
@@ -661,7 +661,7 @@ export default function AnalystPicksPage() {
         })
 
         return (
-          <div key={bettor.name} style={styles.bettorSection}>
+          <div key={bettor.name} style={styles.bettorSection} className="analyst-picks-bettor-section">
             {bettor.winStreak > 0 && (!selectedDate || isSameDay(selectedDate, new Date())) && (
               <div style={styles.winStreakBadge}>
                 🔥 {bettor.winStreak}
@@ -682,7 +682,7 @@ export default function AnalystPicksPage() {
 
             <div style={styles.bettorHeader}>
               <div style={styles.bettorInfo}>
-                <div style={styles.bettorName}>{bettor.name}</div>
+                <div style={styles.bettorName} className="analyst-picks-bettor-name">{bettor.name}</div>
                 {(!selectedDate || isSameDay(selectedDate, new Date())) && (
                   <div style={styles.bettorRecord}>{bettor.record}</div>
                 )}
@@ -807,8 +807,8 @@ export default function AnalystPicksPage() {
         <>
           {sortedPicks.map(pick => renderPick(pick, true))}
           
-          <div style={styles.ctaCard}>
-            <h3 style={styles.ctaTitle}>Want the rest of our best bets today?</h3>
+          <div style={styles.ctaCard} className="analyst-picks-cta-card">
+            <h3 style={styles.ctaTitle} className="analyst-picks-cta-title">Want the rest of our best bets today?</h3>
             <p style={styles.ctaSubtitle}>Sign up now and get daily picks + analysis for just $1</p>
             <p style={styles.ctaText}>Just click below</p>
             <div style={styles.ctaArrow}>↓</div>
@@ -829,18 +829,93 @@ export default function AnalystPicksPage() {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
+    <>
+      <style jsx>{`
+        @media (max-width: 767px) {
+          :global(.analyst-picks-container) {
+            padding: 0 !important;
+          }
+          :global(.analyst-picks-page) {
+            padding: 8rem 0.75rem 2rem !important;
+          }
+          :global(.analyst-picks-title) {
+            font-size: 1.75rem !important;
+          }
+          :global(.analyst-picks-subtitle) {
+            font-size: 0.85rem !important;
+          }
+          :global(.analyst-picks-filters) {
+            gap: 0.75rem !important;
+            padding: 0 0.5rem !important;
+          }
+          :global(.analyst-picks-filter-dropdown) {
+            flex: 1 !important;
+            min-width: 145px !important;
+            max-width: 180px !important;
+          }
+          :global(.analyst-picks-filter-button) {
+            padding: 0.45rem 0.65rem !important;
+            font-size: 0.75rem !important;
+          }
+          :global(.analyst-picks-date-bar) {
+            padding: 0 0.5rem !important;
+          }
+          :global(.analyst-picks-month-label) {
+            padding: 0.45rem 0.65rem !important;
+            font-size: 0.75rem !important;
+          }
+          :global(.analyst-picks-bettor-section) {
+            padding: 1rem 0.75rem !important;
+            margin-bottom: 1.5rem !important;
+          }
+          :global(.analyst-picks-bettor-name) {
+            font-size: 0.95rem !important;
+          }
+          :global(.analyst-picks-pick-title) {
+            font-size: 0.75rem !important;
+          }
+          :global(.analyst-picks-unit-badge) {
+            padding: 0.2rem 0.45rem !important;
+            font-size: 0.7rem !important;
+          }
+          :global(.analyst-picks-odds-text) {
+            font-size: 0.7rem !important;
+          }
+          :global(.analyst-picks-pick-dropdown-content) {
+            padding: 0.75rem 0.5rem !important;
+          }
+          :global(.analyst-picks-cta-card) {
+            padding: 1.5rem 1rem !important;
+            margin: 2rem 0.5rem !important;
+          }
+          :global(.analyst-picks-cta-title) {
+            font-size: 1.15rem !important;
+          }
+          :global(.analyst-picks-footer) {
+            padding: 0 0.5rem !important;
+          }
+          :global(.analyst-picks-footer-title) {
+            font-size: 0.9rem !important;
+          }
+          :global(.analyst-picks-footer-text) {
+            font-size: 0.75rem !important;
+            line-height: 1.4 !important;
+          }
+        }
+      `}</style>
+      <div style={styles.page} className="analyst-picks-page">
+        <div style={styles.container} className="analyst-picks-container">
         <header style={styles.header}>
-          <h1 style={styles.title}>Today's Best Bets</h1>
-          <p style={styles.subtitle}>Updated live throughout the day</p>
+          <h1 style={styles.title} className="analyst-picks-title">Today's Best Bets</h1>
+          <p style={styles.subtitle} className="analyst-picks-subtitle">Updated live throughout the day</p>
         </header>
 
         {/* Filters */}
-        <section style={styles.filters}>
-          <div style={styles.filterDropdown}>
+        <section style={styles.filters} className="analyst-picks-filters">
+          <div style={styles.filterDropdown} className="analyst-picks-filter-dropdown">
             <button 
               style={styles.filterButton}
+              className="analyst-picks-filter-button"
               onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
             >
               <span>{filterMode === 'cappers' ? 'Cappers' : filterMode === 'consensus' ? 'Consensus' : 'Free'}</span>
@@ -875,9 +950,10 @@ export default function AnalystPicksPage() {
             )}
           </div>
 
-          <div style={styles.filterDropdown}>
+          <div style={styles.filterDropdown} className="analyst-picks-filter-dropdown">
             <button 
               style={styles.filterButton}
+              className="analyst-picks-filter-button"
               onClick={() => setSportDropdownOpen(!sportDropdownOpen)}
             >
               <span>
@@ -929,10 +1005,10 @@ export default function AnalystPicksPage() {
         </main>
 
         {/* Footer */}
-        <footer style={styles.footer}>
+        <footer style={styles.footer} className="analyst-picks-footer">
           <section style={styles.disclaimerSection}>
-            <h3 style={styles.footerTitle}>Sports Betting Disclaimer</h3>
-            <p style={styles.footerText}>
+            <h3 style={styles.footerTitle} className="analyst-picks-footer-title">Sports Betting Disclaimer</h3>
+            <p style={styles.footerText} className="analyst-picks-footer-text">
               All sports betting picks and predictions provided by our analysts reflect real wagers placed with their own money. 
               Please remember that betting carries inherent risk, and you should only wager what you can afford to lose. 
               Bet responsibly, and if you or someone you know is struggling with a gambling problem, seek help from a qualified professional or support service.
@@ -940,8 +1016,8 @@ export default function AnalystPicksPage() {
           </section>
 
           <section style={styles.aboutSection}>
-            <h3 style={styles.footerTitle}>About Our Expert Picks</h3>
-            <p style={styles.footerText}>
+            <h3 style={styles.footerTitle} className="analyst-picks-footer-title">About Our Expert Picks</h3>
+            <p style={styles.footerText} className="analyst-picks-footer-text">
               Our expert cappers break down every pick using detailed team, game, and player stats—factoring in injuries, weather, and matchup history. 
               Each play includes the units at risk and is fully tracked with a recap for full transparency. 
               Many picks are backed by long-term betting systems we've built and refined over thousands of games, identifying trends the market often misses. 
@@ -1127,7 +1203,8 @@ export default function AnalystPicksPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -1143,7 +1220,8 @@ const styles = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    width: '100%'
+    width: '100%',
+    padding: '0 0.5rem'
   },
   loading: {
     display: 'flex',
