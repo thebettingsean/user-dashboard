@@ -97,7 +97,7 @@ export default function UpgradePage() {
       const data = await response.json()
       
       if (data.success) {
-        alert('🎉 Upgrade successful! Your subscription has been updated.')
+        alert('Upgrade successful! Your subscription has been updated.')
         router.push('/manage-subscription')
       }
     } catch (err: any) {
@@ -113,7 +113,7 @@ export default function UpgradePage() {
         <div style={styles.container}>
           <div style={styles.loading}>
             <div style={styles.spinner}></div>
-            <p>Loading upgrade options...</p>
+            <p style={{fontSize: '0.85rem'}}>Loading upgrade options...</p>
           </div>
         </div>
       </div>
@@ -125,8 +125,13 @@ export default function UpgradePage() {
       <div style={styles.page}>
         <div style={styles.container}>
           <div style={styles.error}>
-            <h1>⚠️ {error}</h1>
-            <p>You're already on the best plan for your tier!</p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '0 auto 1rem'}}>
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <h1 style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>{error}</h1>
+            <p style={{fontSize: '0.85rem'}}>You're already on the best plan for your tier!</p>
             <button 
               style={styles.backButton}
               onClick={() => router.push('/manage-subscription')}
@@ -187,10 +192,10 @@ export default function UpgradePage() {
                   </div>
 
                   <ul style={styles.benefitsList}>
-                    <li>✅ All features included</li>
-                    <li>✅ {currentPlan?.isLegacy ? 'Keeps All Access benefits' : 'Full Advantage access'}</li>
-                    <li>✅ Better value per month</li>
-                    <li>✅ Hassle-free renewal</li>
+                    <li>✓ All features included</li>
+                    <li>✓ {currentPlan?.isLegacy ? 'Keeps All Access benefits' : 'Full Advantage access'}</li>
+                    <li>✓ Better value per month</li>
+                    <li>✓ Hassle-free renewal</li>
                   </ul>
 
                   <button
@@ -208,7 +213,7 @@ export default function UpgradePage() {
 
         {currentPlan?.isLegacy && (
           <div style={styles.legacyNotice}>
-            <strong>🎁 Grandfathered Status:</strong> You're on a legacy plan with All Access benefits! 
+            <strong>Grandfathered Status:</strong> You're on a legacy plan with All Access benefits! 
             Upgrading will keep all your benefits while saving you money with longer billing.
           </div>
         )}
@@ -242,34 +247,34 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '60vh',
-    gap: '1.5rem'
+    gap: '1rem'
   },
   spinner: {
-    width: '50px',
-    height: '50px',
-    border: '4px solid rgba(255, 255, 255, 0.1)',
+    width: '40px',
+    height: '40px',
+    border: '3px solid rgba(255, 255, 255, 0.1)',
     borderTopColor: '#3b82f6',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
   error: {
     textAlign: 'center' as const,
-    padding: '3rem',
+    padding: '2rem',
     background: 'rgba(239, 68, 68, 0.1)',
     border: '1px solid rgba(239, 68, 68, 0.3)',
     borderRadius: '12px'
   },
   header: {
     textAlign: 'center' as const,
-    marginBottom: '3rem'
+    marginBottom: '2.5rem'
   },
   title: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
+    fontSize: '1.75rem',
+    fontWeight: '700',
     marginBottom: '0.5rem'
   },
   subtitle: {
-    fontSize: '1.1rem',
+    fontSize: '0.9rem',
     color: 'rgba(255, 255, 255, 0.7)'
   },
   currentPlanCard: {
@@ -277,12 +282,12 @@ const styles = {
     backdropFilter: 'blur(50px) saturate(180%)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '16px',
-    padding: '2rem',
-    marginBottom: '3rem'
+    padding: '1.5rem',
+    marginBottom: '2.5rem'
   },
   cardTitle: {
-    fontSize: '1.2rem',
-    fontWeight: '700',
+    fontSize: '0.9rem',
+    fontWeight: '600',
     marginBottom: '1rem',
     color: 'rgba(255, 255, 255, 0.8)'
   },
@@ -294,43 +299,43 @@ const styles = {
     gap: '1rem'
   },
   planName: {
-    fontSize: '1.5rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '0.75rem',
     flexWrap: 'wrap' as const
   },
   legacyBadge: {
     background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
     color: '#fff',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '8px',
-    fontSize: '0.75rem',
+    padding: '0.3rem 0.6rem',
+    borderRadius: '6px',
+    fontSize: '0.7rem',
     fontWeight: '600'
   },
   planPrice: {
-    fontSize: '1.25rem',
+    fontSize: '1rem',
     fontWeight: '600',
     color: '#60a5fa'
   },
   sectionTitle: {
-    fontSize: '1.75rem',
+    fontSize: '1.25rem',
     fontWeight: '700',
-    marginBottom: '2rem',
+    marginBottom: '1.5rem',
     textAlign: 'center' as const
   },
   upgradesGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '2rem',
-    marginBottom: '3rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '1.5rem',
+    marginBottom: '2rem'
   },
   upgradeCard: {
     background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1))',
     border: '2px solid rgba(34, 197, 94, 0.4)',
     borderRadius: '16px',
-    padding: '2rem',
+    padding: '1.5rem',
     transition: 'all 0.3s ease',
     backdropFilter: 'blur(30px)'
   },
@@ -338,12 +343,12 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '1rem',
+    marginBottom: '0.75rem',
     flexWrap: 'wrap' as const,
     gap: '0.5rem'
   },
   upgradeName: {
-    fontSize: '1.5rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
     margin: 0,
     color: '#10b981'
@@ -351,38 +356,39 @@ const styles = {
   savingsBadge: {
     background: 'linear-gradient(135deg, #10b981, #34d399)',
     color: '#fff',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '8px',
-    fontSize: '0.75rem',
+    padding: '0.3rem 0.6rem',
+    borderRadius: '6px',
+    fontSize: '0.7rem',
     fontWeight: '700'
   },
   upgradePrice: {
-    fontSize: '2rem',
+    fontSize: '1.5rem',
     fontWeight: '800',
     color: '#fff',
-    marginBottom: '1.5rem'
+    marginBottom: '1rem'
   },
   upgradePeriod: {
-    fontSize: '1rem',
+    fontSize: '0.85rem',
     fontWeight: '500',
     color: 'rgba(255, 255, 255, 0.7)'
   },
   benefitsList: {
     listStyle: 'none',
     padding: 0,
-    margin: '0 0 2rem 0',
+    margin: '0 0 1.5rem 0',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '0.75rem'
+    gap: '0.5rem',
+    fontSize: '0.85rem'
   },
   upgradeButton: {
     width: '100%',
     background: 'linear-gradient(135deg, #10b981, #34d399)',
     color: '#fff',
     border: 'none',
-    padding: '1rem',
-    borderRadius: '12px',
-    fontSize: '1.1rem',
+    padding: '0.75rem 1rem',
+    borderRadius: '10px',
+    fontSize: '0.95rem',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -393,30 +399,30 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.1)',
     color: 'rgba(255, 255, 255, 0.5)',
     border: 'none',
-    padding: '1rem',
-    borderRadius: '12px',
-    fontSize: '1.1rem',
+    padding: '0.75rem 1rem',
+    borderRadius: '10px',
+    fontSize: '0.95rem',
     fontWeight: '700',
-    cursor: 'not-allowed',
-    transition: 'all 0.3s ease'
+    cursor: 'not-allowed'
   },
   legacyNotice: {
     background: 'rgba(251, 191, 36, 0.1)',
     border: '1px solid rgba(251, 191, 36, 0.3)',
-    padding: '1.5rem',
+    padding: '1rem',
     borderRadius: '12px',
-    marginBottom: '3rem',
+    marginBottom: '2rem',
     textAlign: 'center' as const,
     color: '#fbbf24',
-    lineHeight: '1.6'
+    lineHeight: '1.6',
+    fontSize: '0.85rem'
   },
   backButton: {
     background: 'rgba(255, 255, 255, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     color: '#fff',
-    padding: '1rem 2rem',
-    borderRadius: '12px',
-    fontSize: '1rem',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '10px',
+    fontSize: '0.9rem',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
@@ -425,4 +431,3 @@ const styles = {
     width: 'fit-content'
   }
 }
-

@@ -156,7 +156,11 @@ export default function ManageSubscriptionPage() {
             style={styles.actionCard}
             onClick={() => router.push('/manage-subscription/upgrade')}
           >
-            <div style={styles.actionIcon}>⬆️</div>
+            <div style={styles.actionIcon}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+              </svg>
+            </div>
             <h3 style={styles.actionTitle}>Upgrade Plan</h3>
             <p style={styles.actionDescription}>
               Save money with longer billing cycles
@@ -168,7 +172,13 @@ export default function ManageSubscriptionPage() {
             style={styles.actionCard}
             onClick={() => router.push('/manage-subscription/cancel')}
           >
-            <div style={styles.actionIcon}>❌</div>
+            <div style={styles.actionIcon}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
             <h3 style={styles.actionTitle}>Cancel Subscription</h3>
             <p style={styles.actionDescription}>
               End your subscription (we'll make you an offer)
@@ -180,7 +190,12 @@ export default function ManageSubscriptionPage() {
             style={styles.actionCard}
             onClick={() => router.push('/manage-subscription/pause')}
           >
-            <div style={styles.actionIcon}>⏸️</div>
+            <div style={styles.actionIcon}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </div>
             <h3 style={styles.actionTitle}>Pause Subscription</h3>
             <p style={styles.actionDescription}>
               Take a break, come back anytime
@@ -240,12 +255,12 @@ const styles = {
     marginBottom: '3rem'
   },
   title: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
+    fontSize: '1.75rem',
+    fontWeight: '700',
     marginBottom: '0.5rem'
   },
   subtitle: {
-    fontSize: '1.1rem',
+    fontSize: '0.9rem',
     color: 'rgba(255, 255, 255, 0.7)'
   },
   currentSubCard: {
@@ -265,16 +280,16 @@ const styles = {
     gap: '1rem'
   },
   currentSubTitle: {
-    fontSize: '1.5rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
     margin: 0
   },
   legacyBadge: {
     background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
     color: '#fff',
-    padding: '0.5rem 1rem',
-    borderRadius: '8px',
-    fontSize: '0.875rem',
+    padding: '0.4rem 0.8rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
     fontWeight: '600'
   },
   currentSubDetails: {
@@ -290,12 +305,12 @@ const styles = {
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
   },
   detailLabel: {
-    fontSize: '1rem',
+    fontSize: '0.85rem',
     color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '500'
   },
   detailValue: {
-    fontSize: '1rem',
+    fontSize: '0.85rem',
     color: '#fff',
     fontWeight: '600'
   },
@@ -326,18 +341,18 @@ const styles = {
     color: '#fff'
   },
   actionIcon: {
-    fontSize: '3rem',
-    marginBottom: '1rem'
+    marginBottom: '0.75rem',
+    color: '#60a5fa'
   },
   actionTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1rem',
     fontWeight: '700',
     marginBottom: '0.5rem'
   },
   actionDescription: {
-    fontSize: '0.95rem',
+    fontSize: '0.8rem',
     color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: '1.5'
+    lineHeight: '1.4'
   },
   backButton: {
     background: 'rgba(255, 255, 255, 0.1)',

@@ -959,6 +959,8 @@ export default function Navbar() {
             {isSignedIn ? (
               <UserButton 
                 afterSignOutUrl="https://www.thebettinginsider.com"
+                userProfileMode="navigation"
+                userProfileUrl="https://dashboard.thebettinginsider.com/manage-subscription"
                 appearance={{
                   baseTheme: undefined,
                   variables: {
