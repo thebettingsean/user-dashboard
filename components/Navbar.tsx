@@ -1035,7 +1035,7 @@ export default function Navbar() {
                         <line x1="2" y1="10" x2="22" y2="10"/>
                       </svg>
                     }
-                    onClick={() => window.open('https://billing.stripe.com/p/login/cN2eYg15W3W77rW288', '_blank')}
+                    onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/manage-subscription'}
                   />
                 </UserButton.MenuItems>
               </UserButton>
