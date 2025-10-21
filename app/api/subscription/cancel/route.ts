@@ -244,46 +244,68 @@ async function handleSubmitReasons(
   reasons: string[],
   otherText: string
 ) {
-  // Update Supabase with reasons
-  const { data: existingFeedback } = await supabaseFunnel
-    .from('cancellation_feedback')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('subscription_id', subscription.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  try {
+    const startDate = (subscription as any).start_date || Math.floor(Date.now() / 1000)
+    const tenureDays = Math.floor((Date.now() / 1000 - startDate) / 86400)
 
-  if (existingFeedback) {
-    await supabaseFunnel
+    // Update Supabase with reasons
+    const { data: existingFeedback, error: selectError } = await supabaseFunnel
       .from('cancellation_feedback')
-      .update({
+      .select('id')
+      .eq('user_id', userId)
+      .eq('subscription_id', subscription.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error('Error fetching existing feedback:', selectError)
+    }
+
+    if (existingFeedback) {
+      const { error: updateError } = await supabaseFunnel
+        .from('cancellation_feedback')
+        .update({
+          reason_codes: reasons,
+          reason_other_text: otherText || null,
+          final_offer_shown: true,
+        })
+        .eq('id', existingFeedback.id)
+      
+      if (updateError) {
+        console.error('Error updating feedback:', updateError)
+        throw new Error('Failed to save cancellation reasons')
+      }
+    } else {
+      const { error: insertError } = await supabaseFunnel.from('cancellation_feedback').insert({
+        user_id: userId,
+        user_email: email,
+        clerk_user_id: userId,
+        subscription_id: subscription.id,
+        subscription_tenure_days: tenureDays,
+        is_legacy_user: false,
+        was_on_trial: subscription.status === 'trialing',
         reason_codes: reasons,
         reason_other_text: otherText || null,
+        first_offer_accepted: false,
         final_offer_shown: true,
+        cancellation_completed: false,
       })
-      .eq('id', existingFeedback.id)
-  } else {
-    await supabaseFunnel.from('cancellation_feedback').insert({
-      user_id: userId,
-      user_email: email,
-      clerk_user_id: userId,
-      subscription_id: subscription.id,
-      subscription_tenure_days: Math.floor((Date.now() / 1000 - subscription.start_date) / 86400),
-      is_legacy_user: false,
-      was_on_trial: subscription.status === 'trialing',
-      reason_codes: reasons,
-      reason_other_text: otherText || null,
-      first_offer_accepted: false,
-      final_offer_shown: true,
-      cancellation_completed: false,
-    })
-  }
 
-  return NextResponse.json({
-    success: true,
-    message: 'Reasons submitted'
-  })
+      if (insertError) {
+        console.error('Error inserting feedback:', insertError)
+        throw new Error('Failed to save cancellation reasons')
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Reasons submitted'
+    })
+  } catch (error: any) {
+    console.error('Submit reasons error:', error)
+    return NextResponse.json({ error: error.message || 'Failed to submit reasons' }, { status: 500 })
+  }
 }
 
 async function handleAcceptFinalOffer(
