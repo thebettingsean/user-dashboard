@@ -957,8 +957,33 @@ export default function Navbar() {
 
           <div className="auth-section">
             {isSignedIn ? (
-              <UserButton afterSignOutUrl="https://www.thebettinginsider.com">
+              <UserButton 
+                afterSignOutUrl="https://www.thebettinginsider.com"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10",
+                    userButtonPopoverCard: "bg-slate-900 border border-white/20 shadow-xl",
+                    userButtonPopoverActionButton: "text-white hover:bg-white/10",
+                    userButtonPopoverActionButtonText: "text-white",
+                    userButtonPopoverActionButtonIcon: "text-white",
+                    userButtonPopoverFooter: "hidden",
+                    userPreviewTextContainer: "text-white",
+                    userPreviewMainIdentifier: "text-white font-semibold",
+                    userPreviewSecondaryIdentifier: "text-gray-300"
+                  }
+                }}
+              >
                 <UserButton.MenuItems>
+                  <UserButton.Link
+                    label="Home"
+                    labelIcon={
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      </svg>
+                    }
+                    href="https://dashboard.thebettinginsider.com"
+                  />
                   <UserButton.Link
                     label="Manage Subscription"
                     labelIcon={
