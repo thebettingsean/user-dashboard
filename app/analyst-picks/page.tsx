@@ -459,8 +459,8 @@ export default function AnalystPicksPage() {
 
     return (
       <div key={pickId} style={pickClass}>
-        <div style={styles.pickMain} onClick={() => togglePick(pickId)}>
-          <div style={styles.pickTitleInfo}>
+        <div style={styles.pickMain} className="analyst-picks-pick-main" onClick={() => togglePick(pickId)}>
+          <div style={styles.pickTitleInfo} className="analyst-picks-pick-title-info">
             <span style={styles.unitBadge} className="analyst-picks-unit-badge">{pick.units}u</span>
             <span style={hasAccessToPick ? styles.pickTitle : styles.pickTitleLocked} className="analyst-picks-pick-title">
               {truncatedTitle}
@@ -471,8 +471,8 @@ export default function AnalystPicksPage() {
               )}
             </span>
           </div>
-          <div style={styles.pickOddsRow}>
-            <span style={styles.oddsText}>{pick.odds} • {pick.sportsbook}</span>
+          <div style={styles.pickOddsRow} className="analyst-picks-pick-odds-row">
+            <span style={styles.oddsText} className="analyst-picks-odds-text">{pick.odds} • {pick.sportsbook}</span>
             {resultBadge}
             <div style={{ ...styles.dropdownArrow, transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
@@ -484,7 +484,7 @@ export default function AnalystPicksPage() {
 
         {isExpanded && (
           <div style={styles.pickDropdown}>
-            <div style={styles.pickDropdownContent}>
+            <div style={styles.pickDropdownContent} className="analyst-picks-pick-dropdown-content">
               <div style={styles.pickTitleFull}>{fullTitle}</div>
               {tags.length > 0 && (
                 <div style={styles.pickTags}>{tags}</div>
@@ -492,14 +492,14 @@ export default function AnalystPicksPage() {
               <div style={styles.divider} />
               
               {hasAccessToPick ? (
-                <div style={styles.analysisText}>{pick.analysis}</div>
+                <div style={styles.analysisText} className="analyst-picks-analysis-text">{pick.analysis}</div>
               ) : (
                 <div style={styles.analysisLocked}>
                   <svg style={styles.lockIconLarge} viewBox="0 0 24 24">
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" fill="#f59e0b"/>
                   </svg>
                   <span>🔒 Premium Analysis Locked</span>
-                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://thebettinginsider.com/pricing', '_blank') }}>
+                  <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { e.stopPropagation(); window.open('https://thebettinginsider.com/pricing', '_blank') }}>
                     Unlock Now
                   </button>
                 </div>
@@ -509,7 +509,7 @@ export default function AnalystPicksPage() {
                 <div style={styles.bettorAttribution}>— {pick.bettor_name}</div>
               )}
 
-              <div style={styles.pickMeta}>
+              <div style={styles.pickMeta} className="analyst-picks-pick-meta">
                 <div style={styles.metaItem}>Posted {timeAgo(pick.posted_at)}</div>
                 <div style={styles.metaItem}>Goes live at {formatGameTime(pick.game_time)}</div>
               </div>
@@ -831,75 +831,129 @@ export default function AnalystPicksPage() {
   return (
     <>
       <style jsx>{`
-        @media (max-width: 767px) {
+        @media (max-width: 768px) {
+          :global(.analyst-picks-page) {
+            padding: 8rem 1rem 2rem !important;
+          }
           :global(.analyst-picks-container) {
             padding: 0 !important;
-          }
-          :global(.analyst-picks-page) {
-            padding: 8rem 0.75rem 2rem !important;
+            max-width: 100% !important;
           }
           :global(.analyst-picks-title) {
-            font-size: 1.75rem !important;
+            font-size: 1.5rem !important;
           }
           :global(.analyst-picks-subtitle) {
-            font-size: 0.85rem !important;
+            font-size: 0.8rem !important;
           }
           :global(.analyst-picks-filters) {
-            gap: 0.75rem !important;
-            padding: 0 0.5rem !important;
+            gap: 0.5rem !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            padding: 0 !important;
           }
           :global(.analyst-picks-filter-dropdown) {
-            flex: 1 !important;
-            min-width: 145px !important;
-            max-width: 180px !important;
+            width: 100% !important;
+            max-width: 300px !important;
+            margin: 0 auto !important;
           }
           :global(.analyst-picks-filter-button) {
-            padding: 0.45rem 0.65rem !important;
-            font-size: 0.75rem !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.8rem !important;
           }
           :global(.analyst-picks-date-bar) {
-            padding: 0 0.5rem !important;
+            padding: 0.4rem !important;
+            margin-bottom: 1rem !important;
           }
           :global(.analyst-picks-month-label) {
-            padding: 0.45rem 0.65rem !important;
+            padding: 0.4rem 0.6rem !important;
             font-size: 0.75rem !important;
           }
           :global(.analyst-picks-bettor-section) {
-            padding: 1rem 0.75rem !important;
+            padding: 1rem !important;
             margin-bottom: 1.5rem !important;
           }
           :global(.analyst-picks-bettor-name) {
-            font-size: 0.95rem !important;
+            font-size: 0.9rem !important;
+          }
+          :global(.analyst-picks-bettor-record) {
+            font-size: 0.65rem !important;
           }
           :global(.analyst-picks-pick-title) {
             font-size: 0.75rem !important;
           }
           :global(.analyst-picks-unit-badge) {
-            padding: 0.2rem 0.45rem !important;
+            padding: 0.2rem 0.4rem !important;
             font-size: 0.7rem !important;
           }
           :global(.analyst-picks-odds-text) {
             font-size: 0.7rem !important;
           }
+          :global(.analyst-picks-pick-main) {
+            padding: 0.6rem 0 !important;
+          }
+          :global(.analyst-picks-pick-title-info) {
+            gap: 0.3rem !important;
+          }
+          :global(.analyst-picks-pick-odds-row) {
+            gap: 0.5rem !important;
+          }
           :global(.analyst-picks-pick-dropdown-content) {
-            padding: 0.75rem 0.5rem !important;
+            padding: 0.75rem 0.25rem !important;
+          }
+          :global(.analyst-picks-pick-meta) {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          :global(.analyst-picks-analysis-text) {
+            font-size: 0.75rem !important;
+            line-height: 1.4 !important;
+            max-height: 150px !important;
+          }
+          :global(.analyst-picks-unlock-button) {
+            width: 100% !important;
+            justify-content: center !important;
           }
           :global(.analyst-picks-cta-card) {
             padding: 1.5rem 1rem !important;
-            margin: 2rem 0.5rem !important;
+            margin: 2rem 0 !important;
           }
           :global(.analyst-picks-cta-title) {
-            font-size: 1.15rem !important;
+            font-size: 1.1rem !important;
+          }
+          :global(.analyst-picks-cta-subtitle) {
+            font-size: 0.85rem !important;
           }
           :global(.analyst-picks-footer) {
-            padding: 0 0.5rem !important;
+            padding: 0 !important;
+            margin-top: 2rem !important;
           }
           :global(.analyst-picks-footer-title) {
-            font-size: 0.9rem !important;
+            font-size: 0.85rem !important;
           }
           :global(.analyst-picks-footer-text) {
             font-size: 0.75rem !important;
             line-height: 1.4 !important;
+          }
+          :global(.analyst-picks-modal-content) {
+            padding: 1.5rem !important;
+            margin: 1rem !important;
+          }
+          :global(.analyst-picks-modal-title) {
+            font-size: 1.3rem !important;
+          }
+          :global(.analyst-picks-modal-subtitle) {
+            font-size: 0.85rem !important;
+          }
+          :global(.analyst-picks-consensus-filters) {
+            flex-direction: column !important;
+            width: 100% !important;
+          }
+          :global(.analyst-picks-consensus-filter-button) {
+            width: 100% !important;
+          }
+          :global(.analyst-picks-consensus-stats) {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
           }
         }
       `}</style>
@@ -1030,15 +1084,16 @@ export default function AnalystPicksPage() {
       {/* Consensus Modal */}
       {consensusModalOpen && (
         <div style={styles.modal} onClick={closeConsensusModal}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modalContent} className="analyst-picks-modal-content" onClick={(e) => e.stopPropagation()}>
             <button style={styles.modalClose} onClick={closeConsensusModal}>×</button>
             
-            <h2 style={styles.modalTitle}>🤝 Consensus Picks Performance</h2>
+            <h2 style={styles.modalTitle} className="analyst-picks-modal-title">🤝 Consensus Picks Performance</h2>
 
-            <div style={styles.consensusFilters}>
+            <div style={styles.consensusFilters} className="analyst-picks-consensus-filters">
               <div style={{ position: 'relative' }}>
                 <button 
                   style={styles.consensusFilterButton}
+                  className="analyst-picks-consensus-filter-button"
                   onClick={() => setConsensusSportDropdownOpen(!consensusSportDropdownOpen)}
                 >
                   <span>{consensusSportFilter}</span>
@@ -1070,6 +1125,7 @@ export default function AnalystPicksPage() {
               <div style={{ position: 'relative' }}>
                 <button 
                   style={styles.consensusFilterButton}
+                  className="analyst-picks-consensus-filter-button"
                   onClick={() => setConsensusTimeDropdownOpen(!consensusTimeDropdownOpen)}
                 >
                   <span>
@@ -1111,7 +1167,7 @@ export default function AnalystPicksPage() {
               </div>
             </div>
 
-            <div style={styles.consensusStats}>
+            <div style={styles.consensusStats} className="analyst-picks-consensus-stats">
               <div style={styles.consensusStatItem}>
                 <div style={styles.consensusStatNumber}>
                   {consensusStats.wins}-{consensusStats.losses}{consensusStats.pushes > 0 ? `-${consensusStats.pushes}` : ''}
