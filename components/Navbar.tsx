@@ -960,16 +960,43 @@ export default function Navbar() {
               <UserButton 
                 afterSignOutUrl="https://www.thebettinginsider.com"
                 appearance={{
+                  baseTheme: undefined,
+                  variables: {
+                    colorBackground: "#0f172a",
+                    colorText: "#ffffff",
+                    colorTextSecondary: "#d1d5db",
+                    colorInputBackground: "#1e293b",
+                    colorInputText: "#ffffff"
+                  },
                   elements: {
                     avatarBox: "w-10 h-10",
-                    userButtonPopoverCard: "bg-slate-900 border border-white/20 shadow-xl",
-                    userButtonPopoverActionButton: "text-white hover:bg-white/10",
-                    userButtonPopoverActionButtonText: "text-white",
-                    userButtonPopoverActionButtonIcon: "text-white",
-                    userButtonPopoverFooter: "hidden",
-                    userPreviewTextContainer: "text-white",
-                    userPreviewMainIdentifier: "text-white font-semibold",
-                    userPreviewSecondaryIdentifier: "text-gray-300"
+                    userButtonPopoverCard: {
+                      backgroundColor: "#0f172a",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                    },
+                    userButtonPopoverActionButton: {
+                      color: "#ffffff",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)"
+                      }
+                    },
+                    userButtonPopoverActionButtonText: {
+                      color: "#ffffff"
+                    },
+                    userButtonPopoverActionButtonIcon: {
+                      color: "#ffffff"
+                    },
+                    userButtonPopoverFooter: {
+                      display: "none"
+                    },
+                    userPreviewMainIdentifier: {
+                      color: "#ffffff",
+                      fontWeight: "600"
+                    },
+                    userPreviewSecondaryIdentifier: {
+                      color: "#d1d5db"
+                    }
                   }
                 }}
               >
