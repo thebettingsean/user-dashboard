@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia'
+  apiVersion: '2025-09-30.clover'
 })
 
 // Legacy price IDs that get "All Access" treatment
@@ -119,9 +119,9 @@ export async function POST(request: NextRequest) {
       tier: tier,
       type: type,
       status: activeSubscription.status,
-      current_period_end: activeSubscription.current_period_end,
+      current_period_end: (activeSubscription as any).current_period_end,
       is_legacy: isLegacy,
-      cancel_at_period_end: activeSubscription.cancel_at_period_end,
+      cancel_at_period_end: (activeSubscription as any).cancel_at_period_end,
       price_id: priceId
     }
 
