@@ -478,9 +478,9 @@ export default function Navbar() {
           top: 90px;
           left: 0;
           right: 0;
-          background: rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(350px) saturate(250%);
-          -webkit-backdrop-filter: blur(350px) saturate(250%);
+          background: rgba(10, 20, 35, 0.95);
+          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
+          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
           border-bottom: none;
           max-height: 0;
           overflow: hidden;
@@ -521,9 +521,9 @@ export default function Navbar() {
         }
 
         .mobile-dropdown {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(320px) saturate(250%);
-          -webkit-backdrop-filter: blur(320px) saturate(250%);
+          background: rgba(5, 15, 30, 0.96);
+          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
+          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -566,9 +566,9 @@ export default function Navbar() {
 
         /* Mobile dashboard sub-dropdown */
         .mobile-dashboard-subdropdown {
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(350px) saturate(250%);
-          -webkit-backdrop-filter: blur(350px) saturate(250%);
+          background: rgba(3, 10, 25, 0.97);
+          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
+          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.3s;
@@ -612,6 +612,9 @@ export default function Navbar() {
           grid-template-columns: repeat(2, 1fr);
           gap: 0.75rem;
           padding: 1rem;
+          background: rgba(5, 15, 30, 0.96);
+          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
+          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
         }
 
         .mobile-premium-card {
@@ -671,9 +674,9 @@ export default function Navbar() {
           padding: 0 !important;
           display: flex !important;
           flex-direction: column !important;
-          background: rgba(255, 255, 255, 0.1) !important;
-          backdrop-filter: blur(320px) saturate(250%) !important;
-          -webkit-backdrop-filter: blur(320px) saturate(250%) !important;
+          background: rgba(5, 15, 30, 0.96) !important;
+          backdrop-filter: blur(500px) saturate(300%) brightness(1.1) !important;
+          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1) !important;
           margin: 0 !important;
         }
 
