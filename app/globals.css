@@ -36,6 +36,23 @@ body {
   overflow-x: hidden;
 }
 
+/* Force Clerk custom menu items to be white */
+[data-clerk-component] button[role="menuitem"] {
+  color: #ffffff !important;
+}
+
+[data-clerk-component] button[role="menuitem"] span {
+  color: #ffffff !important;
+}
+
+[data-clerk-component] [class*="userButton"] [class*="menuItem"] {
+  color: #ffffff !important;
+}
+
+[data-clerk-component] [class*="userButton"] [class*="menuItem"] * {
+  color: #ffffff !important;
+}
+
 /* Floating orbs - only visible on main dashboard */
 .dashboard-orbs::before,
 .dashboard-orbs::after {
