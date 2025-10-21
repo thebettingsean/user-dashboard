@@ -36,20 +36,31 @@ body {
   overflow-x: hidden;
 }
 
-/* Force Clerk custom menu items to be white */
-[data-clerk-component] button[role="menuitem"] {
+/* Force Clerk custom menu items to be white - AGGRESSIVE */
+/* Target all possible Clerk menu item elements */
+.cl-userButtonPopover button,
+.cl-userButtonPopover button *,
+.cl-menuItem,
+.cl-menuItem *,
+.cl-menuList button,
+.cl-menuList button *,
+[class*="cl-"] [role="menuitem"],
+[class*="cl-"] [role="menuitem"] *,
+div[class*="userButton"] button[role="menuitem"],
+div[class*="userButton"] button[role="menuitem"] *,
+div[class*="userButton"] [class*="menuItem"],
+div[class*="userButton"] [class*="menuItem"] * {
   color: #ffffff !important;
 }
 
-[data-clerk-component] button[role="menuitem"] span {
+/* Extra nuclear option - force all text in Clerk popover to white */
+.cl-userButtonPopover * {
   color: #ffffff !important;
 }
 
-[data-clerk-component] [class*="userButton"] [class*="menuItem"] {
-  color: #ffffff !important;
-}
-
-[data-clerk-component] [class*="userButton"] [class*="menuItem"] * {
+/* Specific targeting for custom links */
+.cl-internal-b3fm6y,
+.cl-internal-b3fm6y * {
   color: #ffffff !important;
 }
 
