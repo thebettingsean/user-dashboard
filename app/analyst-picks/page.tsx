@@ -832,24 +832,41 @@ export default function AnalystPicksPage() {
     <>
       <style jsx>{`
         @media (max-width: 768px) {
+          :global(body) {
+            overflow-x: hidden !important;
+          }
           :global(.analyst-picks-page) {
             padding: 8rem 1rem 2rem !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box !important;
           }
           :global(.analyst-picks-container) {
             padding: 0 !important;
             max-width: 100% !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box !important;
           }
           :global(.analyst-picks-title) {
             font-size: 1.5rem !important;
+            text-align: center !important;
+            word-wrap: break-word !important;
+            max-width: 100% !important;
           }
           :global(.analyst-picks-subtitle) {
             font-size: 0.8rem !important;
+            text-align: center !important;
+            word-wrap: break-word !important;
+            max-width: 100% !important;
           }
           :global(.analyst-picks-filters) {
             gap: 0.5rem !important;
             flex-direction: column !important;
             width: 100% !important;
             padding: 0 !important;
+            box-sizing: border-box !important;
           }
           :global(.analyst-picks-filter-dropdown) {
             width: 100% !important;
@@ -871,6 +888,10 @@ export default function AnalystPicksPage() {
           :global(.analyst-picks-bettor-section) {
             padding: 1rem !important;
             margin-bottom: 1.5rem !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
           }
           :global(.analyst-picks-bettor-name) {
             font-size: 0.9rem !important;
@@ -880,22 +901,36 @@ export default function AnalystPicksPage() {
           }
           :global(.analyst-picks-pick-title) {
             font-size: 0.75rem !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-unit-badge) {
             padding: 0.2rem 0.4rem !important;
             font-size: 0.7rem !important;
+            flex-shrink: 0 !important;
           }
           :global(.analyst-picks-odds-text) {
             font-size: 0.7rem !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
           }
           :global(.analyst-picks-pick-main) {
             padding: 0.6rem 0 !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
           }
           :global(.analyst-picks-pick-title-info) {
             gap: 0.3rem !important;
+            flex: 1 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
           }
           :global(.analyst-picks-pick-odds-row) {
             gap: 0.5rem !important;
+            flex-shrink: 0 !important;
+            overflow: visible !important;
           }
           :global(.analyst-picks-pick-dropdown-content) {
             padding: 0.75rem 0.25rem !important;
@@ -916,23 +951,32 @@ export default function AnalystPicksPage() {
           :global(.analyst-picks-cta-card) {
             padding: 1.5rem 1rem !important;
             margin: 2rem 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-cta-title) {
             font-size: 1.1rem !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-cta-subtitle) {
             font-size: 0.85rem !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-footer) {
             padding: 0 !important;
             margin-top: 2rem !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
           }
           :global(.analyst-picks-footer-title) {
             font-size: 0.85rem !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-footer-text) {
             font-size: 0.75rem !important;
             line-height: 1.4 !important;
+            word-wrap: break-word !important;
           }
           :global(.analyst-picks-modal-content) {
             padding: 1.5rem !important;
