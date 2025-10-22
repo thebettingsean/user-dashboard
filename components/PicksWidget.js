@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import GlassSurface from './GlassSurface'
 
 export default function PicksWidget() {
   const [picks, setPicks] = useState([])
@@ -36,64 +37,75 @@ export default function PicksWidget() {
 
   return (
     <a href="https://dashboard.thebettinginsider.com/analyst-picks" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
-      <div style={widgetStyle}>
-        <div style={iconWrapper}>
-          <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 
-               style={{ width: '36px', height: '36px' }} />
-        </div>
-        
-        <h2 style={titleStyle}>
-          Our Bets Today
-          <span style={dateTag}>{today}</span>
-        </h2>
-        <p style={taglineStyle}>Top spots from the Insider team</p>
-        
-        {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
-        ) : (
-          <div style={{ flex: 1 }}>
-            <div style={hottestBettor ? sectionStyle : {...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
-              <h4 style={sectionTitle}>Most at Risk</h4>
-              {topUnitsPicks.map(pick => (
-                <div key={pick.id} style={pickItemStyle}>
-                  <span style={unitsStyle}>{pick.units}u</span>
-                  <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
-                </div>
-              ))}
-            </div>
-
-            {hottestBettor && (
-              <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
-                <h4 style={sectionTitle}>
-                  Hottest: {hottestBettor.bettors?.name} ({hottestBettor.bettors?.record})
-                </h4>
-                {hottestBettorPicks.map(pick => (
+      <GlassSurface
+        width="100%"
+        height="auto"
+        borderRadius={24}
+        displace={8}
+        distortionScale={-150}
+        redOffset={3}
+        greenOffset={8}
+        blueOffset={15}
+        brightness={55}
+        opacity={0.85}
+        blur={12}
+        className="picks-widget-glass"
+      >
+        <div style={widgetContentStyle}>
+          <div style={iconWrapper}>
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 
+                 style={{ width: '36px', height: '36px' }} />
+          </div>
+          
+          <h2 style={titleStyle}>
+            Our Bets Today
+            <span style={dateTag}>{today}</span>
+          </h2>
+          <p style={taglineStyle}>Top spots from the Insider team</p>
+          
+          {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>Loading...</div>
+          ) : (
+            <div style={{ flex: 1 }}>
+              <div style={hottestBettor ? sectionStyle : {...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+                <h4 style={sectionTitle}>Most at Risk</h4>
+                {topUnitsPicks.map(pick => (
                   <div key={pick.id} style={pickItemStyle}>
                     <span style={unitsStyle}>{pick.units}u</span>
                     <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              {hottestBettor && (
+                <div style={{...sectionStyle, borderBottom: 'none', paddingBottom: '1rem'}}>
+                  <h4 style={sectionTitle}>
+                    Hottest: {hottestBettor.bettors?.name} ({hottestBettor.bettors?.record})
+                  </h4>
+                  {hottestBettorPicks.map(pick => (
+                    <div key={pick.id} style={pickItemStyle}>
+                      <span style={unitsStyle}>{pick.units}u</span>
+                      <span style={{ fontSize: '0.8rem' }}>{pick.bet_title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </GlassSurface>
     </a>
   )
 }
 
-const widgetStyle = {
-  background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-  backdropFilter: 'blur(50px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-  border: 'none',
-  borderRadius: '24px',
+const widgetContentStyle = {
   padding: '1.5rem',
   position: 'relative',
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+  width: '100%',
+  height: '100%',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 
