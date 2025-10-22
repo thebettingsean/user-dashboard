@@ -77,9 +77,13 @@ export async function POST(request: NextRequest) {
       })
 
       for (const subscription of subscriptions.data) {
-        // Only include active, trialing, or recently cancelled subscriptions
+        // Only include active, trialing, past_due, paused, or recently cancelled subscriptions
+        const isPaused = (subscription as any).pause_collection !== null && (subscription as any).pause_collection !== undefined
+        const isCanceling = (subscription as any).cancel_at_period_end === true
+        
         if (['active', 'trialing', 'past_due'].includes(subscription.status) || 
-            (subscription.status === 'canceled' && (subscription as any).cancel_at_period_end)) {
+            isCanceling || 
+            isPaused) {
           
           const priceItem = subscription.items.data[0]
           const price = priceItem.price
@@ -121,8 +125,10 @@ export async function POST(request: NextRequest) {
             type: type,
             status: subscription.status,
             current_period_end: (subscription as any).current_period_end,
+            cancel_at: (subscription as any).cancel_at || null,
             is_legacy: isLegacy,
-            cancel_at_period_end: (subscription as any).cancel_at_period_end || false,
+            cancel_at_period_end: isCanceling,
+            is_paused: isPaused,
             price_id: priceId
           }
 

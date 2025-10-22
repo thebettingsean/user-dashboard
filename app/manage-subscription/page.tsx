@@ -13,8 +13,10 @@ interface SubscriptionData {
   type: string
   status: string
   current_period_end: number
+  cancel_at: number | null
   is_legacy: boolean
   cancel_at_period_end: boolean
+  is_paused: boolean
   price_id: string
 }
 
@@ -76,10 +78,72 @@ export default function ManageSubscriptionPage() {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const getStatusColor = (status: string, cancelAtPeriodEnd: boolean) => {
-    if (cancelAtPeriodEnd) return '#ef4444' // red
-    if (status === 'active' || status === 'trialing') return '#10b981' // green
-    return '#f59e0b' // orange
+  const getStatusColor = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean) => {
+    if (cancelAtPeriodEnd) return '#ef4444' // red - canceling
+    if (isPaused) return '#f59e0b' // orange - paused
+    if (status === 'active' || status === 'trialing') return '#10b981' // green - active
+    return '#f59e0b' // orange - other
+  }
+
+  const getStatusLabel = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean, cancelAt: number | null) => {
+    if (isPaused) return 'Paused'
+    if (cancelAtPeriodEnd && cancelAt) {
+      const cancelDate = new Date(cancelAt * 1000).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+      return `Expires ${cancelDate}`
+    }
+    if (status === 'active') return 'Active'
+    if (status === 'trialing') return 'Trial'
+    return status
+  }
+
+  const handleReactivate = async (subId: string) => {
+    try {
+      const response = await fetch('/api/subscription/reactivate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user?.id,
+          subscriptionId: subId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reactivate subscription')
+      }
+
+      // Reload subscriptions
+      await loadSubscriptions()
+      alert('✅ Subscription reactivated successfully!')
+    } catch (err: any) {
+      alert(`Error: ${err.message || 'Failed to reactivate subscription'}`)
+    }
+  }
+
+  const handleUnpause = async (subId: string) => {
+    try {
+      const response = await fetch('/api/subscription/unpause', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user?.id,
+          subscriptionId: subId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to unpause subscription')
+      }
+
+      // Reload subscriptions
+      await loadSubscriptions()
+      alert('✅ Subscription resumed successfully!')
+    } catch (err: any) {
+      alert(`Error: ${err.message || 'Failed to unpause subscription'}`)
+    }
   }
 
   if (!isLoaded || loading) {
@@ -131,7 +195,8 @@ export default function ManageSubscriptionPage() {
         <div style={styles.subscriptionsContainer}>
           {subscriptions.map((sub) => {
             const isExpanded = expandedId === sub.id
-            const statusColor = getStatusColor(sub.status, sub.cancel_at_period_end)
+            const statusColor = getStatusColor(sub.status, sub.cancel_at_period_end, sub.is_paused)
+            const statusLabel = getStatusLabel(sub.status, sub.cancel_at_period_end, sub.is_paused, sub.cancel_at)
             
             return (
               <div key={sub.id} style={styles.subCard}>
@@ -143,6 +208,9 @@ export default function ManageSubscriptionPage() {
                   <div style={styles.subHeaderLeft}>
                     <div style={{...styles.statusDot, background: statusColor}} />
                     <span style={styles.subName}>{sub.product_name}</span>
+                    <span style={{...styles.statusBadge, color: statusColor, borderColor: statusColor}}>
+                      {statusLabel}
+                    </span>
                     {sub.is_legacy && (
                       <span style={styles.legacyBadge}>Grandfathered</span>
                     )}
@@ -188,53 +256,100 @@ export default function ManageSubscriptionPage() {
                           }) : 'N/A'}
                       </span>
                     </div>
-                    {sub.cancel_at_period_end && (
-                      <div style={styles.cancelNotice}>
-                        Your subscription is scheduled to cancel at the end of this period
-                      </div>
-                    )}
-
-                    {/* Quick Actions */}
+                    {/* Quick Actions - Conditional based on state */}
                     <div style={styles.quickActions}>
-                      <button
-                        style={styles.actionBtn}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/manage-subscription/upgrade?sub=${sub.id}`)
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 19V5M5 12l7-7 7 7"/>
-                        </svg>
-                        Upgrade
-                      </button>
-                      <button
-                        style={{...styles.actionBtn, ...styles.actionBtnCancel}}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/manage-subscription/cancel?sub=${sub.id}`)
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"/>
-                          <line x1="15" y1="9" x2="9" y2="15"/>
-                          <line x1="9" y1="9" x2="15" y2="15"/>
-                        </svg>
-                        Cancel
-                      </button>
-                      <button
-                        style={{...styles.actionBtn, ...styles.actionBtnPause}}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/manage-subscription/pause?sub=${sub.id}`)
-                        }}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="6" y="4" width="4" height="16"/>
-                          <rect x="14" y="4" width="4" height="16"/>
-                        </svg>
-                        Pause
-                      </button>
+                      {/* CANCELING STATE: Show Reactivate Only */}
+                      {sub.cancel_at_period_end && !sub.is_paused && (
+                        <>
+                          <div style={styles.cancelNotice}>
+                            Your subscription will expire on {sub.cancel_at ? 
+                              new Date(sub.cancel_at * 1000).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric'
+                              }) : 'N/A'}
+                          </div>
+                          <button
+                            style={{...styles.actionBtn, ...styles.actionBtnReactivate}}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleReactivate(sub.id)
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="23 4 23 10 17 10"/>
+                              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Reactivate Subscription
+                          </button>
+                        </>
+                      )}
+
+                      {/* PAUSED STATE: Show Unpause Only */}
+                      {sub.is_paused && (
+                        <>
+                          <div style={styles.pauseNotice}>
+                            Your subscription is currently paused
+                          </div>
+                          <button
+                            style={{...styles.actionBtn, ...styles.actionBtnUnpause}}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleUnpause(sub.id)
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            Resume Subscription
+                          </button>
+                        </>
+                      )}
+
+                      {/* ACTIVE STATE: Show All Options */}
+                      {!sub.cancel_at_period_end && !sub.is_paused && (
+                        <>
+                          <button
+                            style={styles.actionBtn}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/manage-subscription/upgrade?sub=${sub.id}`)
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 19V5M5 12l7-7 7 7"/>
+                            </svg>
+                            Upgrade
+                          </button>
+                          <button
+                            style={{...styles.actionBtn, ...styles.actionBtnCancel}}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/manage-subscription/cancel?sub=${sub.id}`)
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <line x1="15" y1="9" x2="9" y2="15"/>
+                              <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            Cancel
+                          </button>
+                          <button
+                            style={{...styles.actionBtn, ...styles.actionBtnPause}}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/manage-subscription/pause?sub=${sub.id}`)
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="6" y="4" width="4" height="16"/>
+                              <rect x="14" y="4" width="4" height="16"/>
+                            </svg>
+                            Pause
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -340,6 +455,14 @@ const styles = {
     fontSize: '1rem',
     fontWeight: '700'
   },
+  statusBadge: {
+    padding: '0.2rem 0.5rem',
+    borderRadius: '4px',
+    fontSize: '0.7rem',
+    fontWeight: '600',
+    border: '1px solid',
+    background: 'transparent'
+  },
   legacyBadge: {
     background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
     color: '#fff',
@@ -379,11 +502,23 @@ const styles = {
     textAlign: 'center' as const,
     color: '#fca5a5',
     fontWeight: '600',
-    fontSize: '0.8rem'
+    fontSize: '0.8rem',
+    marginBottom: '0.75rem'
+  },
+  pauseNotice: {
+    background: 'rgba(245, 158, 11, 0.1)',
+    border: '1px solid rgba(245, 158, 11, 0.3)',
+    padding: '0.75rem',
+    borderRadius: '6px',
+    textAlign: 'center' as const,
+    color: '#fbbf24',
+    fontWeight: '600',
+    fontSize: '0.8rem',
+    marginBottom: '0.75rem'
   },
   quickActions: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    display: 'flex',
+    flexDirection: 'column' as const,
     gap: '0.75rem',
     marginTop: '0.5rem'
   },
@@ -411,6 +546,18 @@ const styles = {
     background: 'rgba(245, 158, 11, 0.2)',
     border: '1px solid rgba(245, 158, 11, 0.4)',
     color: '#fbbf24'
+  },
+  actionBtnReactivate: {
+    background: 'rgba(16, 185, 129, 0.2)',
+    border: '1px solid rgba(16, 185, 129, 0.4)',
+    color: '#10b981',
+    width: '100%'
+  },
+  actionBtnUnpause: {
+    background: 'rgba(16, 185, 129, 0.2)',
+    border: '1px solid rgba(16, 185, 129, 0.4)',
+    color: '#10b981',
+    width: '100%'
   },
   backButton: {
     background: 'rgba(255, 255, 255, 0.1)',
