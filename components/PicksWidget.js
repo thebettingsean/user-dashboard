@@ -35,8 +35,20 @@ export default function PicksWidget() {
     picks.filter(p => p.bettors?.name === hottestBettor.bettors?.name).slice(0, 2) : []
 
   return (
-    <a href="https://dashboard.thebettinginsider.com/analyst-picks" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
-      <div style={widgetStyle}>
+    <>
+      <style jsx>{`
+        .widget-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+        }
+        @media (min-width: 768px) {
+          .widget-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5) !important;
+          }
+        }
+      `}</style>
+      <a href="https://dashboard.thebettinginsider.com/analyst-picks" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+        <div style={widgetStyle} className="widget-hover">
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg" 
                style={{ width: '36px', height: '36px' }} />
@@ -78,7 +90,8 @@ export default function PicksWidget() {
           </div>
         )}
       </div>
-    </a>
+      </a>
+    </>
   )
 }
 
@@ -91,7 +104,8 @@ const widgetStyle = {
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
   
-  border: 'none', // No border at all
+  // Ultra-thin barely visible outline
+  border: '0.5px solid rgba(255, 255, 255, 0.08)',
   
   borderRadius: '24px',
   padding: '1.5rem',
@@ -100,10 +114,8 @@ const widgetStyle = {
   display: 'flex',
   flexDirection: 'column',
   
-  // Subtle shadow for depth (no inset highlight)
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-  
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  // Subtle shadow for depth
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
 }
 
 const iconWrapper = {

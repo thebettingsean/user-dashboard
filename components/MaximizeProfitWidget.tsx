@@ -4,11 +4,23 @@ import Link from 'next/link'
 
 export default function MaximizeProfitWidget() {
   return (
-    <Link 
-      href="/maximize-profit"
-      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-    >
-      <div style={widgetStyle}>
+    <>
+      <style jsx>{`
+        .widget-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+        }
+        @media (min-width: 768px) {
+          .widget-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5) !important;
+          }
+        }
+      `}</style>
+      <Link 
+        href="/maximize-profit"
+        style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+      >
+        <div style={widgetStyle} className="widget-hover">
         <div style={iconWrapper}>
           <img 
             src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5587d5070371cf5332631_MAXIMIZE%20PROFIT!.svg" 
@@ -48,7 +60,8 @@ export default function MaximizeProfitWidget() {
           </button>
         </div>
       </div>
-    </Link>
+      </Link>
+    </>
   )
 }
 
@@ -57,15 +70,14 @@ const widgetStyle = {
   background: 'rgba(255, 255, 255, 0.05)', // Only 5% fill opacity
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-  border: 'none', // No border at all
+  border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
   borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column' as const,
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
 }
 
 const iconWrapper = {
