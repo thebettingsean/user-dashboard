@@ -218,10 +218,8 @@ export default function Navbar() {
                               style={styles.premiumIcon}
                             />
                           </div>
-                          <div>
-                            <h3 style={styles.premiumLabel}>{feature.label}</h3>
-                            <p style={styles.premiumDescription}>{feature.description}</p>
-                          </div>
+                          <h3 style={styles.premiumLabel}>{feature.label}</h3>
+                          <p style={styles.premiumDescription}>{feature.description}</p>
                         </Link>
                       ))}
                     </div>
@@ -580,8 +578,11 @@ const styles = {
 
   premiumCard: {
     display: 'flex',
-    gap: '12px',
-    padding: '12px',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    textAlign: 'center' as const,
+    gap: '8px',
+    padding: '16px 12px',
     borderRadius: '12px',
     background: 'rgba(255, 255, 255, 0.03)',
     transition: 'all 0.2s ease',
@@ -590,9 +591,9 @@ const styles = {
   },
 
   premiumIconWrapper: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
+    width: '48px',
+    height: '48px',
+    borderRadius: '10px',
     background: 'rgba(0, 0, 0, 0.2)',
     display: 'flex',
     alignItems: 'center',
@@ -601,22 +602,23 @@ const styles = {
   },
 
   premiumIcon: {
-    width: '24px',
-    height: '24px',
+    width: '28px',
+    height: '28px',
     objectFit: 'contain' as const
   },
 
   premiumLabel: {
-    fontSize: '0.875rem',
+    fontSize: '0.9rem',
     fontWeight: '600',
-    marginBottom: '4px',
+    margin: '0',
     color: '#ffffff'
   },
 
   premiumDescription: {
     fontSize: '0.75rem',
     color: 'rgba(255, 255, 255, 0.6)',
-    lineHeight: '1.3'
+    lineHeight: '1.3',
+    margin: '0'
   },
 
   freeToolsGrid: {
