@@ -1410,13 +1410,15 @@ const styles = {
     transition: 'all 0.3s ease'
   },
   filtersContainer: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '20px',
     padding: '1.25rem',
     marginBottom: '1.5rem',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     position: 'relative' as const,
     zIndex: 100,
     width: '100%',
@@ -1529,9 +1531,11 @@ const styles = {
     zIndex: 1
   },
   playerRow: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '12px',
     padding: '0.75rem 0.875rem',
     display: 'flex',
@@ -1539,13 +1543,15 @@ const styles = {
     justifyContent: 'space-between',
     cursor: 'pointer',
     transition: 'all 0.2s',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     overflow: 'hidden'
   },
   playerRowLocked: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '12px',
     padding: '0.75rem 0.875rem',
     display: 'flex',
@@ -1553,7 +1559,7 @@ const styles = {
     justifyContent: 'space-between',
     cursor: 'pointer',
     transition: 'all 0.2s',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     position: 'relative' as const,
     opacity: 0.7,
     overflow: 'hidden'
@@ -1666,9 +1672,11 @@ const modalStyles = {
     padding: '1rem'
   },
   content: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '24px',
     padding: '2rem',
     maxWidth: '90%',
@@ -1676,7 +1684,7 @@ const modalStyles = {
     maxHeight: '85vh',
     overflowY: 'auto' as const,
     position: 'relative' as const,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
   },
   close: {
     position: 'absolute' as const,
