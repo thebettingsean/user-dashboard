@@ -9,6 +9,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [dashboardSubOpen, setDashboardSubOpen] = useState(false)
+  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null)
 
   const premiumFeatures = [
     {
@@ -119,6 +120,21 @@ export default function Navbar() {
     }
   ]
 
+  const handleMouseEnter = (itemId: string) => {
+    if (closeTimeout) {
+      clearTimeout(closeTimeout)
+      setCloseTimeout(null)
+    }
+    setOpenDropdown(itemId)
+  }
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setOpenDropdown(null)
+    }, 200) // 200ms delay before closing
+    setCloseTimeout(timeout)
+  }
+
   return (
     <>
       <style jsx>{`
@@ -173,16 +189,16 @@ export default function Navbar() {
             <div
               key={item.id}
               style={styles.desktopNavButton}
-              onMouseEnter={() => setOpenDropdown(item.id)}
-              onMouseLeave={() => setOpenDropdown(null)}
+              onMouseEnter={() => handleMouseEnter(item.id)}
+              onMouseLeave={handleMouseLeave}
             >
               <span style={styles.desktopNavButtonText}>{item.label.split(' ')[0].toUpperCase()}</span>
               
               {openDropdown === item.id && (
                 <div 
                   style={styles.dropdown}
-                  onMouseEnter={() => setOpenDropdown(item.id)}
-                  onMouseLeave={() => setOpenDropdown(null)}
+                  onMouseEnter={() => handleMouseEnter(item.id)}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {item.type === 'premium' && (
                     <div style={styles.premiumGrid}>
@@ -515,7 +531,7 @@ const styles = {
   },
 
   desktopLogo: {
-    height: '40px', // Adjusted for slimmer navbar
+    height: '48px', // Increased logo size
     width: 'auto',
     cursor: 'pointer'
   },
@@ -536,7 +552,7 @@ const styles = {
 
   dropdown: {
     position: 'absolute' as const,
-    top: 'calc(100% + 15px)',
+    top: 'calc(100% + 8px)', // Reduced gap for easier hovering
     left: '0', // Align left to prevent cutoff
     // PROPER GLASSMORPHISM:
     background: 'rgba(255, 255, 255, 0.05)',
@@ -743,7 +759,7 @@ const styles = {
   },
 
   mobileLogo: {
-    height: '36px', // Adjusted for tighter spacing
+    height: '44px', // Increased logo size
     width: 'auto'
   },
 
