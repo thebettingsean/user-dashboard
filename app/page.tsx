@@ -133,20 +133,20 @@ export default function Home() {
         top: 0, 
         left: 0, 
         width: '100%', 
-        height: '100%', 
-        zIndex: -1,
-        opacity: 0.75, // Increased opacity so it's visible
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: 'none',
         display: 'none' // Hidden by default (mobile)
       }} className="darkveil-wrapper">
         <DarkVeil 
-          speed={0.6}
+          speed={0.8}
           hueShift={210}
-          noiseIntensity={0.03}
-          warpAmount={0.5}
+          noiseIntensity={0.05}
+          warpAmount={0.6}
         />
       </div>
 
-      <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative' }}>
+      <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         {/* Floating orbs - can be removed if DarkVeil replaces them */}
         <div className="orb-3"></div>
         <div className="orb-4"></div>
