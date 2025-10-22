@@ -174,7 +174,7 @@ const widgetStyle = {
   background: 'rgba(255, 255, 255, 0.05)', // Only 5% fill opacity
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-  border: '1px solid rgba(255, 255, 255, 0.18)', // Thin bright border
+  border: '0.5px solid rgba(255, 255, 255, 0.1)', // Ultra-thin subtle border
   borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,
