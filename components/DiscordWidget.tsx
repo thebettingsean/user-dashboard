@@ -102,18 +102,7 @@ export default function DiscordWidget() {
 
   return (
     <>
-      <style jsx>{`
-        .widget-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
-        }
-        @media (min-width: 768px) {
-          .widget-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5) !important;
-          }
-        }
-      `}</style>
-      <div style={widgetStyle} className="widget-hover">
+      <div style={widgetStyle}>
         {showSuccess && (
           <div style={successBannerStyle}>
           ✓ Discord Connected Successfully!
@@ -172,8 +161,7 @@ export default function DiscordWidget() {
           {isConnected ? 'Manage Notifications' : 'Connect Discord'}
         </button>
       </div>
-      </div>
-    </>
+    </div>
   )
 }
 

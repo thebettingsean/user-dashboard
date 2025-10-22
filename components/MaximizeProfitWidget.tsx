@@ -5,22 +5,11 @@ import Link from 'next/link'
 export default function MaximizeProfitWidget() {
   return (
     <>
-      <style jsx>{`
-        .widget-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
-        }
-        @media (min-width: 768px) {
-          .widget-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5) !important;
-          }
-        }
-      `}</style>
       <Link 
         href="/maximize-profit"
         style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
       >
-        <div style={widgetStyle} className="widget-hover">
+        <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img 
             src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5587d5070371cf5332631_MAXIMIZE%20PROFIT!.svg" 
@@ -60,8 +49,7 @@ export default function MaximizeProfitWidget() {
           </button>
         </div>
       </div>
-      </Link>
-    </>
+    </Link>
   )
 }
 

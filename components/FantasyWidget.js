@@ -136,19 +136,8 @@ export default function FantasyWidget() {
 
   return (
     <>
-      <style jsx>{`
-        .widget-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
-        }
-        @media (min-width: 768px) {
-          .widget-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.5) !important;
-          }
-        }
-      `}</style>
       <a href="/fantasy" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
-        <div style={widgetStyle} className="widget-hover">
+        <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ddef5da02a4861948acc74_3.svg" 
                style={{ width: '36px', height: '36px' }} />
@@ -199,8 +188,7 @@ export default function FantasyWidget() {
           </div>
         )}
       </div>
-      </a>
-    </>
+    </a>
   )
 }
 
