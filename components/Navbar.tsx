@@ -93,6 +93,14 @@ export default function Navbar() {
     { label: 'The Weekly Report', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg' }
   ]
 
+  const hqLinks = [
+    { label: 'Your Dashboard', href: 'https://dashboard.thebettinginsider.com' },
+    { label: 'Contact Us', href: 'https://thebettinginsider.com/contact-us' },
+    { label: 'Company', href: 'https://thebettinginsider.com/insider-company' },
+    { label: 'Articles', href: 'https://thebettinginsider.com/insider-blog' },
+    { label: 'FAQ\'s', href: 'https://thebettinginsider.com/insider-faqs' }
+  ]
+
   const navItems = [
     {
       id: 'premium',
@@ -106,7 +114,7 @@ export default function Navbar() {
     },
     {
       id: 'hq',
-      label: 'Insider HQ',
+      label: 'HQ',
       type: 'hq'
     }
   ]
@@ -171,7 +179,11 @@ export default function Navbar() {
               <span style={styles.desktopNavButtonText}>{item.label.split(' ')[0].toUpperCase()}</span>
               
               {openDropdown === item.id && (
-                <div style={styles.dropdown}>
+                <div 
+                  style={styles.dropdown}
+                  onMouseEnter={() => setOpenDropdown(item.id)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
                   {item.type === 'premium' && (
                     <div style={styles.premiumGrid}>
                       {premiumFeatures.map((feature, idx) => (
@@ -217,36 +229,15 @@ export default function Navbar() {
 
                   {item.type === 'hq' && (
                     <div style={styles.hqDropdown}>
-                      <div
-                        style={styles.hqItem}
-                        onMouseEnter={() => setDashboardSubOpen(true)}
-                        onMouseLeave={() => setDashboardSubOpen(false)}
-                      >
-                        <Link href="https://dashboard.thebettinginsider.com" style={styles.hqLink}>
-                          Your Dashboard
+                      {hqLinks.map((link, idx) => (
+                        <Link
+                          key={idx}
+                          href={link.href}
+                          style={styles.hqLink}
+                        >
+                          {link.label}
                         </Link>
-                        
-                        {dashboardSubOpen && (
-                          <div style={styles.hqSubDropdown}>
-                            <div style={styles.hqSubHeader}>Quick jump to...</div>
-                            {dashboardLinks.map((link, idx) => (
-                              <Link
-                                key={idx}
-                                href={link.href}
-                                style={styles.hqSubLink}
-                              >
-                                {link.label}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <Link href="https://dashboard.thebettinginsider.com/maximize-profit" style={styles.hqLink}>
-                        Maximize Profit Guide
-                      </Link>
-                      <Link href="https://thebettinginsider.com/pricing" style={styles.hqLink}>
-                        Pricing
-                      </Link>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -262,10 +253,36 @@ export default function Navbar() {
           ) : isSignedIn ? (
             <UserButton
               appearance={{
+                baseTheme: undefined,
+                variables: {
+                  colorBackground: '#1e293b',
+                  colorInputBackground: '#0f172a',
+                  colorText: '#ffffff',
+                  colorTextSecondary: 'rgba(255, 255, 255, 0.7)',
+                  colorPrimary: '#3b82f6',
+                  colorDanger: '#ef4444'
+                },
                 elements: {
                   userButtonAvatarBox: {
                     width: '42px',
                     height: '42px'
+                  },
+                  card: {
+                    backgroundColor: '#1e293b',
+                    color: '#ffffff'
+                  },
+                  userButtonPopoverCard: {
+                    backgroundColor: '#1e293b',
+                    color: '#ffffff'
+                  },
+                  userButtonPopoverActions: {
+                    color: '#ffffff'
+                  },
+                  userButtonPopoverActionButton: {
+                    color: '#ffffff'
+                  },
+                  userButtonPopoverActionButtonText: {
+                    color: '#ffffff'
                   }
                 }
               }}
@@ -340,10 +357,36 @@ export default function Navbar() {
             ) : isSignedIn ? (
               <UserButton
                 appearance={{
+                  baseTheme: undefined,
+                  variables: {
+                    colorBackground: '#1e293b',
+                    colorInputBackground: '#0f172a',
+                    colorText: '#ffffff',
+                    colorTextSecondary: 'rgba(255, 255, 255, 0.7)',
+                    colorPrimary: '#3b82f6',
+                    colorDanger: '#ef4444'
+                  },
                   elements: {
                     userButtonAvatarBox: {
                       width: '36px',
                       height: '36px'
+                    },
+                    card: {
+                      backgroundColor: '#1e293b',
+                      color: '#ffffff'
+                    },
+                    userButtonPopoverCard: {
+                      backgroundColor: '#1e293b',
+                      color: '#ffffff'
+                    },
+                    userButtonPopoverActions: {
+                      color: '#ffffff'
+                    },
+                    userButtonPopoverActionButton: {
+                      color: '#ffffff'
+                    },
+                    userButtonPopoverActionButtonText: {
+                      color: '#ffffff'
                     }
                   }
                 }}
@@ -480,7 +523,7 @@ const styles = {
   },
 
   desktopLogo: {
-    height: '28px',
+    height: '56px', // Double the size
     width: 'auto',
     cursor: 'pointer'
   },
@@ -502,8 +545,7 @@ const styles = {
   dropdown: {
     position: 'absolute' as const,
     top: 'calc(100% + 15px)',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    left: '0', // Align left to prevent cutoff
     // PROPER GLASSMORPHISM:
     background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(30px) saturate(180%)',
@@ -518,9 +560,9 @@ const styles = {
 
   premiumGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
+    gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns for proper layout
     gap: '12px',
-    minWidth: '500px'
+    minWidth: '650px'
   },
 
   premiumCard: {
@@ -709,7 +751,7 @@ const styles = {
   },
 
   mobileLogo: {
-    height: '24px',
+    height: '48px', // Double the size
     width: 'auto'
   },
 
