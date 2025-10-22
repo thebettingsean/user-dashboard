@@ -1311,7 +1311,7 @@ export default function AnalystPicksPage() {
 const styles = {
   page: {
     minHeight: '100vh',
-    padding: '10rem 1rem 2rem',
+    padding: '120px 1rem 2rem', // Top padding for floating navbar
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     width: '100%',

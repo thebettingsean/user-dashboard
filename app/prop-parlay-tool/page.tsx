@@ -678,7 +678,7 @@ function formatBookName(name: string) {
 const styles = {
   wrapper: {
     minHeight: '100vh',
-    padding: '1.5rem 1rem',
+    padding: '120px 1rem 1.5rem 1rem', // Top padding for floating navbar
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     position: 'relative' as const
   },

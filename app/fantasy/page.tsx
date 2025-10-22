@@ -1288,7 +1288,7 @@ function getPosBadgeStyle(position: string) {
 const styles = {
   page: {
     minHeight: '100vh',
-    padding: '10rem 0.75rem 2rem 0.75rem',
+    padding: '120px 0.75rem 2rem 0.75rem', // Top padding for floating navbar
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     width: '100%',

@@ -680,7 +680,7 @@ function Section({ id, title, color, isExpanded, onToggle, children }: SectionPr
 const styles = {
   page: {
     minHeight: '100vh',
-    padding: '8rem 1rem 2rem 1rem',
+    padding: '120px 1rem 2rem 1rem', // Top padding for floating navbar
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     color: '#ffffff',
     background: 'transparent',

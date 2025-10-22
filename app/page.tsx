@@ -177,7 +177,7 @@ export default function Home() {
         }
       `}</style>
 
-      <div style={{ padding: '1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ padding: '120px 1rem 1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
       <div style={{ 
         marginBottom: '2rem',
         padding: '0.5rem 0',
