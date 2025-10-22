@@ -71,17 +71,21 @@ export default function NewsWidget() {
 }
 
 const widgetStyle = {
-  background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-  backdropFilter: 'blur(50px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-  border: 'none',
+  // PROPER GLASSMORPHISM:
+  background: 'rgba(255, 255, 255, 0.05)', // Only 5% fill opacity
+  backdropFilter: 'blur(30px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+  border: '1px solid rgba(255, 255, 255, 0.18)', // Thin bright border
   borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative' as const,
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column' as const,
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+  boxShadow: `
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1)
+  `,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 
