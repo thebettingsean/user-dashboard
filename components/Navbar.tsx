@@ -535,9 +535,10 @@ const styles = {
   },
 
   desktopLogo: {
-    height: '48px', // Increased logo size
+    height: '60px', // Much bigger logo
     width: 'auto',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    marginRight: '24px' // Extra spacing after logo
   },
 
   desktopNavButton: {
@@ -764,7 +765,7 @@ const styles = {
   },
 
   mobileLogo: {
-    height: '44px', // Increased logo size
+    height: '56px', // Much bigger logo
     width: 'auto'
   },
 
