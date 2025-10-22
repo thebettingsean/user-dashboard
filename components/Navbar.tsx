@@ -129,7 +129,7 @@ export default function Navbar() {
           right: 0;
           z-index: 1000;
           display: flex;
-          justify-content: space-between;
+          justify-content: center; /* Center the navbar */
         }
         
         .mobile-nav {
@@ -157,10 +157,10 @@ export default function Navbar() {
         }
       `}</style>
 
-      {/* DESKTOP NAVBAR - Two floating sections */}
+      {/* DESKTOP NAVBAR - One centered bar */}
       <nav className="desktop-nav">
-        {/* LEFT FLOATING SECTION - Logo + Nav Items */}
-        <div style={styles.desktopLeftSection}>
+        {/* ONE CENTERED SECTION - Logo + Nav Items + Clerk */}
+        <div style={styles.desktopCenterSection}>
           <Link href={isSignedIn ? 'https://dashboard.thebettinginsider.com' : 'https://www.thebettinginsider.com'}>
             <img
               src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
@@ -244,10 +244,9 @@ export default function Navbar() {
               )}
             </div>
           ))}
-        </div>
 
-        {/* RIGHT FLOATING SECTION - User Button */}
-        <div style={styles.desktopRightSection}>
+          {/* Clerk Profile INSIDE the navbar */}
+          <div style={styles.desktopClerkWrapper}>
           {!isLoaded ? (
             <div style={styles.authLoading}>...</div>
           ) : isSignedIn ? (
@@ -262,11 +261,11 @@ export default function Navbar() {
                   colorPrimary: '#3b82f6',
                   colorDanger: '#ef4444'
                 },
-                elements: {
-                  userButtonAvatarBox: {
-                    width: '42px',
-                    height: '42px'
-                  },
+                  elements: {
+                    userButtonAvatarBox: {
+                      width: '36px',
+                      height: '36px'
+                    },
                   card: {
                     backgroundColor: '#1e293b',
                     color: '#ffffff'
@@ -324,6 +323,7 @@ export default function Navbar() {
               </button>
             </SignInButton>
           )}
+          </div>
         </div>
       </nav>
 
@@ -492,38 +492,30 @@ export default function Navbar() {
 
 const styles = {
   // DESKTOP STYLES
-  desktopLeftSection: {
+  desktopCenterSection: {
     // PROPER GLASSMORPHISM:
     background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(30px) saturate(180%)',
     WebkitBackdropFilter: 'blur(30px) saturate(180%)',
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-    borderRadius: '20px',
-    padding: '12px 20px',
-    marginLeft: '30px',
+    borderRadius: '60px', // More pill-shaped
+    padding: '8px 24px', // Reduced vertical padding (was 12px)
+    margin: '0 auto', // Center the bar
+    maxWidth: 'fit-content',
     display: 'flex',
     alignItems: 'center',
-    gap: '20px'
+    gap: '16px' // Reduced gap between items
   },
 
-  desktopRightSection: {
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-    borderRadius: '50%',
-    padding: '6px',
-    marginLeft: 'auto',
-    marginRight: '30px',
+  desktopClerkWrapper: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginLeft: '8px' // Small gap before Clerk button
   },
 
   desktopLogo: {
-    height: '56px', // Double the size
+    height: '40px', // Adjusted for slimmer navbar
     width: 'auto',
     cursor: 'pointer'
   },
@@ -531,7 +523,7 @@ const styles = {
   desktopNavButton: {
     position: 'relative' as const,
     cursor: 'pointer',
-    padding: '8px 16px',
+    padding: '6px 14px', // Reduced padding
     transition: 'all 0.2s ease'
   },
 
@@ -726,7 +718,7 @@ const styles = {
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
     borderRadius: '20px',
-    padding: '12px 20px',
+    padding: '8px 16px', // Reduced padding (was 12px 20px)
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between'
@@ -751,7 +743,7 @@ const styles = {
   },
 
   mobileLogo: {
-    height: '48px', // Double the size
+    height: '36px', // Adjusted for tighter spacing
     width: 'auto'
   },
 
