@@ -135,7 +135,7 @@ export default function Home() {
         width: '100%', 
         height: '100%', 
         zIndex: -1,
-        opacity: 0.4, // Reduced opacity
+        opacity: 0.75, // Increased opacity so it's visible
         display: 'none' // Hidden by default (mobile)
       }} className="darkveil-wrapper">
         <DarkVeil 
