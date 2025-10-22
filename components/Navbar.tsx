@@ -121,17 +121,20 @@ export default function Navbar() {
   ]
 
   const handleMouseEnter = (itemId: string) => {
+    // Clear any pending close timeout
     if (closeTimeout) {
       clearTimeout(closeTimeout)
       setCloseTimeout(null)
     }
+    // Open immediately (no delay)
     setOpenDropdown(itemId)
   }
 
   const handleMouseLeave = () => {
+    // Delay closing to allow smooth transition to dropdown
     const timeout = setTimeout(() => {
       setOpenDropdown(null)
-    }, 200) // 200ms delay before closing
+    }, 150) // 150ms delay before closing
     setCloseTimeout(timeout)
   }
 
@@ -516,9 +519,10 @@ const styles = {
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
     borderRadius: '60px', // More pill-shaped
-    padding: '8px 24px', // Reduced vertical padding (was 12px)
+    padding: '4px 24px', // Slim vertical padding
     margin: '0 auto', // Center the bar
     maxWidth: 'fit-content',
+    height: '54px', // Fixed height for slim navbar
     display: 'flex',
     alignItems: 'center',
     gap: '16px' // Reduced gap between items
@@ -734,7 +738,8 @@ const styles = {
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
     borderRadius: '20px',
-    padding: '8px 16px', // Reduced padding (was 12px 20px)
+    padding: '4px 16px', // Slim vertical padding
+    height: '52px', // Fixed height for slim navbar
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between'
