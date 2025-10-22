@@ -82,7 +82,6 @@ export default function Navbar() {
     }
   ]
 
-  // Dashboard quick jump links - order matches the widgets on the dashboard
   const dashboardLinks = [
     { label: 'Home', href: 'https://dashboard.thebettinginsider.com', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg' },
     { label: 'Analyst Picks', href: 'https://dashboard.thebettinginsider.com/analyst-picks', icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e2f7f68a9d80033122_1.svg' },
@@ -98,954 +97,281 @@ export default function Navbar() {
     {
       id: 'premium',
       label: 'Premium Features',
-      href: '#',
       type: 'premium'
     },
     {
-      id: 'free-tools',
+      id: 'tools',
       label: 'Free Tools',
-      href: '#',
       type: 'free-tools'
     },
     {
-      id: 'insider-hq',
+      id: 'hq',
       label: 'Insider HQ',
-      href: '#',
-      dropdown: [
-        { label: 'Your Dashboard', href: 'https://dashboard.thebettinginsider.com', hasSubDropdown: true },
-        { label: 'Contact Us', href: 'https://www.thebettinginsider.com/contact-us' },
-        { label: 'Articles', href: '#' },
-        { label: "FAQ's", href: 'https://www.thebettinginsider.com/insider-faq' },
-        { label: 'About', href: 'https://www.thebettinginsider.com/insider-company' },
-        { label: 'Pricing', href: 'https://www.thebettinginsider.com/pricing' }
-      ]
+      type: 'hq'
     }
   ]
 
   return (
     <>
       <style jsx>{`
-        .navbar-content {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 1rem 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-        }
-
-        .logo-container {
-          display: flex;
-          align-items: center;
-        }
-
-        .logo {
-          height: 85px;
-          width: auto;
-          cursor: pointer;
-        }
-
-        .hamburger {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 8px;
-          margin-right: 1rem;
-        }
-
-        .hamburger span {
-          width: 24px;
-          height: 2px;
-          background: white;
-          transition: all 0.3s;
-        }
-
         .desktop-nav {
-          display: none;
-          gap: 2rem;
-          align-items: center;
-          flex: 1;
-          margin-left: 3rem;
-        }
-
-        .nav-item {
-          position: relative;
-          color: #ffffff;
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: color 0.2s, background 0.2s;
-          cursor: pointer;
-          white-space: nowrap;
-          padding: 0.5rem 0.75rem;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          gap: 0.3rem;
-        }
-
-        .nav-item:hover {
-          color: rgba(255, 255, 255, 0.9);
-          background: rgba(255, 255, 255, 0.06);
-        }
-
-        .nav-item.has-dropdown::after {
-          content: '▼';
-          margin-left: 0.3rem;
-          font-size: 0.65rem;
-          opacity: 0.6;
-        }
-
-        .dropdown {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          margin-top: 0.5rem;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(50px) saturate(180%);
-          -webkit-backdrop-filter: blur(50px) saturate(180%);
-          border: none;
-          border-radius: 16px;
-          padding: 0.75rem 0;
-          min-width: 220px;
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(-10px);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-item:hover .dropdown {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-
-        .premium-dropdown {
-          min-width: 550px;
-          padding: 1.5rem;
-        }
-
-        .premium-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-        }
-
-        .premium-card {
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
-          border: none;
-          border-radius: 16px;
-          padding: 0;
-          text-align: center;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          cursor: pointer;
-          text-decoration: none;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-        }
-
-        .premium-card:hover {
-          transform: translateY(-4px);
-          background: rgba(255, 255, 255, 0.12);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        }
-
-        .premium-card-icon-wrapper {
-          width: 100%;
-          height: 80px;
-          overflow: hidden;
-          border-radius: 16px 16px 0 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .premium-card-icon {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .premium-card-text {
-          padding: 0.6rem 0.75rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.35rem;
-          background: rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 0 0 16px 16px;
-        }
-
-        .premium-card-label {
-          color: white;
-          font-size: 0.8rem;
-          font-weight: 600;
-          margin: 0;
-          text-align: left;
-        }
-
-        .premium-card-description {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.7rem;
-          margin: 0;
-          text-align: left;
-        }
-
-        .free-tools-dropdown {
-          min-width: 520px;
-          padding: 1.25rem;
-        }
-
-        .free-tools-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-        }
-
-        .free-tool-item {
-          display: flex;
-          align-items: center;
-          gap: 2.5rem;
-          padding: 0.85rem 1.15rem;
-          color: white;
-          text-decoration: none;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 10px;
-          box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
-        }
-
-        .free-tool-item:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.15);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        .free-tool-icon {
-          width: 20px;
-          height: 20px;
-          object-fit: contain;
-          flex-shrink: 0;
-          margin-right: 1rem;
-          position: relative;
-          top: 4px;
-        }
-
-        .free-tool-label {
-          font-size: 0.875rem;
-          font-weight: 500;
-          line-height: 1.2;
-        }
-
-        .dropdown-item {
-          display: block;
-          padding: 0.75rem 1.25rem;
-          color: #ffffff;
-          text-decoration: none;
-          font-size: 0.85rem;
-          transition: all 0.2s;
-          position: relative;
-        }
-
-        .dropdown-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.8);
-        }
-
-        .dropdown-item.has-sub {
-          cursor: pointer;
-        }
-
-        .dropdown-item.has-sub:hover {
-          background: none !important;
-          text-decoration: underline;
-        }
-
-        /* Dashboard sub-dropdown */
-        .dashboard-subdropdown {
-          position: absolute;
-          left: 100%;
-          top: -0.75rem;
-          margin-left: 0.5rem;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(50px) saturate(180%);
-          -webkit-backdrop-filter: blur(50px) saturate(180%);
-          border: none;
-          border-radius: 16px;
-          padding: 0.75rem 0;
-          min-width: 220px;
-          opacity: 0;
-          visibility: hidden;
-          transform: translateX(-10px);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .dropdown-item.has-sub:hover .dashboard-subdropdown {
-          opacity: 1;
-          visibility: visible;
-          transform: translateX(0);
-        }
-
-        .subdropdown-header {
-          padding: 0.5rem 1.25rem;
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 0.7rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          margin-bottom: 0.25rem;
-        }
-
-        .subdropdown-item {
-          display: block;
-          padding: 0.75rem 1.25rem;
-          color: #ffffff;
-          text-decoration: none;
-          font-size: 0.85rem;
-          transition: all 0.2s;
-        }
-
-        .subdropdown-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.8);
-        }
-
-        .auth-section {
-          display: flex;
-          align-items: center;
-        }
-
-        .auth-section :global(.cl-userButtonBox) {
-          width: 45px;
-          height: 45px;
-        }
-
-        .auth-section :global(.cl-userButtonTrigger) {
-          width: 45px !important;
-          height: 45px !important;
-        }
-
-        .auth-section :global(.cl-avatarBox) {
-          width: 45px;
-          height: 45px;
-        }
-
-        .sign-in-button {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(12px) saturate(180%);
-          -webkit-backdrop-filter: blur(12px) saturate(180%);
-          border: 1.5px solid rgba(255, 255, 255, 0.2);
-          color: white;
-          padding: 0.65rem 1.75rem;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-
-        .sign-in-button:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .mobile-menu {
-          position: absolute;
-          top: 90px;
+          position: fixed;
+          top: 20px;
           left: 0;
           right: 0;
-          background: rgba(10, 20, 35, 0.95);
-          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          border-bottom: none;
-          max-height: 0;
-          overflow: hidden;
-          opacity: 0;
-          transform: translateY(-10px);
-          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 900;
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .mobile-menu.open {
-          max-height: 600px;
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        .mobile-nav-item {
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mobile-nav-link {
+          z-index: 1000;
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          padding: 1rem 1.5rem;
-          color: rgba(255, 255, 255, 0.8);
-          text-decoration: none;
-          font-weight: 500;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.2s;
         }
-
-        .mobile-nav-link:hover {
-          background: rgba(255, 255, 255, 0.03);
-          color: white;
-        }
-
-        .mobile-dropdown {
-          background: rgba(5, 15, 30, 0.96);
-          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.3s;
-        }
-
-        .mobile-dropdown.open {
-          max-height: 800px;
-          overflow-y: auto;
-        }
-
-        .mobile-dropdown-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.75rem 1.5rem 0.75rem 3rem;
-          color: rgba(255, 255, 255, 0.6);
-          text-decoration: none;
-          font-size: 0.9rem;
-          transition: all 0.2s;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mobile-dropdown-item:last-child {
-          border-bottom: none;
-        }
-
-        .mobile-dropdown-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
-        }
-
-        .mobile-dropdown-item.has-sub {
-          cursor: pointer;
-        }
-
-        .mobile-dropdown-item.has-sub:hover {
-          background: none !important;
-          text-decoration: underline;
-        }
-
-        /* Mobile dashboard sub-dropdown */
-        .mobile-dashboard-subdropdown {
-          background: rgba(3, 10, 25, 0.97);
-          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.3s;
-        }
-
-        .mobile-dashboard-subdropdown.open {
-          max-height: 600px;
-          overflow-y: auto;
-        }
-
-        .mobile-subdropdown-header {
-          padding: 0.75rem 1.5rem 0.5rem 4rem;
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 0.65rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .mobile-subdropdown-item {
-          display: block;
-          padding: 0.75rem 1.5rem 0.75rem 4rem;
-          color: rgba(255, 255, 255, 0.6);
-          text-decoration: none;
-          font-size: 0.7rem;
-          transition: all 0.2s;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mobile-subdropdown-item:last-child {
-          border-bottom: none;
-        }
-
-        .mobile-subdropdown-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
-        }
-
-        .mobile-premium-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-          padding: 1rem;
-          background: rgba(5, 15, 30, 0.96);
-          backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1);
-        }
-
-        .mobile-premium-card {
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
-          border: none;
-          border-radius: 12px;
-          overflow: hidden;
-          text-decoration: none;
+        
+        .mobile-nav {
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 1000;
+          width: calc(100% - 40px);
+          max-width: 500px;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .mobile-premium-card-icon-wrapper {
-          width: 100%;
-          height: 60px;
-          overflow: hidden;
-          border-radius: 8px 8px 0 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .mobile-premium-card-icon {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .mobile-premium-card-text {
-          padding: 0.5rem 0.6rem;
-          background: rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: 0 0 12px 12px;
-        }
-
-        .mobile-premium-card-label {
-          color: white;
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin: 0 0 0.25rem 0;
-        }
-
-        .mobile-premium-card-description {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.65rem;
-          margin: 0;
-        }
-
-        /* FIXED: Mobile Free Tools Dropdown - Match Insider HQ styling with !important overrides */
-        .mobile-free-tools-list {
-          padding: 0 !important;
-          display: flex !important;
-          flex-direction: column !important;
-          background: rgba(5, 15, 30, 0.96) !important;
-          backdrop-filter: blur(500px) saturate(300%) brightness(1.1) !important;
-          -webkit-backdrop-filter: blur(500px) saturate(300%) brightness(1.1) !important;
-          margin: 0 !important;
-        }
-
-        .mobile-dropdown .mobile-free-tool-item,
-        a.mobile-free-tool-item {
-          display: flex !important;
-          align-items: center !important;
-          gap: 0.75rem !important;
-          padding: 0.75rem 1.5rem 0.75rem 3rem !important;
-          color: rgba(255, 255, 255, 0.6) !important;
-          text-decoration: none !important;
-          font-size: 0.9rem !important;
-          transition: all 0.2s !important;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-          background: transparent !important;
-          margin: 0 !important;
-          line-height: 1.5 !important;
-        }
-
-        .mobile-dropdown .mobile-free-tool-item:last-child,
-        a.mobile-free-tool-item:last-child {
-          border-bottom: none !important;
-        }
-
-        .mobile-dropdown .mobile-free-tool-item:hover,
-        a.mobile-free-tool-item:hover {
-          background: rgba(255, 255, 255, 0.05) !important;
-          color: white !important;
-        }
-
-        .mobile-free-tool-icon {
-          width: 16px !important;
-          height: 16px !important;
-          object-fit: contain !important;
-          flex-shrink: 0 !important;
-          margin: 0 !important;
-        }
-
-        @media (min-width: 768px) {
-          .hamburger {
-            display: none;
-          }
-          
-          .desktop-nav {
-            display: flex;
-          }
-
-          .mobile-menu {
-            display: none;
-          }
-        }
-
+        
         @media (max-width: 767px) {
-          .navbar-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 0.75rem 1rem;
-          }
-
-          .hamburger {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            z-index: 10;
-            margin-right: 0;
-          }
-
-          .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-          }
-
-          .logo {
-            height: 36px;
-            width: auto;
-          }
-
-          .auth-section {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-          }
-
-          .auth-section :global(.cl-userButtonBox) {
-            width: 38px;
-            height: 38px;
-          }
-
-          .auth-section :global(.cl-userButtonTrigger) {
-            width: 38px !important;
-            height: 38px !important;
-          }
-
-          .auth-section :global(.cl-avatarBox) {
-            width: 38px;
-            height: 38px;
-          }
-
           .desktop-nav {
             display: none !important;
-            visibility: hidden;
-            height: 0;
-            overflow: hidden;
           }
-
-          .sign-in-button {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-          }
-
-          .navbar {
-            min-height: 75px;
-          }
-
-          .mobile-menu {
-            top: 80px;
-          }
-
-          .logo {
-            height: 55px;
+        }
+        
+        @media (min-width: 768px) {
+          .mobile-nav {
+            display: none !important;
           }
         }
       `}</style>
 
-      <nav 
-        className="navbar"
-        style={{
-          background: 'rgba(255, 255, 255, 0.08)',
-          borderBottom: '1.5px solid rgba(255, 255, 255, 0.15)',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          minHeight: '85px',
-          display: 'flex',
-          alignItems: 'center',
-          boxShadow: '0 4px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-          willChange: 'backdrop-filter',
-          transform: 'translateZ(0)'
-        }}
-      >
-        <div className="navbar-content">
+      {/* DESKTOP NAVBAR - Two floating sections */}
+      <nav className="desktop-nav">
+        {/* LEFT FLOATING SECTION - Logo + Nav Items */}
+        <div style={styles.desktopLeftSection}>
+          <Link href={isSignedIn ? 'https://dashboard.thebettinginsider.com' : 'https://www.thebettinginsider.com'}>
+            <img
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
+              alt="The Betting Insider"
+              style={styles.desktopLogo}
+            />
+          </Link>
+
+          {navItems.map(item => (
+            <div
+              key={item.id}
+              style={styles.desktopNavButton}
+              onMouseEnter={() => setOpenDropdown(item.id)}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <span style={styles.desktopNavButtonText}>{item.label.split(' ')[0].toUpperCase()}</span>
+              
+              {openDropdown === item.id && (
+                <div style={styles.dropdown}>
+                  {item.type === 'premium' && (
+                    <div style={styles.premiumGrid}>
+                      {premiumFeatures.map((feature, idx) => (
+                        <Link
+                          key={idx}
+                          href={feature.href}
+                          style={styles.premiumCard}
+                        >
+                          <div style={styles.premiumIconWrapper}>
+                            <img
+                              src={feature.icon}
+                              alt={feature.label}
+                              style={styles.premiumIcon}
+                            />
+                          </div>
+                          <div>
+                            <h3 style={styles.premiumLabel}>{feature.label}</h3>
+                            <p style={styles.premiumDescription}>{feature.description}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {item.type === 'free-tools' && (
+                    <div style={styles.freeToolsGrid}>
+                      {freeTools.map((tool, idx) => (
+                        <Link
+                          key={idx}
+                          href={tool.href}
+                          style={styles.freeToolItem}
+                        >
+                          <img
+                            src={tool.icon}
+                            alt={tool.label}
+                            style={styles.freeToolIcon}
+                          />
+                          <span style={styles.freeToolLabel}>{tool.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {item.type === 'hq' && (
+                    <div style={styles.hqDropdown}>
+                      <div
+                        style={styles.hqItem}
+                        onMouseEnter={() => setDashboardSubOpen(true)}
+                        onMouseLeave={() => setDashboardSubOpen(false)}
+                      >
+                        <Link href="https://dashboard.thebettinginsider.com" style={styles.hqLink}>
+                          Your Dashboard
+                        </Link>
+                        
+                        {dashboardSubOpen && (
+                          <div style={styles.hqSubDropdown}>
+                            <div style={styles.hqSubHeader}>Quick jump to...</div>
+                            {dashboardLinks.map((link, idx) => (
+                              <Link
+                                key={idx}
+                                href={link.href}
+                                style={styles.hqSubLink}
+                              >
+                                {link.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Link href="https://dashboard.thebettinginsider.com/maximize-profit" style={styles.hqLink}>
+                        Maximize Profit Guide
+                      </Link>
+                      <Link href="https://thebettinginsider.com/pricing" style={styles.hqLink}>
+                        Pricing
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* RIGHT FLOATING SECTION - User Button */}
+        <div style={styles.desktopRightSection}>
+          {!isLoaded ? (
+            <div style={styles.authLoading}>...</div>
+          ) : isSignedIn ? (
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: {
+                    width: '42px',
+                    height: '42px'
+                  }
+                }
+              }}
+            >
+              <UserButton.MenuItems>
+                <UserButton.Link
+                  label="Home"
+                  labelIcon={
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                  }
+                  href="https://dashboard.thebettinginsider.com"
+                />
+                <UserButton.Link
+                  label="Manage Subscription"
+                  labelIcon={
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
+                    </svg>
+                  }
+                  href="https://dashboard.thebettinginsider.com/manage-subscription"
+                />
+                <UserButton.Action
+                  label="View Pricing"
+                  labelIcon={
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                    </svg>
+                  }
+                  onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
+                />
+              </UserButton.MenuItems>
+            </UserButton>
+          ) : (
+            <SignInButton mode="modal">
+              <button style={styles.signInButton}>
+                Sign In
+              </button>
+            </SignInButton>
+          )}
+        </div>
+      </nav>
+
+      {/* MOBILE NAVBAR - One centered floating bar */}
+      <nav className="mobile-nav">
+        <div style={styles.mobileContainer}>
+          {/* Hamburger Menu */}
           <button
-            className="hamburger"
+            style={styles.hamburger}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            <span style={styles.hamburgerLine}></span>
+            <span style={styles.hamburgerLine}></span>
+            <span style={styles.hamburgerLine}></span>
           </button>
 
-          <div className="logo-container">
-            <Link href={isSignedIn ? 'https://dashboard.thebettinginsider.com' : 'https://www.thebettinginsider.com'}>
-              <img
-                src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
-                alt="The Betting Insider"
-                className="logo"
-              />
-            </Link>
-          </div>
+          {/* Logo */}
+          <Link href={isSignedIn ? 'https://dashboard.thebettinginsider.com' : 'https://www.thebettinginsider.com'}>
+            <img
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
+              alt="The Betting Insider"
+              style={styles.mobileLogo}
+            />
+          </Link>
 
-          <div className="desktop-nav">
-            {navItems.map(item => {
-              if (item.type === 'premium') {
-                return (
-                  <div key={item.id} className="nav-item has-dropdown">
-                    <span>{item.label}</span>
-                    <div className="dropdown premium-dropdown">
-                      <div className="premium-grid">
-                        {premiumFeatures.map((feature, idx) => (
-                          <Link
-                            key={idx}
-                            href={feature.href}
-                            className="premium-card"
-                          >
-                            <div className="premium-card-icon-wrapper">
-                              <img
-                                src={feature.icon}
-                                alt={feature.label}
-                                className="premium-card-icon"
-                              />
-                            </div>
-                            <div className="premium-card-text">
-                              <h3 className="premium-card-label">{feature.label}</h3>
-                              <p className="premium-card-description">{feature.description}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
-
-              if (item.type === 'free-tools') {
-                return (
-                  <div key={item.id} className="nav-item has-dropdown">
-                    <span>{item.label}</span>
-                    <div className="dropdown free-tools-dropdown">
-                      <div className="free-tools-grid">
-                        {freeTools.map((tool, idx) => (
-                          <Link
-                            key={idx}
-                            href={tool.href}
-                            className="free-tool-item"
-                          >
-                            <img
-                              src={tool.icon}
-                              alt={tool.label}
-                              className="free-tool-icon"
-                            />
-                            <span className="free-tool-label">{tool.label}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
-
-              if (item.dropdown) {
-                return (
-                  <div key={item.id} className="nav-item has-dropdown">
-                    <span>{item.label}</span>
-                    <div className="dropdown">
-                      {item.dropdown.map((dropItem, idx) => {
-                        if (dropItem.hasSubDropdown) {
-                          return (
-                            <div
-                              key={idx}
-                              className="dropdown-item has-sub"
-                            >
-                              {dropItem.label}
-                              <div className="dashboard-subdropdown">
-                                <div className="subdropdown-header">Quick jump to...</div>
-                                {dashboardLinks.map((link, linkIdx) => (
-                                  <Link
-                                    key={linkIdx}
-                                    href={link.href}
-                                    className="subdropdown-item"
-                                  >
-                                    {link.label}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        }
-                        return (
-                          <Link
-                            key={idx}
-                            href={dropItem.href}
-                            className="dropdown-item"
-                          >
-                            {dropItem.label}
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              }
-
-              return null
-            })}
-          </div>
-
-          <div className="auth-section">
-            {isSignedIn ? (
-              <UserButton 
-                afterSignOutUrl="https://www.thebettinginsider.com"
-                userProfileProps={{
-                  additionalOAuthScopes: {},
-                }}
+          {/* User Button / Sign In */}
+          <div style={styles.mobileAuth}>
+            {!isLoaded ? (
+              <div style={styles.authLoading}>...</div>
+            ) : isSignedIn ? (
+              <UserButton
                 appearance={{
-                  baseTheme: undefined,
-                  variables: {
-                    colorBackground: "#0f172a",
-                    colorText: "#ffffff",
-                    colorTextSecondary: "#d1d5db",
-                    colorInputBackground: "#1e293b",
-                    colorInputText: "#ffffff"
-                  },
                   elements: {
-                    avatarBox: "w-10 h-10",
-                    userButtonPopoverCard: {
-                      backgroundColor: "#0f172a",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                    },
-                    userButtonPopoverActionButton: {
-                      color: "#ffffff",
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.1)"
-                      }
-                    },
-                    userButtonPopoverActionButtonText: {
-                      color: "#ffffff"
-                    },
-                    userButtonPopoverActionButtonIcon: {
-                      color: "#ffffff"
-                    },
-                    userButtonPopoverFooter: {
-                      display: "none"
-                    },
-                    userPreviewMainIdentifier: {
-                      color: "#ffffff",
-                      fontWeight: "600"
-                    },
-                    userPreviewSecondaryIdentifier: {
-                      color: "#d1d5db"
-                    },
-                    userButtonPopoverActionButtonIconBox: {
-                      color: "#ffffff"
-                    },
-                    userButtonPopoverActionButtonIconBox__manageAccount: {
-                      color: "#ffffff"
-                    },
-                    // Custom menu items styling
-                    menuItem: {
-                      color: "#ffffff"
-                    },
-                    menuItemText: {
-                      color: "#ffffff"
-                    },
-                    menuItemIcon: {
-                      color: "#ffffff"
+                    userButtonAvatarBox: {
+                      width: '36px',
+                      height: '36px'
                     }
                   }
                 }}
               >
                 <UserButton.MenuItems>
-                  <UserButton.Action 
+                  <UserButton.Link
                     label="Home"
                     labelIcon={
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
                       </svg>
                     }
-                    onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com'}
+                    href="https://dashboard.thebettinginsider.com"
                   />
-                  <UserButton.Action
+                  <UserButton.Link
                     label="Manage Subscription"
                     labelIcon={
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="5" width="20" height="14" rx="2"/>
-                        <line x1="2" y1="10" x2="22" y2="10"/>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/>
                       </svg>
                     }
-                    onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/manage-subscription'}
+                    href="https://dashboard.thebettinginsider.com/manage-subscription"
                   />
                   <UserButton.Action
                     label="View Pricing"
                     labelIcon={
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"/>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
                       </svg>
                     }
                     onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
@@ -1054,159 +380,411 @@ export default function Navbar() {
               </UserButton>
             ) : (
               <SignInButton mode="modal">
-                <button className="sign-in-button">Sign In / Up</button>
+                <button style={styles.mobileSignInButton}>
+                  Sign In
+                </button>
               </SignInButton>
             )}
           </div>
         </div>
 
-        <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-          {navItems.map(item => (
-            <div key={item.id} className="mobile-nav-item">
-              {item.type === 'premium' ? (
-                <>
-                  <div
-                    className="mobile-nav-link"
-                    onClick={() =>
-                      setOpenDropdown(openDropdown === item.id ? null : item.id)
-                    }
-                  >
-                    <span>{item.label}</span>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-                      {openDropdown === item.id ? '▲' : '▼'}
-                    </span>
-                  </div>
-                  <div
-                    className={`mobile-dropdown ${
-                      openDropdown === item.id ? 'open' : ''
-                    }`}
-                  >
-                    <div className="mobile-premium-grid">
-                      {premiumFeatures.map((feature, idx) => (
-                        <Link
-                          key={idx}
-                          href={feature.href}
-                          className="mobile-premium-card"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <div className="mobile-premium-card-icon-wrapper">
-                            <img
-                              src={feature.icon}
-                              alt={feature.label}
-                              className="mobile-premium-card-icon"
-                            />
-                          </div>
-                          <div className="mobile-premium-card-text">
-                            <h4 className="mobile-premium-card-label">{feature.label}</h4>
-                            <p className="mobile-premium-card-description">{feature.description}</p>
-                          </div>
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div style={styles.mobileMenu}>
+            {navItems.map(item => (
+              <div key={item.id} style={styles.mobileMenuItem}>
+                <div
+                  style={styles.mobileMenuHeader}
+                  onClick={() => setOpenDropdown(openDropdown === item.id ? null : item.id)}
+                >
+                  {item.label}
+                  <span style={styles.mobileMenuArrow}>
+                    {openDropdown === item.id ? '▼' : '▶'}
+                  </span>
+                </div>
+
+                {openDropdown === item.id && (
+                  <div style={styles.mobileSubMenu}>
+                    {item.type === 'premium' && premiumFeatures.map((feature, idx) => (
+                      <Link
+                        key={idx}
+                        href={feature.href}
+                        style={styles.mobileSubLink}
+                      >
+                        {feature.label}
+                      </Link>
+                    ))}
+                    {item.type === 'free-tools' && freeTools.map((tool, idx) => (
+                      <Link
+                        key={idx}
+                        href={tool.href}
+                        style={styles.mobileSubLink}
+                      >
+                        {tool.label}
+                      </Link>
+                    ))}
+                    {item.type === 'hq' && (
+                      <>
+                        <Link href="https://dashboard.thebettinginsider.com" style={styles.mobileSubLink}>
+                          Your Dashboard
                         </Link>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              ) : item.type === 'free-tools' ? (
-                <>
-                  <div
-                    className="mobile-nav-link"
-                    onClick={() =>
-                      setOpenDropdown(openDropdown === item.id ? null : item.id)
-                    }
-                  >
-                    <span>{item.label}</span>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-                      {openDropdown === item.id ? '▲' : '▼'}
-                    </span>
-                  </div>
-                  <div
-                    className={`mobile-dropdown ${
-                      openDropdown === item.id ? 'open' : ''
-                    }`}
-                  >
-                    <div className="mobile-free-tools-list">
-                      {freeTools.map((tool, idx) => (
-                        <Link
-                          key={idx}
-                          href={tool.href}
-                          className="mobile-free-tool-item"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <img src={tool.icon} alt={tool.label} className="mobile-free-tool-icon" />
-                          <span>{tool.label}</span>
+                        <Link href="https://dashboard.thebettinginsider.com/maximize-profit" style={styles.mobileSubLink}>
+                          Maximize Profit Guide
                         </Link>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              ) : item.dropdown ? (
-                <>
-                  <div
-                    className="mobile-nav-link"
-                    onClick={() =>
-                      setOpenDropdown(openDropdown === item.id ? null : item.id)
-                    }
-                  >
-                    <span>{item.label}</span>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-                      {openDropdown === item.id ? '▲' : '▼'}
-                    </span>
-                  </div>
-                  <div
-                    className={`mobile-dropdown ${
-                      openDropdown === item.id ? 'open' : ''
-                    }`}
-                  >
-                    {item.dropdown.map((dropItem, idx) => {
-                      if (dropItem.hasSubDropdown) {
-                        return (
-                          <div key={idx}>
-                            <div
-                              className="mobile-dropdown-item has-sub"
-                              onClick={() => setDashboardSubOpen(!dashboardSubOpen)}
-                              style={{ gap: '2rem' }}
-                            >
-                              <span>{dropItem.label}</span>
-                              <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
-                                {dashboardSubOpen ? '▲' : '▼'}
-                              </span>
-                            </div>
-                            <div className={`mobile-dashboard-subdropdown ${dashboardSubOpen ? 'open' : ''}`}>
-                              <div className="mobile-subdropdown-header">Quick jump to...</div>
-                              {dashboardLinks.map((link, linkIdx) => (
-                                <Link
-                                  key={linkIdx}
-                                  href={link.href}
-                                  className="mobile-subdropdown-item"
-                                  onClick={() => {
-                                    setMobileMenuOpen(false)
-                                    setDashboardSubOpen(false)
-                                  }}
-                                >
-                                  {link.label}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      }
-                      return (
-                        <Link
-                          key={idx}
-                          href={dropItem.href}
-                          className="mobile-dropdown-item"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {dropItem.label}
+                        <Link href="https://thebettinginsider.com/pricing" style={styles.mobileSubLink}>
+                          Pricing
                         </Link>
-                      )
-                    })}
+                      </>
+                    )}
                   </div>
-                </>
-              ) : null}
-            </div>
-          ))}
-        </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </nav>
     </>
   )
+}
+
+const styles = {
+  // DESKTOP STYLES
+  desktopLeftSection: {
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '20px',
+    padding: '12px 20px',
+    marginLeft: '30px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px'
+  },
+
+  desktopRightSection: {
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '50%',
+    padding: '6px',
+    marginLeft: 'auto',
+    marginRight: '30px',
+    display: 'flex',
+    alignItems: 'center'
+  },
+
+  desktopLogo: {
+    height: '28px',
+    width: 'auto',
+    cursor: 'pointer'
+  },
+
+  desktopNavButton: {
+    position: 'relative' as const,
+    cursor: 'pointer',
+    padding: '8px 16px',
+    transition: 'all 0.2s ease'
+  },
+
+  desktopNavButtonText: {
+    color: '#ffffff',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    letterSpacing: '0.05em'
+  },
+
+  dropdown: {
+    position: 'absolute' as const,
+    top: 'calc(100% + 15px)',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '16px',
+    padding: '16px',
+    minWidth: '200px',
+    zIndex: 1001
+  },
+
+  premiumGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '12px',
+    minWidth: '500px'
+  },
+
+  premiumCard: {
+    display: 'flex',
+    gap: '12px',
+    padding: '12px',
+    borderRadius: '12px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    transition: 'all 0.2s ease',
+    textDecoration: 'none',
+    color: '#ffffff'
+  },
+
+  premiumIconWrapper: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '8px',
+    background: 'rgba(0, 0, 0, 0.2)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+
+  premiumIcon: {
+    width: '24px',
+    height: '24px',
+    objectFit: 'contain' as const
+  },
+
+  premiumLabel: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    marginBottom: '4px',
+    color: '#ffffff'
+  },
+
+  premiumDescription: {
+    fontSize: '0.75rem',
+    color: 'rgba(255, 255, 255, 0.6)',
+    lineHeight: '1.3'
+  },
+
+  freeToolsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '8px',
+    minWidth: '400px'
+  },
+
+  freeToolItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px',
+    borderRadius: '10px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    transition: 'all 0.2s ease',
+    textDecoration: 'none',
+    color: '#ffffff'
+  },
+
+  freeToolIcon: {
+    width: '24px',
+    height: '24px',
+    objectFit: 'contain' as const
+  },
+
+  freeToolLabel: {
+    fontSize: '0.8125rem',
+    fontWeight: '500'
+  },
+
+  hqDropdown: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px',
+    minWidth: '220px'
+  },
+
+  hqItem: {
+    position: 'relative' as const
+  },
+
+  hqLink: {
+    display: 'block',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    transition: 'all 0.2s ease',
+    textDecoration: 'none',
+    color: '#ffffff',
+    fontSize: '0.875rem',
+    fontWeight: '500'
+  },
+
+  hqSubDropdown: {
+    position: 'absolute' as const,
+    left: '100%',
+    top: '0',
+    marginLeft: '8px',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '12px',
+    padding: '12px',
+    minWidth: '200px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px'
+  },
+
+  hqSubHeader: {
+    fontSize: '0.75rem',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '600',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    marginBottom: '6px',
+    paddingLeft: '4px'
+  },
+
+  hqSubLink: {
+    display: 'block',
+    padding: '8px 10px',
+    borderRadius: '6px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    transition: 'all 0.2s ease',
+    textDecoration: 'none',
+    color: '#ffffff',
+    fontSize: '0.8125rem',
+    fontWeight: '500'
+  },
+
+  signInButton: {
+    background: 'rgba(59, 130, 246, 0.2)',
+    border: '1px solid rgba(59, 130, 246, 0.4)',
+    color: '#ffffff',
+    padding: '10px 20px',
+    borderRadius: '20px',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
+  },
+
+  authLoading: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: '0.875rem'
+  },
+
+  // MOBILE STYLES
+  mobileContainer: {
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '20px',
+    padding: '12px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+
+  hamburger: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px'
+  },
+
+  hamburgerLine: {
+    width: '20px',
+    height: '2px',
+    background: '#ffffff',
+    borderRadius: '2px',
+    transition: 'all 0.3s ease'
+  },
+
+  mobileLogo: {
+    height: '24px',
+    width: 'auto'
+  },
+
+  mobileAuth: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+
+  mobileSignInButton: {
+    background: 'rgba(59, 130, 246, 0.2)',
+    border: '1px solid rgba(59, 130, 246, 0.4)',
+    color: '#ffffff',
+    padding: '8px 16px',
+    borderRadius: '16px',
+    fontSize: '0.8125rem',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
+
+  mobileMenu: {
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '16px',
+    marginTop: '12px',
+    padding: '16px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '8px'
+  },
+
+  mobileMenuItem: {
+    display: 'flex',
+    flexDirection: 'column' as const
+  },
+
+  mobileMenuHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px',
+    color: '#ffffff',
+    fontSize: '0.9375rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    borderRadius: '10px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    transition: 'all 0.2s ease'
+  },
+
+  mobileMenuArrow: {
+    fontSize: '0.75rem',
+    color: 'rgba(255, 255, 255, 0.6)'
+  },
+
+  mobileSubMenu: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+    marginTop: '8px',
+    marginLeft: '12px'
+  },
+
+  mobileSubLink: {
+    display: 'block',
+    padding: '10px 12px',
+    color: '#ffffff',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    textDecoration: 'none',
+    borderRadius: '8px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    transition: 'all 0.2s ease'
+  }
 }
