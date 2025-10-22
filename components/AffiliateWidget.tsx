@@ -195,6 +195,8 @@ export default function AffiliateWidget() {
   }
 
   // ACTIVE AFFILIATE VIEW
+  if (!affiliateData) return null
+
   return (
     <div style={widgetStyle}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
