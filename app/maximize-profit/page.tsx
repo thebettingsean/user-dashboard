@@ -770,16 +770,14 @@ const styles = {
     color: 'rgba(255, 255, 255, 0.9)'
   },
   section: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '16px',
     marginBottom: '1.5rem',
-    border: '1px solid transparent',
-    backgroundImage: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15), linear-gradient(135deg, #3b82f6, #60a5fa)',
-    backgroundOrigin: 'border-box',
-    backgroundClip: 'padding-box, padding-box, border-box',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     overflow: 'hidden'
   },
   sectionHeader: {
