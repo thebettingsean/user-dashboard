@@ -791,10 +791,11 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.6rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: 'none',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     color: '#e5e7eb',
     borderRadius: '12px',
     padding: '0.7rem 1rem',
@@ -810,10 +811,11 @@ const styles = {
     opacity: 0.7
   },
   filterDropdown: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: 'none',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '14px',
     padding: '0.85rem',
     marginBottom: '1.25rem',
@@ -849,13 +851,14 @@ const styles = {
     gap: '0.5rem'
   },
   tableRow: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(35px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-    border: 'none',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '16px',
     overflow: 'hidden',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
   },
   tableRowHeader: {
@@ -999,14 +1002,15 @@ const styles = {
     gap: '0.85rem'
   },
   parlayCard: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(35px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(35px) saturate(180%)',
-    border: 'none',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '18px',
     padding: '1rem',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
   },
   parlayCardHeader: {
     display: 'flex',
