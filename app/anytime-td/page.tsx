@@ -495,11 +495,12 @@ const styles = {
     animation: 'fadeInUp 0.9s ease-out'
   },
   filterSelect: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     color: '#e5e7eb',
     borderRadius: '12px',
     padding: '0.6rem 0.75rem',
@@ -510,11 +511,12 @@ const styles = {
     boxSizing: 'border-box' as const
   },
   searchInput: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     color: '#e5e7eb',
     borderRadius: '12px',
     padding: '0.6rem 0.75rem',
@@ -537,14 +539,15 @@ const styles = {
     marginTop: '1.25rem'
   },
   card: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(59, 130, 246, 0.35)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '18px',
     padding: '1rem',
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
   },
   cardTopFive: {
     background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(34, 197, 94, 0.22) 45%, rgba(22, 163, 74, 0.28) 100%)',
@@ -622,14 +625,15 @@ const styles = {
     lineHeight: 1
   },
   teamCard: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(59, 130, 246, 0.35)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '18px',
     padding: '0.95rem 1rem',
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
   },
   teamRow: {
     display: 'flex',
