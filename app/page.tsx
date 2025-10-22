@@ -12,6 +12,7 @@ import NewsWidget from '../components/NewsWidget'
 import PropParlayWidget from '../components/PropParlayWidget'
 import DiscordWidget from '../components/DiscordWidget'
 import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
+import DarkVeil from '../components/DarkVeil'
 
 export default function Home() {
   const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
@@ -126,8 +127,18 @@ export default function Home() {
 
   return (
     <>
+      {/* DarkVeil Background */}
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+        <DarkVeil 
+          speed={0.3}
+          hueShift={220}
+          noiseIntensity={0.05}
+          warpAmount={0.3}
+        />
+      </div>
+
       <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative' }}>
-        {/* Floating orbs */}
+        {/* Floating orbs - can be removed if DarkVeil replaces them */}
         <div className="orb-3"></div>
         <div className="orb-4"></div>
         <div className="orb-5"></div>
