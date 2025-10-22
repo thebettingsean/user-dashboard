@@ -78,6 +78,7 @@ export default function DiscordWidget() {
 
   if (isLoading) {
     return (
+    <>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img 
@@ -162,6 +163,7 @@ export default function DiscordWidget() {
         </button>
       </div>
     </div>
+    </>
   )
 }
 

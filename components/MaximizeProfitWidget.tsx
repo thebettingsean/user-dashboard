@@ -50,6 +50,7 @@ export default function MaximizeProfitWidget() {
         </div>
       </div>
     </Link>
+    </>
   )
 }
 

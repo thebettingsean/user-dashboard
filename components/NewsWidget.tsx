@@ -68,6 +68,7 @@ export default function NewsWidget() {
         </div>
       </div>
     </a>
+    </>
   )
 }
 

@@ -117,6 +117,7 @@ export default function MatchupWidget() {
         </div>
       </div>
     </a>
+    </>
   )
 }
 

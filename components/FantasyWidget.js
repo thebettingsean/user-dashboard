@@ -189,6 +189,7 @@ export default function FantasyWidget() {
         )}
       </div>
     </a>
+    </>
   )
 }
 
