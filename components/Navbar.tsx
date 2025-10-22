@@ -15,37 +15,37 @@ export default function Navbar() {
     {
       label: 'Analyst Picks',
       href: 'thebettinginsider.com/betting/about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e2f7f68a9d80033122_1.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fb91754ed1897b45b_1.svg',
       description: 'Expert picks backed by data'
     },
     {
       label: 'Public Betting',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3e85df3d969700cf1_2.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fc8af05ce5b3d9428_2.svg',
       description: 'See where the money is going'
     },
     {
       label: 'Matchup Data',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3b2585150b82c6baa_3.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181e9a84efee4e2536d6_3.svg',
       description: 'Detailed team data'
     },
     {
       label: 'Fantasy Football',
       href: 'thebettinginsider.com/fantasy/home',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e324225a9738395c91_4.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181f5f4c93c84a1488cb_6.svg',
       description: 'Start/Sit, Waiver, Trade tools'
     },
     {
       label: 'Prop Data',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3e5402543f8b5458a_5.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fbeb37fd40d49afa8_4.svg',
       description: 'Player prop insights and angles'
     },
     {
       label: 'Referee Trends',
       href: 'thebettinginsider.com/stats-about',
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f5b8e3ebdab11d2f519eb1_6.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f919609bac06fcc80cee44_NEW%20WIDGET%20SVG%27S-8.svg',
       description: 'Historical referee data'
     }
   ]
