@@ -80,6 +80,7 @@ export default function PicksWidget() {
         )}
       </div>
     </a>
+    </>
   )
 }
 

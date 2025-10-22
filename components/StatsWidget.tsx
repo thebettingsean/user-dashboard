@@ -125,6 +125,7 @@ export default function StatsWidget() {
         </div>
       </div>
     </a>
+    </>
   )
 }
 

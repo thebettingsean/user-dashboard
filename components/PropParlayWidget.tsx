@@ -167,6 +167,7 @@ export default function PropParlayWidget() {
         )}
       </div>
     </a>
+    </>
   )
 }
 

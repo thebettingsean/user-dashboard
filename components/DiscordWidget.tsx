@@ -98,6 +98,7 @@ export default function DiscordWidget() {
 
         <div style={{ flex: 1 }} />
       </div>
+    </>
     )
   }
 
