@@ -1368,11 +1368,14 @@ const styles = {
   },
   filterButton: {
     width: '100%',
-    background: 'linear-gradient(135deg, #1e2a47, #3b4a72)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     color: '#fff',
     padding: '0.5rem 0.75rem',
     borderRadius: '10px',
-    border: 'none',
     fontSize: '0.8rem',
     fontWeight: '600',
     cursor: 'pointer',
@@ -1532,7 +1535,12 @@ const styles = {
   bettorSection: {
     marginBottom: '2rem',
     position: 'relative' as const,
-    background: 'rgba(255, 255, 255, 0.1)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
     padding: '1.5rem',
     borderRadius: '12px'
   },
@@ -1908,8 +1916,11 @@ const styles = {
     padding: '1rem'
   },
   modalContent: {
-    background: 'linear-gradient(135deg, #1e293b, #334155)',
-    border: '2px solid rgba(139, 92, 246, 0.3)',
+    // PROPER GLASSMORPHISM:
+    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
     borderRadius: '20px',
     padding: '2rem',
     maxWidth: '700px',
@@ -1917,7 +1928,7 @@ const styles = {
     maxHeight: '80vh',
     overflowY: 'auto' as const,
     position: 'relative' as const,
-    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)'
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
   },
   modalClose: {
     position: 'absolute' as const,
