@@ -127,13 +127,22 @@ export default function Home() {
 
   return (
     <>
-      {/* DarkVeil Background */}
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }}>
+      {/* DarkVeil Background - Desktop Only */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        height: '100%', 
+        zIndex: -1,
+        opacity: 0.4, // Reduced opacity
+        display: 'none' // Hidden by default (mobile)
+      }} className="darkveil-wrapper">
         <DarkVeil 
-          speed={0.3}
-          hueShift={220}
-          noiseIntensity={0.05}
-          warpAmount={0.3}
+          speed={0.6}
+          hueShift={210}
+          noiseIntensity={0.03}
+          warpAmount={0.5}
         />
       </div>
 
@@ -153,6 +162,9 @@ export default function Home() {
         @media (min-width: 768px) {
           .mobile-view {
             display: none;
+          }
+          .darkveil-wrapper {
+            display: block !important;
           }
           .desktop-view {
             display: block;
