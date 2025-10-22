@@ -64,6 +64,15 @@ div[class*="userButton"] [class*="menuItem"] * {
   color: #ffffff !important;
 }
 
+/* HIDE Clerk's default "Manage Account" button completely */
+.cl-userButtonPopover .cl-userButtonPopoverActionButton:first-child,
+[data-localization-key="userButton.action__manageAccount"],
+button[aria-label*="Manage account"],
+button[aria-label*="manage account"],
+.cl-menuList > button:first-child {
+  display: none !important;
+}
+
 /* Mobile Optimization for Subscription Management Pages */
 @media (max-width: 768px) {
   /* Force proper box sizing on mobile */

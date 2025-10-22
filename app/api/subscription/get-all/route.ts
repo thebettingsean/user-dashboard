@@ -25,34 +25,54 @@ const LEGACY_PRICE_IDS = [
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email } = body
+    const { email, userId } = body
 
-    if (!email) {
+    if (!email && !userId) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Email or userId is required' },
         { status: 400 }
       )
     }
 
-    // Find customer by email
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 10
-    })
+    let customerIds: string[] = []
 
-    if (!customers.data.length) {
+    // If userId provided, get stripeCustomerId from Clerk metadata
+    if (userId) {
+      const { clerkClient } = await import('@clerk/nextjs/server')
+      const clerk = await clerkClient()
+      const user = await clerk.users.getUser(userId)
+      const stripeCustomerId = (user.publicMetadata as any)?.stripeCustomerId
+
+      if (stripeCustomerId) {
+        customerIds.push(stripeCustomerId)
+      }
+    }
+
+    // Also search by email as fallback
+    if (email) {
+      const customers = await stripe.customers.list({
+        email: email,
+        limit: 10
+      })
+      customerIds.push(...customers.data.map(c => c.id))
+    }
+
+    // Remove duplicates
+    customerIds = [...new Set(customerIds)]
+
+    if (!customerIds.length) {
       return NextResponse.json(
-        { error: 'No customer found with this email' },
+        { error: 'No customer found' },
         { status: 404 }
       )
     }
 
     const allSubscriptions: any[] = []
 
-    // Collect ALL subscriptions from all customers with this email
-    for (const customer of customers.data) {
+    // Collect ALL subscriptions from all found customers
+    for (const customerId of customerIds) {
       const subscriptions = await stripe.subscriptions.list({
-        customer: customer.id,
+        customer: customerId,
         limit: 100 // Get all subscriptions
       })
 

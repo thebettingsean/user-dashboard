@@ -11,7 +11,8 @@ const PROMO_50_OFF = process.env.STRIPE_PROMO_50_OFF!
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, action } = await req.json()
+    const body = await req.json()
+    const { userId, action, offerType, offerDays, reasons, otherText, targetPriceId } = body
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -53,14 +54,12 @@ export async function POST(req: NextRequest) {
         return await handleGetOffer(subscription, userId, email)
       
       case 'acceptFirstOffer':
-        const { offerType, offerDays } = await req.json()
         return await handleAcceptFirstOffer(subscription, userId, email, offerType, offerDays)
       
       case 'declineFirstOffer':
         return await handleDeclineFirstOffer(userId, email, subscription)
       
       case 'submitReasons':
-        const { reasons, otherText } = await req.json()
         return await handleSubmitReasons(userId, email, subscription, reasons, otherText)
       
       case 'acceptFinalOffer':

@@ -67,7 +67,8 @@ const LEGACY_PRICE_IDS = [
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, action } = await req.json()
+    const body = await req.json()
+    const { userId, action, targetPriceId } = body
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -109,7 +110,6 @@ export async function POST(req: NextRequest) {
     if (action === 'checkUpgrades') {
       return await handleCheckUpgrades(subscription, currentPriceId)
     } else if (action === 'applyUpgrade') {
-      const { targetPriceId } = await req.json()
       return await handleApplyUpgrade(subscription, currentPriceId, targetPriceId)
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

@@ -45,7 +45,8 @@ export default function ManageSubscriptionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          email: user?.primaryEmailAddress?.emailAddress 
+          email: user?.primaryEmailAddress?.emailAddress,
+          userId: user?.id
         })
       })
 
