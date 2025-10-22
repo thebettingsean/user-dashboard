@@ -159,17 +159,14 @@ const widgetStyle = {
   background: 'rgba(255, 255, 255, 0.05)', // Only 5% fill opacity
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-  border: '0.5px solid rgba(255, 255, 255, 0.1)', // Ultra-thin subtle border
+  border: 'none', // No border at all
   borderRadius: '24px',
   padding: '1.5rem',
   position: 'relative',
   minHeight: '320px',
   display: 'flex',
   flexDirection: 'column',
-  boxShadow: `
-    0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1)
-  `,
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
 

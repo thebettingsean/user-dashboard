@@ -91,8 +91,7 @@ const widgetStyle = {
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
   
-  // 3. Ultra-thin, subtle border - barely visible edge
-  border: '0.5px solid rgba(255, 255, 255, 0.1)',
+  border: 'none', // No border at all
   
   borderRadius: '24px',
   padding: '1.5rem',
@@ -101,11 +100,8 @@ const widgetStyle = {
   display: 'flex',
   flexDirection: 'column',
   
-  // 4. Subtle shadows for depth
-  boxShadow: `
-    0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1)
-  `,
+  // Subtle shadow for depth (no inset highlight)
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
   
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
 }
