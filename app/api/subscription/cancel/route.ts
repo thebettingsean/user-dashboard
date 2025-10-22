@@ -93,20 +93,20 @@ async function handleGetOffer(subscription: Stripe.Subscription, userId: string,
     offerDays = 7
     offerMessage = "We feel like you haven't had the full experience yet. Let us extend your trial by +7 days!"
   } else if (tenureDays < 7) {
-    // Real sub < 7 days
+    // Real sub 0-6 days after trial
     offerType = 'free_week'
     offerDays = 7
     offerMessage = "You just started! Let us give you a free 1 week extension to experience the full value."
   } else if (tenureDays >= 7 && tenureDays <= 21) {
-    // Real sub 7-21 days
+    // Real sub 7-21 days after trial
     offerType = 'free_two_weeks'
     offerDays = 14
     offerMessage = "We appreciate your time with us! Here's a free 2 week extension on us."
   } else {
-    // Real sub 22+ days
-    offerType = 'discount_50'
-    offerDays = 0
-    offerMessage = "Thank you for your loyalty! We'd like to offer you 50% off for LIFE as a valued member."
+    // Real sub 22+ days after trial
+    offerType = 'free_month'
+    offerDays = 30
+    offerMessage = "Thank you for your loyalty! Here's a FREE MONTH on us to continue enjoying our premium features."
   }
 
   // Calculate new renewal date if applicable

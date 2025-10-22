@@ -64,13 +64,29 @@ div[class*="userButton"] [class*="menuItem"] * {
   color: #ffffff !important;
 }
 
-/* HIDE Clerk's default "Manage Account" button completely */
+/* HIDE Clerk's default "Manage Account" button completely - ULTRA AGGRESSIVE */
 .cl-userButtonPopover .cl-userButtonPopoverActionButton:first-child,
+.cl-userButtonPopover button:first-of-type,
 [data-localization-key="userButton.action__manageAccount"],
+[data-localization-key*="manageAccount"],
 button[aria-label*="Manage account"],
 button[aria-label*="manage account"],
-.cl-menuList > button:first-child {
+.cl-menuList > button:first-child,
+.cl-menuList > button:first-of-type,
+.cl-userButtonPopoverActions > button:first-child,
+.cl-userButtonPopoverActions > button:first-of-type,
+[class*="userButtonPopover"] button:first-child,
+[class*="menuList"] > *:first-child {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
 }
 
 /* Mobile Optimization for Subscription Management Pages */
