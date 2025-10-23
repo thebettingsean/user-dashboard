@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
       
       if (!affiliateLink && affiliate.id) {
         try {
-          const linksResponse = await fetch(`${PUSHLAP_API_URL}/affiliate-links`, {
+          // Try with affiliateId query parameter
+          const linksResponse = await fetch(`${PUSHLAP_API_URL}/affiliate-links?affiliateId=${affiliate.id}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${PUSHLAP_API_KEY}`,
@@ -91,20 +92,36 @@ export async function POST(request: NextRequest) {
             }
           })
           
-          if (linksResponse.ok) {
-            const allLinks = await linksResponse.json()
-            console.log('Fetched affiliate links:', allLinks)
-            
-            // Find links for this affiliate
-            const myLinks = Array.isArray(allLinks) 
-              ? allLinks.filter((link: any) => link.affiliateId === affiliate.id)
-              : []
-            
-            if (myLinks.length > 0) {
-              const primaryLink = myLinks[0]
-              affiliateLink = primaryLink.url || primaryLink.link || `https://thebettinginsider.com?ref=${primaryLink.slug || primaryLink.code}`
-              console.log('Found affiliate link:', affiliateLink)
+          console.log('Links API response status:', linksResponse.status)
+          const linksText = await linksResponse.text()
+          console.log('Links API raw response:', linksText)
+          
+          if (linksResponse.ok && linksText) {
+            try {
+              const linksData = JSON.parse(linksText)
+              console.log('Parsed links data:', JSON.stringify(linksData, null, 2))
+              
+              // Handle both array and single object responses
+              const links = Array.isArray(linksData) ? linksData : [linksData]
+              
+              if (links.length > 0) {
+                const primaryLink = links[0]
+                console.log('Primary link object:', primaryLink)
+                
+                // Try multiple possible field names
+                affiliateLink = primaryLink.url || 
+                               primaryLink.link || 
+                               primaryLink.trackingUrl ||
+                               (primaryLink.slug ? `https://app.thebettinginsider.com?ref=${primaryLink.slug}` : null) ||
+                               (primaryLink.code ? `https://app.thebettinginsider.com?ref=${primaryLink.code}` : null)
+                
+                console.log('Extracted affiliate link:', affiliateLink)
+              }
+            } catch (parseError) {
+              console.error('Error parsing links response:', parseError)
             }
+          } else {
+            console.error('Links API failed or empty. Status:', linksResponse.status)
           }
         } catch (linkError) {
           console.error('Error fetching affiliate links:', linkError)
