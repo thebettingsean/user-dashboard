@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
           commissionRate: affiliate.commissionRate,
           link: affiliate.link,
           status: affiliate.status,
+          detailsComplete: affiliate.detailsComplete || false,
+          payoutEmail: affiliate.payoutEmail || null,
+          paymentMethod: affiliate.paymentMethod || null,
           totalCommissionEarned: affiliate.totalCommissionEarned || 0,
           numberOfReferredUsers: affiliate.numberOfReferredUsers || 0,
           numberOfClicks: affiliate.numberOfClicks || 0

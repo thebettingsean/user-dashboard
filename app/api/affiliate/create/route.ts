@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
         commissionRate: data.commissionRate,
         link: data.link,
         status: data.status,
+        detailsComplete: data.detailsComplete || false,
+        payoutEmail: data.payoutEmail || null,
+        paymentMethod: data.paymentMethod || null,
         totalCommissionEarned: data.totalCommissionEarned || 0,
         numberOfReferredUsers: data.numberOfReferredUsers || 0,
         numberOfClicks: data.numberOfClicks || 0
