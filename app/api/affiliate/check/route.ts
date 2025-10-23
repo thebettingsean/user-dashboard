@@ -27,8 +27,9 @@ export async function POST(request: NextRequest) {
       .eq('email', email)
       .single()
 
-    if (cachedAffiliate && !cacheError) {
-      console.log('Found affiliate in cache:', cachedAffiliate)
+    if (cachedAffiliate && !cacheError && cachedAffiliate.link) {
+      // Only use cache if link exists!
+      console.log('Found affiliate in cache with link:', cachedAffiliate.link)
       return NextResponse.json({
         isAffiliate: true,
         data: {
@@ -48,6 +49,11 @@ export async function POST(request: NextRequest) {
           numberOfClicks: cachedAffiliate.number_of_clicks || 0
         }
       })
+    }
+    
+    // If in cache but no link, fall through to API to fetch fresh data
+    if (cachedAffiliate && !cacheError && !cachedAffiliate.link) {
+      console.log('Affiliate in cache but no link - fetching from API...')
     }
 
     // FALLBACK: Check Pushlap API if not in cache
@@ -138,6 +144,15 @@ export async function POST(request: NextRequest) {
         } catch (linkError) {
           console.error('Error fetching affiliate links:', linkError)
         }
+      }
+      
+      // UPDATE SUPABASE WITH EXTRACTED LINK!
+      if (affiliateLink && cachedAffiliate) {
+        console.log('Updating Supabase cache with extracted link:', affiliateLink)
+        await supabase
+          .from('affiliate_links')
+          .update({ link: affiliateLink, updated_at: new Date().toISOString() })
+          .eq('email', email)
       }
       
       return NextResponse.json({
