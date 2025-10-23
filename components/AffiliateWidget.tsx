@@ -221,55 +221,6 @@ export default function AffiliateWidget() {
   // ACTIVE AFFILIATE VIEW
   if (!affiliateData) return null
 
-  // CHECK IF SETUP IS INCOMPLETE
-  const needsSetup = !affiliateData.detailsComplete || !affiliateData.payoutEmail || !affiliateData.paymentMethod
-
-  if (needsSetup) {
-    return (
-      <>
-        <div style={widgetStyle}>
-          <div style={iconWrapper}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          
-          <h2 style={titleStyle}>Complete Your Setup</h2>
-          <p style={taglineStyle}>Account created • Setup required</p>
-
-          <div style={infoBoxStyle}>
-            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5', fontWeight: '600' }}>
-              🎉 Your affiliate account is created!
-            </p>
-            <p style={{ margin: '0', fontSize: '0.8rem', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.8)' }}>
-              Complete your setup on Pushlap to:
-            </p>
-            <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', fontSize: '0.75rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.8)' }}>
-              <li>Set your password</li>
-              <li>Add payment details</li>
-              <li>Customize your link</li>
-            </ul>
-          </div>
-
-          <div style={{ flex: 1 }} />
-
-          <button 
-            onClick={() => {
-              const returnUrl = encodeURIComponent(window.location.href + '?affiliate_setup=complete')
-              window.location.href = `https://www.pushlapgrowth.com?email=${encodeURIComponent(affiliateData.email)}&return=${returnUrl}`
-            }}
-            style={buttonStyle}
-          >
-            Complete Setup on Pushlap →
-          </button>
-        </div>
-      </>
-    )
-  }
-
-  // FULLY SETUP AFFILIATE VIEW
   return (
     <>
       <div style={widgetStyle}>
@@ -333,19 +284,17 @@ export default function AffiliateWidget() {
         {/* Two buttons side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
           <button 
-            onClick={() => window.open('https://www.pushlapgrowth.com', '_blank')}
+            onClick={() => alert('More info page coming soon!')}
             style={smallButtonStyle}
           >
             More Info
           </button>
-          <a 
-            href="https://www.pushlapgrowth.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <button 
+            onClick={() => alert('Contact support@thebettinginsider.com to set up your Pushlap login and manage payouts.')}
             style={smallButtonStyle}
           >
-            Dashboard
-          </a>
+            Need Login?
+          </button>
         </div>
       </div>
     </>
@@ -507,6 +456,5 @@ const smallButtonStyle = {
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   textAlign: 'center' as const,
-  textDecoration: 'none',
-  display: 'block'
+  width: '100%'
 }
