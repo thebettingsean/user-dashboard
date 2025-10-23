@@ -4,8 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 const PUSHLAP_API_KEY = '7722240d-19d5-410f-8a78-8c7136107ab9'
 const PUSHLAP_API_URL = 'https://www.pushlapgrowth.com/api/v1'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Use Funnel Analytics Supabase for affiliate data
+const supabaseUrl = process.env.SUPABASE_FUNNEL_URL!
+const supabaseKey = process.env.SUPABASE_FUNNEL_SERVICE_KEY!
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(request: NextRequest) {
