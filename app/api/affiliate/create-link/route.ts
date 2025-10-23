@@ -27,21 +27,25 @@ export async function POST(request: NextRequest) {
       })
     })
 
+    const responseText = await response.text()
+    console.log('Pushlap raw response:', responseText)
+    console.log('Response status:', response.status)
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      console.error('Failed to create affiliate link:', errorData)
+      console.error('Failed to create affiliate link. Status:', response.status, 'Body:', responseText)
       return NextResponse.json(
-        { error: 'Failed to create affiliate link', details: errorData },
-        { status: response.status }
+        { error: 'Failed to create affiliate link', details: responseText, status: response.status },
+        { status: 500 }
       )
     }
 
-    const data = await response.json()
-    console.log('Created affiliate link:', data)
+    const data = JSON.parse(responseText)
+    console.log('Parsed affiliate link data:', JSON.stringify(data, null, 2))
 
     return NextResponse.json({
       success: true,
-      link: data.url || data.link || null
+      link: data.url || data.link || data.trackingUrl || null,
+      rawData: data
     })
 
   } catch (error) {
