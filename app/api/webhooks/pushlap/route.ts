@@ -1,0 +1,107 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+// Use main Supabase for affiliate data
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+export async function POST(request: NextRequest) {
+  try {
+    const payload = await request.json()
+    
+    console.log('Pushlap webhook received:', JSON.stringify(payload, null, 2))
+
+    const { event, body } = payload
+
+    // Handle affiliate.created and affiliate.updated
+    if (event === 'affiliate.created' || event === 'affiliate.updated') {
+      const affiliateData = {
+        email: body.email,
+        affiliate_id: body.id,
+        link: body.link,
+        first_name: body.firstName,
+        last_name: body.lastName,
+        status: body.status,
+        commission_rate: body.commissionRate,
+        total_commission_earned: body.totalCommissionEarned || 0,
+        number_of_referred_users: body.numberOfReferredUsers || 0,
+        number_of_clicks: body.numberOfClicks || 0,
+        details_complete: body.detailsComplete || false,
+        payout_email: body.payoutEmail,
+        payment_method: body.paymentMethod,
+        updated_at: new Date().toISOString()
+      }
+
+      console.log('Storing affiliate data:', affiliateData)
+
+      // Upsert into Supabase
+      const { data, error } = await supabase
+        .from('affiliate_links')
+        .upsert(affiliateData, { 
+          onConflict: 'email',
+          ignoreDuplicates: false 
+        })
+        .select()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        return NextResponse.json(
+          { error: 'Failed to store affiliate data', details: error },
+          { status: 500 }
+        )
+      }
+
+      console.log('Successfully stored affiliate:', data)
+
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Affiliate data stored',
+        event 
+      })
+    }
+
+    // Handle sale.created for real-time earnings updates
+    if (event === 'sale.created') {
+      const { affiliateId, commissionEarned, totalEarned } = body
+
+      if (affiliateId) {
+        // Update total earnings
+        const { error } = await supabase
+          .from('affiliate_links')
+          .update({ 
+            total_commission_earned: totalEarned || commissionEarned,
+            updated_at: new Date().toISOString()
+          })
+          .eq('affiliate_id', affiliateId)
+
+        if (error) {
+          console.error('Error updating earnings:', error)
+        } else {
+          console.log('Updated earnings for affiliate:', affiliateId)
+        }
+      }
+
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Sale processed',
+        event 
+      })
+    }
+
+    // Handle other events
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Webhook received',
+      event 
+    })
+
+  } catch (error) {
+    console.error('Webhook error:', error)
+    return NextResponse.json(
+      { error: 'Webhook processing failed' },
+      { status: 500 }
+    )
+  }
+}
+

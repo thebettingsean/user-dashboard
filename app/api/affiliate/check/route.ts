@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const PUSHLAP_API_KEY = '7722240d-19d5-410f-8a78-8c7136107ab9'
 const PUSHLAP_API_URL = 'https://www.pushlapgrowth.com/api/v1'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +18,38 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // FIRST: Check Supabase for cached affiliate data (from webhooks)
+    const { data: cachedAffiliate, error: cacheError } = await supabase
+      .from('affiliate_links')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (cachedAffiliate && !cacheError) {
+      console.log('Found affiliate in cache:', cachedAffiliate)
+      return NextResponse.json({
+        isAffiliate: true,
+        data: {
+          id: cachedAffiliate.affiliate_id,
+          name: cachedAffiliate.first_name && cachedAffiliate.last_name 
+            ? `${cachedAffiliate.first_name} ${cachedAffiliate.last_name}`
+            : 'Affiliate',
+          email: cachedAffiliate.email,
+          commissionRate: cachedAffiliate.commission_rate || 50,
+          link: cachedAffiliate.link,
+          status: cachedAffiliate.status,
+          detailsComplete: cachedAffiliate.details_complete || false,
+          payoutEmail: cachedAffiliate.payout_email,
+          paymentMethod: cachedAffiliate.payment_method,
+          totalCommissionEarned: cachedAffiliate.total_commission_earned || 0,
+          numberOfReferredUsers: cachedAffiliate.number_of_referred_users || 0,
+          numberOfClicks: cachedAffiliate.number_of_clicks || 0
+        }
+      })
+    }
+
+    // FALLBACK: Check Pushlap API if not in cache
 
     // Check if affiliate exists by email
     const response = await fetch(`${PUSHLAP_API_URL}/affiliates?email=${encodeURIComponent(email)}`, {
