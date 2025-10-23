@@ -75,7 +75,11 @@ export default function AffiliateWidget() {
 
       const data = await response.json()
       
+      console.log('Affiliate check response:', data)
+      
       if (data.isAffiliate && data.data) {
+        console.log('Affiliate data:', data.data)
+        console.log('Affiliate link:', data.data.link)
         setIsAffiliate(true)
         setAffiliateData(data.data)
       } else {
@@ -147,11 +151,32 @@ export default function AffiliateWidget() {
     }
   }
 
-  const copyLink = () => {
-    if (affiliateData?.link) {
-      navigator.clipboard.writeText(affiliateData.link)
+  const copyLink = async () => {
+    if (!affiliateData?.link) {
+      alert('Referral link not available yet. Please refresh the page.')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(affiliateData.link)
       setCopied(true)
       setTimeout(() => setCopied(false), 3000)
+    } catch (error) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea')
+      textArea.value = affiliateData.link
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 3000)
+      } catch (err) {
+        alert('Failed to copy link. Your link is: ' + affiliateData.link)
+      }
+      document.body.removeChild(textArea)
     }
   }
 
