@@ -547,11 +547,6 @@ export default function AffiliateWidget() {
                 ))}
               </div>
             </div>
-
-            {/* Footer Note */}
-            <div style={footerNoteStyle}>
-              Remember to always make sure that <strong>?ref=yourname</strong> is at the end of your link!
-            </div>
           </div>
         </div>
       )}
