@@ -33,6 +33,8 @@ export default function AffiliateWidget() {
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showLinksModal, setShowLinksModal] = useState(false)
+  const [copiedLinkIndex, setCopiedLinkIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -148,6 +150,62 @@ export default function AffiliateWidget() {
       console.error('Error creating affiliate:', error)
       setError('Failed to create affiliate account')
       setIsCreating(false)
+    }
+  }
+
+  const getTrackingLinks = () => {
+    if (!affiliateData?.link) return []
+    
+    // Extract the ref slug from the link
+    const refMatch = affiliateData.link.match(/ref=([^&]+)/)
+    const refSlug = refMatch ? refMatch[1] : 'affiliate'
+    
+    return [
+      {
+        name: 'Dashboard',
+        icon: '📊',
+        url: `https://dashboard.thebettinginsider.com/?ref=${refSlug}`
+      },
+      {
+        name: 'Fantasy Football',
+        icon: '🏈',
+        url: `https://dashboard.thebettinginsider.com/fantasy?ref=${refSlug}`
+      },
+      {
+        name: 'Prop Parlay Tool',
+        icon: '🎯',
+        url: `https://dashboard.thebettinginsider.com/prop-parlay-tool?ref=${refSlug}`
+      },
+      {
+        name: 'Anytime TD',
+        icon: '🏆',
+        url: `https://dashboard.thebettinginsider.com/anytime-td?ref=${refSlug}`
+      },
+      {
+        name: 'Homepage',
+        icon: '🏠',
+        url: `https://thebettinginsider.com/?ref=${refSlug}`
+      },
+      {
+        name: 'Pricing Page',
+        icon: '💰',
+        url: `https://thebettinginsider.com/pricing?ref=${refSlug}`
+      },
+      {
+        name: 'Analyst Picks',
+        icon: '📈',
+        url: `https://dashboard.thebettinginsider.com/analyst-picks?ref=${refSlug}`
+      }
+    ]
+  }
+
+  const copySpecificLink = async (url: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedLinkIndex(index)
+      setTimeout(() => setCopiedLinkIndex(null), 2000)
+    } catch (error) {
+      alert('Copied: ' + url)
     }
   }
 
@@ -288,23 +346,14 @@ export default function AffiliateWidget() {
           </div>
         </div>
 
-        {/* Quick copy link with visual feedback */}
+        {/* My Links Button */}
         {affiliateData.link ? (
           <button 
-            onClick={copyLink} 
-            style={copied ? copiedButtonStyle : copyLinkButtonStyle}
+            onClick={() => setShowLinksModal(true)} 
+            style={copyLinkButtonStyle}
           >
-            {copied ? (
-              <>
-                <span style={{ marginRight: '6px' }}>✓</span>
-                Copied to Clipboard!
-              </>
-            ) : (
-              <>
-                <span style={{ marginRight: '6px' }}>📋</span>
-                Copy Referral Link
-              </>
-            )}
+            <span style={{ marginRight: '6px' }}>🔗</span>
+            My Links
           </button>
         ) : (
           <div style={infoBoxStyle}>
@@ -314,6 +363,40 @@ export default function AffiliateWidget() {
                 Email support@thebettinginsider.com to get your personal tracking link.
               </span>
             </p>
+          </div>
+        )}
+
+        {/* Links Modal */}
+        {showLinksModal && (
+          <div style={modalOverlayStyle} onClick={() => setShowLinksModal(false)}>
+            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>Your Tracking Links</h3>
+                <button onClick={() => setShowLinksModal(false)} style={closeButtonStyle}>✕</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
+                {getTrackingLinks().map((link, index) => (
+                  <div key={index} style={linkItemStyle}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>{link.icon}</span>
+                        <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{link.name}</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)', wordBreak: 'break-all' }}>
+                        {link.url}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => copySpecificLink(link.url, index)}
+                      style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                    >
+                      {copiedLinkIndex === index ? '✓' : '📋'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -493,4 +576,89 @@ const smallButtonStyle = {
   transition: 'all 0.2s ease',
   textAlign: 'center' as const,
   width: '100%'
+}
+
+const modalOverlayStyle = {
+  position: 'fixed' as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'rgba(0, 0, 0, 0.8)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 9999,
+  padding: '1rem'
+}
+
+const modalContentStyle = {
+  background: 'rgba(255, 255, 255, 0.05)',
+  backdropFilter: 'blur(40px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  borderRadius: '20px',
+  padding: '2rem',
+  maxWidth: '600px',
+  width: '100%',
+  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+  color: '#fff'
+}
+
+const closeButtonStyle = {
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  borderRadius: '50%',
+  width: '32px',
+  height: '32px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  color: '#fff',
+  fontSize: '1.2rem',
+  transition: 'all 0.2s ease'
+}
+
+const linkItemStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  background: 'rgba(255, 255, 255, 0.03)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  borderRadius: '12px',
+  padding: '12px'
+}
+
+const smallCopyButtonStyle = {
+  background: 'rgba(16, 185, 129, 0.15)',
+  border: '1px solid rgba(16, 185, 129, 0.3)',
+  borderRadius: '8px',
+  width: '40px',
+  height: '40px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  fontSize: '1.1rem',
+  flexShrink: 0,
+  transition: 'all 0.2s ease'
+}
+
+const copiedSmallButtonStyle = {
+  background: 'rgba(16, 185, 129, 0.35)',
+  border: '1.5px solid rgba(16, 185, 129, 0.6)',
+  borderRadius: '8px',
+  width: '40px',
+  height: '40px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  fontSize: '1.1rem',
+  flexShrink: 0,
+  color: '#10b981',
+  boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)'
 }
