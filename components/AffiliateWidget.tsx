@@ -33,7 +33,6 @@ export default function AffiliateWidget() {
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isGeneratingLink, setIsGeneratingLink] = useState(false)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -149,36 +148,6 @@ export default function AffiliateWidget() {
       console.error('Error creating affiliate:', error)
       setError('Failed to create affiliate account')
       setIsCreating(false)
-    }
-  }
-
-  const generateLink = async () => {
-    if (!affiliateData?.id) return
-
-    setIsGeneratingLink(true)
-    try {
-      const response = await fetch('/api/affiliate/create-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          affiliateId: affiliateData.id,
-          email: affiliateData.email 
-        })
-      })
-
-      const result = await response.json()
-      
-      if (result.success && result.link) {
-        // Update affiliate data with new link
-        setAffiliateData({ ...affiliateData, link: result.link })
-      } else {
-        alert('Failed to generate link. Please try again or contact support.')
-      }
-    } catch (error) {
-      console.error('Error generating link:', error)
-      alert('Failed to generate link. Please contact support.')
-    } finally {
-      setIsGeneratingLink(false)
     }
   }
 
@@ -319,7 +288,7 @@ export default function AffiliateWidget() {
           </div>
         </div>
 
-        {/* Quick copy link with visual feedback OR generate link button */}
+        {/* Quick copy link with visual feedback */}
         {affiliateData.link ? (
           <button 
             onClick={copyLink} 
@@ -338,13 +307,13 @@ export default function AffiliateWidget() {
             )}
           </button>
         ) : (
-          <button 
-            onClick={generateLink}
-            disabled={isGeneratingLink}
-            style={copyLinkButtonStyle}
-          >
-            {isGeneratingLink ? 'Generating...' : '🔗 Generate Referral Link'}
-          </button>
+          <div style={{ 
+            ...copyLinkButtonStyle, 
+            cursor: 'not-allowed',
+            opacity: 0.5 
+          }}>
+            Link not available - Contact support
+          </div>
         )}
 
         {/* Two buttons side by side */}
