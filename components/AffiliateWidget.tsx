@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { createPortal } from 'react-dom'
 
 interface AffiliateData {
   id: string
@@ -323,8 +324,91 @@ export default function AffiliateWidget() {
   // ACTIVE AFFILIATE VIEW
   if (!affiliateData) return null
 
+  // Modal content (will be rendered via portal)
+  const modalContent = showLinksModal ? createPortal(
+    <div style={modalOverlayStyle} onClick={() => setShowLinksModal(false)}>
+      <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Your Affiliate Links</h3>
+          <button onClick={() => setShowLinksModal(false)} style={closeButtonStyle}>✕</button>
+        </div>
+
+        {/* Link Wrapper Info */}
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          borderRadius: '8px',
+          padding: '0.6rem',
+          marginBottom: '1rem',
+          fontSize: '0.7rem',
+          textAlign: 'center',
+          color: 'rgba(255, 255, 255, 0.9)'
+        }}>
+          Link wrapper: <strong style={{ color: '#10b981' }}>?ref={affiliateData.link?.match(/ref=([^&]+)/)?.[1] || 'yourname'}</strong>
+        </div>
+
+        <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+          {/* Main Pages */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>Main Pages</h4>
+            {getTrackingLinks().mainPages.map((link, index) => (
+              <div key={`main-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index)}
+                  style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === index ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Landing / Sales Pages */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>Landing / Sales Pages</h4>
+            {getTrackingLinks().landingPages.map((link, index) => (
+              <div key={`landing-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index + 10)}
+                  style={copiedLinkIndex === (index + 10) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === (index + 10) ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Live Tools */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>Live Tools</h4>
+            {getTrackingLinks().liveTools.map((link, index) => (
+              <div key={`tools-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index + 20)}
+                  style={copiedLinkIndex === (index + 20) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === (index + 20) ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer Note */}
+        <div style={footerNoteStyle}>
+          Remember to always make sure that <strong>?ref=yourname</strong> is at the end of your link!
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null
+
   return (
     <>
+      {modalContent}
       <div style={widgetStyle}>
         <div style={iconWrapper}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
