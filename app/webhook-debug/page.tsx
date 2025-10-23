@@ -78,9 +78,23 @@ export default function WebhookDebug() {
             {payload.lastPayload.body?.link ? (
               <span style={{ color: '#10b981' }}>✅ {payload.lastPayload.body.link}</span>
             ) : (
-              <span style={{ color: '#ef4444' }}>❌ NULL or Missing</span>
+              <span style={{ color: '#ef4444' }}>❌ NULL (but checking affiliateLinks array...)</span>
             )}
           </div>
+
+          <h3 style={{ color: '#10b981', marginTop: '2rem', marginBottom: '1rem' }}>
+            Affiliate Links Array:
+          </h3>
+          <pre style={{ 
+            background: '#1e293b', 
+            padding: '1.5rem',
+            borderRadius: '8px',
+            overflow: 'auto',
+            fontSize: '0.875rem',
+            lineHeight: '1.6'
+          }}>
+            {JSON.stringify(payload.lastPayload.body?.affiliateLinks, null, 2) || 'No array found'}
+          </pre>
 
           <h3 style={{ color: '#10b981', marginTop: '2rem', marginBottom: '1rem' }}>
             All Body Keys:

@@ -23,16 +23,36 @@ export async function POST(request: NextRequest) {
     console.log('=== END PAYLOAD ===')
     
     // Check if link exists in payload
-    if (payload.body && payload.body.link) {
-      console.log('✅ LINK FOUND:', payload.body.link)
+    console.log('body.link:', payload.body?.link)
+    console.log('body.affiliateLinks:', payload.body?.affiliateLinks)
+    
+    // Extract from affiliateLinks array
+    let extractedLink = payload.body?.link
+    
+    if (!extractedLink && payload.body?.affiliateLinks && payload.body.affiliateLinks.length > 0) {
+      const latestLink = payload.body.affiliateLinks[payload.body.affiliateLinks.length - 1]
+      console.log('Latest link object from array:', latestLink)
+      const slug = latestLink.link || latestLink.slug || latestLink.code
+      console.log('Extracted slug:', slug)
+      
+      if (slug) {
+        extractedLink = `https://thebettinginsider.com?ref=${slug}`
+        console.log('✅ BUILT LINK:', extractedLink)
+      }
+    }
+    
+    if (extractedLink) {
+      console.log('✅ FINAL LINK:', extractedLink)
     } else {
-      console.log('❌ NO LINK IN PAYLOAD')
+      console.log('❌ NO LINK COULD BE EXTRACTED')
       console.log('Body keys:', Object.keys(payload.body || {}))
     }
 
     return NextResponse.json({ 
       success: true,
-      receivedLink: payload.body?.link || null 
+      receivedLink: extractedLink,
+      rawLink: payload.body?.link,
+      affiliateLinksArray: payload.body?.affiliateLinks
     })
 
   } catch (error) {
