@@ -197,6 +197,32 @@ export default function AffiliateWidget() {
           url: `https://www.thebettinginsider.com/fantasy/home?ref=${refSlug}`
         }
       ],
+      landingPages: [
+        {
+          name: 'Bets',
+          url: `https://www.thebettinginsider.com/betting/about?ref=${refSlug}`
+        },
+        {
+          name: 'Public Betting',
+          url: `https://www.thebettinginsider.com/public-betting?ref=${refSlug}`
+        },
+        {
+          name: 'Player Props',
+          url: `https://www.thebettinginsider.com/player-props?ref=${refSlug}`
+        },
+        {
+          name: 'Referee',
+          url: `https://www.thebettinginsider.com/referee-data?ref=${refSlug}`
+        },
+        {
+          name: 'Fantasy',
+          url: `https://www.thebettinginsider.com/fantasy/home?ref=${refSlug}`
+        },
+        {
+          name: 'Pricing',
+          url: `https://www.thebettinginsider.com/pricing?ref=${refSlug}`
+        }
+      ],
       liveTools: [
         {
           name: 'Analyst Picks',
@@ -381,81 +407,86 @@ export default function AffiliateWidget() {
           </div>
         )}
 
-        {/* Links Modal */}
-        {showLinksModal && (
-          <div style={modalOverlayStyle} onClick={() => setShowLinksModal(false)}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700' }}>Your Affiliate Links</h3>
-                <button onClick={() => setShowLinksModal(false)} style={closeButtonStyle}>✕</button>
+      {/* Links Modal - Renders OUTSIDE widget */}
+      {showLinksModal && (
+        <div style={modalOverlayStyle} onClick={() => setShowLinksModal(false)}>
+          <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Your Affiliate Links</h3>
+              <button onClick={() => setShowLinksModal(false)} style={closeButtonStyle}>✕</button>
+            </div>
+
+            {/* Link Wrapper Info */}
+            <div style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              borderRadius: '8px',
+              padding: '0.6rem',
+              marginBottom: '1rem',
+              fontSize: '0.7rem',
+              textAlign: 'center',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }}>
+              Link wrapper: <strong style={{ color: '#10b981' }}>?ref={affiliateData.link?.match(/ref=([^&]+)/)?.[1] || 'yourname'}</strong>
+            </div>
+
+            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {/* Main Pages */}
+              <div style={sectionStyle}>
+                <h4 style={sectionTitleStyle}>Main Pages</h4>
+                {getTrackingLinks().mainPages.map((link, index) => (
+                  <div key={`main-${index}`} style={compactLinkItemStyle}>
+                    <span style={compactLinkNameStyle}>{link.name}</span>
+                    <button
+                      onClick={() => copySpecificLink(link.url, index)}
+                      style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                    >
+                      {copiedLinkIndex === index ? '✓' : '📋'}
+                    </button>
+                  </div>
+                ))}
               </div>
 
-              <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                {/* Main Pages */}
-                <div style={sectionStyle}>
-                  <h4 style={sectionTitleStyle}>Main Pages</h4>
-                  {getTrackingLinks().mainPages.map((link, index) => (
-                    <div key={`main-${index}`} style={linkItemStyle}>
-                      <div style={{ flex: 1 }}>
-                        <div style={linkNameStyle}>{link.name}</div>
-                        <div style={linkUrlStyle}>{link.url}</div>
-                      </div>
-                      <button
-                        onClick={() => copySpecificLink(link.url, index)}
-                        style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
-                      >
-                        {copiedLinkIndex === index ? '✓' : '📋'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              {/* Landing / Sales Pages */}
+              <div style={sectionStyle}>
+                <h4 style={sectionTitleStyle}>Landing / Sales Pages</h4>
+                {getTrackingLinks().landingPages.map((link, index) => (
+                  <div key={`landing-${index}`} style={compactLinkItemStyle}>
+                    <span style={compactLinkNameStyle}>{link.name}</span>
+                    <button
+                      onClick={() => copySpecificLink(link.url, index + 10)}
+                      style={copiedLinkIndex === (index + 10) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                    >
+                      {copiedLinkIndex === (index + 10) ? '✓' : '📋'}
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-                {/* Landing / Sales Pages */}
-                <div style={sectionStyle}>
-                  <h4 style={sectionTitleStyle}>Landing / Sales Pages</h4>
-                  {getTrackingLinks().landingPages.map((link, index) => (
-                    <div key={`landing-${index}`} style={linkItemStyle}>
-                      <div style={{ flex: 1 }}>
-                        <div style={linkNameStyle}>{link.name}</div>
-                        <div style={linkUrlStyle}>{link.url}</div>
-                      </div>
-                      <button
-                        onClick={() => copySpecificLink(link.url, index + 10)}
-                        style={copiedLinkIndex === (index + 10) ? copiedSmallButtonStyle : smallCopyButtonStyle}
-                      >
-                        {copiedLinkIndex === (index + 10) ? '✓' : '📋'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Live Tools */}
-                <div style={sectionStyle}>
-                  <h4 style={sectionTitleStyle}>Live Tools</h4>
-                  {getTrackingLinks().liveTools.map((link, index) => (
-                    <div key={`tools-${index}`} style={linkItemStyle}>
-                      <div style={{ flex: 1 }}>
-                        <div style={linkNameStyle}>{link.name}</div>
-                        <div style={linkUrlStyle}>{link.url}</div>
-                      </div>
-                      <button
-                        onClick={() => copySpecificLink(link.url, index + 20)}
-                        style={copiedLinkIndex === (index + 20) ? copiedSmallButtonStyle : smallCopyButtonStyle}
-                      >
-                        {copiedLinkIndex === (index + 20) ? '✓' : '📋'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Sticky Footer Note */}
-                <div style={footerNoteStyle}>
-                  💡 Always make sure <strong>?ref=yourname</strong> is added at the end of the link!
-                </div>
+              {/* Live Tools */}
+              <div style={sectionStyle}>
+                <h4 style={sectionTitleStyle}>Live Tools</h4>
+                {getTrackingLinks().liveTools.map((link, index) => (
+                  <div key={`tools-${index}`} style={compactLinkItemStyle}>
+                    <span style={compactLinkNameStyle}>{link.name}</span>
+                    <button
+                      onClick={() => copySpecificLink(link.url, index + 20)}
+                      style={copiedLinkIndex === (index + 20) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                    >
+                      {copiedLinkIndex === (index + 20) ? '✓' : '📋'}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Footer Note */}
+            <div style={footerNoteStyle}>
+              Remember to always make sure that <strong>?ref=yourname</strong> is at the end of your link!
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* Two buttons side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
@@ -653,17 +684,16 @@ const modalOverlayStyle = {
 
 const modalContentStyle = {
   background: 'rgba(255, 255, 255, 0.05)',
-  backdropFilter: 'blur(40px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(50px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(50px) saturate(180%)',
+  border: '1px solid rgba(255, 255, 255, 0.15)',
   borderRadius: '16px',
-  padding: '1.5rem',
-  maxWidth: '500px',
-  width: '100%',
-  maxHeight: '85vh',
-  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-  color: '#fff',
-  fontSize: '0.85rem'
+  padding: '1.25rem',
+  maxWidth: '420px',
+  width: '90%',
+  maxHeight: '80vh',
+  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7)',
+  color: '#fff'
 }
 
 const closeButtonStyle = {
@@ -694,29 +724,22 @@ const sectionTitleStyle = {
   margin: '0 0 0.5rem 0'
 }
 
-const linkItemStyle = {
+const compactLinkItemStyle = {
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'space-between',
   gap: '8px',
   background: 'rgba(255, 255, 255, 0.03)',
   border: '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: '8px',
-  padding: '8px 10px',
-  marginBottom: '6px'
+  borderRadius: '6px',
+  padding: '0.5rem 0.75rem',
+  marginBottom: '0.35rem'
 }
 
-const linkNameStyle = {
+const compactLinkNameStyle = {
   fontSize: '0.75rem',
-  fontWeight: '600',
-  marginBottom: '3px',
-  color: 'rgba(255, 255, 255, 0.95)'
-}
-
-const linkUrlStyle = {
-  fontSize: '0.65rem',
-  color: 'rgba(255, 255, 255, 0.6)',
-  wordBreak: 'break-all' as const,
-  lineHeight: '1.3'
+  fontWeight: '500',
+  color: 'rgba(255, 255, 255, 0.9)'
 }
 
 const footerNoteStyle = {
