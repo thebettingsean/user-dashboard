@@ -36,6 +36,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Hide Pushlap's default floating widget */
+[data-affiliate-widget],
+#pushlap-widget,
+.pushlap-widget-button,
+iframe[src*="pushlapgrowth"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* Force Clerk custom menu items to be white - AGGRESSIVE */
 /* Target all possible Clerk menu item elements */
 .cl-userButtonPopover button,

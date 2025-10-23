@@ -21,22 +21,15 @@ interface SalesData {
   thisMonthSales: number
 }
 
-// Declare global AffiliateWidget from Pushlap
-declare global {
-  interface Window {
-    AffiliateWidget?: {
-      show: () => void
-    }
-  }
-}
-
 export default function AffiliateWidget() {
   const { user, isLoaded } = useUser()
   const [isLoading, setIsLoading] = useState(true)
   const [isAffiliate, setIsAffiliate] = useState(false)
   const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null)
   const [salesData, setSalesData] = useState<SalesData | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -50,21 +43,26 @@ export default function AffiliateWidget() {
     }
   }, [affiliateData])
 
-  // Poll for affiliate status after widget might be used
+  // Check for return from Pushlap setup
   useEffect(() => {
-    if (!isAffiliate && isLoaded && user) {
-      const interval = setInterval(() => {
-        checkAffiliateStatus()
-      }, 5000) // Check every 5 seconds
-
-      return () => clearInterval(interval)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('affiliate_setup') === 'complete') {
+        // User returned from Pushlap setup
+        setTimeout(() => checkAffiliateStatus(), 1000)
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname)
+      }
     }
-  }, [isAffiliate, isLoaded, user])
+  }, [])
 
   const checkAffiliateStatus = async () => {
     try {
       const email = user?.emailAddresses[0]?.emailAddress
-      if (!email) return
+      if (!email) {
+        setIsLoading(false)
+        return
+      }
 
       const response = await fetch('/api/affiliate/check', {
         method: 'POST',
@@ -77,6 +75,9 @@ export default function AffiliateWidget() {
       if (data.isAffiliate && data.data) {
         setIsAffiliate(true)
         setAffiliateData(data.data)
+      } else {
+        setIsAffiliate(false)
+        setAffiliateData(null)
       }
     } catch (error) {
       console.error('Error checking affiliate status:', error)
@@ -104,13 +105,42 @@ export default function AffiliateWidget() {
     }
   }
 
-  const openPushlapWidget = () => {
-    if (window.AffiliateWidget) {
-      window.AffiliateWidget.show()
-      // After showing widget, poll more frequently for updates
-      setTimeout(() => checkAffiliateStatus(), 2000)
-    } else {
-      alert('Affiliate widget is loading, please try again in a moment.')
+  const becomeAffiliate = async () => {
+    setIsCreating(true)
+    setError(null)
+
+    try {
+      const email = user?.emailAddresses[0]?.emailAddress
+      const firstName = user?.firstName || 'Insider'
+      const lastName = user?.lastName || 'User'
+
+      if (!email) {
+        setError('Email not found')
+        setIsCreating(false)
+        return
+      }
+
+      // Create affiliate via API
+      const response = await fetch('/api/affiliate/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email })
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.data) {
+        // Affiliate created! Now redirect to Pushlap for complete setup
+        const returnUrl = encodeURIComponent(window.location.href + '?affiliate_setup=complete')
+        window.location.href = `https://www.pushlapgrowth.com/affiliate/complete-setup?email=${encodeURIComponent(email)}&return=${returnUrl}`
+      } else {
+        setError(result.error || 'Failed to create affiliate account')
+        setIsCreating(false)
+      }
+    } catch (error) {
+      console.error('Error creating affiliate:', error)
+      setError('Failed to create affiliate account')
+      setIsCreating(false)
     }
   }
 
@@ -158,11 +188,28 @@ export default function AffiliateWidget() {
           <h2 style={titleStyle}>Affiliate Program</h2>
           <p style={taglineStyle}>Earn 50% recurring revenue</p>
 
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px' }}>
-            <button onClick={openPushlapWidget} style={buttonStyle}>
-              Become an Affiliate
-            </button>
+          <div style={infoBoxStyle}>
+            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5' }}>
+              Refer customers, earn lifetime commissions!
+            </p>
+            <ul style={{ margin: '0', paddingLeft: '1.25rem', fontSize: '0.8rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.8)' }}>
+              <li>50% per sale, forever</li>
+              <li>$50-$150 per customer</li>
+              <li>Track live earnings</li>
+            </ul>
           </div>
+
+          {error && (
+            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+              {error}
+            </p>
+          )}
+
+          <div style={{ flex: 1 }} />
+
+          <button onClick={becomeAffiliate} disabled={isCreating} style={buttonStyle}>
+            {isCreating ? 'Creating Account...' : 'Become an Affiliate'}
+          </button>
         </div>
       </>
     )
@@ -170,37 +217,6 @@ export default function AffiliateWidget() {
 
   // ACTIVE AFFILIATE VIEW
   if (!affiliateData) return null
-
-  // Check if profile is complete (has name and link)
-  const needsSetup = !affiliateData.name || affiliateData.name === 'null null' || !affiliateData.link
-
-  if (needsSetup) {
-    return (
-      <>
-        <div style={widgetStyle}>
-          <div style={iconWrapper}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          
-          <h2 style={titleStyle}>Affiliate Program</h2>
-          <p style={taglineStyle}>Account created • Setup required</p>
-
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '120px' }}>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem', textAlign: 'center' }}>
-              Complete your setup to start earning!
-            </p>
-            <button onClick={openPushlapWidget} style={buttonStyle}>
-              Complete Setup →
-            </button>
-          </div>
-        </div>
-      </>
-    )
-  }
 
   return (
     <>
@@ -217,7 +233,7 @@ export default function AffiliateWidget() {
         <p style={taglineStyle}>Active • {affiliateData.commissionRate}% commission</p>
 
         {/* Two columns: This Month / All Time */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
           <div style={statBoxStyle}>
             <div style={statLabelStyle}>This Month</div>
             <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(0)}</div>
@@ -229,7 +245,7 @@ export default function AffiliateWidget() {
         </div>
 
         {/* Three columns: Referrals / Active / Clicks */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
           <div style={miniStatStyle}>
             <div style={miniStatValueStyle}>{affiliateData.numberOfReferredUsers || 0}</div>
             <div style={miniStatLabelStyle}>Referrals</div>
@@ -252,7 +268,7 @@ export default function AffiliateWidget() {
           {copied ? (
             <>
               <span style={{ marginRight: '6px' }}>✓</span>
-              Copied!
+              Copied to Clipboard!
             </>
           ) : (
             <>
@@ -264,10 +280,18 @@ export default function AffiliateWidget() {
 
         {/* Two buttons side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
-          <button onClick={openPushlapWidget} style={smallButtonStyle}>
+          <button 
+            onClick={() => window.open('https://www.pushlapgrowth.com', '_blank')}
+            style={smallButtonStyle}
+          >
             More Info
           </button>
-          <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={smallButtonStyle}>
+          <a 
+            href="https://www.pushlapgrowth.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={smallButtonStyle}
+          >
             Dashboard
           </a>
         </div>
@@ -315,13 +339,23 @@ const titleStyle = {
   fontSize: '1.1rem',
   fontWeight: '700',
   marginBottom: '0.25rem',
-  color: '#fff'
+  color: '#fff',
+  paddingRight: '60px'
 }
 
 const taglineStyle = {
   fontSize: '0.75rem',
   opacity: 0.6,
   marginBottom: '1rem'
+}
+
+const infoBoxStyle = {
+  background: 'rgba(16, 185, 129, 0.08)',
+  borderRadius: '10px',
+  padding: '1rem',
+  border: '1px solid rgba(16, 185, 129, 0.2)',
+  marginBottom: '1rem',
+  color: 'rgba(255, 255, 255, 0.9)'
 }
 
 const buttonStyle = {
@@ -394,11 +428,20 @@ const copyLinkButtonStyle = {
 }
 
 const copiedButtonStyle = {
-  ...copyLinkButtonStyle,
-  background: 'rgba(16, 185, 129, 0.3)',
-  border: '1px solid rgba(16, 185, 129, 0.5)',
+  width: '100%',
+  background: 'rgba(16, 185, 129, 0.35)',
+  border: '1.5px solid rgba(16, 185, 129, 0.6)',
+  borderRadius: '8px',
+  padding: '0.65rem',
   color: '#10b981',
-  animation: 'pulse 0.5s ease'
+  fontSize: '0.8rem',
+  fontWeight: '700',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)'
 }
 
 const smallButtonStyle = {
