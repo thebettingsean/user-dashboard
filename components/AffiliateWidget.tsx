@@ -21,15 +21,22 @@ interface SalesData {
   thisMonthSales: number
 }
 
+// Declare global AffiliateWidget from Pushlap
+declare global {
+  interface Window {
+    AffiliateWidget?: {
+      show: () => void
+    }
+  }
+}
+
 export default function AffiliateWidget() {
   const { user, isLoaded } = useUser()
   const [isLoading, setIsLoading] = useState(true)
   const [isAffiliate, setIsAffiliate] = useState(false)
   const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null)
   const [salesData, setSalesData] = useState<SalesData | null>(null)
-  const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -42,6 +49,17 @@ export default function AffiliateWidget() {
       fetchSalesData()
     }
   }, [affiliateData])
+
+  // Poll for affiliate status after widget might be used
+  useEffect(() => {
+    if (!isAffiliate && isLoaded && user) {
+      const interval = setInterval(() => {
+        checkAffiliateStatus()
+      }, 5000) // Check every 5 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [isAffiliate, isLoaded, user])
 
   const checkAffiliateStatus = async () => {
     try {
@@ -86,39 +104,13 @@ export default function AffiliateWidget() {
     }
   }
 
-  const createAffiliate = async () => {
-    setIsCreating(true)
-    setError(null)
-
-    try {
-      const email = user?.emailAddresses[0]?.emailAddress
-      const firstName = user?.firstName || 'Insider'
-      const lastName = user?.lastName || 'User'
-
-      if (!email) {
-        setError('Email not found')
-        return
-      }
-
-      const response = await fetch('/api/affiliate/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email })
-      })
-
-      const result = await response.json()
-
-      if (result.success && result.data) {
-        setIsAffiliate(true)
-        setAffiliateData(result.data)
-      } else {
-        setError(result.error || 'Failed to create affiliate account')
-      }
-    } catch (error) {
-      console.error('Error creating affiliate:', error)
-      setError('Failed to create affiliate account')
-    } finally {
-      setIsCreating(false)
+  const openPushlapWidget = () => {
+    if (window.AffiliateWidget) {
+      window.AffiliateWidget.show()
+      // After showing widget, poll more frequently for updates
+      setTimeout(() => checkAffiliateStatus(), 2000)
+    } else {
+      alert('Affiliate widget is loading, please try again in a moment.')
     }
   }
 
@@ -126,7 +118,7 @@ export default function AffiliateWidget() {
     if (affiliateData?.link) {
       navigator.clipboard.writeText(affiliateData.link)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setTimeout(() => setCopied(false), 3000)
     }
   }
 
@@ -166,15 +158,9 @@ export default function AffiliateWidget() {
           <h2 style={titleStyle}>Affiliate Program</h2>
           <p style={taglineStyle}>Earn 50% recurring revenue</p>
 
-          {error && (
-            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
-              {error}
-            </p>
-          )}
-
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px' }}>
-            <button onClick={createAffiliate} disabled={isCreating} style={buttonStyle}>
-              {isCreating ? 'Creating...' : 'Become an Affiliate'}
+            <button onClick={openPushlapWidget} style={buttonStyle}>
+              Become an Affiliate
             </button>
           </div>
         </div>
@@ -185,8 +171,8 @@ export default function AffiliateWidget() {
   // ACTIVE AFFILIATE VIEW
   if (!affiliateData) return null
 
-  // Check if profile is complete (has name)
-  const needsSetup = !affiliateData.name || affiliateData.name === 'null null'
+  // Check if profile is complete (has name and link)
+  const needsSetup = !affiliateData.name || affiliateData.name === 'null null' || !affiliateData.link
 
   if (needsSetup) {
     return (
@@ -207,9 +193,9 @@ export default function AffiliateWidget() {
             <p style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem', textAlign: 'center' }}>
               Complete your setup to start earning!
             </p>
-            <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={buttonStyle}>
-              Finish Dashboard Setup →
-            </a>
+            <button onClick={openPushlapWidget} style={buttonStyle}>
+              Complete Setup →
+            </button>
           </div>
         </div>
       </>
@@ -258,16 +244,29 @@ export default function AffiliateWidget() {
           </div>
         </div>
 
-        {/* Quick copy link */}
-        <button onClick={copyLink} style={copyLinkButtonStyle}>
-          {copied ? '✓ Copied!' : '📋 Copy Referral Link'}
+        {/* Quick copy link with visual feedback */}
+        <button 
+          onClick={copyLink} 
+          style={copied ? copiedButtonStyle : copyLinkButtonStyle}
+        >
+          {copied ? (
+            <>
+              <span style={{ marginRight: '6px' }}>✓</span>
+              Copied!
+            </>
+          ) : (
+            <>
+              <span style={{ marginRight: '6px' }}>📋</span>
+              Copy Referral Link
+            </>
+          )}
         </button>
 
         {/* Two buttons side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
-          <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={smallButtonStyle}>
+          <button onClick={openPushlapWidget} style={smallButtonStyle}>
             More Info
-          </a>
+          </button>
           <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={smallButtonStyle}>
             Dashboard
           </a>
@@ -337,10 +336,7 @@ const buttonStyle = {
   fontSize: '0.85rem',
   fontWeight: '600',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  textAlign: 'center' as const,
-  textDecoration: 'none',
-  display: 'block'
+  transition: 'all 0.2s ease'
 }
 
 const statBoxStyle = {
@@ -391,7 +387,18 @@ const copyLinkButtonStyle = {
   fontSize: '0.8rem',
   fontWeight: '600',
   cursor: 'pointer',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.3s ease',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+}
+
+const copiedButtonStyle = {
+  ...copyLinkButtonStyle,
+  background: 'rgba(16, 185, 129, 0.3)',
+  border: '1px solid rgba(16, 185, 129, 0.5)',
+  color: '#10b981',
+  animation: 'pulse 0.5s ease'
 }
 
 const smallButtonStyle = {
