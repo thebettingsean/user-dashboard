@@ -195,28 +195,6 @@ export default function AffiliateWidget() {
         {
           name: 'Fantasy',
           url: `https://www.thebettinginsider.com/fantasy/home?ref=${refSlug}`
-        }
-      ],
-      landingPages: [
-        {
-          name: 'Bets',
-          url: `https://www.thebettinginsider.com/betting/about?ref=${refSlug}`
-        },
-        {
-          name: 'Public Betting',
-          url: `https://www.thebettinginsider.com/public-betting?ref=${refSlug}`
-        },
-        {
-          name: 'Player Props',
-          url: `https://www.thebettinginsider.com/player-props?ref=${refSlug}`
-        },
-        {
-          name: 'Referee',
-          url: `https://www.thebettinginsider.com/referee-data?ref=${refSlug}`
-        },
-        {
-          name: 'Fantasy',
-          url: `https://www.thebettinginsider.com/fantasy/home?ref=${refSlug}`
         },
         {
           name: 'Pricing',
