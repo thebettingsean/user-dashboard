@@ -40,6 +40,33 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
 
+    // Create affiliate link if not already generated
+    let affiliateLink = data.link
+
+    if (!affiliateLink && data.id) {
+      try {
+        const linkResponse = await fetch(`${PUSHLAP_API_URL}/affiliate-links`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${PUSHLAP_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            affiliateId: data.id
+          })
+        })
+
+        if (linkResponse.ok) {
+          const linkData = await linkResponse.json()
+          affiliateLink = linkData.url || linkData.link
+          console.log('Created affiliate link:', affiliateLink)
+        }
+      } catch (linkError) {
+        console.error('Error creating affiliate link:', linkError)
+        // Continue without link - user can still see dashboard
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -47,7 +74,7 @@ export async function POST(request: NextRequest) {
         name: data.name || `${data.firstName} ${data.lastName}`,
         email: data.email,
         commissionRate: data.commissionRate,
-        link: data.link,
+        link: affiliateLink,
         status: data.status,
         detailsComplete: data.detailsComplete || false,
         payoutEmail: data.payoutEmail || null,

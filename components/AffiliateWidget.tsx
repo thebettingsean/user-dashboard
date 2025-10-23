@@ -33,6 +33,7 @@ export default function AffiliateWidget() {
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -148,6 +149,33 @@ export default function AffiliateWidget() {
       console.error('Error creating affiliate:', error)
       setError('Failed to create affiliate account')
       setIsCreating(false)
+    }
+  }
+
+  const generateLink = async () => {
+    if (!affiliateData?.id) return
+
+    setIsGeneratingLink(true)
+    try {
+      const response = await fetch('/api/affiliate/create-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ affiliateId: affiliateData.id })
+      })
+
+      const result = await response.json()
+      
+      if (result.success && result.link) {
+        // Update affiliate data with new link
+        setAffiliateData({ ...affiliateData, link: result.link })
+      } else {
+        alert('Failed to generate link. Please try again or contact support.')
+      }
+    } catch (error) {
+      console.error('Error generating link:', error)
+      alert('Failed to generate link. Please contact support.')
+    } finally {
+      setIsGeneratingLink(false)
     }
   }
 
@@ -288,23 +316,33 @@ export default function AffiliateWidget() {
           </div>
         </div>
 
-        {/* Quick copy link with visual feedback */}
-        <button 
-          onClick={copyLink} 
-          style={copied ? copiedButtonStyle : copyLinkButtonStyle}
-        >
-          {copied ? (
-            <>
-              <span style={{ marginRight: '6px' }}>✓</span>
-              Copied to Clipboard!
-            </>
-          ) : (
-            <>
-              <span style={{ marginRight: '6px' }}>📋</span>
-              Copy Referral Link
-            </>
-          )}
-        </button>
+        {/* Quick copy link with visual feedback OR generate link button */}
+        {affiliateData.link ? (
+          <button 
+            onClick={copyLink} 
+            style={copied ? copiedButtonStyle : copyLinkButtonStyle}
+          >
+            {copied ? (
+              <>
+                <span style={{ marginRight: '6px' }}>✓</span>
+                Copied to Clipboard!
+              </>
+            ) : (
+              <>
+                <span style={{ marginRight: '6px' }}>📋</span>
+                Copy Referral Link
+              </>
+            )}
+          </button>
+        ) : (
+          <button 
+            onClick={generateLink}
+            disabled={isGeneratingLink}
+            style={copyLinkButtonStyle}
+          >
+            {isGeneratingLink ? 'Generating...' : '🔗 Generate Referral Link'}
+          </button>
+        )}
 
         {/* Two buttons side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
