@@ -33,9 +33,12 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
     
+    console.log('Pushlap API response:', JSON.stringify(data, null, 2))
+    
     // Check if we got an affiliate back
     if (data && (Array.isArray(data) ? data.length > 0 : data.id)) {
       const affiliate = Array.isArray(data) ? data[0] : data
+      console.log('Affiliate link from Pushlap:', affiliate.link)
       return NextResponse.json({
         isAffiliate: true,
         data: {
