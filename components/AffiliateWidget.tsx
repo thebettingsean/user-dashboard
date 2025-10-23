@@ -395,11 +395,17 @@ export default function AffiliateWidget() {
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Footer Note */}
-        <div style={footerNoteStyle}>
-          Remember to always make sure that <strong>?ref=yourname</strong> is at the end of your link!
+          {/* Tips & Tricks */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>Tips & Tricks</h4>
+            <div style={tipBoxStyle}>
+              Always make sure that <strong>?ref=yourname</strong> is at the end of your link!
+            </div>
+            <div style={tipBoxStyle}>
+              Always double check your links! Put it in your browser and make sure it's the page you want!
+            </div>
+          </div>
         </div>
       </div>
     </div>,
@@ -804,16 +810,15 @@ const compactLinkNameStyle = {
   color: 'rgba(255, 255, 255, 0.9)'
 }
 
-const footerNoteStyle = {
-  marginTop: '1rem',
-  padding: '0.75rem',
-  background: 'rgba(16, 185, 129, 0.1)',
-  border: '1px solid rgba(16, 185, 129, 0.2)',
-  borderRadius: '8px',
+const tipBoxStyle = {
+  background: 'rgba(255, 255, 255, 0.03)',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  borderRadius: '6px',
+  padding: '0.5rem 0.75rem',
+  marginBottom: '0.35rem',
   fontSize: '0.7rem',
   lineHeight: '1.4',
-  color: 'rgba(255, 255, 255, 0.8)',
-  textAlign: 'center' as const
+  color: 'rgba(255, 255, 255, 0.8)'
 }
 
 const smallCopyButtonStyle = {

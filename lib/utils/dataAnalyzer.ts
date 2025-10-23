@@ -154,7 +154,7 @@ export function findTopTrends(
   publicMoney: PublicMoneyData
 ): TopTrend[] {
   const trends: TopTrend[] = []
-  
+
   // 1. Find SHARP MONEY indicators from API
   if (publicMoney.sharp_money_stats && publicMoney.sharp_money_stats.length > 0) {
     const sharpBets = publicMoney.sharp_money_stats
@@ -176,8 +176,8 @@ export function findTopTrends(
         ? `${topSharp.sharpness_level_value.toFixed(1)}% value`
         : `${topSharp.sharpness_level}`
       
-      trends.push({
-        type: 'sharp-money',
+    trends.push({
+      type: 'sharp-money',
         label,
         value
       })
@@ -195,8 +195,8 @@ export function findTopTrends(
       const label = formatBetLabel(game, topRLM.bet_type, publicMoney)
       const value = `RLM ${topRLM.percentage.toFixed(1)}%`
       
-      trends.push({
-        type: 'vegas-backed',
+    trends.push({
+      type: 'vegas-backed',
         label,
         value
       })

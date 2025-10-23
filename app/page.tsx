@@ -127,7 +127,7 @@ export default function Home() {
     { 
       id: 'affiliate', 
       title: 'Affiliate Program', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg',
       borderColor: 'rgba(16, 185, 129, 0.6)',
       background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%)',
       component: <AffiliateWidget /> 
