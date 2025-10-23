@@ -16,18 +16,30 @@ export async function POST(request: NextRequest) {
 
     // Handle affiliate.created and affiliate.updated
     if (event === 'affiliate.created' || event === 'affiliate.updated') {
+      console.log('=== PROCESSING AFFILIATE EVENT ===')
+      console.log('body.link:', body.link)
+      console.log('body.affiliateLinks:', JSON.stringify(body.affiliateLinks, null, 2))
+      
       // Extract link from affiliateLinks array
       let affiliateLink = body.link
       
       if (!affiliateLink && body.affiliateLinks && body.affiliateLinks.length > 0) {
+        console.log('Extracting from affiliateLinks array...')
         // Use the LAST link (most recent)
         const latestLink = body.affiliateLinks[body.affiliateLinks.length - 1]
+        console.log('Latest link object:', JSON.stringify(latestLink, null, 2))
+        
         const slug = latestLink.link || latestLink.slug || latestLink.code
+        console.log('Extracted slug:', slug)
         
         if (slug) {
           affiliateLink = `https://thebettinginsider.com?ref=${slug}`
-          console.log('Extracted link from affiliateLinks array:', affiliateLink)
+          console.log('✅ Built affiliate link:', affiliateLink)
+        } else {
+          console.log('❌ No slug found in link object')
         }
+      } else {
+        console.log('❌ No affiliateLinks array or body.link already set')
       }
       
       const affiliateData = {
