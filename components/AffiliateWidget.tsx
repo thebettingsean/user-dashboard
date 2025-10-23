@@ -160,7 +160,10 @@ export default function AffiliateWidget() {
       const response = await fetch('/api/affiliate/create-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ affiliateId: affiliateData.id })
+        body: JSON.stringify({ 
+          affiliateId: affiliateData.id,
+          email: affiliateData.email 
+        })
       })
 
       const result = await response.json()

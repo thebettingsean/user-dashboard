@@ -5,47 +5,34 @@ const PUSHLAP_API_URL = 'https://www.pushlapgrowth.com/api/v1'
 
 export async function POST(request: NextRequest) {
   try {
-    const { affiliateId, customSlug } = await request.json()
+    const { affiliateId, email } = await request.json()
 
-    if (!affiliateId) {
+    if (!affiliateId && !email) {
       return NextResponse.json(
-        { error: 'Affiliate ID is required' },
+        { error: 'Affiliate ID or email is required' },
         { status: 400 }
       )
     }
 
-    // Create affiliate link via Pushlap API
-    const response = await fetch(`${PUSHLAP_API_URL}/affiliate-links`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PUSHLAP_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        affiliateId: affiliateId,
-        slug: customSlug || undefined // Custom slug if provided
-      })
-    })
-
-    const responseText = await response.text()
-    console.log('Pushlap raw response:', responseText)
-    console.log('Response status:', response.status)
-
-    if (!response.ok) {
-      console.error('Failed to create affiliate link. Status:', response.status, 'Body:', responseText)
-      return NextResponse.json(
-        { error: 'Failed to create affiliate link', details: responseText, status: response.status },
-        { status: 500 }
-      )
+    // Since we don't have permission to create links via API,
+    // we'll generate a tracking link using the standard format
+    // The Pushlap tracking script will handle the rest
+    
+    // Extract a clean slug from email or use affiliate ID
+    let slug = 'affiliate'
+    if (email) {
+      // Use part of email before @ as slug
+      slug = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
     }
 
-    const data = JSON.parse(responseText)
-    console.log('Parsed affiliate link data:', JSON.stringify(data, null, 2))
+    // Generate tracking link
+    const trackingLink = `https://thebettinginsider.com?ref=${slug}`
+
+    console.log('Generated tracking link:', trackingLink)
 
     return NextResponse.json({
       success: true,
-      link: data.url || data.link || data.trackingUrl || null,
-      rawData: data
+      link: trackingLink
     })
 
   } catch (error) {

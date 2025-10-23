@@ -45,20 +45,21 @@ export async function POST(request: NextRequest) {
 
     if (!affiliateLink && data.id) {
       try {
-        const linkResponse = await fetch(`${PUSHLAP_API_URL}/affiliate-links`, {
+        // Generate tracking link using our internal route
+        const linkResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/affiliate/create-link`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${PUSHLAP_API_KEY}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            affiliateId: data.id
+            affiliateId: data.id,
+            email: email
           })
         })
 
         if (linkResponse.ok) {
           const linkData = await linkResponse.json()
-          affiliateLink = linkData.url || linkData.link
+          affiliateLink = linkData.link
           console.log('Created affiliate link:', affiliateLink)
         }
       } catch (linkError) {
