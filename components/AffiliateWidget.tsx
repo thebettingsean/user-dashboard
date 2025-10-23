@@ -132,65 +132,89 @@ export default function AffiliateWidget() {
 
   if (isLoading || !isLoaded) {
     return (
-      <div style={widgetStyle}>
-        <p style={{ color: 'rgba(255, 255, 255, 0.6)', textAlign: 'center' }}>Loading...</p>
-      </div>
+      <>
+        <div style={widgetStyle}>
+          <div style={iconWrapper}>
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
+              style={{ width: '36px', height: '36px' }} 
+              alt="Affiliate" 
+            />
+          </div>
+          
+          <h2 style={titleStyle}>
+            Affiliate Program
+          </h2>
+          
+          <p style={taglineStyle}>
+            Loading...
+          </p>
+
+          <div style={{ flex: 1 }} />
+        </div>
+      </>
     )
   }
 
   // NON-AFFILIATE VIEW
   if (!isAffiliate) {
     return (
-      <div style={widgetStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-          <div style={iconWrapperStyle}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+      <>
+        <div style={widgetStyle}>
+          <div style={iconWrapper}>
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
+              style={{ width: '36px', height: '36px' }} 
+              alt="Affiliate" 
+            />
           </div>
-          <div>
-            <h3 style={titleStyle}>Affiliate Program</h3>
-            <span style={subtitleStyle}>Earn 50% recurring revenue</span>
-          </div>
-        </div>
-
-        <div style={{ margin: '20px 0' }}>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', marginBottom: '16px', lineHeight: '1.5' }}>
-            Refer customers and earn lifetime commissions on every payment!
-          </p>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#10b981', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem' }}>50% per sale, forever</span>
+          <h2 style={titleStyle}>
+            Affiliate Program
+          </h2>
+          
+          <p style={taglineStyle}>
+            Earn 50% recurring revenue
+          </p>
+
+          <div style={{ marginTop: '1rem' }}>
+            <p style={{ ...contentTextStyle, marginBottom: '1rem' }}>
+              Refer customers and earn lifetime commissions on every payment!
+            </p>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={bulletPointStyle}>
+                <span style={checkmarkStyle}>✓</span>
+                <span style={bulletTextStyle}>50% per sale, forever</span>
+              </div>
+              <div style={bulletPointStyle}>
+                <span style={checkmarkStyle}>✓</span>
+                <span style={bulletTextStyle}>$50-$150 per customer</span>
+              </div>
+              <div style={bulletPointStyle}>
+                <span style={checkmarkStyle}>✓</span>
+                <span style={bulletTextStyle}>Track everything live</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#10b981', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem' }}>$50-$150 per customer</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#10b981', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem' }}>Track everything live</span>
-            </div>
+
+            {error && (
+              <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '12px' }}>
+                {error}
+              </p>
+            )}
           </div>
 
-          {error && (
-            <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '12px' }}>
-              {error}
-            </p>
-          )}
+          <div style={{ flex: 1 }} />
 
           <button
             onClick={createAffiliate}
             disabled={isCreating}
             style={buttonStyle}
           >
-            {isCreating ? 'Creating Account...' : 'Become an Affiliate →'}
+            {isCreating ? 'Creating...' : 'Become an Affiliate'}
           </button>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -198,82 +222,93 @@ export default function AffiliateWidget() {
   if (!affiliateData) return null
 
   return (
-    <div style={widgetStyle}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-        <div style={iconWrapperStyle}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+    <>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>
+          <img 
+            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
+            style={{ width: '36px', height: '36px' }} 
+            alt="Affiliate" 
+          />
         </div>
-        <div>
-          <h3 style={titleStyle}>Your Affiliate Earnings</h3>
-          <span style={subtitleStyle}>Active • {affiliateData.commissionRate}% commission</span>
-        </div>
-      </div>
+        
+        <h2 style={titleStyle}>
+          Affiliate Dashboard
+        </h2>
+        
+        <p style={taglineStyle}>
+          Active • {affiliateData.commissionRate}% commission
+        </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>This Month</div>
-          <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(2)}</div>
-        </div>
-        <div style={statBoxStyle}>
-          <div style={statLabelStyle}>All Time</div>
-          <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(2)}</div>
-        </div>
-      </div>
-
-      {affiliateData.link && (
-        <div style={linkBoxStyle}>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
-              YOUR LINK
+        <div style={{ marginTop: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
+            <div style={statBoxStyle}>
+              <div style={statLabelStyle}>This Month</div>
+              <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(2)}</div>
             </div>
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: 'rgba(255, 255, 255, 0.9)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}>
-              {affiliateData.link}
+            <div style={statBoxStyle}>
+              <div style={statLabelStyle}>All Time</div>
+              <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(2)}</div>
             </div>
           </div>
-          <button
-            onClick={copyLink}
-            style={copyButtonStyle}
-          >
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-      )}
 
-      <div style={{ display: 'flex', gap: '16px', marginTop: '16px', marginBottom: '12px' }}>
-        <div style={{ flex: 1 }}>
-          <div style={miniStatStyle}>
-            <span style={{ fontSize: '1.25rem', fontWeight: '700' }}>{affiliateData.numberOfReferredUsers || 0}</span>
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Referrals</span>
+          {affiliateData.link && (
+            <div style={linkBoxStyle}>
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Your Link
+                </div>
+                <div style={{ 
+                  fontSize: '0.8rem', 
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {affiliateData.link}
+                </div>
+              </div>
+              <button
+                onClick={copyLink}
+                style={copyButtonStyle}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '16px', marginTop: '1rem' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{affiliateData.numberOfReferredUsers || 0}</div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Referrals</div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{salesData?.totalSales || 0}</div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Active</div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{affiliateData.numberOfClicks || 0}</div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Clicks</div>
+            </div>
           </div>
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={miniStatStyle}>
-            <span style={{ fontSize: '1.25rem', fontWeight: '700' }}>{salesData?.totalSales || 0}</span>
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Active</span>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={miniStatStyle}>
-            <span style={{ fontSize: '1.25rem', fontWeight: '700' }}>{affiliateData.numberOfClicks || 0}</span>
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Clicks</span>
-          </div>
-        </div>
+
+        <div style={{ flex: 1 }} />
+
+        <a
+          href="https://www.pushlapgrowth.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={buttonStyle}
+        >
+          View Full Dashboard →
+        </a>
       </div>
-    </div>
+    </>
   )
 }
 
-// STYLES
+// STYLES - MATCH OTHER WIDGETS EXACTLY
 const widgetStyle = {
   background: 'rgba(255, 255, 255, 0.05)',
   backdropFilter: 'blur(30px) saturate(180%)',
@@ -285,62 +320,96 @@ const widgetStyle = {
   color: '#ffffff',
   height: '100%',
   display: 'flex',
-  flexDirection: 'column' as const
+  flexDirection: 'column' as const,
+  position: 'relative' as const
 }
 
-const iconWrapperStyle = {
+const iconWrapper = {
+  position: 'absolute' as const,
+  top: '1.5rem',
+  right: '1.5rem',
   width: '48px',
   height: '48px',
-  borderRadius: '12px',
-  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#10b981',
-  flexShrink: 0
+  filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.4))'
 }
 
 const titleStyle = {
-  fontSize: '1.125rem',
+  fontSize: '1.25rem',
   fontWeight: '700',
   margin: '0',
-  color: '#ffffff'
+  marginBottom: '0.5rem',
+  color: '#ffffff',
+  paddingRight: '60px'
 }
 
-const subtitleStyle = {
+const taglineStyle = {
+  fontSize: '0.9rem',
+  color: 'rgba(255, 255, 255, 0.7)',
+  margin: '0',
+  lineHeight: '1.4'
+}
+
+const contentTextStyle = {
+  fontSize: '0.9rem',
+  color: 'rgba(255, 255, 255, 0.8)',
+  lineHeight: '1.5',
+  margin: '0'
+}
+
+const bulletPointStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  marginBottom: '8px'
+}
+
+const checkmarkStyle = {
+  color: '#10b981',
+  fontSize: '16px',
+  fontWeight: 'bold'
+}
+
+const bulletTextStyle = {
   fontSize: '0.875rem',
-  color: 'rgba(255, 255, 255, 0.6)'
+  color: 'rgba(255, 255, 255, 0.8)'
 }
 
 const buttonStyle = {
   width: '100%',
-  padding: '12px 24px',
-  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-  border: 'none',
+  padding: '0.875rem 1.5rem',
+  background: 'rgba(16, 185, 129, 0.15)',
+  border: '1px solid rgba(16, 185, 129, 0.3)',
   borderRadius: '12px',
-  color: '#ffffff',
-  fontSize: '1rem',
+  color: '#10b981',
+  fontSize: '0.95rem',
   fontWeight: '600',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+  textAlign: 'center' as const,
+  textDecoration: 'none',
+  display: 'block'
 }
 
 const statBoxStyle = {
   background: 'rgba(255, 255, 255, 0.03)',
-  borderRadius: '12px',
+  borderRadius: '10px',
   padding: '12px',
   textAlign: 'center' as const
 }
 
 const statLabelStyle = {
-  fontSize: '0.75rem',
-  color: 'rgba(255, 255, 255, 0.6)',
-  marginBottom: '4px'
+  fontSize: '0.7rem',
+  color: 'rgba(255, 255, 255, 0.5)',
+  marginBottom: '4px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px'
 }
 
 const statValueStyle = {
-  fontSize: '1.5rem',
+  fontSize: '1.4rem',
   fontWeight: '700',
   color: '#10b981'
 }
@@ -350,27 +419,21 @@ const linkBoxStyle = {
   alignItems: 'center',
   gap: '12px',
   background: 'rgba(255, 255, 255, 0.03)',
-  borderRadius: '12px',
-  padding: '12px'
+  borderRadius: '10px',
+  padding: '12px',
+  marginTop: '12px'
 }
 
 const copyButtonStyle = {
   padding: '8px 16px',
-  background: 'rgba(16, 185, 129, 0.2)',
+  background: 'rgba(16, 185, 129, 0.15)',
   border: '1px solid rgba(16, 185, 129, 0.3)',
   borderRadius: '8px',
   color: '#10b981',
-  fontSize: '0.875rem',
+  fontSize: '0.8rem',
   fontWeight: '600',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  flexShrink: 0
+  flexShrink: 0,
+  whiteSpace: 'nowrap' as const
 }
-
-const miniStatStyle = {
-  display: 'flex',
-  flexDirection: 'column' as const,
-  gap: '4px',
-  textAlign: 'center' as const
-}
-

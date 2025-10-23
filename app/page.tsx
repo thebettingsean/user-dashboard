@@ -69,6 +69,14 @@ export default function Home() {
       borderColor: 'rgba(217, 217, 217, 0.6)',
       background: 'linear-gradient(135deg, rgba(217, 217, 217, 0.15) 0%, rgba(217, 217, 217, 0.08) 100%)',
       component: <MatchupWidget /> 
+    },
+    { 
+      id: 'news', 
+      title: 'The Weekly Report', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
+      borderColor: 'rgba(56, 182, 255, 0.6)',
+      background: 'linear-gradient(135deg, rgba(56, 182, 255, 0.15) 0%, rgba(56, 182, 255, 0.08) 100%)',
+      component: <NewsWidget /> 
     }
   ]
 
@@ -100,14 +108,6 @@ export default function Home() {
   ]
 
   const row3Widgets = [
-    { 
-      id: 'news', 
-      title: 'The Weekly Report', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      borderColor: 'rgba(56, 182, 255, 0.6)',
-      background: 'linear-gradient(135deg, rgba(56, 182, 255, 0.15) 0%, rgba(56, 182, 255, 0.08) 100%)',
-      component: <NewsWidget /> 
-    },
     { 
       id: 'maximize', 
       title: 'Maximize Profit', 
@@ -442,11 +442,6 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <NewsWidget />
-              </LockedWidget>
-            </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <MaximizeProfitWidget />
