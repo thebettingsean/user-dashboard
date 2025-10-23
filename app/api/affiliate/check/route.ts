@@ -77,9 +77,21 @@ export async function POST(request: NextRequest) {
     if (data && (Array.isArray(data) ? data.length > 0 : data.id)) {
       const affiliate = Array.isArray(data) ? data[0] : data
       console.log('Affiliate link from Pushlap:', affiliate.link)
+      console.log('Affiliate links array:', affiliate.affiliateLinks)
       
-      // If link is null, try fetching from affiliate-links endpoint
+      // Check if affiliateLinks array exists and has links
       let affiliateLink = affiliate.link
+      
+      if (!affiliateLink && affiliate.affiliateLinks && affiliate.affiliateLinks.length > 0) {
+        // Use the LAST link (most recent)
+        const latestLink = affiliate.affiliateLinks[affiliate.affiliateLinks.length - 1]
+        const slug = latestLink.link || latestLink.slug || latestLink.code
+        
+        if (slug) {
+          affiliateLink = `https://thebettinginsider.com?ref=${slug}`
+          console.log('Built link from affiliateLinks array:', affiliateLink)
+        }
+      }
       
       if (!affiliateLink && affiliate.id) {
         try {

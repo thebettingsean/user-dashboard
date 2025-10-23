@@ -16,10 +16,24 @@ export async function POST(request: NextRequest) {
 
     // Handle affiliate.created and affiliate.updated
     if (event === 'affiliate.created' || event === 'affiliate.updated') {
+      // Extract link from affiliateLinks array
+      let affiliateLink = body.link
+      
+      if (!affiliateLink && body.affiliateLinks && body.affiliateLinks.length > 0) {
+        // Use the LAST link (most recent)
+        const latestLink = body.affiliateLinks[body.affiliateLinks.length - 1]
+        const slug = latestLink.link || latestLink.slug || latestLink.code
+        
+        if (slug) {
+          affiliateLink = `https://thebettinginsider.com?ref=${slug}`
+          console.log('Extracted link from affiliateLinks array:', affiliateLink)
+        }
+      }
+      
       const affiliateData = {
         email: body.email,
         affiliate_id: body.id,
-        link: body.link,
+        link: affiliateLink,
         first_name: body.firstName,
         last_name: body.lastName,
         status: body.status,
