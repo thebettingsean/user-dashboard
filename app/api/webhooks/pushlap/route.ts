@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Handle sale.created for real-time earnings updates
-    if (event === 'sale.created') {
+    // Handle sale.created and sale.updated for real-time earnings updates
+    if (event === 'sale.created' || event === 'sale.updated') {
       const { affiliateId, commissionEarned, totalEarned } = body
 
       if (affiliateId) {
@@ -78,13 +78,13 @@ export async function POST(request: NextRequest) {
         if (error) {
           console.error('Error updating earnings:', error)
         } else {
-          console.log('Updated earnings for affiliate:', affiliateId)
+          console.log(`Updated earnings for affiliate ${affiliateId} (${event})`)
         }
       }
 
       return NextResponse.json({ 
         success: true, 
-        message: 'Sale processed',
+        message: event === 'sale.created' ? 'Sale created' : 'Sale updated',
         event 
       })
     }
