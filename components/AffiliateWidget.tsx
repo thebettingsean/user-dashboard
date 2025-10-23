@@ -307,12 +307,13 @@ export default function AffiliateWidget() {
             )}
           </button>
         ) : (
-          <div style={{ 
-            ...copyLinkButtonStyle, 
-            cursor: 'not-allowed',
-            opacity: 0.5 
-          }}>
-            Link not available - Contact support
+          <div style={infoBoxStyle}>
+            <p style={{ margin: '0', fontSize: '0.8rem', lineHeight: '1.5', textAlign: 'center' }}>
+              📧 Your referral link is ready!<br />
+              <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                Email support@thebettinginsider.com to get your personal tracking link.
+              </span>
+            </p>
           </div>
         )}
 
