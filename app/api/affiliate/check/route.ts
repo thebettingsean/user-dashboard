@@ -39,6 +39,40 @@ export async function POST(request: NextRequest) {
     if (data && (Array.isArray(data) ? data.length > 0 : data.id)) {
       const affiliate = Array.isArray(data) ? data[0] : data
       console.log('Affiliate link from Pushlap:', affiliate.link)
+      
+      // If link is null, try fetching from affiliate-links endpoint
+      let affiliateLink = affiliate.link
+      
+      if (!affiliateLink && affiliate.id) {
+        try {
+          const linksResponse = await fetch(`${PUSHLAP_API_URL}/affiliate-links`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${PUSHLAP_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (linksResponse.ok) {
+            const allLinks = await linksResponse.json()
+            console.log('Fetched affiliate links:', allLinks)
+            
+            // Find links for this affiliate
+            const myLinks = Array.isArray(allLinks) 
+              ? allLinks.filter((link: any) => link.affiliateId === affiliate.id)
+              : []
+            
+            if (myLinks.length > 0) {
+              const primaryLink = myLinks[0]
+              affiliateLink = primaryLink.url || primaryLink.link || `https://thebettinginsider.com?ref=${primaryLink.slug || primaryLink.code}`
+              console.log('Found affiliate link:', affiliateLink)
+            }
+          }
+        } catch (linkError) {
+          console.error('Error fetching affiliate links:', linkError)
+        }
+      }
+      
       return NextResponse.json({
         isAffiliate: true,
         data: {
@@ -46,7 +80,7 @@ export async function POST(request: NextRequest) {
           name: affiliate.name || `${affiliate.firstName} ${affiliate.lastName}`,
           email: affiliate.email,
           commissionRate: affiliate.commissionRate,
-          link: affiliate.link,
+          link: affiliateLink,
           status: affiliate.status,
           detailsComplete: affiliate.detailsComplete || false,
           payoutEmail: affiliate.payoutEmail || null,
