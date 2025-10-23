@@ -135,21 +135,15 @@ export default function AffiliateWidget() {
       <>
         <div style={widgetStyle}>
           <div style={iconWrapper}>
-            <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
-              style={{ width: '36px', height: '36px' }} 
-              alt="Affiliate" 
-            />
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
           
-          <h2 style={titleStyle}>
-            Affiliate Program
-          </h2>
-          
-          <p style={taglineStyle}>
-            Loading...
-          </p>
-
+          <h2 style={titleStyle}>Affiliate Program</h2>
+          <p style={taglineStyle}>Loading...</p>
           <div style={{ flex: 1 }} />
         </div>
       </>
@@ -162,57 +156,27 @@ export default function AffiliateWidget() {
       <>
         <div style={widgetStyle}>
           <div style={iconWrapper}>
-            <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
-              style={{ width: '36px', height: '36px' }} 
-              alt="Affiliate" 
-            />
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
           
-          <h2 style={titleStyle}>
-            Affiliate Program
-          </h2>
-          
-          <p style={taglineStyle}>
-            Earn 50% recurring revenue
-          </p>
+          <h2 style={titleStyle}>Affiliate Program</h2>
+          <p style={taglineStyle}>Earn 50% recurring revenue</p>
 
-          <div style={{ marginTop: '1rem' }}>
-            <p style={{ ...contentTextStyle, marginBottom: '1rem' }}>
-              Refer customers and earn lifetime commissions on every payment!
+          {error && (
+            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+              {error}
             </p>
-            
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={bulletPointStyle}>
-                <span style={checkmarkStyle}>✓</span>
-                <span style={bulletTextStyle}>50% per sale, forever</span>
-              </div>
-              <div style={bulletPointStyle}>
-                <span style={checkmarkStyle}>✓</span>
-                <span style={bulletTextStyle}>$50-$150 per customer</span>
-              </div>
-              <div style={bulletPointStyle}>
-                <span style={checkmarkStyle}>✓</span>
-                <span style={bulletTextStyle}>Track everything live</span>
-              </div>
-            </div>
+          )}
 
-            {error && (
-              <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '12px' }}>
-                {error}
-              </p>
-            )}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px' }}>
+            <button onClick={createAffiliate} disabled={isCreating} style={buttonStyle}>
+              {isCreating ? 'Creating...' : 'Become an Affiliate'}
+            </button>
           </div>
-
-          <div style={{ flex: 1 }} />
-
-          <button
-            onClick={createAffiliate}
-            disabled={isCreating}
-            style={buttonStyle}
-          >
-            {isCreating ? 'Creating...' : 'Become an Affiliate'}
-          </button>
         </div>
       </>
     )
@@ -221,88 +185,93 @@ export default function AffiliateWidget() {
   // ACTIVE AFFILIATE VIEW
   if (!affiliateData) return null
 
+  // Check if profile is complete (has name)
+  const needsSetup = !affiliateData.name || affiliateData.name === 'null null'
+
+  if (needsSetup) {
+    return (
+      <>
+        <div style={widgetStyle}>
+          <div style={iconWrapper}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          
+          <h2 style={titleStyle}>Affiliate Program</h2>
+          <p style={taglineStyle}>Account created • Setup required</p>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '120px' }}>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem', textAlign: 'center' }}>
+              Complete your setup to start earning!
+            </p>
+            <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={buttonStyle}>
+              Finish Dashboard Setup →
+            </a>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
-          <img 
-            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
-            style={{ width: '36px', height: '36px' }} 
-            alt="Affiliate" 
-          />
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
         
-        <h2 style={titleStyle}>
-          Affiliate Dashboard
-        </h2>
-        
-        <p style={taglineStyle}>
-          Active • {affiliateData.commissionRate}% commission
-        </p>
+        <h2 style={titleStyle}>Affiliate Dashboard</h2>
+        <p style={taglineStyle}>Active • {affiliateData.commissionRate}% commission</p>
 
-        <div style={{ marginTop: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1rem' }}>
-            <div style={statBoxStyle}>
-              <div style={statLabelStyle}>This Month</div>
-              <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(2)}</div>
-            </div>
-            <div style={statBoxStyle}>
-              <div style={statLabelStyle}>All Time</div>
-              <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(2)}</div>
-            </div>
+        {/* Two columns: This Month / All Time */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '0.75rem' }}>
+          <div style={statBoxStyle}>
+            <div style={statLabelStyle}>This Month</div>
+            <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(0)}</div>
           </div>
-
-          {affiliateData.link && (
-            <div style={linkBoxStyle}>
-              <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Your Link
-                </div>
-                <div style={{ 
-                  fontSize: '0.8rem', 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {affiliateData.link}
-                </div>
-              </div>
-              <button
-                onClick={copyLink}
-                style={copyButtonStyle}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          )}
-
-          <div style={{ display: 'flex', gap: '16px', marginTop: '1rem' }}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{affiliateData.numberOfReferredUsers || 0}</div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Referrals</div>
-            </div>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{salesData?.totalSales || 0}</div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Active</div>
-            </div>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#10b981', marginBottom: '4px' }}>{affiliateData.numberOfClicks || 0}</div>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>Clicks</div>
-            </div>
+          <div style={statBoxStyle}>
+            <div style={statLabelStyle}>All Time</div>
+            <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(0)}</div>
           </div>
         </div>
 
-        <div style={{ flex: 1 }} />
+        {/* Three columns: Referrals / Active / Clicks */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '0.75rem' }}>
+          <div style={miniStatStyle}>
+            <div style={miniStatValueStyle}>{affiliateData.numberOfReferredUsers || 0}</div>
+            <div style={miniStatLabelStyle}>Referrals</div>
+          </div>
+          <div style={miniStatStyle}>
+            <div style={miniStatValueStyle}>{salesData?.totalSales || 0}</div>
+            <div style={miniStatLabelStyle}>Active</div>
+          </div>
+          <div style={miniStatStyle}>
+            <div style={miniStatValueStyle}>{affiliateData.numberOfClicks || 0}</div>
+            <div style={miniStatLabelStyle}>Clicks</div>
+          </div>
+        </div>
 
-        <a
-          href="https://www.pushlapgrowth.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={buttonStyle}
-        >
-          View Full Dashboard →
-        </a>
+        {/* Quick copy link */}
+        <button onClick={copyLink} style={copyLinkButtonStyle}>
+          {copied ? '✓ Copied!' : '📋 Copy Referral Link'}
+        </button>
+
+        {/* Two buttons side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
+          <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={smallButtonStyle}>
+            More Info
+          </a>
+          <a href="https://www.pushlapgrowth.com" target="_blank" rel="noopener noreferrer" style={smallButtonStyle}>
+            Dashboard
+          </a>
+        </div>
       </div>
     </>
   )
@@ -314,77 +283,58 @@ const widgetStyle = {
   backdropFilter: 'blur(30px) saturate(180%)',
   WebkitBackdropFilter: 'blur(30px) saturate(180%)',
   border: '0.5px solid rgba(255, 255, 255, 0.08)',
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-  borderRadius: '20px',
+  borderRadius: '24px',
   padding: '1.5rem',
-  color: '#ffffff',
-  height: '100%',
+  position: 'relative' as const,
+  minHeight: '320px',
   display: 'flex',
   flexDirection: 'column' as const,
-  position: 'relative' as const
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+  color: '#fff'
 }
 
 const iconWrapper = {
   position: 'absolute' as const,
-  top: '1.5rem',
-  right: '1.5rem',
-  width: '48px',
-  height: '48px',
+  top: '1rem',
+  right: '1rem',
+  width: '52px',
+  height: '52px',
+  border: '1.5px solid rgba(16, 185, 129, 0.4)',
+  borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.4))'
+  background: 'rgba(16, 185, 129, 0.15)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  zIndex: 2,
+  color: '#10b981'
 }
 
 const titleStyle = {
-  fontSize: '1.25rem',
+  fontSize: '1.1rem',
   fontWeight: '700',
-  margin: '0',
-  marginBottom: '0.5rem',
-  color: '#ffffff',
-  paddingRight: '60px'
+  marginBottom: '0.25rem',
+  color: '#fff'
 }
 
 const taglineStyle = {
-  fontSize: '0.9rem',
-  color: 'rgba(255, 255, 255, 0.7)',
-  margin: '0',
-  lineHeight: '1.4'
-}
-
-const contentTextStyle = {
-  fontSize: '0.9rem',
-  color: 'rgba(255, 255, 255, 0.8)',
-  lineHeight: '1.5',
-  margin: '0'
-}
-
-const bulletPointStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  marginBottom: '8px'
-}
-
-const checkmarkStyle = {
-  color: '#10b981',
-  fontSize: '16px',
-  fontWeight: 'bold'
-}
-
-const bulletTextStyle = {
-  fontSize: '0.875rem',
-  color: 'rgba(255, 255, 255, 0.8)'
+  fontSize: '0.75rem',
+  opacity: 0.6,
+  marginBottom: '1rem'
 }
 
 const buttonStyle = {
   width: '100%',
-  padding: '0.875rem 1.5rem',
-  background: 'rgba(16, 185, 129, 0.15)',
+  background: 'rgba(16, 185, 129, 0.25)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
   border: '1px solid rgba(16, 185, 129, 0.3)',
-  borderRadius: '12px',
-  color: '#10b981',
-  fontSize: '0.95rem',
+  borderRadius: '10px',
+  padding: '0.875rem 1.5rem',
+  color: '#ffffff',
+  fontSize: '0.85rem',
   fontWeight: '600',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
@@ -394,46 +344,67 @@ const buttonStyle = {
 }
 
 const statBoxStyle = {
-  background: 'rgba(255, 255, 255, 0.03)',
+  background: 'rgba(16, 185, 129, 0.08)',
   borderRadius: '10px',
-  padding: '12px',
+  padding: '0.75rem 0.5rem',
+  border: '1px solid rgba(16, 185, 129, 0.2)',
   textAlign: 'center' as const
 }
 
 const statLabelStyle = {
   fontSize: '0.7rem',
-  color: 'rgba(255, 255, 255, 0.5)',
-  marginBottom: '4px',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.5px'
+  color: 'rgba(255, 255, 255, 0.6)',
+  marginBottom: '4px'
 }
 
 const statValueStyle = {
-  fontSize: '1.4rem',
+  fontSize: '1.2rem',
   fontWeight: '700',
   color: '#10b981'
 }
 
-const linkBoxStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  background: 'rgba(255, 255, 255, 0.03)',
-  borderRadius: '10px',
-  padding: '12px',
-  marginTop: '12px'
+const miniStatStyle = {
+  textAlign: 'center' as const
 }
 
-const copyButtonStyle = {
-  padding: '8px 16px',
-  background: 'rgba(16, 185, 129, 0.15)',
-  border: '1px solid rgba(16, 185, 129, 0.3)',
-  borderRadius: '8px',
+const miniStatValueStyle = {
+  fontSize: '1.1rem',
+  fontWeight: '700',
   color: '#10b981',
+  marginBottom: '2px'
+}
+
+const miniStatLabelStyle = {
+  fontSize: '0.65rem',
+  color: 'rgba(255, 255, 255, 0.6)',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px'
+}
+
+const copyLinkButtonStyle = {
+  width: '100%',
+  background: 'rgba(16, 185, 129, 0.15)',
+  border: '1px solid rgba(16, 185, 129, 0.25)',
+  borderRadius: '8px',
+  padding: '0.65rem',
+  color: 'rgba(255, 255, 255, 0.9)',
   fontSize: '0.8rem',
   fontWeight: '600',
   cursor: 'pointer',
+  transition: 'all 0.2s ease'
+}
+
+const smallButtonStyle = {
+  background: 'rgba(16, 185, 129, 0.15)',
+  border: '1px solid rgba(16, 185, 129, 0.25)',
+  borderRadius: '8px',
+  padding: '0.6rem 0.5rem',
+  color: 'rgba(255, 255, 255, 0.9)',
+  fontSize: '0.75rem',
+  fontWeight: '600',
+  cursor: 'pointer',
   transition: 'all 0.2s ease',
-  flexShrink: 0,
-  whiteSpace: 'nowrap' as const
+  textAlign: 'center' as const,
+  textDecoration: 'none',
+  display: 'block'
 }

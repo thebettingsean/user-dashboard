@@ -388,6 +388,11 @@ export default function Home() {
                 <MatchupWidget />
               </LockedWidget>
             </div>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <NewsWidget />
+              </LockedWidget>
+            </div>
           </div>
 
           {/* Row 2: Premium NFL Tools */}
