@@ -346,6 +346,8 @@ export function getCurrentWeekDateRange(): { from: string; to: string } {
 export async function fetchPlayerProps(league: League, gameId: string): Promise<PropCategory[] | null> {
   try {
     const url = `${API_BASE_URL}/api/${league}/games/${gameId}/player-props`
+    console.log(`Fetching props from: ${url}`)
+    console.log(`Using API key: ${API_KEY?.substring(0, 10)}...`)
     
     const response = await fetch(url, {
       headers: {
@@ -355,13 +357,16 @@ export async function fetchPlayerProps(league: League, gameId: string): Promise<
       next: { revalidate: 300 } // Cache for 5 minutes
     })
 
+    console.log(`Props API response status: ${response.status}`)
+
     if (!response.ok) {
-      console.log(`Failed to fetch player props for ${gameId}`)
+      const errorText = await response.text()
+      console.log(`Failed to fetch player props for ${gameId}: ${response.status} - ${errorText}`)
       return null
     }
 
     const data: PropCategory[] = await response.json()
-    console.log(`✓ Fetched player props for ${gameId}: ${data.length} categories`)
+    console.log(`✓ Successfully fetched player props for ${gameId}: ${data.length} categories, ${data.reduce((sum, cat) => sum + cat.players.length, 0)} total players`)
     
     return data
   } catch (error) {
