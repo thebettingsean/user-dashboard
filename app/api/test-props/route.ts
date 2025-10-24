@@ -36,24 +36,52 @@ export async function GET() {
       const testUrl = `https://api.trendlinelabs.ai/api/${league}/games/${testGame.game_id}/player-props`
       logs.push(`Direct test URL: ${testUrl}`)
       
+      // Try lowercase x-api-key
       try {
         const directResponse = await fetch(testUrl, {
           headers: {
-            'x-api-key': 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3',
-            'Content-Type': 'application/json'
+            'x-api-key': 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
           }
         })
-        logs.push(`Direct fetch status: ${directResponse.status}`)
-        
+        logs.push(`Test 1 (x-api-key lowercase): ${directResponse.status}`)
         if (directResponse.ok) {
-          const directData = await directResponse.json()
-          logs.push(`Direct fetch SUCCESS: Got ${Array.isArray(directData) ? directData.length : 'not array'} items`)
-          logs.push(`First item keys: ${directData[0] ? Object.keys(directData[0]).join(', ') : 'none'}`)
-        } else {
-          logs.push(`Direct fetch FAILED: ${directResponse.statusText}`)
+          const data = await directResponse.json()
+          logs.push(`✅ SUCCESS with lowercase! Got ${Array.isArray(data) ? data.length : 0} items`)
         }
-      } catch (directError: any) {
-        logs.push(`Direct fetch ERROR: ${directError.message}`)
+      } catch (e: any) {
+        logs.push(`Test 1 error: ${e.message}`)
+      }
+      
+      // Try uppercase X-API-KEY
+      try {
+        const directResponse = await fetch(testUrl, {
+          headers: {
+            'X-API-KEY': 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
+          }
+        })
+        logs.push(`Test 2 (X-API-KEY uppercase): ${directResponse.status}`)
+        if (directResponse.ok) {
+          const data = await directResponse.json()
+          logs.push(`✅ SUCCESS with uppercase! Got ${Array.isArray(data) ? data.length : 0} items`)
+        }
+      } catch (e: any) {
+        logs.push(`Test 2 error: ${e.message}`)
+      }
+      
+      // Try X-Api-Key (Title case)
+      try {
+        const directResponse = await fetch(testUrl, {
+          headers: {
+            'X-Api-Key': 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
+          }
+        })
+        logs.push(`Test 3 (X-Api-Key title case): ${directResponse.status}`)
+        if (directResponse.ok) {
+          const data = await directResponse.json()
+          logs.push(`✅ SUCCESS with title case! Got ${Array.isArray(data) ? data.length : 0} items`)
+        }
+      } catch (e: any) {
+        logs.push(`Test 3 error: ${e.message}`)
       }
       
       let propCategories = null
