@@ -352,9 +352,10 @@ export default function Navbar() {
                 >
                   <SignInButton mode="modal">
                     <button style={styles.signInDropdownItem}>
-                      Returning User
+                      Returning
                     </button>
                   </SignInButton>
+                  <div style={styles.dropdownDivider} />
                   <a 
                     href="https://www.thebettinginsider.com/pricing"
                     style={styles.signInDropdownItem}
@@ -479,9 +480,10 @@ export default function Navbar() {
                         style={styles.signInDropdownItem}
                         onClick={() => setSignInDropdownOpen(false)}
                       >
-                        Returning User
+                        Returning
                       </button>
                     </SignInButton>
+                    <div style={styles.dropdownDivider} />
                     <a 
                       href="https://www.thebettinginsider.com/pricing"
                       style={styles.signInDropdownItem}
@@ -806,6 +808,12 @@ const styles = {
     width: '100%',
     textDecoration: 'none',
     display: 'block'
+  },
+
+  dropdownDivider: {
+    height: '1px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    margin: '4px 0'
   },
 
   authLoading: {
