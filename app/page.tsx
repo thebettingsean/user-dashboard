@@ -409,7 +409,7 @@ export default function Home() {
           {/* Row 2: Premium Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Prop tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24ed467f420808ccefa_4.svg" 
                  style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ 
