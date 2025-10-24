@@ -10,6 +10,7 @@ export default function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [dashboardSubOpen, setDashboardSubOpen] = useState(false)
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [signInDropdownOpen, setSignInDropdownOpen] = useState(false)
 
   const premiumFeatures = [
     {
@@ -334,11 +335,35 @@ export default function Navbar() {
               </UserButton.MenuItems>
             </UserButton>
           ) : (
-            <SignInButton mode="modal">
+            <div 
+              style={{ position: 'relative' }}
+              onMouseEnter={() => handleMouseEnter('signin')}
+              onMouseLeave={handleMouseLeave}
+            >
               <button style={styles.signInButton}>
                 Sign In
               </button>
-            </SignInButton>
+              
+              {openDropdown === 'signin' && (
+                <div 
+                  style={styles.signInDropdown}
+                  onMouseEnter={() => handleMouseEnter('signin')}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <SignInButton mode="modal">
+                    <button style={styles.signInDropdownItem}>
+                      Returning User
+                    </button>
+                  </SignInButton>
+                  <a 
+                    href="https://www.thebettinginsider.com/pricing"
+                    style={styles.signInDropdownItem}
+                  >
+                    New User
+                  </a>
+                </div>
+              )}
+            </div>
           )}
           </div>
         </div>
@@ -439,11 +464,33 @@ export default function Navbar() {
                 </UserButton.MenuItems>
               </UserButton>
             ) : (
-              <SignInButton mode="modal">
-                <button style={styles.mobileSignInButton}>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setSignInDropdownOpen(!signInDropdownOpen)}
+                  style={styles.mobileSignInButton}
+                >
                   Sign In
                 </button>
-              </SignInButton>
+                
+                {signInDropdownOpen && (
+                  <div style={styles.mobileSignInDropdown}>
+                    <SignInButton mode="modal">
+                      <button 
+                        style={styles.signInDropdownItem}
+                        onClick={() => setSignInDropdownOpen(false)}
+                      >
+                        Returning User
+                      </button>
+                    </SignInButton>
+                    <a 
+                      href="https://www.thebettinginsider.com/pricing"
+                      style={styles.signInDropdownItem}
+                    >
+                      New User
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -727,6 +774,40 @@ const styles = {
     transition: 'all 0.2s ease'
   },
 
+  signInDropdown: {
+    position: 'absolute' as const,
+    top: 'calc(100% + 8px)',
+    right: '0',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '12px',
+    padding: '8px',
+    minWidth: '160px',
+    zIndex: 1001,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px'
+  },
+
+  signInDropdownItem: {
+    background: 'transparent',
+    border: 'none',
+    color: '#ffffff',
+    padding: '10px 14px',
+    borderRadius: '8px',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textAlign: 'left' as const,
+    width: '100%',
+    textDecoration: 'none',
+    display: 'block'
+  },
+
   authLoading: {
     color: 'rgba(255, 255, 255, 0.5)',
     fontSize: '0.875rem'
@@ -785,6 +866,24 @@ const styles = {
     fontSize: '0.8125rem',
     fontWeight: '600',
     cursor: 'pointer'
+  },
+
+  mobileSignInDropdown: {
+    position: 'absolute' as const,
+    top: 'calc(100% + 8px)',
+    right: '0',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '12px',
+    padding: '8px',
+    minWidth: '150px',
+    zIndex: 1001,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px'
   },
 
   mobileMenu: {

@@ -357,9 +357,7 @@ export default function Home() {
                 </div>
                 {expandedWidgets.has(widget.id) && (
                   <div className="accordion-content">
-                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                      {widget.component}
-                    </LockedWidget>
+                    {widget.component}
                   </div>
                 )}
               </div>
@@ -466,19 +464,13 @@ export default function Home() {
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <MaximizeProfitWidget />
-              </LockedWidget>
+              <MaximizeProfitWidget />
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <DiscordWidget />
-              </LockedWidget>
+              <DiscordWidget />
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <AffiliateWidget />
-              </LockedWidget>
+              <AffiliateWidget />
             </div>
           </div>
         </div>
