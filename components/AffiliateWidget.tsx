@@ -258,17 +258,19 @@ export default function AffiliateWidget() {
     }
   }
 
+  const iconImg = (
+    <img 
+      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e7da2cde41db44d4b_2.svg" 
+      style={{ width: '36px', height: '36px' }} 
+      alt="Affiliate" 
+    />
+  )
+
   if (isLoading || !isLoaded) {
     return (
       <>
         <div style={widgetStyle}>
-          <div style={iconWrapper}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <div style={iconWrapper}>{iconImg}</div>
           
           <h2 style={titleStyle}>Affiliate Program</h2>
           <p style={taglineStyle}>Loading...</p>
@@ -283,13 +285,7 @@ export default function AffiliateWidget() {
     return (
       <>
         <div style={widgetStyle}>
-          <div style={iconWrapper}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <div style={iconWrapper}>{iconImg}</div>
           
           <h2 style={titleStyle}>Affiliate Program</h2>
           <p style={taglineStyle}>Earn 50% recurring revenue</p>
@@ -416,13 +412,7 @@ export default function AffiliateWidget() {
     <>
       {modalContent}
       <div style={widgetStyle}>
-        <div style={iconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
+        <div style={iconWrapper}>{iconImg}</div>
         
         <h2 style={titleStyle}>Affiliate Dashboard</h2>
         <p style={taglineStyle}>Active • {affiliateData.commissionRate}% commission</p>

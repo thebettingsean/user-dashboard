@@ -37,15 +37,18 @@ export default function TopPropsWidget() {
     }
   }
 
+  const iconImg = (
+    <img 
+      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24eb95da62bd1a77da7_3.svg" 
+      style={{ width: '36px', height: '36px' }} 
+      alt="Top Props" 
+    />
+  )
+
   if (isLoading) {
     return (
       <div style={widgetStyle}>
-        <div style={iconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M9 12h6M9 16h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
+        <div style={iconWrapper}>{iconImg}</div>
         
         <h2 style={titleStyle}>Top Props</h2>
         <p style={taglineStyle}>Loading top player props...</p>
@@ -58,12 +61,7 @@ export default function TopPropsWidget() {
   if (!data || data.props.length === 0) {
     return (
       <div style={widgetStyle}>
-        <div style={iconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M9 12h6M9 16h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
+        <div style={iconWrapper}>{iconImg}</div>
         
         <h2 style={titleStyle}>Top Props</h2>
         <p style={taglineStyle}>No high-value props available today</p>
@@ -75,12 +73,7 @@ export default function TopPropsWidget() {
 
   return (
     <div style={widgetStyle}>
-      <div style={iconWrapper}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M9 12h6M9 16h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
+      <div style={iconWrapper}>{iconImg}</div>
       
       <h2 style={titleStyle}>Top Props</h2>
       <p style={taglineStyle}>Best prop bets for today • 65%+ hit rate</p>

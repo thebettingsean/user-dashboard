@@ -85,7 +85,7 @@ export default function Home() {
     { 
       id: 'topprops', 
       title: 'Top Props', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24eb95da62bd1a77da7_3.svg',
       borderColor: 'rgba(139, 92, 246, 0.6)',
       background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
       component: <TopPropsWidget /> 
@@ -136,7 +136,7 @@ export default function Home() {
     { 
       id: 'affiliate', 
       title: 'Affiliate Program', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0f9c3ea0594da2784e87_6.svg',
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e7da2cde41db44d4b_2.svg',
       borderColor: 'rgba(16, 185, 129, 0.6)',
       background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%)',
       component: <AffiliateWidget /> 
@@ -285,7 +285,7 @@ export default function Home() {
           {/* Row 2: Premium Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Prop tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24ed467f420808ccefa_4.svg" 
                  style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
@@ -329,8 +329,10 @@ export default function Home() {
           }} />
 
           {/* Row 3: Premium Resources */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9 }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Resources
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e9b132ca6e1bb1184_1.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row3Widgets.map(widget => (
@@ -449,8 +451,10 @@ export default function Home() {
           }} />
 
           {/* Row 3: Premium Resources */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9 }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             Premium Resources
+            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e9b132ca6e1bb1184_1.svg" 
+                 style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
           <div style={{ 
             display: 'flex', 
