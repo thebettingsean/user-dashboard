@@ -872,11 +872,11 @@ const styles = {
     position: 'absolute' as const,
     top: 'calc(100% + 8px)',
     right: '0',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    background: 'rgba(15, 23, 42, 0.95)', // Much darker background
+    backdropFilter: 'blur(60px) saturate(180%)', // Increased blur
+    WebkitBackdropFilter: 'blur(60px) saturate(180%)', // Increased blur
+    border: '1px solid rgba(255, 255, 255, 0.15)', // More visible border
+    boxShadow: '0 12px 40px 0 rgba(0, 0, 0, 0.6)', // Stronger shadow
     borderRadius: '12px',
     padding: '8px',
     minWidth: '150px',
