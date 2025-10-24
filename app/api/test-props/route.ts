@@ -31,8 +31,39 @@ export async function GET() {
       logs.push(`Testing game: ${testGame.game_id} (${testGame.name})`)
       
       logs.push(`Calling fetchPlayerProps...`)
-      const propCategories = await fetchPlayerProps(league, testGame.game_id)
-      logs.push(`fetchPlayerProps returned: ${propCategories ? 'DATA' : 'NULL'}`)
+      
+      // ALSO test direct fetch to see raw response
+      const testUrl = `https://api.trendlinelabs.ai/api/${league}/games/${testGame.game_id}/player-props`
+      logs.push(`Direct test URL: ${testUrl}`)
+      
+      try {
+        const directResponse = await fetch(testUrl, {
+          headers: {
+            'x-api-key': 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3',
+            'Content-Type': 'application/json'
+          }
+        })
+        logs.push(`Direct fetch status: ${directResponse.status}`)
+        
+        if (directResponse.ok) {
+          const directData = await directResponse.json()
+          logs.push(`Direct fetch SUCCESS: Got ${Array.isArray(directData) ? directData.length : 'not array'} items`)
+          logs.push(`First item keys: ${directData[0] ? Object.keys(directData[0]).join(', ') : 'none'}`)
+        } else {
+          logs.push(`Direct fetch FAILED: ${directResponse.statusText}`)
+        }
+      } catch (directError: any) {
+        logs.push(`Direct fetch ERROR: ${directError.message}`)
+      }
+      
+      let propCategories = null
+      try {
+        propCategories = await fetchPlayerProps(league, testGame.game_id)
+        logs.push(`fetchPlayerProps returned: ${propCategories ? `DATA (${Array.isArray(propCategories) ? propCategories.length : 'not array'} items)` : 'NULL'}`)
+      } catch (fetchError: any) {
+        logs.push(`❌ fetchPlayerProps THREW ERROR: ${fetchError.message}`)
+        logs.push(`Stack: ${fetchError.stack}`)
+      }
       
       if (!propCategories) {
         logs.push(`❌ No props returned for ${testGame.game_id}`)
