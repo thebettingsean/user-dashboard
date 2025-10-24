@@ -13,6 +13,7 @@ import PropParlayWidget from '../components/PropParlayWidget'
 import DiscordWidget from '../components/DiscordWidget'
 import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
 import AffiliateWidget from '../components/AffiliateWidget'
+import TopPropsWidget from '../components/TopPropsWidget'
 import DarkVeil from '../components/DarkVeil'
 
 export default function Home() {
@@ -81,6 +82,14 @@ export default function Home() {
   ]
 
   const row2Widgets = [
+    { 
+      id: 'topprops', 
+      title: 'Top Props', 
+      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e144f04701a7e18985bc19_TICKET-5.svg',
+      borderColor: 'rgba(139, 92, 246, 0.6)',
+      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
+      component: <TopPropsWidget /> 
+    },
     { 
       id: 'propparlay', 
       title: 'Prop Parlay Tool', 
@@ -273,9 +282,9 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Row 2: Premium NFL Tools */}
+          {/* Row 2: Premium Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium NFL tools
+            Premium Prop tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
                  style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
@@ -395,9 +404,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Row 2: Premium NFL Tools */}
+          {/* Row 2: Premium Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium NFL tools
+            Premium Prop tools
             <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b93de43f1c36af5b432_6.svg" 
                  style={{ width: '28px', height: '28px' }} alt="" />
           </h3>
@@ -409,6 +418,11 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
+            <div style={{ minWidth: '380px' }}>
+              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                <TopPropsWidget />
+              </LockedWidget>
+            </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <PropParlayWidget />
@@ -466,7 +480,7 @@ export default function Home() {
         </div>
 
         {/* Rest of your existing code */}
-        {/* Divider line after Premium NFL tools */}
+        {/* Divider line after Premium Prop tools */}
         <div style={{ 
           width: '100%', 
           height: '1px', 

@@ -4,6 +4,31 @@ const API_KEY = process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-ca968df1
 
 export type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
 
+export interface PlayerProp {
+  player_name: string
+  player_id: number
+  prop_type: 'over' | 'under' | 'yes' | 'no'
+  opening_line: number
+  record: {
+    hit: number
+    miss: number
+    total: number
+    roi: number
+  }
+  best_line: {
+    bookmaker: string
+    opening_odds: number
+    opening_line: string
+    implied_probability: number
+  }
+}
+
+export interface PropCategory {
+  prop_key: string
+  title: string
+  players: PlayerProp[]
+}
+
 export interface Game {
   game_id: string
   name: string
@@ -314,5 +339,33 @@ export function getCurrentWeekDateRange(): { from: string; to: string } {
   return {
     from: monday.toISOString().split('T')[0],
     to: sunday.toISOString().split('T')[0]
+  }
+}
+
+// Fetch player props for a game
+export async function fetchPlayerProps(league: League, gameId: string): Promise<PropCategory[] | null> {
+  try {
+    const url = `${API_BASE_URL}/api/${league}/games/${gameId}/player-props`
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json'
+      },
+      next: { revalidate: 300 } // Cache for 5 minutes
+    })
+
+    if (!response.ok) {
+      console.log(`Failed to fetch player props for ${gameId}`)
+      return null
+    }
+
+    const data: PropCategory[] = await response.json()
+    console.log(`✓ Fetched player props for ${gameId}: ${data.length} categories`)
+    
+    return data
+  } catch (error) {
+    console.error(`Error fetching player props for ${gameId}:`, error)
+    return null
   }
 }
