@@ -4,6 +4,7 @@ import { getSportPriority, getDateRangeForSport } from '@/lib/utils/sportSelecto
 
 export interface TopProp {
   player_name: string
+  team: string
   prop_description: string
   hit_rate: number
   record: string
@@ -55,6 +56,10 @@ export async function GET() {
         
         console.log(`Got ${propCategories.length} prop categories for ${game.game_id}`)
         
+        // Get team abbreviations from game
+        const awayTeam = game.away_team || 'AWAY'
+        const homeTeam = game.home_team || 'HOME'
+        
         // Extract all player props with ≥65% hit rate
         for (const category of propCategories) {
           console.log(`Checking ${category.title}: ${category.players.length} players`)
@@ -71,10 +76,14 @@ export async function GET() {
               
               console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
+              // Try to determine team (we'll improve this)
+              const playerTeam = awayTeam // Default to away, could be improved with roster data
+              
               allProps.push({
                 league: league.toUpperCase(),
                 prop: {
                   player_name: player.player_name,
+                  team: playerTeam,
                   prop_description: propDescription,
                   hit_rate: Math.round(hitRate * 10) / 10,
                   record: `${player.record.hit}-${player.record.miss}`,

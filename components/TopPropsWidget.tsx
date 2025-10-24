@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface TopProp {
   player_name: string
+  team: string
   prop_description: string
   hit_rate: number
   record: string
@@ -91,7 +92,10 @@ export default function TopPropsWidget() {
             {leagueData.props.map((prop, propIdx) => (
               <div key={propIdx} style={propItemStyle}>
                 <div style={{ flex: 1 }}>
-                  <div style={playerNameStyle}>{prop.player_name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.25rem' }}>
+                    <span style={playerNameStyle}>{prop.player_name}</span>
+                    <span style={teamTagStyle}>{prop.team}</span>
+                  </div>
                   <div style={propDescStyle}>{prop.prop_description}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -170,23 +174,33 @@ const propItemStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '12px',
-  padding: '0.75rem',
+  gap: '10px',
+  padding: '0.5rem 0.65rem',
   background: 'rgba(139, 92, 246, 0.08)',
   border: '1px solid rgba(139, 92, 246, 0.2)',
-  borderRadius: '10px',
-  marginBottom: '0.5rem'
+  borderRadius: '8px',
+  marginBottom: '0.4rem'
 }
 
 const playerNameStyle = {
-  fontSize: '0.85rem',
+  fontSize: '0.8rem',
   fontWeight: '600',
-  color: 'rgba(255, 255, 255, 0.95)',
-  marginBottom: '0.25rem'
+  color: 'rgba(255, 255, 255, 0.95)'
+}
+
+const teamTagStyle = {
+  fontSize: '0.65rem',
+  fontWeight: '600',
+  padding: '2px 6px',
+  background: 'rgba(139, 92, 246, 0.2)',
+  border: '1px solid rgba(139, 92, 246, 0.3)',
+  borderRadius: '4px',
+  color: '#a78bfa',
+  textTransform: 'uppercase' as const
 }
 
 const propDescStyle = {
-  fontSize: '0.75rem',
+  fontSize: '0.7rem',
   color: 'rgba(255, 255, 255, 0.7)'
 }
 
