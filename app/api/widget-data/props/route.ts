@@ -45,19 +45,31 @@ export async function GET() {
       
       // Check first 3 games for props
       for (const game of sortedGames.slice(0, 3)) {
+        console.log(`Fetching props for ${game.game_id}`)
         const propCategories = await fetchPlayerProps(league, game.game_id)
         
-        if (!propCategories) continue
+        if (!propCategories) {
+          console.log(`No prop categories returned for ${game.game_id}`)
+          continue
+        }
+        
+        console.log(`Got ${propCategories.length} prop categories for ${game.game_id}`)
         
         // Extract all player props with ≥65% hit rate
         for (const category of propCategories) {
+          console.log(`Checking ${category.title}: ${category.players.length} players`)
+          
           for (const player of category.players) {
             const hitRate = player.record.total > 0 
               ? (player.record.hit / player.record.total) * 100
               : 0
             
+            console.log(`${player.player_name} ${player.prop_type} ${player.opening_line}: ${hitRate.toFixed(1)}% (${player.record.hit}/${player.record.total})`)
+            
             if (hitRate >= 65 && player.record.total >= 10) {
               const propDescription = `${player.prop_type.toUpperCase()} ${player.opening_line} ${category.title.replace(' (Over/Under)', '').replace(' (Yes/No)', '')}`
+              
+              console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
               allProps.push({
                 league: league.toUpperCase(),
