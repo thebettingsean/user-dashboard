@@ -4,12 +4,13 @@ import { getSportPriority, getDateRangeForSport } from '@/lib/utils/sportSelecto
 
 export interface TopProp {
   player_name: string
-  team: string
+  team: string | null
   prop_description: string
   hit_rate: number
   record: string
   prop_type: string
   line: number
+  odds: number
 }
 
 export interface PropsWidgetData {
@@ -71,13 +72,20 @@ export async function GET() {
             
             console.log(`${player.player_name} ${player.prop_type} ${player.opening_line}: ${hitRate.toFixed(1)}% (${player.record.hit}/${player.record.total})`)
             
+            // Check odds filter: no odds worse than -200
+            const odds = player.best_line?.opening_odds || 0
+            if (odds <= -201) {
+              console.log(`  ✗ Skipping ${player.player_name} - odds too bad: ${odds}`)
+              continue
+            }
+            
             if (hitRate >= 65 && player.record.total >= 10) {
               const propDescription = `${player.prop_type.toUpperCase()} ${player.opening_line} ${category.title.replace(' (Over/Under)', '').replace(' (Yes/No)', '')}`
               
               console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
-              // Try to determine team (we'll improve this)
-              const playerTeam = awayTeam // Default to away, could be improved with roster data
+              // Get team from player data (if available), otherwise null
+              const playerTeam = (player as any).team || null
               
               allProps.push({
                 league: league.toUpperCase(),
@@ -88,7 +96,8 @@ export async function GET() {
                   hit_rate: Math.round(hitRate * 10) / 10,
                   record: `${player.record.hit}-${player.record.miss}`,
                   prop_type: player.prop_type,
-                  line: player.opening_line
+                  line: player.opening_line,
+                  odds: odds
                 }
               })
             }

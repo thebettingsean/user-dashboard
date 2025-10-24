@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 
 interface TopProp {
   player_name: string
-  team: string
+  team: string | null
   prop_description: string
   hit_rate: number
   record: string
   prop_type: string
   line: number
+  odds: number
 }
 
 interface PropsData {
@@ -92,15 +93,17 @@ export default function TopPropsWidget() {
             {leagueData.props.map((prop, propIdx) => (
               <div key={propIdx} style={propItemStyle}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.25rem' }}>
-                    <span style={playerNameStyle}>{prop.player_name}</span>
-                    <span style={teamTagStyle}>{prop.team}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={playerNameStyle}>{prop.player_name}</span>
+                      <span style={teamTagStyle}>{prop.team || 'N/A'}</span>
+                    </div>
+                    <div style={hitRateStyle}>{prop.hit_rate}%</div>
                   </div>
-                  <div style={propDescStyle}>{prop.prop_description}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={hitRateStyle}>{prop.hit_rate}%</div>
-                  <div style={recordStyle}>{prop.record}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+                    <div style={propDescStyle}>{prop.prop_description}</div>
+                    <div style={recordStyle}>{prop.record}</div>
+                  </div>
                 </div>
               </div>
             ))}
