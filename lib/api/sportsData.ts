@@ -354,7 +354,7 @@ export async function fetchPlayerProps(league: League, gameId: string): Promise<
         'x-api-key': API_KEY,
         'Content-Type': 'application/json'
       },
-      next: { revalidate: 300 } // Cache for 5 minutes
+      cache: 'no-store' // Don't cache for now (debugging)
     })
 
     console.log(`Props API response status: ${response.status}`)

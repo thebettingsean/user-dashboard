@@ -30,10 +30,13 @@ export async function GET() {
       const testGame = sortedGames[0]
       logs.push(`Testing game: ${testGame.game_id} (${testGame.name})`)
       
+      logs.push(`Calling fetchPlayerProps...`)
       const propCategories = await fetchPlayerProps(league, testGame.game_id)
+      logs.push(`fetchPlayerProps returned: ${propCategories ? 'DATA' : 'NULL'}`)
       
       if (!propCategories) {
         logs.push(`❌ No props returned for ${testGame.game_id}`)
+        logs.push(`This means either: 1) API returned non-200, 2) API returned empty array, 3) Fetch threw error`)
         continue
       }
       
