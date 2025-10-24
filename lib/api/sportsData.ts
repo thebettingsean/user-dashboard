@@ -351,7 +351,7 @@ export async function fetchPlayerProps(league: League, gameId: string): Promise<
     
     const response = await fetch(url, {
       headers: {
-        'x-api-key': API_KEY,
+        'insider-api-key': API_KEY,
         'Content-Type': 'application/json'
       },
       cache: 'no-store' // Don't cache for now (debugging)
