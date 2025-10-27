@@ -15,6 +15,7 @@ import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
 import AffiliateWidget from '../components/AffiliateWidget'
 import TopPropsWidget from '../components/TopPropsWidget'
 import DarkVeil from '../components/DarkVeil'
+import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 
 export default function Home() {
   const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
@@ -244,11 +245,10 @@ export default function Home() {
         
         {/* MOBILE VIEW - Accordion */}
         <div className="mobile-view">
-          {/* Row 1: Premium Dashboards */}
+          {/* Row 1: Dashboards */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Dashboards
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Dashboards
+            <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row1Widgets.map(widget => (
@@ -282,11 +282,10 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Row 2: Premium Prop Tools */}
+          {/* Row 2: Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Prop tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24ed467f420808ccefa_4.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Prop Tools
+            <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row2Widgets.map(widget => (
@@ -328,11 +327,10 @@ export default function Home() {
             marginBottom: '2rem'
           }} />
 
-          {/* Row 3: Premium Resources */}
+          {/* Row 3: Resources */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Resources
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e9b132ca6e1bb1184_1.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Resources
+            <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ marginBottom: '2rem' }}>
             {row3Widgets.map(widget => (
@@ -367,11 +365,10 @@ export default function Home() {
 
         {/* DESKTOP VIEW - Horizontal Scroll Rows */}
         <div className="desktop-view">
-          {/* Row 1: Premium Dashboards */}
+          {/* Row 1: Dashboards */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Dashboards
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e19b939d84e2e8f4fa209f_5.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Dashboards
+            <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ 
             display: 'flex', 
@@ -404,11 +401,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Row 2: Premium Prop Tools */}
+          {/* Row 2: Prop Tools */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Prop tools
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24ed467f420808ccefa_4.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Prop Tools
+            <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ 
             display: 'flex', 
@@ -448,11 +444,10 @@ export default function Home() {
             marginBottom: '2rem'
           }} />
 
-          {/* Row 3: Premium Resources */}
+          {/* Row 3: Resources */}
           <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Premium Resources
-            <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e9b132ca6e1bb1184_1.svg" 
-                 style={{ width: '28px', height: '28px' }} alt="" />
+            Resources
+            <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
           </h3>
           <div style={{ 
             display: 'flex', 
