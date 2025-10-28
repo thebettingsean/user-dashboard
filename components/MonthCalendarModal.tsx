@@ -206,11 +206,11 @@ const modalContentStyle = {
   backdropFilter: 'blur(40px) saturate(180%)',
   WebkitBackdropFilter: 'blur(40px) saturate(180%)',
   border: '1px solid rgba(255, 255, 255, 0.15)',
-  borderRadius: '20px',
-  padding: '1.5rem',
-  maxWidth: '500px',
-  width: '95%',
-  maxHeight: '90vh',
+  borderRadius: '16px',
+  padding: '1rem',
+  maxWidth: '450px',
+  width: '92%',
+  maxHeight: '85vh',
   overflowY: 'auto' as const,
   boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7)',
   color: '#fff',
@@ -284,18 +284,18 @@ const weekdayLabelStyle = {
 const calendarGridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '0.35rem',
-  marginBottom: '1rem'
+  gap: '0.25rem',
+  marginBottom: '0.75rem'
 }
 
 const emptyDayStyle = {
   aspectRatio: '1',
-  minHeight: '50px'
+  minHeight: '45px'
 }
 
 const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
   aspectRatio: '1',
-  minHeight: '50px',
+  minHeight: '45px',
   background: isToday
     ? 'rgba(59, 130, 246, 0.2)'
     : hasData
@@ -318,19 +318,20 @@ const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
   position: 'relative' as const,
   cursor: hasData ? 'pointer' : 'default',
   transition: 'all 0.2s ease',
-  padding: '0.2rem'
+  padding: '0.15rem'
 })
 
 const dayNumberStyle = {
-  fontSize: '0.8rem',
+  fontSize: '0.75rem',
   fontWeight: '600',
-  marginBottom: '0.1rem'
+  marginBottom: '0.05rem'
 }
 
 const getUnitsStyle = (units: number) => ({
-  fontSize: '0.6rem',
+  fontSize: '0.55rem',
   fontWeight: '700',
-  color: units >= 0 ? '#10b981' : '#ef4444'
+  color: units >= 0 ? '#10b981' : '#ef4444',
+  lineHeight: '1'
 })
 
 const monthTotalStyle = {
