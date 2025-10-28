@@ -14,7 +14,6 @@ import DiscordWidget from '../components/DiscordWidget'
 import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
 import AffiliateWidget from '../components/AffiliateWidget'
 import TopPropsWidget from '../components/TopPropsWidget'
-import DarkVeil from '../components/DarkVeil'
 import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 
 export default function Home() {
@@ -146,26 +145,7 @@ export default function Home() {
 
   return (
     <>
-      {/* DarkVeil Background - Desktop Only */}
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '100vh',
-        zIndex: 0,
-        pointerEvents: 'none',
-        display: 'none' // Hidden by default (mobile)
-      }} className="darkveil-wrapper">
-        <DarkVeil 
-          speed={0.8}
-          hueShift={210}
-          noiseIntensity={0.05}
-          warpAmount={0.6}
-        />
-      </div>
-
-      <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <div className="dashboard-orbs" style={{ minHeight: '100vh', position: 'relative' }}>
         {/* Floating orbs - can be removed if DarkVeil replaces them */}
         <div className="orb-3"></div>
         <div className="orb-4"></div>
@@ -181,9 +161,6 @@ export default function Home() {
         @media (min-width: 768px) {
           .mobile-view {
             display: none;
-          }
-          .darkveil-wrapper {
-            display: block !important;
           }
           .desktop-view {
             display: block;
