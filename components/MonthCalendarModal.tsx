@@ -207,10 +207,10 @@ const modalContentStyle = {
   WebkitBackdropFilter: 'blur(40px) saturate(180%)',
   border: '1px solid rgba(255, 255, 255, 0.15)',
   borderRadius: '16px',
-  padding: '1rem',
-  maxWidth: '450px',
-  width: '92%',
-  maxHeight: '85vh',
+  padding: '0.75rem',
+  maxWidth: '380px',
+  width: '90%',
+  maxHeight: '80vh',
   overflowY: 'auto' as const,
   boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7)',
   color: '#fff',
@@ -284,18 +284,18 @@ const weekdayLabelStyle = {
 const calendarGridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '0.25rem',
-  marginBottom: '0.75rem'
+  gap: '0.2rem',
+  marginBottom: '0.5rem'
 }
 
 const emptyDayStyle = {
   aspectRatio: '1',
-  minHeight: '45px'
+  minHeight: '38px'
 }
 
 const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
   aspectRatio: '1',
-  minHeight: '45px',
+  minHeight: '38px',
   background: isToday
     ? 'rgba(59, 130, 246, 0.2)'
     : hasData

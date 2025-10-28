@@ -1508,7 +1508,7 @@ const styles = {
   },
   dateScrollWrapper: {
     display: 'flex',
-    gap: '0.4rem',
+    gap: '0.3rem',
     padding: '0.25rem 0'
   },
   dateItem: {
