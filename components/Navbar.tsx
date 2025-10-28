@@ -15,37 +15,37 @@ export default function Navbar() {
   const premiumFeatures = [
     {
       label: 'Analyst Picks',
-      href: 'thebettinginsider.com/betting/about',
+      href: 'https://dashboard.thebettinginsider.com/analyst-picks',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fb91754ed1897b45b_1.svg',
       description: 'Expert picks backed by data'
     },
     {
       label: 'Public Betting',
-      href: 'thebettinginsider.com/stats-about',
+      href: 'https://app.thebettinginsider.com',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fc8af05ce5b3d9428_2.svg',
       description: 'See where the money is going'
     },
     {
       label: 'Matchup Data',
-      href: 'thebettinginsider.com/stats-about',
+      href: 'https://app.thebettinginsider.com',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181e9a84efee4e2536d6_3.svg',
       description: 'Detailed team data'
     },
     {
       label: 'Fantasy Football',
-      href: 'thebettinginsider.com/fantasy/home',
+      href: 'https://dashboard.thebettinginsider.com/fantasy',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181f5f4c93c84a1488cb_6.svg',
       description: 'Start/Sit, Waiver, Trade tools'
     },
     {
       label: 'Prop Data',
-      href: 'thebettinginsider.com/stats-about',
+      href: 'https://dashboard.thebettinginsider.com#prop-tools',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f9181fbeb37fd40d49afa8_4.svg',
       description: 'Player prop insights and angles'
     },
     {
       label: 'Referee Trends',
-      href: 'thebettinginsider.com/stats-about',
+      href: 'https://app.thebettinginsider.com',
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f919609bac06fcc80cee44_NEW%20WIDGET%20SVG%27S-8.svg',
       description: 'Historical referee data'
     }
