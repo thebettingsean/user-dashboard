@@ -134,18 +134,18 @@ export default function MonthCalendarModal({
         {/* Header with arrows */}
         <div style={headerStyle}>
           <button onClick={handlePrevMonth} style={navButtonStyle}>
-            <ChevronLeft size={20} />
+            <ChevronLeft size={16} />
           </button>
           <h3 style={monthTitleStyle}>
-            {monthNames[month]} {year}
+            {monthNames[month]} '{String(year).slice(2)}
           </h3>
           <button onClick={handleNextMonth} style={navButtonStyle}>
-            <ChevronRight size={20} />
+            <ChevronRight size={16} />
           </button>
         </div>
 
         <button onClick={onClose} style={closeButtonStyle}>
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Day labels */}
@@ -219,29 +219,34 @@ const modalContentStyle = {
 
 const headerStyle = {
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   alignItems: 'center',
-  marginBottom: '1.5rem'
+  gap: '1rem',
+  marginBottom: '1rem',
+  paddingRight: '2.5rem' // Space for close button
 }
 
 const monthTitleStyle = {
-  fontSize: '1.2rem',
+  fontSize: '1rem',
   fontWeight: '700',
-  margin: 0
+  margin: 0,
+  minWidth: '100px',
+  textAlign: 'center' as const
 }
 
 const navButtonStyle = {
   background: 'rgba(255, 255, 255, 0.1)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: '8px',
-  width: '36px',
-  height: '36px',
+  borderRadius: '6px',
+  width: '28px',
+  height: '28px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   cursor: 'pointer',
   color: '#fff',
-  transition: 'all 0.2s ease'
+  transition: 'all 0.2s ease',
+  flexShrink: 0
 }
 
 const closeButtonStyle = {
@@ -251,8 +256,8 @@ const closeButtonStyle = {
   background: 'rgba(255, 255, 255, 0.1)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   borderRadius: '50%',
-  width: '32px',
-  height: '32px',
+  width: '28px',
+  height: '28px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -270,27 +275,27 @@ const weekdayLabelsStyle = {
 
 const weekdayLabelStyle = {
   textAlign: 'center' as const,
-  fontSize: '0.7rem',
+  fontSize: '0.65rem',
   fontWeight: '600',
   color: 'rgba(255, 255, 255, 0.5)',
-  padding: '0.25rem'
+  padding: '0.2rem'
 }
 
 const calendarGridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '0.4rem',
+  gap: '0.35rem',
   marginBottom: '1rem'
 }
 
 const emptyDayStyle = {
   aspectRatio: '1',
-  minHeight: '60px'
+  minHeight: '50px'
 }
 
 const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
   aspectRatio: '1',
-  minHeight: '60px',
+  minHeight: '50px',
   background: isToday
     ? 'rgba(59, 130, 246, 0.2)'
     : hasData
@@ -299,13 +304,13 @@ const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
       : 'rgba(239, 68, 68, 0.1)'
     : 'rgba(255, 255, 255, 0.03)',
   border: isToday
-    ? '2px solid rgba(59, 130, 246, 0.6)'
+    ? '1.5px solid rgba(59, 130, 246, 0.6)'
     : hasData
     ? units >= 0
       ? '1px solid rgba(16, 185, 129, 0.3)'
       : '1px solid rgba(239, 68, 68, 0.3)'
     : '1px solid rgba(255, 255, 255, 0.08)',
-  borderRadius: '8px',
+  borderRadius: '6px',
   display: 'flex',
   flexDirection: 'column' as const,
   alignItems: 'center',
@@ -313,17 +318,17 @@ const getDayStyle = (hasData: boolean, isToday: boolean, units: number) => ({
   position: 'relative' as const,
   cursor: hasData ? 'pointer' : 'default',
   transition: 'all 0.2s ease',
-  padding: '0.25rem'
+  padding: '0.2rem'
 })
 
 const dayNumberStyle = {
-  fontSize: '0.9rem',
+  fontSize: '0.8rem',
   fontWeight: '600',
-  marginBottom: '0.15rem'
+  marginBottom: '0.1rem'
 }
 
 const getUnitsStyle = (units: number) => ({
-  fontSize: '0.7rem',
+  fontSize: '0.6rem',
   fontWeight: '700',
   color: units >= 0 ? '#10b981' : '#ef4444'
 })
