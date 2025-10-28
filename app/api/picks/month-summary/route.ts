@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // Group by date and calculate units per day
     const dailySummary: { [key: string]: { count: number; units: number } } = {}
-    let monthTotal = 0
+    let monthTotal: number = 0
 
     (picks || []).forEach(pick => {
       const gameDate = new Date(pick.game_time)
