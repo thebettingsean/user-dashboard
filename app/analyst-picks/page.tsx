@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { supabase } from '../../lib/supabase'
 import { useSubscription } from '../../lib/hooks/useSubscription'
+import MonthCalendarModal from '../../components/MonthCalendarModal'
 
 // Types
 interface Bettor {
@@ -78,6 +79,9 @@ export default function AnalystPicksPage() {
   const [allConsensusPicks, setAllConsensusPicks] = useState<ConsensusPick[]>([])
   const [consensusSportFilter, setConsensusSportFilter] = useState<ConsensusSportFilter>('All Sports')
   const [consensusTimeFilter, setConsensusTimeFilter] = useState<ConsensusTimeFilter>('all_time')
+  
+  // Calendar modal state
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false)
   const [consensusSportDropdownOpen, setConsensusSportDropdownOpen] = useState(false)
   const [consensusTimeDropdownOpen, setConsensusTimeDropdownOpen] = useState(false)
 
@@ -385,7 +389,13 @@ export default function AnalystPicksPage() {
 
     return (
       <div style={styles.dateBar} className="analyst-picks-date-bar">
-        <div style={styles.monthLabel} className="analyst-picks-month-label">{months[today.getMonth()]}</div>
+        <button 
+          onClick={() => setCalendarModalOpen(true)}
+          style={styles.monthButton} 
+          className="analyst-picks-month-label"
+        >
+          {months[today.getMonth()]}
+        </button>
         <div style={styles.datesContainer}>
           <div style={styles.dateScrollWrapper}>
             {dates.map((date, index) => {
@@ -828,8 +838,23 @@ export default function AnalystPicksPage() {
     return null
   }
 
+  const handleDateSelect = (dateStr: string) => {
+    const selectedDate = new Date(dateStr + 'T00:00:00')
+    setCurrentDate(selectedDate)
+    setSelectedDate(isSameDay(selectedDate, new Date()) ? null : selectedDate)
+    // Picks will reload via useEffect
+  }
+
   return (
     <>
+      <MonthCalendarModal
+        isOpen={calendarModalOpen}
+        onClose={() => setCalendarModalOpen(false)}
+        currentMonth={currentDate.getMonth()}
+        currentYear={currentDate.getFullYear()}
+        onDateSelect={handleDateSelect}
+      />
+      
       <style jsx>{`
         @media (max-width: 768px) {
           :global(body) {
@@ -1461,7 +1486,7 @@ const styles = {
     marginBottom: '1.5rem',
     overflow: 'hidden'
   },
-  monthLabel: {
+  monthButton: {
     background: '#334155',
     color: '#fff',
     padding: '0.5rem 0.75rem',
@@ -1469,7 +1494,10 @@ const styles = {
     fontWeight: '700',
     fontSize: '0.85rem',
     flexShrink: 0,
-    marginTop: '20px'
+    marginTop: '20px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   datesContainer: {
     flex: 1,
