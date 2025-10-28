@@ -10,12 +10,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Date parameter required' }, { status: 400 })
     }
 
-    // Get start and end of day in UTC
-    const startDate = new Date(date + 'T00:00:00Z')
-    const endDate = new Date(date + 'T23:59:59Z')
+    // We need to fetch a wider range since EST dates don't align with UTC dates
+    // Fetch the previous day through next day to ensure we catch all EST picks for this date
+    const targetDate = new Date(date + 'T00:00:00')
+    const startDate = new Date(targetDate)
+    startDate.setDate(startDate.getDate() - 1)
+    const endDate = new Date(targetDate)
+    endDate.setDate(endDate.getDate() + 2)
 
-    // Fetch picks for the date
-    const { data: picks, error: picksError } = await supabase
+    // Fetch picks for the wider date range
+    const { data: allPicks, error: picksError } = await supabase
       .from('picks')
       .select(`
         *,
@@ -28,11 +32,21 @@ export async function GET(request: NextRequest) {
       .gte('game_time', startDate.toISOString())
       .lte('game_time', endDate.toISOString())
       .order('game_time', { ascending: true })
-
+    
     if (picksError) {
       console.error('Error fetching picks:', picksError)
       return NextResponse.json({ error: 'Failed to fetch picks' }, { status: 500 })
     }
+
+    // Filter to only picks whose game_time in EST matches the target date
+    const picks = (allPicks || []).filter((pick: any) => {
+      const gameTimeUTC = new Date(pick.game_time)
+      const gameTimeEST = new Date(
+        gameTimeUTC.toLocaleString("en-US", { timeZone: "America/New_York" })
+      )
+      const estDateStr = `${gameTimeEST.getFullYear()}-${String(gameTimeEST.getMonth() + 1).padStart(2, '0')}-${String(gameTimeEST.getDate()).padStart(2, '0')}`
+      return estDateStr === date
+    })
 
     // Calculate total units for the day
     let totalUnits = 0

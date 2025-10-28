@@ -47,19 +47,25 @@ export async function GET(request: NextRequest) {
 
     if (picks) {
       picks.forEach((pick: any) => {
-        const gameDate = new Date(pick.game_time)
-        const dateKey = gameDate.toISOString().split('T')[0]
+        // Convert UTC game_time to EST for proper date grouping
+        const gameTimeUTC = new Date(pick.game_time)
+        const gameTimeEST = new Date(
+          gameTimeUTC.toLocaleString("en-US", { timeZone: "America/New_York" })
+        )
         
-        if (!dailySummary[dateKey]) {
-          dailySummary[dateKey] = { count: 0, units: 0.0 }
+        // Get the EST date (YYYY-MM-DD)
+        const estDateStr = `${gameTimeEST.getFullYear()}-${String(gameTimeEST.getMonth() + 1).padStart(2, '0')}-${String(gameTimeEST.getDate()).padStart(2, '0')}`
+        
+        if (!dailySummary[estDateStr]) {
+          dailySummary[estDateStr] = { count: 0, units: 0.0 }
         }
         
-        dailySummary[dateKey].count = dailySummary[dateKey].count + 1
+        dailySummary[estDateStr].count = dailySummary[estDateStr].count + 1
         
         const outcome = pick.pick_outcomes?.[0]
         if (outcome && outcome.units_result) {
           const unitsValue = parseFloat(outcome.units_result)
-          dailySummary[dateKey].units = dailySummary[dateKey].units + unitsValue
+          dailySummary[estDateStr].units = dailySummary[estDateStr].units + unitsValue
           total = total + unitsValue
         }
       })

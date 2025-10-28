@@ -120,12 +120,9 @@ export default function MonthCalendarModal({
       >
         <div style={dayNumberStyle}>{day}</div>
         {hasData && (
-          <>
-            <div style={pickCountBadgeStyle}>{pickCount}</div>
-            <div style={getUnitsStyle(units)}>
-              {units > 0 ? '+' : ''}{units.toFixed(1)}u
-            </div>
-          </>
+          <div style={getUnitsStyle(units)}>
+            {units > 0 ? '+' : ''}{units.toFixed(1)}u
+          </div>
         )}
       </div>
     )
@@ -134,12 +131,14 @@ export default function MonthCalendarModal({
   const modalContent = (
     <div style={modalOverlayStyle} onClick={onClose}>
       <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
+        {/* Header with arrows */}
         <div style={headerStyle}>
           <button onClick={handlePrevMonth} style={navButtonStyle}>
             <ChevronLeft size={20} />
           </button>
-          <h3 style={monthTitleStyle}>{monthNames[month]} {year}</h3>
+          <h3 style={monthTitleStyle}>
+            {monthNames[month]} {year}
+          </h3>
           <button onClick={handleNextMonth} style={navButtonStyle}>
             <ChevronRight size={20} />
           </button>
@@ -321,22 +320,6 @@ const dayNumberStyle = {
   fontSize: '0.9rem',
   fontWeight: '600',
   marginBottom: '0.15rem'
-}
-
-const pickCountBadgeStyle = {
-  position: 'absolute' as const,
-  top: '2px',
-  right: '2px',
-  background: '#3b82f6',
-  color: '#fff',
-  borderRadius: '50%',
-  width: '18px',
-  height: '18px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '0.65rem',
-  fontWeight: '700'
 }
 
 const getUnitsStyle = (units: number) => ({
