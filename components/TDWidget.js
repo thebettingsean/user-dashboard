@@ -127,7 +127,7 @@ export default function TDWidget() {
         </div>
         
         <h2 style={titleStyle}>
-          Anytime TD Leaders
+          Top Touchdown Bets
           <span style={weekTag}>Week {currentWeek}</span>  
         </h2>
         <p style={taglineStyle}>Best value touchdown plays</p>
