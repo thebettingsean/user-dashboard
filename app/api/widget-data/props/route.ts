@@ -119,12 +119,27 @@ export async function GET() {
     // Sort all props by hit rate (highest first)
     allProps.sort((a, b) => b.prop.hit_rate - a.prop.hit_rate)
     
-    // Group by league and limit
+    // Limit each player to appearing max 2 times
+    const playerCounts: Record<string, number> = {}
+    const filteredProps = allProps.filter(item => {
+      const playerName = item.prop.player_name
+      const count = playerCounts[playerName] || 0
+      
+      if (count < 2) {
+        playerCounts[playerName] = count + 1
+        return true
+      }
+      return false
+    })
+    
+    console.log(`After player limit (max 2 per player): ${filteredProps.length} props`)
+    
+    // Group by league and limit to 4 total props
     const groupedProps: Array<{ league: string; props: TopProp[] }> = []
-    let remainingSlots = 5
+    let remainingSlots = 4
     
     for (const league of leagues.map(l => l.toUpperCase())) {
-      const leagueProps = allProps
+      const leagueProps = filteredProps
         .filter(p => p.league === league)
         .slice(0, remainingSlots)
         .map(p => p.prop)
