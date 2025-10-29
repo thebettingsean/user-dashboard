@@ -48,6 +48,7 @@ export async function GET() {
       // Check first 3 games for props
       for (const game of sortedGames.slice(0, 3)) {
         console.log(`Fetching props for ${game.game_id}`)
+        console.log(`Game teams: ${game.away_team} @ ${game.home_team}`)
         const propCategories = await fetchPlayerProps(league, game.game_id)
         
         if (!propCategories) {
@@ -60,6 +61,7 @@ export async function GET() {
         // Get team abbreviations from game
         const awayTeam = game.away_team || 'AWAY'
         const homeTeam = game.home_team || 'HOME'
+        console.log(`Available teams for matching: ${awayTeam}, ${homeTeam}`)
         
         // Extract all player props with ≥65% hit rate
         for (const category of propCategories) {
@@ -84,9 +86,12 @@ export async function GET() {
               
               console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
-              // Get team from player data (if available), otherwise null
-              const playerTeam = player.team || null
-              console.log(`  📍 Team data: ${playerTeam ? playerTeam : 'NOT PROVIDED BY API'}`)
+              // Get team from player data (if available), otherwise try to infer from game
+              let playerTeam = player.team || null
+              
+              // Log what we got from API
+              console.log(`  📍 Team from API: ${player.team ? player.team : 'NOT PROVIDED'}`)
+              console.log(`  📍 Player object keys: ${Object.keys(player).join(', ')}`)
               
               allProps.push({
                 league: league.toUpperCase(),
