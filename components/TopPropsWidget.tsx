@@ -74,7 +74,9 @@ export default function TopPropsWidget() {
 
   // Get dynamic link based on the first league in the data
   const firstLeague = data.props[0]?.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  console.log('🔗 TopPropsWidget - League from API:', data.props[0]?.league, '-> Link:', firstLeague)
   const widgetLinks = getSportWidgetLinks(firstLeague || 'nfl')
+  console.log('🔗 TopPropsWidget - Using playerProps link:', widgetLinks.playerProps)
   
   return (
     <a href={widgetLinks.playerProps} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>

@@ -77,7 +77,9 @@ export default function MatchupWidget() {
   
   // Get dynamic link based on league
   const leagueKey = data.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  console.log('🔗 MatchupWidget - League from API:', data.league, '-> Link:', leagueKey)
   const widgetLinks = getSportWidgetLinks(leagueKey)
+  console.log('🔗 MatchupWidget - Using refereeTrends link:', widgetLinks.refereeTrends)
   
   return (
     <>

@@ -77,7 +77,9 @@ export default function StatsWidget() {
   
   // Get dynamic link based on league
   const leagueKey = data.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  console.log('🔗 StatsWidget - League from API:', data.league, '-> Link:', leagueKey)
   const widgetLinks = getSportWidgetLinks(leagueKey)
+  console.log('🔗 StatsWidget - Using publicBetting link:', widgetLinks.publicBetting)
   
   return (
     <>
