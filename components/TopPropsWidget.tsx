@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getSportWidgetLinks } from '@/lib/utils/sportSelector'
+import { BsGraphUp } from 'react-icons/bs'
 
 interface TopProp {
   player_name: string
@@ -38,13 +39,7 @@ export default function TopPropsWidget() {
     }
   }
 
-  const iconImg = (
-    <img 
-      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24eb95da62bd1a77da7_3.svg" 
-      style={{ width: '36px', height: '36px' }} 
-      alt="Top Props" 
-    />
-  )
+  const iconImg = <BsGraphUp size={36} />
 
   if (isLoading) {
     return (
