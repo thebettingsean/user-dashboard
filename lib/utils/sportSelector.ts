@@ -61,8 +61,8 @@ export function getDateRangeForSport(league: League): { from: string; to: string
   const now = new Date()
   const hour = now.getHours()
   
-  // If it's after 8pm EST/EDT, look at tomorrow's games instead
-  const today = hour >= 20 ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now
+  // If it's after 10pm EST/EDT, look at tomorrow's games instead
+  const today = hour >= 22 ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now
   
   const dayOfWeek = today.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
   const from = new Date(today)
@@ -138,4 +138,22 @@ export function getSportDisplayName(league: League): string {
     cfb: 'College Football'
   }
   return names[league]
+}
+
+// Get dynamic widget links based on sport
+export function getSportWidgetLinks(league: League): {
+  publicBetting: string
+  refereeTrends: string
+  playerProps: string
+} {
+  const baseUrl = 'https://app.thebettinginsider.com'
+  
+  // Map league to headerState (CFB uses NCAAF in URL)
+  const headerState = league === 'cfb' ? 'NCAAF' : league.toUpperCase()
+  
+  return {
+    publicBetting: `${baseUrl}/?view=big_money&headerState=${headerState}`,
+    refereeTrends: `${baseUrl}/?headerState=${headerState}&view=ref_trends`,
+    playerProps: `${baseUrl}/?view=player_props&headerState=${headerState}`
+  }
 }

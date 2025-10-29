@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getSportWidgetLinks } from '@/lib/utils/sportSelector'
 
 interface TopProp {
   player_name: string
@@ -71,14 +72,19 @@ export default function TopPropsWidget() {
     )
   }
 
+  // Get dynamic link based on the first league in the data
+  const firstLeague = data.props[0]?.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  const widgetLinks = getSportWidgetLinks(firstLeague || 'nfl')
+  
   return (
-    <div style={widgetStyle}>
-      <div style={iconWrapper}>{iconImg}</div>
-      
-      <h2 style={titleStyle}>Top Props</h2>
-      <p style={taglineStyle}>Best prop bets for today • 65%+ hit rate</p>
+    <a href={widgetLinks.playerProps} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <div style={widgetStyle}>
+        <div style={iconWrapper}>{iconImg}</div>
+        
+        <h2 style={titleStyle}>Top Props</h2>
+        <p style={taglineStyle}>Best prop bets for today • 65%+ hit rate</p>
 
-      <div style={{ marginTop: '1rem', flex: 1, overflowY: 'auto' }}>
+        <div style={{ marginTop: '1rem', flex: 1, overflowY: 'auto' }}>
         {data.props.map((leagueData, idx) => (
           <div key={idx} style={{ marginBottom: idx < data.props.length - 1 ? '1rem' : '0' }}>
             <h3 style={leagueHeaderStyle}>{leagueData.league}</h3>
@@ -102,8 +108,9 @@ export default function TopPropsWidget() {
             ))}
           </div>
         ))}
+        </div>
       </div>
-    </div>
+    </a>
   )
 }
 

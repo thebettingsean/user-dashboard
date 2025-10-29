@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getSportWidgetLinks } from '@/lib/utils/sportSelector'
 
 interface RefereeTrend {
   game: string
@@ -74,9 +75,13 @@ export default function MatchupWidget() {
     )
   }
   
+  // Get dynamic link based on league
+  const leagueKey = data.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  const widgetLinks = getSportWidgetLinks(leagueKey)
+  
   return (
     <>
-      <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <a href={widgetLinks.refereeTrends} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
         <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg" 

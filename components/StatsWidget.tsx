@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getSportWidgetLinks } from '@/lib/utils/sportSelector'
 
 interface MostPublicBet {
   label: string
@@ -74,9 +75,13 @@ export default function StatsWidget() {
     )
   }
   
+  // Get dynamic link based on league
+  const leagueKey = data.league.toLowerCase() as 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+  const widgetLinks = getSportWidgetLinks(leagueKey)
+  
   return (
     <>
-      <a href="https://app.thebettinginsider.com" style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
+      <a href={widgetLinks.publicBetting} style={{ textDecoration: 'none', display: 'block', cursor: 'pointer', color: 'inherit' }}>
         <div style={widgetStyle}>
         <div style={iconWrapper}>
           <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg" 
