@@ -140,7 +140,7 @@ export function getSportDisplayName(league: League): string {
   return names[league]
 }
 
-// Get dynamic widget links based on sport
+// Get dynamic widget links based on sport - using EXACT URLs provided
 export function getSportWidgetLinks(league: League): {
   publicBetting: string
   refereeTrends: string
@@ -148,12 +148,36 @@ export function getSportWidgetLinks(league: League): {
 } {
   const baseUrl = 'https://app.thebettinginsider.com'
   
-  // Map league to headerState (CFB uses NCAAF in URL)
-  const headerState = league === 'cfb' ? 'NCAAF' : league.toUpperCase()
+  // PUBLIC BETTING LINKS (exact as provided)
+  const publicBettingLinks: Record<League, string> = {
+    nba: `${baseUrl}/?view=big_money&headerState=NBA`,
+    cfb: `${baseUrl}/?view=big_money&headerState=NBA`, // CFB uses NBA headerState
+    mlb: `${baseUrl}/?headerState=MLB&view=big_money`,
+    nfl: `${baseUrl}/?headerState=NFL&view=big_money`,
+    nhl: `${baseUrl}/?headerState=NHL&view=big_money`
+  }
+  
+  // REFEREE TRENDS LINKS (all use same format)
+  const refereeTrendsLinks: Record<League, string> = {
+    mlb: `${baseUrl}/?headerState=MLB&view=ref_trends`,
+    nba: `${baseUrl}/?headerState=NBA&view=ref_trends`,
+    nfl: `${baseUrl}/?headerState=NFL&view=ref_trends`,
+    nhl: `${baseUrl}/?headerState=NHL&view=ref_trends`,
+    cfb: `${baseUrl}/?headerState=NCAAF&view=ref_trends` // fallback for CFB
+  }
+  
+  // PLAYER PROPS LINKS (exact as provided)
+  const playerPropsLinks: Record<League, string> = {
+    nfl: `${baseUrl}/?view=player_props&headerState=NFL`,
+    mlb: `${baseUrl}/?headerState=MLB&view=player_props`,
+    nba: `${baseUrl}/?headerState=NBA&view=player_props`,
+    nhl: `${baseUrl}/?headerState=NHL&view=player_props`,
+    cfb: `${baseUrl}/?view=player_props&headerState=NCAAF` // fallback for CFB
+  }
   
   return {
-    publicBetting: `${baseUrl}/?view=big_money&headerState=${headerState}`,
-    refereeTrends: `${baseUrl}/?headerState=${headerState}&view=ref_trends`,
-    playerProps: `${baseUrl}/?view=player_props&headerState=${headerState}`
+    publicBetting: publicBettingLinks[league],
+    refereeTrends: refereeTrendsLinks[league],
+    playerProps: playerPropsLinks[league]
   }
 }
