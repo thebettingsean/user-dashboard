@@ -86,12 +86,14 @@ export async function GET() {
               
               console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
-              // Get team from player data (if available), otherwise try to infer from game
-              let playerTeam = player.team || null
+              // Extract team name from team_id (e.g., "Toronto Raptors" -> "Raptors")
+              let playerTeam: string | null = null
+              if (player.team_id) {
+                const teamParts = player.team_id.split(' ')
+                playerTeam = teamParts[teamParts.length - 1] // Get last word (team name, not city)
+              }
               
-              // Log what we got from API
-              console.log(`  📍 Team from API: ${player.team ? player.team : 'NOT PROVIDED'}`)
-              console.log(`  📍 Player object keys: ${Object.keys(player).join(', ')}`)
+              console.log(`  📍 Team from API: ${player.team_id || 'NOT PROVIDED'} -> Extracted: ${playerTeam || 'N/A'}`)
               
               allProps.push({
                 league: league.toUpperCase(),

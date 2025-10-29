@@ -7,7 +7,7 @@ export type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
 export interface PlayerProp {
   player_name: string
   player_id: number
-  team?: string // Team abbreviation from API
+  team_id?: string // Full team name from API (e.g., "Toronto Raptors")
   prop_type: 'over' | 'under' | 'yes' | 'no'
   opening_line: number
   record: {
