@@ -59,10 +59,15 @@ export function getSportPriority(dayOfWeek?: number): SportPriority {
 // Get date range for fetching games based on the sport
 export function getDateRangeForSport(league: League): { from: string; to: string } {
   const now = new Date()
-  const hour = now.getHours()
+  
+  // Convert current time to EST/EDT (America/New_York timezone)
+  const estTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }))
+  const estHour = estTime.getHours()
+  
+  console.log(`⏰ Current time in EST: ${estTime.toLocaleString()}, Hour: ${estHour}`)
   
   // If it's after 10pm EST/EDT, look at tomorrow's games instead
-  const today = hour >= 22 ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now
+  const today = estHour >= 22 ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now
   
   const dayOfWeek = today.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
   const from = new Date(today)
