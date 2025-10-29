@@ -85,7 +85,8 @@ export async function GET() {
               console.log(`✅ QUALIFIED: ${player.player_name} - ${propDescription}`)
               
               // Get team from player data (if available), otherwise null
-              const playerTeam = (player as any).team || null
+              const playerTeam = player.team || null
+              console.log(`  📍 Team data: ${playerTeam ? playerTeam : 'NOT PROVIDED BY API'}`)
               
               allProps.push({
                 league: league.toUpperCase(),
