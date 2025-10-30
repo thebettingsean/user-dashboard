@@ -39,7 +39,7 @@ export default function TopPropsWidget() {
     }
   }
 
-  const iconImg = <BsGraphUp size={36} />
+  const iconImg = <BsGraphUp size={28} />
 
   if (isLoading) {
     return (

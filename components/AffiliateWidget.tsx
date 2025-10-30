@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { createPortal } from 'react-dom'
+import { MdAddLink } from 'react-icons/md'
 
 interface AffiliateData {
   id: string
@@ -258,13 +259,7 @@ export default function AffiliateWidget() {
     }
   }
 
-  const iconImg = (
-    <img 
-      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68fbb24e7da2cde41db44d4b_2.svg" 
-      style={{ width: '36px', height: '36px' }} 
-      alt="Affiliate" 
-    />
-  )
+  const iconImg = <MdAddLink size={28} />
 
   if (isLoading || !isLoaded) {
     return (
