@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getSportWidgetLinks } from '@/lib/utils/sportSelector'
-import { BsGraphUp } from 'react-icons/bs'
+import { GiAmericanFootballPlayer } from 'react-icons/gi'
 
 interface TopProp {
   player_name: string
@@ -39,7 +39,7 @@ export default function TopPropsWidget() {
     }
   }
 
-  const iconImg = <BsGraphUp size={28} />
+  const iconImg = <GiAmericanFootballPlayer size={28} />
 
   if (isLoading) {
     return (
