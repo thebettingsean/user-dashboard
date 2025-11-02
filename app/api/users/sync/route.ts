@@ -24,11 +24,22 @@ export async function POST(request: NextRequest) {
 
     // Get Stripe customer ID from Clerk metadata
     const stripeCustomerId = user.publicMetadata?.stripeCustomerId as string | undefined
-    const isPremium = !!stripeCustomerId
+    
+    // Check if user has any active subscription plans
+    const plan = user.publicMetadata?.plan as string | undefined
+    const fantasyPlan = user.publicMetadata?.fantasyPlan as string | undefined
+    const isPremium = !!(plan || fantasyPlan || stripeCustomerId)
+    
+    console.log(`User ${userId} subscription check:`, {
+      plan,
+      fantasyPlan,
+      stripeCustomerId,
+      isPremium
+    })
 
     // User doesn't exist - create them
     if (!existingUser) {
-      console.log(`Creating new user: ${userId}`)
+      console.log(`Creating new user: ${userId} (Premium: ${isPremium})`)
       
       const { data: newUser, error: createError } = await supabaseUsers
         .from('users')
@@ -59,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // User exists - update their premium status and last active
-    console.log(`Updating existing user: ${userId}`)
+    console.log(`Updating existing user: ${userId} (Premium: ${isPremium})`)
     
     const { data: updatedUser, error: updateError } = await supabaseUsers
       .from('users')
