@@ -5,7 +5,21 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 export default function Navbar() {
-  const { isSignedIn, isLoaded } = useUser()
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  // In development, bypass Clerk to avoid CORS errors
+  let isSignedIn = false
+  let isLoaded = true
+  
+  if (!isDevelopment) {
+    const clerkUser = useUser()
+    isSignedIn = clerkUser.isSignedIn || false
+    isLoaded = clerkUser.isLoaded
+  } else {
+    // Simulate signed-in state in development
+    isSignedIn = true
+    isLoaded = true
+  }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [dashboardSubOpen, setDashboardSubOpen] = useState(false)
@@ -141,41 +155,6 @@ export default function Navbar() {
 
   return (
     <>
-      <style jsx>{`
-        .desktop-nav {
-          position: fixed;
-          top: 20px;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          display: flex;
-          justify-content: center; /* Center the navbar */
-        }
-        
-        .mobile-nav {
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 1000;
-          width: calc(100% - 40px);
-          max-width: 500px;
-          display: flex;
-          flex-direction: column;
-        }
-        
-        @media (max-width: 767px) {
-          .desktop-nav {
-            display: none !important;
-          }
-        }
-        
-        @media (min-width: 768px) {
-          .mobile-nav {
-            display: none !important;
-          }
-        }
-      `}</style>
 
       {/* DESKTOP NAVBAR - One centered bar */}
       <nav className="desktop-nav">
@@ -268,6 +247,22 @@ export default function Navbar() {
           {!isLoaded ? (
             <div style={styles.authLoading}>...</div>
           ) : isSignedIn ? (
+            isDevelopment ? (
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                D
+              </div>
+            ) : (
             <UserButton
               appearance={{
                 baseTheme: undefined,
@@ -334,6 +329,7 @@ export default function Navbar() {
                 />
               </UserButton.MenuItems>
             </UserButton>
+            )
           ) : (
             <div 
               style={{ position: 'relative' }}
@@ -398,6 +394,22 @@ export default function Navbar() {
             {!isLoaded ? (
               <div style={styles.authLoading}>...</div>
             ) : isSignedIn ? (
+              isDevelopment ? (
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}>
+                  D
+                </div>
+              ) : (
               <UserButton
                 appearance={{
                   baseTheme: undefined,
@@ -464,6 +476,7 @@ export default function Navbar() {
                   />
                 </UserButton.MenuItems>
               </UserButton>
+            )
             ) : (
               <div style={{ position: 'relative' }}>
                 <button 

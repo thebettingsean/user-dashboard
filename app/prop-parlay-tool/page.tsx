@@ -36,6 +36,7 @@ export default function PropParlayTool() {
   const [view, setView] = useState<'props' | 'parlays'>('props')
   const [showPropsFilter, setShowPropsFilter] = useState(false)
   const [showParlaysFilter, setShowParlaysFilter] = useState(false)
+  const [sport, setSport] = useState<'NFL' | 'NBA'>('NFL')
   const [filters, setFilters] = useState({
     legs: 2,
     minOdds: -600,
@@ -45,17 +46,21 @@ export default function PropParlayTool() {
     game: 'all'
   })
 
-  const { isLoading: subLoading, isSubscribed } = useSubscription()
+  const { isLoading: subLoading, isSubscribed} = useSubscription()
 
   useEffect(() => {
     fetchData()
     const interval = setInterval(fetchData, 300000)
     return () => clearInterval(interval)
-  }, [])
+  }, [sport])
 
   async function fetchData() {
     try {
-      const res = await fetch('https://nfl-alt-prop-tool-database-production.up.railway.app')
+      const url = sport === 'NFL' 
+        ? 'https://nfl-alt-prop-tool-database-production.up.railway.app'
+        : 'https://nba-alt-prop-tool-production.up.railway.app'
+      
+      const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
       const json = await res.json()
       setData(json)
@@ -319,6 +324,15 @@ export default function PropParlayTool() {
           {view === 'props' ? (
             <>
               <div style={styles.filterRow}>
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value as 'NFL' | 'NBA')}
+                  style={styles.sportSelector}
+                >
+                  <option value="NFL">NFL</option>
+                  <option value="NBA">NBA</option>
+                </select>
+                
                 <button 
                   style={styles.filterButton}
                   onClick={() => setShowPropsFilter(!showPropsFilter)}
@@ -365,6 +379,15 @@ export default function PropParlayTool() {
           ) : (
             <>
               <div style={styles.filterRow}>
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value as 'NFL' | 'NBA')}
+                  style={styles.sportSelector}
+                >
+                  <option value="NFL">NFL</option>
+                  <option value="NBA">NBA</option>
+                </select>
+                
                 <button 
                   style={styles.filterButton}
                   onClick={() => setShowParlaysFilter(!showParlaysFilter)}
@@ -785,8 +808,26 @@ const styles = {
     boxShadow: '0 4px 16px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
   },
   filterRow: {
-    marginBottom: '1.25rem'
+    marginBottom: '1.25rem',
+    display: 'flex',
+    gap: '0.75rem',
+    alignItems: 'center'
   },
+  sportSelector: {
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    color: '#e5e7eb',
+    borderRadius: '12px',
+    padding: '0.7rem 1rem',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    outline: 'none'
+  } as React.CSSProperties,
   filterButton: {
     display: 'flex',
     alignItems: 'center',

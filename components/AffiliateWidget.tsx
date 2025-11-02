@@ -27,7 +27,22 @@ interface SalesData {
 }
 
 export default function AffiliateWidget() {
-  const { user, isLoaded } = useUser()
+  // Development mode bypass
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  let user = null
+  let isLoaded = true
+  
+  if (!isDevelopment) {
+    const clerkUser = useUser()
+    user = clerkUser.user
+    isLoaded = clerkUser.isLoaded
+  } else {
+    // Simulate a logged-in user in development
+    user = { id: 'dev-user-123', emailAddresses: [{ emailAddress: 'dev@example.com' }] } as any
+    isLoaded = true
+  }
+  
   const [isLoading, setIsLoading] = useState(true)
   const [isAffiliate, setIsAffiliate] = useState(false)
   const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null)

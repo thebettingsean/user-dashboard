@@ -36,6 +36,57 @@ body {
   overflow-x: hidden;
 }
 
+/* Mobile/Desktop view toggles */
+.mobile-view {
+  display: block;
+}
+.desktop-view {
+  display: none;
+}
+@media (min-width: 768px) {
+  .mobile-view {
+    display: none !important;
+  }
+  .desktop-view {
+    display: block !important;
+  }
+}
+
+/* Navbar mobile/desktop toggles */
+.desktop-nav {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: calc(100% - 40px);
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 767px) {
+  .desktop-nav {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
 /* Hide Pushlap's default floating widget */
 [data-affiliate-widget],
 #pushlap-widget,
@@ -45,6 +96,31 @@ iframe[src*="pushlapgrowth"] {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* Spinner animation for AI modal */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Custom horizontal scrollbar for game cards */
+*::-webkit-scrollbar {
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
 }
 
 /* Force Clerk custom menu items to be white - AGGRESSIVE */

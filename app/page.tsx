@@ -14,27 +14,168 @@ import DiscordWidget from '../components/DiscordWidget'
 import MaximizeProfitWidget from '../components/MaximizeProfitWidget'
 import AffiliateWidget from '../components/AffiliateWidget'
 import TopPropsWidget from '../components/TopPropsWidget'
-import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
+import GameCard from '../components/GameCard'
+import GameScriptModal from '../components/GameScriptModal'
+import LoadingSpinner from '../components/LoadingSpinner'
+import AICreditBadge from '../components/AICreditBadge'
+import { ListTodo, UserRoundSearch, ScrollText, Sparkles } from 'lucide-react'
+import { GoPlusCircle } from 'react-icons/go'
+import { TiMinusOutline } from 'react-icons/ti'
+
+interface GameSummary {
+  gameId: string
+  sport: string
+  awayTeam: string
+  homeTeam: string
+  gameTime: string
+  awayTeamLogo?: string
+  homeTeamLogo?: string
+  dataStrength?: 1 | 2 | 3 // Actual data strength from API
+}
 
 export default function Home() {
-  const [expandedWidgets, setExpandedWidgets] = useState<Set<string>>(new Set())
+  // Track which SECTIONS are open (not individual widgets)
+  // AI Game Intelligence is open by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['ai-intelligence', 'ai-intelligence-desktop']))
   const [welcomeMessage, setWelcomeMessage] = useState('')
+  const [games, setGames] = useState<GameSummary[]>([])
+  const [loadingGames, setLoadingGames] = useState(true)
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [selectedGameSport, setSelectedGameSport] = useState<string>('NFL')
+  const [scriptModalOpen, setScriptModalOpen] = useState(false)
+  const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'MLB'>('NFL')
+  const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
   const { isLoading, isSubscribed, firstName } = useSubscription()
 
   useEffect(() => {
-    if (!isLoading) {
+    // Set welcome message immediately, update when firstName changes
       setWelcomeMessage(getWelcomeMessage(firstName))
+  }, [firstName])
+  
+  // Set a default message on mount
+  useEffect(() => {
+    if (!welcomeMessage) {
+      setWelcomeMessage(getWelcomeMessage(null))
     }
-  }, [isLoading, firstName])
+  }, [])
 
-  function toggleWidget(widgetId: string) {
-    const newExpanded = new Set(expandedWidgets)
-    if (newExpanded.has(widgetId)) {
-      newExpanded.delete(widgetId)
-    } else {
-      newExpanded.add(widgetId)
+  useEffect(() => {
+    fetchTodaysGames()
+  }, [])
+
+  async function fetchTodaysGames() {
+    try {
+      console.log('🎮 Fetching today\'s games...')
+      const response = await fetch('/api/games/today')
+      console.log('📡 Response status:', response.status)
+      
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('📊 Games data:', data)
+      console.log('🎯 Total games:', data.games?.length || 0)
+      
+      // Transform API response to match GameSummary interface
+      const transformedGames: GameSummary[] = (data.games || []).map((game: any) => {
+        // Strip city names from team names - take the last word
+        const awayTeamParts = game.away_team.split(' ')
+        const homeTeamParts = game.home_team.split(' ')
+        const awayNickname = awayTeamParts[awayTeamParts.length - 1]
+        const homeNickname = homeTeamParts[homeTeamParts.length - 1]
+        
+        return {
+          gameId: game.id,
+          sport: game.sport,
+          awayTeam: awayNickname,
+          homeTeam: homeNickname,
+          gameTime: game.game_date,
+          dataStrength: 1 // Default strength, will be updated below
+        }
+      })
+      
+      setGames(transformedGames)
+      
+      // Fetch data strength for each game in parallel
+      console.log('📊 Fetching data strength for all games...')
+      const strengthPromises = transformedGames.map(async (game) => {
+        try {
+          const strengthRes = await fetch(
+            `/api/game-intelligence/strength?gameId=${game.gameId}&league=${game.sport.toLowerCase()}`
+          )
+          if (strengthRes.ok) {
+            const strengthData = await strengthRes.json()
+            return { gameId: game.gameId, strength: strengthData.strength }
+          }
+        } catch (error) {
+          console.error(`Error fetching strength for ${game.gameId}:`, error)
+        }
+        return { gameId: game.gameId, strength: 1 }
+      })
+      
+      const strengthResults = await Promise.all(strengthPromises)
+      
+      // Update games with their actual strength
+      const gamesWithStrength = transformedGames.map(game => {
+        const strengthResult = strengthResults.find(s => s.gameId === game.gameId)
+        return {
+          ...game,
+          dataStrength: (strengthResult?.strength || 1) as 1 | 2 | 3
+        }
+      })
+      
+      console.log('✅ Games with strength:', gamesWithStrength.map(g => `${g.gameId}: ${g.dataStrength}`))
+      setGames(gamesWithStrength)
+      
+    } catch (error) {
+      console.error('❌ Error fetching games:', error)
+    } finally {
+      setLoadingGames(false)
     }
-    setExpandedWidgets(newExpanded)
+  }
+
+  async function handleAnalyzeGame(gameId: string, sport: string) {
+    setGeneratingGameId(gameId)
+    setSelectedGameId(gameId)
+    setSelectedGameSport(sport)
+    
+    // Small delay to show "generating" state
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    setScriptModalOpen(true)
+  }
+
+  function closeScriptModal() {
+    setScriptModalOpen(false)
+    setSelectedGameId(null)
+    setGeneratingGameId(null)
+  }
+
+  // Filter and sort games by selected sport
+  // Sort by: 1) Data strength (highest first), 2) Game time (earliest first)
+  const filteredGames = games
+    .filter(game => game.sport === selectedSport)
+    .sort((a, b) => {
+      // First, sort by data strength (highest to lowest: 3 > 2 > 1)
+      const strengthDiff = (b.dataStrength || 1) - (a.dataStrength || 1)
+      if (strengthDiff !== 0) return strengthDiff
+      
+      // If same strength, sort by game time (earliest first)
+      return new Date(a.gameTime).getTime() - new Date(b.gameTime).getTime()
+    })
+
+  function toggleSection(sectionId: string) {
+    console.log('🔄 Toggle section:', sectionId, 'Current expanded:', Array.from(expandedSections))
+    const newExpanded = new Set(expandedSections)
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId)
+      console.log('➖ Closing section:', sectionId)
+    } else {
+      newExpanded.add(sectionId)
+      console.log('➕ Opening section:', sectionId)
+    }
+    setExpandedSections(newExpanded)
   }
 
   // If still loading, show a loading state
@@ -151,50 +292,6 @@ export default function Home() {
         <div className="orb-4"></div>
         <div className="orb-5"></div>
 
-      <style jsx>{`
-        .mobile-view {
-          display: block;
-        }
-        .desktop-view {
-          display: none;
-        }
-        @media (min-width: 768px) {
-          .mobile-view {
-            display: none;
-          }
-          .desktop-view {
-            display: block;
-          }
-        }
-        .accordion-content {
-          margin-top: 0.75rem;
-        }
-        
-        /* Glassmorphism enhancements */
-        .glass-card {
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .glass-card:hover {
-          background: rgba(255, 255, 255, 0.05);
-          border-color: rgba(255, 255, 255, 0.15);
-          box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5);
-          transform: translateY(-2px);
-        }
-        
-        .glass-section {
-          background: rgba(255, 255, 255, 0.04);
-          backdrop-filter: blur(20px) saturate(180%);
-          -webkit-backdrop-filter: blur(20px) saturate(180%);
-          border: 1.5px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        }
-      `}</style>
 
       <div style={{ padding: '120px 1rem 1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
       <div style={{ 
@@ -211,142 +308,658 @@ export default function Home() {
             These are the tools you need to be a profitable bettor
           </p>
         </div>
-        
-        {/* Divider line */}
+
+        {/* Divider line above AI section */}
         <div style={{ 
           width: '100%', 
           height: '1px', 
           background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
           marginBottom: '2rem'
         }} />
+
+        {/* AI GAME INTELLIGENCE SECTION - MOBILE */}
+        <div className="mobile-view" style={{ marginBottom: '2.5rem' }}>
+          <h3 
+            onClick={() => toggleSection('ai-intelligence')}
+            style={{ 
+              fontSize: '1.2rem', 
+              marginBottom: '0.5rem', 
+              opacity: 0.9, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              color: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            <Sparkles size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+            AI Game Scripts
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: '600',
+              color: '#10b981',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '4px',
+              padding: '2px 6px',
+              marginLeft: '0.25rem'
+            }}>
+              BETA
+            </span>
+            <span style={{ marginLeft: 'auto' }}>
+              {expandedSections.has('ai-intelligence') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+            </span>
+          </h3>
+          {expandedSections.has('ai-intelligence') && (
+            <>
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: 'rgba(255, 255, 255, 0.6)', 
+                marginBottom: '0.75rem',
+                lineHeight: '1.5'
+              }}>
+                Select a sport, pick a game, and get an AI powered script with real Insider picks and data
+              </p>
+
+              {/* Credit Badge */}
+              <div style={{ marginBottom: '1rem' }}>
+                <AICreditBadge />
+              </div>
+
+              {/* Sport Tabs */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.3rem', 
+                marginBottom: '0.75rem',
+                justifyContent: 'space-between' // No scroll, fit all tabs
+              }}>
+                {[
+                  { id: 'NFL', label: 'NFL', active: true },
+                  { id: 'NBA', label: 'NBA', active: true },
+                  { id: 'CFB', label: 'CFB', active: false },
+                  { id: 'NHL', label: 'NHL', active: false },
+                  { id: 'MLB', label: 'MLB', active: false }
+                ].map(sport => (
+                  <button
+                    key={sport.id}
+                    onClick={() => sport.active && setSelectedSport(sport.id as any)}
+                    style={{
+                      flex: 1, // Equal width for all tabs
+                      padding: '0.4rem 0.4rem',
+                      borderRadius: '6px',
+                      border: selectedSport === sport.id 
+                        ? '1px solid rgba(139, 92, 246, 0.4)' 
+                        : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: selectedSport === sport.id
+                        ? 'rgba(139, 92, 246, 0.15)'
+                        : 'rgba(255, 255, 255, 0.02)',
+                      color: !sport.active 
+                        ? 'rgba(255, 255, 255, 0.3)'
+                        : selectedSport === sport.id 
+                          ? '#a78bfa' 
+                          : 'rgba(255, 255, 255, 0.65)',
+                      fontSize: '0.65rem', // Slightly smaller for mobile fit
+                      fontWeight: selectedSport === sport.id ? '600' : '500',
+                      cursor: sport.active ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                      opacity: !sport.active ? 0.4 : 1
+                    }}
+                  >
+                    {sport.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Game Cards - Horizontal Scroll */}
+              {loadingGames ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem'
+                }}>
+                  <LoadingSpinner size="large" text="Loading games..." />
+                </div>
+              ) : filteredGames.length === 0 ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem',
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }}>
+                  No {selectedSport} games today
+                </div>
+              ) : (
+                <div style={{ 
+                  display: 'flex',
+                  gap: '0.75rem',
+                  overflowX: 'auto',
+                  paddingBottom: '0.75rem',
+                  scrollbarWidth: 'thin' as const,
+                  scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
+                }}>
+                  {filteredGames.map((game, index) => {
+                    // Parse the game time - API returns times offset by 1 hour
+                    // Extract the hour and subtract 1 to get correct EST time
+                    const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
+                    const [hours, minutes] = gameTimeStr.split(':')
+                    let hour = parseInt(hours) - 1 // Subtract 1 hour
+                    if (hour < 0) hour = 23 // Handle midnight wrap-around
+                    const ampm = hour >= 12 ? 'PM' : 'AM'
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+                    const time = `${displayHour}:${minutes} ${ampm}`
+                    const isGenerating = generatingGameId === game.gameId
+
+                    // Active data strength from API (defaults to 1 if not available)
+                    const scriptStrength = game.dataStrength || 1
+                    const strengthLabel = scriptStrength === 1 ? 'Minimal' : scriptStrength === 2 ? 'Above Avg' : 'Strong'
+
+                    return (
+                      <div
+                        key={game.gameId}
+                        onClick={() => !isGenerating && handleAnalyzeGame(game.gameId, game.sport)}
+                        style={{
+                          minWidth: '220px',
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          backdropFilter: 'blur(20px)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '10px',
+                          padding: '0.75rem',
+                          display: 'flex',
+                          flexDirection: 'column' as const,
+                          gap: '0.5rem',
+                          transition: 'all 0.3s',
+                          cursor: isGenerating ? 'wait' : 'pointer',
+                          opacity: isGenerating ? 0.7 : 1
+                        }}
+                      >
+                        {/* Top Row: Team names + Strength Indicator */}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.5rem'
+                        }}>
+                          <div style={{ 
+                            fontSize: '0.75rem', 
+                            fontWeight: '600', 
+                            color: '#fff',
+                            lineHeight: '1.2'
+                          }}>
+                            {game.awayTeam} @ {game.homeTeam}
+                          </div>
+                          
+                          {/* Horizontal Bar Chart - Red, Yellow, Green */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '3px',
+                            alignItems: 'flex-end',
+                            flexShrink: 0
+                          }}>
+                            {/* Red bar (smallest) */}
+                            <div style={{
+                              width: '6px',
+                              height: '8px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                            
+                            {/* Yellow bar (medium) */}
+                            <div style={{
+                              width: '6px',
+                              height: '12px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                            
+                            {/* Green bar (tallest) */}
+                            <div style={{
+                              width: '6px',
+                              height: '16px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                          </div>
+                        </div>
+
+                        {/* Active Data Label */}
+                        <div style={{ 
+                          fontSize: '0.65rem', 
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          lineHeight: '1'
+                        }}>
+                          Active Data: {strengthLabel}
+                        </div>
+
+                        {/* Bottom Row: Game Time + AI Icon + Generate Text */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          {/* Game Time */}
+                          <div style={{ 
+                            fontSize: '0.65rem', 
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }}>
+                            {time} EST
+                          </div>
+
+                          {/* AI Icon + Generate Text */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}>
+                            <Sparkles size={12} style={{ color: '#a78bfa' }} />
+                            <span style={{
+                              color: '#a78bfa',
+                              fontSize: '0.7rem',
+                              fontWeight: '600'
+                            }}>
+                              {isGenerating ? 'Generating...' : 'Generate...'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* AI GAME INTELLIGENCE SECTION - DESKTOP */}
+        <div className="desktop-view" style={{ marginBottom: '2.5rem' }}>
+          <h3 
+            onClick={() => toggleSection('ai-intelligence-desktop')}
+            style={{ 
+              fontSize: '1.2rem', 
+              marginBottom: '0.5rem', 
+              opacity: 0.9, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              color: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            <Sparkles size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+            AI Game Scripts
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: '600',
+              color: '#10b981',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '4px',
+              padding: '2px 6px',
+              marginLeft: '0.25rem'
+            }}>
+              BETA
+            </span>
+            <span style={{ marginLeft: 'auto' }}>
+              {expandedSections.has('ai-intelligence-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+            </span>
+          </h3>
+          {expandedSections.has('ai-intelligence-desktop') && (
+            <>
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: 'rgba(255, 255, 255, 0.6)', 
+                marginBottom: '0.75rem',
+                lineHeight: '1.5'
+              }}>
+                Select a sport, pick a game, and get an AI powered script with real Insider picks and data
+              </p>
+
+              {/* Credit Badge */}
+              <div style={{ marginBottom: '1rem' }}>
+                <AICreditBadge />
+              </div>
+
+              {/* Sport Tabs */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '0.3rem', 
+                marginBottom: '0.75rem',
+                justifyContent: 'space-between' // No scroll, fit all tabs
+              }}>
+                {[
+                  { id: 'NFL', label: 'NFL', active: true },
+                  { id: 'NBA', label: 'NBA', active: true },
+                  { id: 'CFB', label: 'CFB', active: false },
+                  { id: 'NHL', label: 'NHL', active: false },
+                  { id: 'MLB', label: 'MLB', active: false }
+                ].map(sport => (
+                  <button
+                    key={sport.id}
+                    onClick={() => sport.active && setSelectedSport(sport.id as any)}
+                    style={{
+                      flex: 1, // Equal width for all tabs
+                      padding: '0.4rem 0.4rem',
+                      borderRadius: '6px',
+                      border: selectedSport === sport.id 
+                        ? '1px solid rgba(139, 92, 246, 0.4)' 
+                        : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: selectedSport === sport.id
+                        ? 'rgba(139, 92, 246, 0.15)'
+                        : 'rgba(255, 255, 255, 0.02)',
+                      color: !sport.active 
+                        ? 'rgba(255, 255, 255, 0.3)'
+                        : selectedSport === sport.id 
+                          ? '#a78bfa' 
+                          : 'rgba(255, 255, 255, 0.65)',
+                      fontSize: '0.65rem', // Slightly smaller for mobile fit
+                      fontWeight: selectedSport === sport.id ? '600' : '500',
+                      cursor: sport.active ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap',
+                      opacity: !sport.active ? 0.4 : 1
+                    }}
+                  >
+                    {sport.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Game Cards - Horizontal Scroll */}
+              {loadingGames ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem'
+                }}>
+                  <LoadingSpinner size="large" text="Loading games..." />
+                </div>
+              ) : filteredGames.length === 0 ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '3rem',
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }}>
+                  No {selectedSport} games today
+                </div>
+              ) : (
+                <div style={{ 
+                  display: 'flex',
+                  gap: '0.75rem',
+                  overflowX: 'auto',
+                  paddingBottom: '0.75rem',
+                  scrollbarWidth: 'thin' as const,
+                  scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
+                }}>
+                  {filteredGames.map((game, index) => {
+                    // Parse the game time - API returns times offset by 1 hour
+                    // Extract the hour and subtract 1 to get correct EST time
+                    const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
+                    const [hours, minutes] = gameTimeStr.split(':')
+                    let hour = parseInt(hours) - 1 // Subtract 1 hour
+                    if (hour < 0) hour = 23 // Handle midnight wrap-around
+                    const ampm = hour >= 12 ? 'PM' : 'AM'
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+                    const time = `${displayHour}:${minutes} ${ampm}`
+                    const isGenerating = generatingGameId === game.gameId
+
+                    // Active data strength from API (defaults to 1 if not available)
+                    const scriptStrength = game.dataStrength || 1
+                    const strengthLabel = scriptStrength === 1 ? 'Minimal' : scriptStrength === 2 ? 'Above Avg' : 'Strong'
+
+                    return (
+                      <div
+                        key={game.gameId}
+                        onClick={() => !isGenerating && handleAnalyzeGame(game.gameId, game.sport)}
+                        style={{
+                          minWidth: '220px',
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          backdropFilter: 'blur(20px)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '10px',
+                          padding: '0.75rem',
+                          display: 'flex',
+                          flexDirection: 'column' as const,
+                          gap: '0.5rem',
+                          transition: 'all 0.3s',
+                          cursor: isGenerating ? 'wait' : 'pointer',
+                          opacity: isGenerating ? 0.7 : 1
+                        }}
+                      >
+                        {/* Top Row: Team names + Strength Indicator */}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.5rem'
+                        }}>
+                          <div style={{ 
+                            fontSize: '0.75rem', 
+                            fontWeight: '600', 
+                            color: '#fff',
+                            lineHeight: '1.2'
+                          }}>
+                            {game.awayTeam} @ {game.homeTeam}
+                          </div>
+                          
+                          {/* Horizontal Bar Chart - Red, Yellow, Green */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '3px',
+                            alignItems: 'flex-end',
+                            flexShrink: 0
+                          }}>
+                            {/* Red bar (smallest) */}
+                            <div style={{
+                              width: '6px',
+                              height: '8px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                            
+                            {/* Yellow bar (medium) */}
+                            <div style={{
+                              width: '6px',
+                              height: '12px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                            
+                            {/* Green bar (tallest) */}
+                            <div style={{
+                              width: '6px',
+                              height: '16px',
+                              borderRadius: '2px',
+                              background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
+                              boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
+                              transition: 'all 0.3s'
+                            }} />
+                          </div>
+                        </div>
+
+                        {/* Active Data Label */}
+                        <div style={{ 
+                          fontSize: '0.65rem', 
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          lineHeight: '1'
+                        }}>
+                          Active Data: {strengthLabel}
+                        </div>
+
+                        {/* Bottom Row: Game Time + AI Icon + Generate Text */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          {/* Game Time */}
+                          <div style={{ 
+                            fontSize: '0.65rem', 
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }}>
+                            {time} EST
+                          </div>
+
+                          {/* AI Icon + Generate Text */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}>
+                            <Sparkles size={12} style={{ color: '#a78bfa' }} />
+                            <span style={{
+                              color: '#a78bfa',
+                              fontSize: '0.7rem',
+                              fontWeight: '600'
+                            }}>
+                              {isGenerating ? 'Generating...' : 'Generate...'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
         
         {/* MOBILE VIEW - Accordion */}
         <div className="mobile-view">
-          {/* Row 1: Dashboards */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Dashboards
-            <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
-          </h3>
+          {/* Quick Data Section - COLLAPSIBLE */}
           <div style={{ marginBottom: '2rem' }}>
-            {row1Widgets.map(widget => (
-              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                <div 
-                  onClick={() => toggleWidget(widget.id)}
-                  className="glass-card"
+            <h3 
+              onClick={() => toggleSection('quickdata')}
                   style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '1rem', 
+                opacity: 0.9, 
                     display: 'flex',
-                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '1rem 1.25rem',
-                    border: `0.5px solid ${widget.borderColor}`,
-                    background: widget.background,
-                    borderRadius: '14px',
+                gap: '0.5rem',
                     cursor: 'pointer',
-                    color: 'white'
-                  }}
-                >
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
-                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
-                </div>
-                {expandedWidgets.has(widget.id) && (
-                  <div className="accordion-content">
+                color: '#fff'
+              }}
+            >
+              <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Quick Data
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('quickdata') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
+            </h3>
+            {expandedSections.has('quickdata') && (
+              <div>
+                {row1Widgets.map(widget => (
+                  <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                     <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
+            )}
           </div>
 
-          {/* Row 2: Prop Tools */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Prop Tools
-            <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
-          </h3>
+          {/* Prop Tools Section - COLLAPSIBLE */}
           <div style={{ marginBottom: '2rem' }}>
-            {row2Widgets.map(widget => (
-              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                <div 
-                  onClick={() => toggleWidget(widget.id)}
-                  className="glass-card"
+            <h3 
+              onClick={() => toggleSection('proptools')}
                   style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '1rem', 
+                opacity: 0.9, 
                     display: 'flex',
-                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '1rem 1.25rem',
-                    border: `0.5px solid ${widget.borderColor}`,
-                    background: widget.background,
-                    borderRadius: '14px',
+                gap: '0.5rem',
                     cursor: 'pointer',
-                    color: 'white'
-                  }}
-                >
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
-                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
-                </div>
-                {expandedWidgets.has(widget.id) && (
-                  <div className="accordion-content">
+                color: '#fff'
+              }}
+            >
+              <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Prop Tools
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('proptools') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
+            </h3>
+            {expandedSections.has('proptools') && (
+              <div>
+                {row2Widgets.map(widget => (
+                  <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                     <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
                   </div>
+                ))}
+                  </div>
                 )}
-              </div>
-            ))}
           </div>
 
-          {/* Divider line */}
-          <div style={{ 
-            width: '100%', 
-            height: '1px', 
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
-            marginBottom: '2rem'
-          }} />
-
-          {/* Row 3: Resources */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Resources
-            <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
-          </h3>
+          {/* Resources Section - COLLAPSIBLE */}
           <div style={{ marginBottom: '2rem' }}>
-            {row3Widgets.map(widget => (
-              <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                <div 
-                  onClick={() => toggleWidget(widget.id)}
-                  className="glass-card"
-                  style={{ 
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '1rem 1.25rem',
-                    border: `0.5px solid ${widget.borderColor}`,
-                    background: widget.background,
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    color: 'white'
-                  }}
-                >
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600' }}>{widget.title}</span>
-                  <img src={widget.icon} alt="" style={{ width: '32px', height: '32px' }} />
-                </div>
-                {expandedWidgets.has(widget.id) && (
-                  <div className="accordion-content">
+            <h3 
+              onClick={() => toggleSection('resources')}
+              style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '1rem', 
+                opacity: 0.9, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                cursor: 'pointer',
+                color: '#fff'
+              }}
+            >
+              <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Resources
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('resources') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
+            </h3>
+            {expandedSections.has('resources') && (
+              <div>
+                {row3Widgets.map(widget => (
+                  <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                     {widget.component}
                   </div>
-                )}
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
 
-        {/* DESKTOP VIEW - Horizontal Scroll Rows */}
+        {/* DESKTOP VIEW - Collapsible Sections */}
         <div className="desktop-view">
-          {/* Row 1: Dashboards */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Dashboards
-            <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+          {/* Quick Data Section - COLLAPSIBLE */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 
+              onClick={() => toggleSection('quickdata-desktop')}
+              style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '2rem', 
+                opacity: 0.9, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                cursor: 'pointer',
+                color: '#fff'
+              }}
+            >
+              <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Quick Data
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('quickdata-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
           </h3>
+            {expandedSections.has('quickdata-desktop') && (
           <div style={{ 
             display: 'flex', 
             gap: '1.5rem', 
@@ -376,13 +989,32 @@ export default function Home() {
                 <NewsWidget />
               </LockedWidget>
             </div>
+              </div>
+            )}
           </div>
 
-          {/* Row 2: Prop Tools */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Prop Tools
-            <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+          {/* Prop Tools Section - COLLAPSIBLE */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 
+              onClick={() => toggleSection('proptools-desktop')}
+              style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '2rem', 
+                opacity: 0.9, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                cursor: 'pointer',
+                color: '#fff'
+              }}
+            >
+              <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Prop Tools
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('proptools-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
           </h3>
+            {expandedSections.has('proptools-desktop') && (
           <div style={{ 
             display: 'flex', 
             gap: '1.5rem', 
@@ -391,11 +1023,11 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <TopPropsWidget />
-              </LockedWidget>
-            </div>
+                <div style={{ minWidth: '380px' }}>
+                  <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                    <TopPropsWidget />
+                  </LockedWidget>
+                </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <PropParlayWidget />
@@ -411,39 +1043,52 @@ export default function Home() {
                 <TDWidget />
               </LockedWidget>
             </div>
+              </div>
+            )}
           </div>
 
-          {/* Divider line */}
-          <div style={{ 
-            width: '100%', 
-            height: '1px', 
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.2) 100%)',
-            marginBottom: '2rem'
-          }} />
-
-          {/* Row 3: Resources */}
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '2rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Resources
-            <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
-          </h3>
-          <div style={{ 
-            display: 'flex', 
-            gap: '1.5rem', 
-            overflowX: 'auto', 
-            paddingBottom: '1rem',
-            marginBottom: '1.5rem',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-          }}>
-            <div style={{ minWidth: '380px' }}>
-              <MaximizeProfitWidget />
-            </div>
-            <div style={{ minWidth: '380px' }}>
-              <DiscordWidget />
-            </div>
-            <div style={{ minWidth: '380px' }}>
-              <AffiliateWidget />
-            </div>
+          {/* Resources Section - COLLAPSIBLE */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 
+              onClick={() => toggleSection('resources-desktop')}
+              style={{ 
+                fontSize: '1.2rem', 
+                marginBottom: '2rem', 
+                opacity: 0.9, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                cursor: 'pointer',
+                color: '#fff'
+              }}
+            >
+              <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              Resources
+              <span style={{ marginLeft: 'auto' }}>
+                {expandedSections.has('resources-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+              </span>
+            </h3>
+            {expandedSections.has('resources-desktop') && (
+              <div style={{ 
+                display: 'flex', 
+                gap: '1.5rem', 
+                overflowX: 'auto', 
+                paddingBottom: '1rem',
+                marginBottom: '1.5rem',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+              }}>
+                <div style={{ minWidth: '380px' }}>
+                  <MaximizeProfitWidget />
+                </div>
+                <div style={{ minWidth: '380px' }}>
+                  <DiscordWidget />
+                </div>
+                <div style={{ minWidth: '380px' }}>
+                  <AffiliateWidget />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -529,7 +1174,15 @@ export default function Home() {
           </div>
         </div>
       </div>
-      </div>
+    </div>
+
+    {/* Game Script Modal */}
+    <GameScriptModal
+      isOpen={scriptModalOpen}
+      gameId={selectedGameId}
+      sport={selectedGameSport}
+      onClose={closeScriptModal}
+    />
     </>
   )
 }

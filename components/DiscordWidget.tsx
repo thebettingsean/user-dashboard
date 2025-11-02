@@ -5,7 +5,21 @@ import { useUser } from '@clerk/nextjs'
 import { supabase } from '../lib/supabase'
 
 export default function DiscordWidget() {
-  const { user, isLoaded } = useUser()
+  // Development mode bypass
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  let user = null
+  let isLoaded = true
+  
+  if (!isDevelopment) {
+    const clerkUser = useUser()
+    user = clerkUser.user
+    isLoaded = clerkUser.isLoaded
+  } else {
+    // Simulate a logged-in user in development
+    user = { id: 'dev-user-123' } as any
+    isLoaded = true
+  }
   const [isConnected, setIsConnected] = useState(false)
   const [discordUsername, setDiscordUsername] = useState('')
   const [isLoading, setIsLoading] = useState(true)

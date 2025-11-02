@@ -70,8 +70,8 @@ export function getDateRangeForSport(league: League): { from: string; to: string
   const today = estHour >= 22 ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : now
   
   const dayOfWeek = today.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-  const from = new Date(today)
-  const to = new Date(today)
+  let from = new Date(today)
+  let to = new Date(today)
   
   switch (league) {
     case 'nfl':
@@ -80,26 +80,26 @@ export function getDateRangeForSport(league: League): { from: string; to: string
       
       if (dayOfWeek === 0) {
         // Sunday: Show Sun-Mon (today and tomorrow)
-        from.setDate(today.getDate())
-        to.setDate(today.getDate() + 1)
+        from = new Date(today)
+        to = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000)
       } else if (dayOfWeek === 1) {
         // Monday: Show Mon-Thu (today through Thursday)
-        from.setDate(today.getDate())
-        to.setDate(today.getDate() + 3)
+        from = new Date(today)
+        to = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000)
       } else if (dayOfWeek === 4) {
         // Thursday: Show Thu-Mon (rest of week)
-        from.setDate(today.getDate())
-        to.setDate(today.getDate() + 4)
+        from = new Date(today)
+        to = new Date(today.getTime() + 4 * 24 * 60 * 60 * 1000)
       } else if (dayOfWeek >= 2 && dayOfWeek <= 3) {
         // Tue/Wed: Show upcoming Thu-Mon
         const daysUntilThursday = (4 - dayOfWeek + 7) % 7
-        from.setDate(today.getDate() + daysUntilThursday)
-        to.setDate(from.getDate() + 4) // Thu + 4 days = Mon
+        from = new Date(today.getTime() + daysUntilThursday * 24 * 60 * 60 * 1000)
+        to = new Date(from.getTime() + 4 * 24 * 60 * 60 * 1000)
       } else {
-        // Fri/Sat: Show upcoming Sun-Mon
-        const daysUntilSunday = (7 - dayOfWeek) % 7
-        from.setDate(today.getDate() + daysUntilSunday)
-        to.setDate(from.getDate() + 1) // Sun + 1 day = Mon
+        // Fri/Sat: Show today + upcoming Sun-Mon (include Saturday games!)
+        from = new Date(today) // Start with today
+        const daysUntilMonday = dayOfWeek === 5 ? 3 : 2 // Fri: 3 days to Mon, Sat: 2 days to Mon
+        to = new Date(today.getTime() + daysUntilMonday * 24 * 60 * 60 * 1000)
       }
       break
       
@@ -107,13 +107,13 @@ export function getDateRangeForSport(league: League): { from: string; to: string
       // College Football: Mostly Friday/Saturday games
       if (dayOfWeek === 5 || dayOfWeek === 6) {
         // Fri/Sat: Show this weekend
-        from.setDate(today.getDate())
-        to.setDate(today.getDate() + (dayOfWeek === 5 ? 2 : 1))
+        from = new Date(today)
+        to = new Date(today.getTime() + (dayOfWeek === 5 ? 2 : 1) * 24 * 60 * 60 * 1000)
       } else {
         // Other days: Show next Fri-Sun
         const daysUntilFriday = (5 - dayOfWeek + 7) % 7
-        from.setDate(today.getDate() + daysUntilFriday)
-        to.setDate(from.getDate() + 2) // Fri-Sun
+        from = new Date(today.getTime() + daysUntilFriday * 24 * 60 * 60 * 1000)
+        to = new Date(from.getTime() + 2 * 24 * 60 * 60 * 1000)
       }
       break
       
@@ -122,8 +122,8 @@ export function getDateRangeForSport(league: League): { from: string; to: string
     case 'nhl':
       // These sports play almost daily - show TODAY ONLY first
       // If no games today, the widget will fall back to next sport
-      from.setDate(today.getDate())
-      to.setDate(today.getDate()) // Only today, not +3 days
+      from = new Date(today)
+      to = new Date(today) // Only today, not +3 days
       break
   }
   
