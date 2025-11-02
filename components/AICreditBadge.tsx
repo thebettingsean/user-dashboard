@@ -115,7 +115,7 @@ export default function AICreditBadge() {
   }
 
   // Free user - show remaining credits
-  const remaining = creditStatus.scriptsLimit - creditStatus.scriptsUsed
+  const remaining = (typeof creditStatus.scriptsLimit === 'number' ? creditStatus.scriptsLimit : 3) - creditStatus.scriptsUsed
   const isLow = remaining <= 1
 
   return (
