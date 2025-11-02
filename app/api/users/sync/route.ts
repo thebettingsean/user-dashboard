@@ -15,13 +15,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user exists in Supabase
-    const { data: existingUser, error: fetchError } = await supabaseUsers
-      .from('users')
-      .select('*')
-      .eq('clerk_user_id', userId)
-      .single()
-
     // Get Stripe customer ID from Clerk metadata
     const stripeCustomerId = user.publicMetadata?.stripeCustomerId as string | undefined
     
@@ -30,12 +23,24 @@ export async function POST(request: NextRequest) {
     const fantasyPlan = user.publicMetadata?.fantasyPlan as string | undefined
     const isPremium = !!(plan || fantasyPlan || stripeCustomerId)
     
-    console.log(`User ${userId} subscription check:`, {
+    console.log(`📋 User ${userId} metadata:`, JSON.stringify(user.publicMetadata, null, 2))
+    console.log(`🔍 Subscription check:`, {
       plan,
       fantasyPlan,
       stripeCustomerId,
       isPremium
     })
+
+    // Check if user exists in Supabase
+    const { data: existingUser, error: fetchError } = await supabaseUsers
+      .from('users')
+      .select('*')
+      .eq('clerk_user_id', userId)
+      .single()
+    
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching user:', fetchError)
+    }
 
     // User doesn't exist - create them
     if (!existingUser) {
@@ -70,26 +75,37 @@ export async function POST(request: NextRequest) {
     }
 
     // User exists - update their premium status and last active
-    console.log(`Updating existing user: ${userId} (Premium: ${isPremium})`)
+    console.log(`⚡ Updating existing user: ${userId}`)
+    console.log(`   Current state: is_premium=${existingUser.is_premium}`)
+    console.log(`   New state: is_premium=${isPremium}`)
+    
+    const updateData = {
+      stripe_customer_id: stripeCustomerId || null,
+      is_premium: isPremium,
+      last_active_at: new Date().toISOString()
+    }
+    console.log(`   Update data:`, updateData)
     
     const { data: updatedUser, error: updateError } = await supabaseUsers
       .from('users')
-      .update({
-        stripe_customer_id: stripeCustomerId || null,
-        is_premium: isPremium,
-        last_active_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('clerk_user_id', userId)
       .select()
       .single()
 
     if (updateError) {
-      console.error('Error updating user:', updateError)
+      console.error('❌ Error updating user:', updateError)
       return NextResponse.json(
-        { error: 'Failed to update user' },
+        { error: 'Failed to update user', details: updateError },
         { status: 500 }
       )
     }
+
+    console.log(`✅ User updated successfully:`, {
+      id: updatedUser.id,
+      is_premium: updatedUser.is_premium,
+      stripe_customer_id: updatedUser.stripe_customer_id
+    })
 
     return NextResponse.json({
       user: updatedUser,
