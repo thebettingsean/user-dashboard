@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Sparkles, Infinity } from 'lucide-react'
+import { Infinity } from 'lucide-react'
+import { GiTwoCoins } from 'react-icons/gi'
 
 interface CreditStatus {
   authenticated: boolean
@@ -86,7 +87,7 @@ export default function AICreditBadge() {
         fontSize: '0.85rem',
         color: 'rgba(255, 255, 255, 0.6)'
       }}>
-        <Sparkles size={14} style={{ color: '#8b5cf6', opacity: 0.6 }} />
+        <GiTwoCoins size={16} style={{ color: '#8b5cf6', opacity: 0.6 }} />
         Sign up for free scripts
       </div>
     )
@@ -114,47 +115,47 @@ export default function AICreditBadge() {
     )
   }
 
-  // Free user - show remaining credits
+  // Free user - show remaining credits with inline upgrade link
   const remaining = (typeof creditStatus.scriptsLimit === 'number' ? creditStatus.scriptsLimit : 3) - creditStatus.scriptsUsed
   const isLow = remaining <= 1
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 1rem',
-        background: isLow 
-          ? 'rgba(239, 68, 68, 0.1)' 
-          : 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(20px)',
-        border: isLow
-          ? '1px solid rgba(239, 68, 68, 0.3)'
-          : '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '8px',
-        fontSize: '0.85rem',
-        fontWeight: '600',
-        color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)'
-      }}>
-        <Sparkles size={14} style={{ color: isLow ? '#ef4444' : '#8b5cf6' }} />
-        {remaining}/{creditStatus.scriptsLimit} Scripts Remaining
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      padding: '0.5rem 1rem',
+      background: isLow 
+        ? 'rgba(239, 68, 68, 0.1)' 
+        : 'rgba(255, 255, 255, 0.03)',
+      backdropFilter: 'blur(20px)',
+      border: isLow
+        ? '1px solid rgba(239, 68, 68, 0.3)'
+        : '1px solid rgba(255, 255, 255, 0.08)',
+      borderRadius: '8px',
+      fontSize: '0.85rem',
+      fontWeight: '600'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)' }}>
+        <GiTwoCoins size={16} style={{ color: isLow ? '#ef4444' : '#8b5cf6' }} />
+        {remaining}/{creditStatus.scriptsLimit} generations left
       </div>
       <a
         href="https://www.thebettinginsider.com/pricing"
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          fontSize: '0.75rem',
-          color: 'rgba(255, 255, 255, 0.4)',
+          fontSize: '0.8rem',
+          color: 'rgba(255, 255, 255, 0.5)',
           textDecoration: 'none',
           transition: 'color 0.2s',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          whiteSpace: 'nowrap'
         }}
         onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
-        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)'}
+        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
       >
-        Upgrade for unlimited →
+        upgrade for unlimited →
       </a>
     </div>
   )

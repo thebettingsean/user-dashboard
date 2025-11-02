@@ -369,9 +369,10 @@ export default function Home() {
               {/* Sport Tabs */}
               <div style={{ 
                 display: 'flex', 
-                gap: '0.3rem', 
+                gap: '0.4rem', 
                 marginBottom: '0.75rem',
-                justifyContent: 'space-between' // No scroll, fit all tabs
+                justifyContent: 'flex-start', // Left-aligned
+                flexWrap: 'wrap' // Allow wrapping if needed
               }}>
                 {[
                   { id: 'NFL', label: 'NFL', active: true },
@@ -384,8 +385,7 @@ export default function Home() {
                     key={sport.id}
                     onClick={() => sport.active && setSelectedSport(sport.id as any)}
                     style={{
-                      flex: 1, // Equal width for all tabs
-                      padding: '0.4rem 0.4rem',
+                      padding: '0.4rem 0.8rem', // Smaller, compact
                       borderRadius: '6px',
                       border: selectedSport === sport.id 
                         ? '1px solid rgba(139, 92, 246, 0.4)' 
@@ -398,7 +398,7 @@ export default function Home() {
                         : selectedSport === sport.id 
                           ? '#a78bfa' 
                           : 'rgba(255, 255, 255, 0.65)',
-                      fontSize: '0.65rem', // Slightly smaller for mobile fit
+                      fontSize: '0.75rem', // Slightly larger for readability
                       fontWeight: selectedSport === sport.id ? '600' : '500',
                       cursor: sport.active ? 'pointer' : 'not-allowed',
                       transition: 'all 0.2s',
@@ -627,9 +627,10 @@ export default function Home() {
               {/* Sport Tabs */}
               <div style={{ 
                 display: 'flex', 
-                gap: '0.3rem', 
+                gap: '0.5rem', 
                 marginBottom: '0.75rem',
-                justifyContent: 'space-between' // No scroll, fit all tabs
+                justifyContent: 'flex-start', // Left-aligned
+                flexWrap: 'wrap' // Allow wrapping if needed
               }}>
                 {[
                   { id: 'NFL', label: 'NFL', active: true },
@@ -642,8 +643,7 @@ export default function Home() {
                     key={sport.id}
                     onClick={() => sport.active && setSelectedSport(sport.id as any)}
                     style={{
-                      flex: 1, // Equal width for all tabs
-                      padding: '0.4rem 0.4rem',
+                      padding: '0.5rem 1.25rem', // Compact, not full-width
                       borderRadius: '6px',
                       border: selectedSport === sport.id 
                         ? '1px solid rgba(139, 92, 246, 0.4)' 
@@ -656,7 +656,7 @@ export default function Home() {
                         : selectedSport === sport.id 
                           ? '#a78bfa' 
                           : 'rgba(255, 255, 255, 0.65)',
-                      fontSize: '0.65rem', // Slightly smaller for mobile fit
+                      fontSize: '0.85rem', // Slightly larger for desktop
                       fontWeight: selectedSport === sport.id ? '600' : '500',
                       cursor: sport.active ? 'pointer' : 'not-allowed',
                       transition: 'all 0.2s',
