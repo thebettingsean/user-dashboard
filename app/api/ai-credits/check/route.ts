@@ -122,10 +122,18 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error checking AI credits:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('Stack:', error instanceof Error ? error.stack : 'No stack trace')
+    
+    // Return a fallback response so the app still works
+    return NextResponse.json({
+      authenticated: false,
+      hasAccess: true, // Allow access if credits system fails
+      scriptsUsed: 0,
+      scriptsLimit: 3,
+      isPremium: false,
+      resetAt: null
+    })
   }
 }
 

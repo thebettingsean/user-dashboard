@@ -56,21 +56,26 @@ export async function POST(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     const cacheKey = `game-script:${league}:${gameId}:${today}`
 
-    // Check Vercel KV cache first
-    const cached = await kv.get<string>(cacheKey)
-    if (cached) {
-      console.log('✅ Script found in cache - adding 5s delay for UX')
-      
-      // Artificial 5-second delay so user feels like script is being generated
-      await new Promise(resolve => setTimeout(resolve, 5000))
-      
-      return NextResponse.json({
-        gameId,
-        script: cached,
-        dataStrength: data.dataStrength,
-        generatedAt: new Date().toISOString(),
-        cached: true
-      } as GeneratedScript)
+    // Check Vercel KV cache first (if configured)
+    try {
+      const cached = await kv.get<string>(cacheKey)
+      if (cached) {
+        console.log('✅ Script found in cache - adding 5s delay for UX')
+        
+        // Artificial 5-second delay so user feels like script is being generated
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        
+        return NextResponse.json({
+          gameId,
+          script: cached,
+          dataStrength: data.dataStrength,
+          generatedAt: new Date().toISOString(),
+          cached: true
+        } as GeneratedScript)
+      }
+    } catch (kvError) {
+      console.warn('⚠️ Cache check failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
+      // Continue without cache
     }
 
     if (!data.game) {
@@ -123,9 +128,14 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
     const script = completion.choices[0]?.message?.content || 'Unable to generate script'
     console.log('✅ Script generated successfully')
 
-    // Cache the result in Vercel KV for 4 hours
-    await kv.set(cacheKey, script, { ex: CACHE_TTL })
-    console.log(`📦 Script cached for 4 hours with key: ${cacheKey}`)
+    // Cache the result in Vercel KV for 4 hours (if configured)
+    try {
+      await kv.set(cacheKey, script, { ex: CACHE_TTL })
+      console.log(`📦 Script cached for 4 hours with key: ${cacheKey}`)
+    } catch (kvError) {
+      console.warn('⚠️ Cache write failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
+      // Continue without caching
+    }
 
     console.log('=== SCRIPT GENERATION COMPLETE ===\n')
 
