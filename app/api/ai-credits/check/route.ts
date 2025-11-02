@@ -18,52 +18,38 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get user from Supabase
+    // Always trigger sync first to ensure premium status is up-to-date
+    console.log(`Syncing user ${userId} to ensure latest subscription status...`)
+    const syncResponse = await fetch(`${request.nextUrl.origin}/api/users/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Forward Clerk session
+        'Cookie': request.headers.get('cookie') || ''
+      }
+    })
+
+    if (!syncResponse.ok) {
+      console.warn('Sync failed, will use existing data if available')
+    }
+
+    // Get user from Supabase (should be fresh from sync)
     let { data: user, error } = await supabaseUsers
       .from('users')
       .select('*')
       .eq('clerk_user_id', userId)
       .single()
 
-    // User doesn't exist yet - trigger sync
+    // User still doesn't exist after sync attempt
     if (error || !user) {
-      console.log(`User ${userId} not found in Supabase - triggering sync...`)
-      
-      // Call sync endpoint to create user
-      const syncResponse = await fetch(`${request.nextUrl.origin}/api/users/sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Forward Clerk session
-          'Cookie': request.headers.get('cookie') || ''
-        }
-      })
-
-      if (!syncResponse.ok) {
-        console.error('Failed to sync user')
-        return NextResponse.json(
-          { error: 'Failed to create user' },
-          { status: 500 }
-        )
-      }
-
-      // Fetch user again after sync
-      const { data: newUser } = await supabaseUsers
-        .from('users')
-        .select('*')
-        .eq('clerk_user_id', userId)
-        .single()
-
-      if (!newUser) {
-        return NextResponse.json(
-          { error: 'User creation failed' },
-          { status: 500 }
-        )
-      }
-
-      user = newUser
-      console.log(`✅ User ${userId} synced successfully`)
+      console.error(`User ${userId} not found in Supabase even after sync attempt`)
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
     }
+
+    console.log(`✅ User ${userId} loaded (Premium: ${user.is_premium})`)
 
     // Premium users have unlimited access
     if (user.is_premium) {
