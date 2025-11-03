@@ -18,9 +18,10 @@ import GameCard from '../components/GameCard'
 import GameScriptModal from '../components/GameScriptModal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import AICreditBadge from '../components/AICreditBadge'
-import { ListTodo, UserRoundSearch, ScrollText, Sparkles } from 'lucide-react'
+import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 import { GoPlusCircle } from 'react-icons/go'
 import { TiMinusOutline } from 'react-icons/ti'
+import { FaWandMagicSparkles } from 'react-icons/fa6'
 
 interface GameSummary {
   gameId: string
@@ -332,7 +333,7 @@ export default function Home() {
               cursor: 'pointer'
             }}
           >
-            <Sparkles size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+            <FaWandMagicSparkles size={24} style={{ opacity: 0.8 }} />
             AI Game Scripts
             <span style={{
               fontSize: '0.6rem',
@@ -589,7 +590,7 @@ export default function Home() {
               cursor: 'pointer'
             }}
           >
-            <Sparkles size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+            <FaWandMagicSparkles size={24} style={{ opacity: 0.8 }} />
             AI Game Scripts
             <span style={{
               fontSize: '0.6rem',

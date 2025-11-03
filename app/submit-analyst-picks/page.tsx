@@ -1345,7 +1345,8 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#fff',
     fontSize: '1.1rem',
     fontWeight: 700,
-    textAlign: 'center'
+    textAlign: 'center',
+    boxSizing: 'border-box'
   },
   button: {
     background: 'linear-gradient(135deg, #1e2a47, #3b4a72)',

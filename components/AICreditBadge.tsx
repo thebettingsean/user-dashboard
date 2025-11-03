@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Infinity } from 'lucide-react'
 import { GiTwoCoins } from 'react-icons/gi'
+import { FaWandMagicSparkles } from 'react-icons/fa6'
 
 interface CreditStatus {
   authenticated: boolean

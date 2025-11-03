@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Sparkles, TrendingUp, Users, Trophy, Target, CheckCircle } from 'lucide-react'
+import { X, TrendingUp, Users, Trophy, Target, CheckCircle } from 'lucide-react'
+import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { useUser, SignInButton } from '@clerk/nextjs'
 import LoadingSpinner from './LoadingSpinner'
 
@@ -230,7 +231,7 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
           textAlign: 'center',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
         }}>
-          <Sparkles size={48} style={{ color: '#8b5cf6', margin: '0 auto 1rem' }} />
+               <FaWandMagicSparkles size={48} style={{ color: '#8b5cf6', margin: '0 auto 1rem' }} />
           <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700', color: '#fff', marginBottom: '0.75rem' }}>
             Sign Up for Free AI Scripts
           </h2>
@@ -327,7 +328,7 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <Sparkles size={32} style={{ color: '#ef4444' }} />
+                   <FaWandMagicSparkles size={32} style={{ color: '#ef4444' }} />
           </div>
           <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700', color: '#fff', marginBottom: '0.75rem' }}>
             You've Used All 3 Free Scripts
@@ -426,7 +427,7 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
           alignItems: 'center'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Sparkles size={24} style={{ color: '#a78bfa' }} />
+                 <FaWandMagicSparkles size={24} style={{ color: '#a78bfa' }} />
             <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#fff' }}>
               AI Game Script
             </h2>
