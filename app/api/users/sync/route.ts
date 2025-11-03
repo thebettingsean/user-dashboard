@@ -15,15 +15,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get Stripe customer ID from Clerk metadata
-    const stripeCustomerId = user.publicMetadata?.stripeCustomerId as string | undefined
+    // Get subscription data from Clerk metadata (check both public and private)
+    const publicMeta = user.publicMetadata || {}
+    const privateMeta = user.privateMetadata || {}
     
-    // Check if user has any active subscription plans
-    const plan = user.publicMetadata?.plan as string | undefined
-    const fantasyPlan = user.publicMetadata?.fantasyPlan as string | undefined
+    // Check both publicMetadata and privateMetadata for subscription fields
+    const stripeCustomerId = (publicMeta.stripeCustomerId || privateMeta.stripeCustomerId) as string | undefined
+    const plan = (publicMeta.plan || privateMeta.plan) as string | undefined
+    const fantasyPlan = (publicMeta.fantasyPlan || privateMeta.fantasyPlan) as string | undefined
     const isPremium = !!(plan || fantasyPlan || stripeCustomerId)
     
-    console.log(`📋 User ${userId} metadata:`, JSON.stringify(user.publicMetadata, null, 2))
+    console.log(`📋 User ${userId} publicMetadata:`, JSON.stringify(publicMeta, null, 2))
+    console.log(`🔐 User ${userId} privateMetadata:`, JSON.stringify(privateMeta, null, 2))
     console.log(`🔍 Subscription check:`, {
       plan,
       fantasyPlan,
