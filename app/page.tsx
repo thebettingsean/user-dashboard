@@ -333,7 +333,7 @@ export default function Home() {
               cursor: 'pointer'
             }}
           >
-            <FaWandMagicSparkles size={24} style={{ opacity: 0.8 }} />
+            <FaWandMagicSparkles size={18} style={{ color: '#ffffff', opacity: 1 }} />
             AI Game Scripts
             <span style={{
               fontSize: '0.6rem',
@@ -590,7 +590,7 @@ export default function Home() {
               cursor: 'pointer'
             }}
           >
-            <FaWandMagicSparkles size={24} style={{ opacity: 0.8 }} />
+            <FaWandMagicSparkles size={18} style={{ color: '#ffffff', opacity: 1 }} />
             AI Game Scripts
             <span style={{
               fontSize: '0.6rem',
@@ -849,7 +849,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <ListTodo size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Quick Data
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('quickdata') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -883,7 +883,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <UserRoundSearch size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Prop Tools
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('proptools') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -917,7 +917,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <ScrollText size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Resources
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('resources') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -952,7 +952,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <ListTodo size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <ListTodo size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Quick Data
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('quickdata-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -1007,7 +1007,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <UserRoundSearch size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <UserRoundSearch size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Prop Tools
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('proptools-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -1061,7 +1061,7 @@ export default function Home() {
                 color: '#fff'
               }}
             >
-              <ScrollText size={24} strokeWidth={2} style={{ opacity: 0.8 }} />
+              <ScrollText size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
               Resources
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('resources-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
