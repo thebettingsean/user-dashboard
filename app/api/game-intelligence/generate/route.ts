@@ -9,14 +9,21 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-// Supabase client for script storage
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_KEY || ''
-)
-
 // Cache TTL: 4 hours (14,400 seconds)
 const CACHE_TTL = 4 * 60 * 60 // 4 hours in seconds
+
+// Get Supabase client (lazy initialization)
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_KEY
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('⚠️ Supabase credentials not configured - script caching will be skipped')
+    return null
+  }
+  
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 interface GeneratedScript {
   gameId: string
@@ -60,31 +67,34 @@ export async function POST(request: NextRequest) {
     console.log(`League: ${league}, Data Strength: ${data.dataStrength}`)
 
     // Check Supabase database cache first (persistent storage)
-    try {
-      const { data: cachedScript, error } = await supabase
-        .from('game_scripts')
-        .select('*')
-        .eq('game_id', gameId)
-        .gt('expires_at', new Date().toISOString())
-        .single()
+    const supabase = getSupabaseClient()
+    if (supabase) {
+      try {
+        const { data: cachedScript, error } = await supabase
+          .from('game_scripts')
+          .select('*')
+          .eq('game_id', gameId)
+          .gt('expires_at', new Date().toISOString())
+          .single()
 
-      if (cachedScript && !error) {
-        console.log('✅ Script found in Supabase database - adding 5s delay for UX')
-        
-        // Artificial 5-second delay so user feels like script is being generated
-        await new Promise(resolve => setTimeout(resolve, 5000))
-        
-        return NextResponse.json({
-          gameId,
-          script: cachedScript.script_content,
-          dataStrength: cachedScript.data_strength,
-          generatedAt: cachedScript.generated_at,
-          cached: true
-        } as GeneratedScript)
+        if (cachedScript && !error) {
+          console.log('✅ Script found in Supabase database - adding 5s delay for UX')
+          
+          // Artificial 5-second delay so user feels like script is being generated
+          await new Promise(resolve => setTimeout(resolve, 5000))
+          
+          return NextResponse.json({
+            gameId,
+            script: cachedScript.script_content,
+            dataStrength: cachedScript.data_strength,
+            generatedAt: cachedScript.generated_at,
+            cached: true
+          } as GeneratedScript)
+        }
+      } catch (dbError) {
+        console.warn('⚠️ Database cache check failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
+        // Continue without cache
       }
-    } catch (dbError) {
-      console.warn('⚠️ Database cache check failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
-      // Continue without cache
     }
 
     // Fallback: Check Vercel KV cache (if configured)
@@ -172,31 +182,34 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
 
     // Save to Supabase database for persistent storage
     const expiresAt = new Date(Date.now() + (CACHE_TTL * 1000)).toISOString()
-    try {
-      const { error: saveError } = await supabase
-        .from('game_scripts')
-        .upsert({
-          game_id: gameId,
-          sport: league,
-          home_team: data.game.home_team,
-          away_team: data.game.away_team,
-          game_time: data.game.game_date,
-          script_content: script,
-          data_strength: data.dataStrength,
-          generated_at: new Date().toISOString(),
-          expires_at: expiresAt,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'game_id'
-        })
+    const supabaseForSave = getSupabaseClient()
+    if (supabaseForSave) {
+      try {
+        const { error: saveError } = await supabaseForSave
+          .from('game_scripts')
+          .upsert({
+            game_id: gameId,
+            sport: league,
+            home_team: data.game.home_team,
+            away_team: data.game.away_team,
+            game_time: data.game.game_date,
+            script_content: script,
+            data_strength: data.dataStrength,
+            generated_at: new Date().toISOString(),
+            expires_at: expiresAt,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'game_id'
+          })
 
-      if (saveError) {
-        console.warn('⚠️ Failed to save script to database:', saveError.message)
-      } else {
-        console.log(`📦 Script saved to database, expires at: ${expiresAt}`)
+        if (saveError) {
+          console.warn('⚠️ Failed to save script to database:', saveError.message)
+        } else {
+          console.log(`📦 Script saved to database, expires at: ${expiresAt}`)
+        }
+      } catch (dbError) {
+        console.warn('⚠️ Database save failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
       }
-    } catch (dbError) {
-      console.warn('⚠️ Database save failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
     }
 
     // Also cache in Vercel KV for faster access (if configured)
