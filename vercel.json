@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-free-users",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}
+
