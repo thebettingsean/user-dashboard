@@ -6,6 +6,54 @@ import { supabase } from '../../lib/supabase'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 import MonthCalendarModal from '../../components/MonthCalendarModal'
 
+// Add global styles for rich text content
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    .analyst-picks-analysis-text p {
+      margin: 0 0 1rem 0;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+    }
+    
+    .analyst-picks-analysis-text p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .analyst-picks-analysis-text strong,
+    .analyst-picks-analysis-text b,
+    .analyst-picks-analysis-text span[style*="font-weight: 700"],
+    .analyst-picks-analysis-text span[style*="font-weight: bold"] {
+      font-weight: 700;
+      color: #ffffff;
+    }
+    
+    .analyst-picks-analysis-text a {
+      color: #60a5fa !important;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+    
+    .analyst-picks-analysis-text a:hover {
+      color: #93c5fd !important;
+    }
+    
+    .analyst-picks-analysis-text br {
+      display: block;
+      content: "";
+      margin: 0.5rem 0;
+    }
+    
+    .analyst-picks-analysis-text span {
+      color: inherit;
+    }
+  `
+  if (!document.head.querySelector('#analyst-picks-rich-text-styles')) {
+    style.id = 'analyst-picks-rich-text-styles'
+    document.head.appendChild(style)
+  }
+}
+
 // Types
 interface Bettor {
   name: string
@@ -56,6 +104,41 @@ type ConsensusSportFilter = string
 type ConsensusTimeFilter = 'all_time' | 'yesterday' | 'L3' | 'L7' | 'L30'
 
 const ALL_SPORTS = ['NFL', 'NBA', 'MLB', 'NHL', 'CFL', 'NCAAF', 'NCAAB', 'WNBA', 'Soccer', 'UFC', 'Tennis', 'Golf']
+
+// Helper function to clean and format rich text HTML from the database
+function cleanRichTextHTML(html: string): string {
+  if (!html) return ''
+  
+  // Remove Google Docs wrapper spans and IDs
+  let cleaned = html.replace(/<span[^>]*id="docs-internal-guid[^>]*>/gi, '')
+  cleaned = cleaned.replace(/<\/span>$/gi, '')
+  
+  // Remove inline styles we don't want (keep font-weight for bold, text-decoration for links)
+  cleaned = cleaned.replace(/style="[^"]*"/gi, (match) => {
+    // Keep only font-weight (bold) and text-decoration (underline)
+    const fontWeight = match.match(/font-weight:\s*(\d+|bold|bolder)/i)
+    const textDecoration = match.match(/text-decoration[^;]*/i)
+    
+    let keepStyles = []
+    if (fontWeight) keepStyles.push(fontWeight[0])
+    if (textDecoration) keepStyles.push(textDecoration[0])
+    
+    return keepStyles.length > 0 ? `style="${keepStyles.join('; ')}"` : ''
+  })
+  
+  // Convert <p> tags to have proper spacing
+  cleaned = cleaned.replace(/<p[^>]*>/gi, '<p>')
+  cleaned = cleaned.replace(/<\/p>/gi, '</p>')
+  
+  // Clean up links - remove text-decoration: none
+  cleaned = cleaned.replace(/<a([^>]*)style="[^"]*text-decoration:\s*none[^"]*"([^>]*)>/gi, '<a$1$2>')
+  
+  // Remove empty attributes
+  cleaned = cleaned.replace(/\s+style=""\s*/gi, ' ')
+  cleaned = cleaned.replace(/<([a-z]+)\s+>/gi, '<$1>')
+  
+  return cleaned
+}
 
 export default function AnalystPicksPage() {
   const { isSignedIn } = useUser()
@@ -502,7 +585,11 @@ export default function AnalystPicksPage() {
               <div style={styles.divider} />
               
               {hasAccessToPick ? (
-                <div style={styles.analysisText} className="analyst-picks-analysis-text">{pick.analysis}</div>
+                <div 
+                  style={styles.analysisText} 
+                  className="analyst-picks-analysis-text"
+                  dangerouslySetInnerHTML={{ __html: cleanRichTextHTML(pick.analysis) }}
+                />
               ) : (
                 <div style={styles.analysisLocked}>
                   <svg style={styles.lockIconLarge} viewBox="0 0 24 24">
@@ -1790,12 +1877,11 @@ const styles = {
   analysisText: {
     color: 'rgba(255, 255, 255, 0.9)',
     fontSize: '0.8rem',
-    lineHeight: 1.4,
+    lineHeight: 1.6,
     marginBottom: '0.75rem',
     wordWrap: 'break-word' as const,
     overflowWrap: 'break-word' as const,
-    whiteSpace: 'pre-wrap' as const,
-    maxHeight: '200px',
+    maxHeight: '400px',
     overflowY: 'auto' as const,
     paddingRight: '0.5rem'
   },
