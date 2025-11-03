@@ -3,10 +3,17 @@ import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
 import type { GameIntelligenceData } from '../data/route'
 import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
+import { createClient } from '@supabase/supabase-js'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
+
+// Supabase client for script storage
+const supabase = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_KEY || ''
+)
 
 // Cache TTL: 4 hours (14,400 seconds)
 const CACHE_TTL = 4 * 60 * 60 // 4 hours in seconds
@@ -52,15 +59,42 @@ export async function POST(request: NextRequest) {
     console.log(`\n=== GENERATING AI SCRIPT FOR GAME ${gameId} ===`)
     console.log(`League: ${league}, Data Strength: ${data.dataStrength}`)
 
-    // Get today's date for cache key (ensures fresh cache daily)
+    // Check Supabase database cache first (persistent storage)
+    try {
+      const { data: cachedScript, error } = await supabase
+        .from('game_scripts')
+        .select('*')
+        .eq('game_id', gameId)
+        .gt('expires_at', new Date().toISOString())
+        .single()
+
+      if (cachedScript && !error) {
+        console.log('✅ Script found in Supabase database - adding 5s delay for UX')
+        
+        // Artificial 5-second delay so user feels like script is being generated
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        
+        return NextResponse.json({
+          gameId,
+          script: cachedScript.script_content,
+          dataStrength: cachedScript.data_strength,
+          generatedAt: cachedScript.generated_at,
+          cached: true
+        } as GeneratedScript)
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Database cache check failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
+      // Continue without cache
+    }
+
+    // Fallback: Check Vercel KV cache (if configured)
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     const cacheKey = `game-script:${league}:${gameId}:${today}`
-
-    // Check Vercel KV cache first (if configured)
+    
     try {
       const cached = await kv.get<string>(cacheKey)
       if (cached) {
-        console.log('✅ Script found in cache - adding 5s delay for UX')
+        console.log('✅ Script found in KV cache - adding 5s delay for UX')
         
         // Artificial 5-second delay so user feels like script is being generated
         await new Promise(resolve => setTimeout(resolve, 5000))
@@ -74,7 +108,7 @@ export async function POST(request: NextRequest) {
         } as GeneratedScript)
       }
     } catch (kvError) {
-      console.warn('⚠️ Cache check failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
+      console.warn('⚠️ KV cache check failed:', kvError instanceof Error ? kvError.message : 'Unknown error')
       // Continue without cache
     }
 
@@ -97,21 +131,29 @@ export async function POST(request: NextRequest) {
           role: 'system',
           content: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
 
+🚨 CRITICAL RULE - NO HALLUCINATION:
+- DO NOT INVENT analyst names, bettor names, or sources
+- DO NOT use names like "SharpShark", "Gridiron Guru", "Invisible Insider", etc.
+- ONLY use analyst names that appear in the "ANALYST PICKS" section of the prompt
+- If no analyst picks are provided, format plays as **Pick (Odds)** without any name
+- If analyst picks ARE provided, use their EXACT name: **Pick (BettorName, Odds)**
+
 WRITING STYLE - DATA-DENSE NARRATIVE:
 1. EVERY SENTENCE must contain at least ONE specific stat (ranking, percentage, exact number)
 2. NO FLUFF - if a sentence doesn't have data, delete it
 3. Conversational but PACKED: "Ben Johnson is 7-0 ATS after a loss. Road teams off a loss hit 57% ATS with 11% ROI over 3 seasons. The Bengals allow 31.6 PPG (#32) and 143.3 rush yards/game (#27). Bears rank 15th at 24 PPG but 7th in yards/play (5.8). This is a pace and efficiency mismatch."
-4. Bold bets inline: "The **Bears -2.5 (Invisible Insider, -112)** capitalizes on..."
+4. Bold bets inline: "The **Bears -2.5 (-112)** capitalizes on..." (ONLY add analyst name if it's from our insider picks data)
 5. Connect multiple stats per paragraph: Team Rankings + Referee + Public betting + Props all in one flow
 6. Use EXACT numbers from analyst pick: If they say "roadstreaking teams 57% ATS, 11% ROI" → YOU MUST USE THOSE EXACT NUMBERS
 7. Props emerge with supporting data: "Brown averages 4.2 YPC against defenses ranked 20-32. Bengals are 27th. **OVER 50.5 rush yards (-110)**"
 
 ⚠️ WHEN ANALYST PICKS ARE PROVIDED:
 - Seamlessly integrate their insights into YOUR narrative (don't say "the analyst says")
-- Format picks naturally: **Bears -2.5 (Invisible Insider, -112)** or **Chase OVER 1.5 TDs (ClaytonW, +185)**
+- Format picks with REAL analyst name from data: **Bears -2.5 (AnalystName, -112)** - USE THE ACTUAL BETTOR NAME FROM THE DATA
 - Use their stats to build YOUR story: "Road teams off a loss are 57% ATS with 11% ROI - that's not noise"
 - Extract their key data points and connect them to Team Rankings, props, referee trends
 - The analysis should feel like YOU did all the research, with picks credited inline
+- ⚠️ CRITICAL: DO NOT INVENT ANALYST NAMES. Only use names provided in the analyst picks data. If no analyst picks, just format as **Bears -2.5 (-112)** without any name.
 - Find 3-5 ADDITIONAL plays beyond analyst picks based on the game script you're building
 
 DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`
@@ -128,13 +170,41 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
     const script = completion.choices[0]?.message?.content || 'Unable to generate script'
     console.log('✅ Script generated successfully')
 
-    // Cache the result in Vercel KV for 4 hours (if configured)
+    // Save to Supabase database for persistent storage
+    const expiresAt = new Date(Date.now() + (CACHE_TTL * 1000)).toISOString()
+    try {
+      const { error: saveError } = await supabase
+        .from('game_scripts')
+        .upsert({
+          game_id: gameId,
+          sport: league,
+          home_team: data.game.home_team,
+          away_team: data.game.away_team,
+          game_time: data.game.game_time,
+          script_content: script,
+          data_strength: data.dataStrength,
+          generated_at: new Date().toISOString(),
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'game_id'
+        })
+
+      if (saveError) {
+        console.warn('⚠️ Failed to save script to database:', saveError.message)
+      } else {
+        console.log(`📦 Script saved to database, expires at: ${expiresAt}`)
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Database save failed:', dbError instanceof Error ? dbError.message : 'Unknown error')
+    }
+
+    // Also cache in Vercel KV for faster access (if configured)
     try {
       await kv.set(cacheKey, script, { ex: CACHE_TTL })
-      console.log(`📦 Script cached for 4 hours with key: ${cacheKey}`)
+      console.log(`📦 Script also cached in KV for 4 hours`)
     } catch (kvError) {
-      console.warn('⚠️ Cache write failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
-      // Continue without caching
+      console.warn('⚠️ KV cache write failed:', kvError instanceof Error ? kvError.message : 'Unknown error')
     }
 
     console.log('=== SCRIPT GENERATION COMPLETE ===\n')
@@ -205,8 +275,9 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     prompt += `→ NO SPECIFIC DATA. WORTHLESS.\n\n`
     
     prompt += `✅ **GOOD (DATA-DENSE) PARAGRAPH:**\n`
-    prompt += `"The **Bears -2.5 (Invisible Insider, -112)** capitalizes on a massive defensive mismatch. Cincinnati allows 31.6 PPG (#32), 143.3 rush yards/game (#27), and ranks 29th in 3rd down defense (44.2%). The Bears score 24 PPG (#15), but their 5.8 yards/play (#7) suggests efficiency that exceeds their scoring rank. Ben Johnson is 7-0 ATS as an OC after a loss. Road teams off a loss hit 57% ATS with 11% ROI over the last three seasons. Public is on Cincinnati (58% of bets, 57% of money) despite the statistical mismatch."\n`
+    prompt += `"The **Bears -2.5 (-112)** capitalizes on a massive defensive mismatch. Cincinnati allows 31.6 PPG (#32), 143.3 rush yards/game (#27), and ranks 29th in 3rd down defense (44.2%). The Bears score 24 PPG (#15), but their 5.8 yards/play (#7) suggests efficiency that exceeds their scoring rank. Ben Johnson is 7-0 ATS as an OC after a loss. Road teams off a loss hit 57% ATS with 11% ROI over the last three seasons. Public is on Cincinnati (58% of bets, 57% of money) despite the statistical mismatch."\n`
     prompt += `→ 10+ SPECIFIC STATS IN ONE PARAGRAPH. THIS IS WHAT WE NEED.\n\n`
+    prompt += `⚠️ NOTE: If this was an analyst pick from our data, it would be formatted as **Bears -2.5 (AnalystName, -112)** using their actual name. Otherwise just use odds.\n\n`
     
     prompt += `**EVERY PARAGRAPH SHOULD LOOK LIKE THE GOOD EXAMPLE.**\n\n`
     prompt += `- Extract EVERY stat from analyst analysis (exact ATS records, ROI, weather, trends)\n`
@@ -752,7 +823,7 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   prompt += `Write this like you're building a case for why certain plays make sense. NO section headers, just flowing paragraphs:\n\n`
   prompt += `- **Opening**: Set the stage - spread, total, weather, market sentiment, what makes this game interesting\n`
   prompt += `- **Build the matchup**: Use Team Rankings to paint the picture (offense vs defense, pace, efficiency)\n`
-  prompt += `- **Introduce plays naturally**: As you explain game script, weave in picks: "The **Bears -2.5 (Invisible Insider, -112)** makes sense here because..." then explain with data\n`
+  prompt += `- **Introduce plays naturally**: As you explain game script, weave in picks: "The **Bears -2.5 (-112)** makes sense here because..." then explain with data (only add analyst name if from insider picks data)\n`
   prompt += `- **Layer in supporting angles**: "This same logic points to..." and introduce props that fit\n`
   prompt += `- **Use referee/market data**: "Public is on Bengals (59%) but..." or "Blakeman's O/U history suggests..."\n`
   prompt += `- **Connect everything**: Show how all data points to the same conclusion or reveal contrarian angles\n`
@@ -779,7 +850,8 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   prompt += `7. You list props at the end instead of weaving them into the narrative\n`
   prompt += `8. You write MORE THAN 5 sentences without including a specific stat\n\n`
   prompt += `✅ SUCCESS LOOKS LIKE (DATA-DENSE):\n`
-  prompt += `"The Bears are 2.5-point favorites with a 51.5 total in 55-degree sunny weather. The **Bears -2.5 (Invisible Insider, -112)** exploits Cincinnati's league-worst defense: 31.6 PPG allowed (#32), 143.3 rush yards/game (#27), 44.2% opponent 3rd down conversion (#29), and 68% red zone TD rate allowed (#30). Chicago's offense ranks 15th in PPG (24.0) but 7th in yards/play (5.8), suggesting explosive efficiency. Ben Johnson is 7-0 ATS as an OC following a loss - teams under him average 28.4 PPG in bounce-back spots. Road teams off a loss historically hit 57% ATS with 11% ROI over 300+ games. Public is backing Cincinnati (58% spread bets, 57% money) creating contrarian value. The Bengals' pass rush ranks 24th (6.1% sack rate) against a Bears O-line allowing just 5.4% (#12), giving Chicago's QB clean pockets. **Chase Brown OVER 50.5 rush yards (-110)** fits the game script - he averages 68 yards/game against bottom-10 run defenses, and Cincinnati's 27th-ranked run D allows 5.1 yards/carry to opposing backs..."\n\n`
+  prompt += `"The Bears are 2.5-point favorites with a 51.5 total in 55-degree sunny weather. The **Bears -2.5 (-112)** exploits Cincinnati's league-worst defense: 31.6 PPG allowed (#32), 143.3 rush yards/game (#27), 44.2% opponent 3rd down conversion (#29), and 68% red zone TD rate allowed (#30). Chicago's offense ranks 15th in PPG (24.0) but 7th in yards/play (5.8), suggesting explosive efficiency. Ben Johnson is 7-0 ATS as an OC following a loss - teams under him average 28.4 PPG in bounce-back spots. Road teams off a loss historically hit 57% ATS with 11% ROI over 300+ games. Public is backing Cincinnati (58% spread bets, 57% money) creating contrarian value. The Bengals' pass rush ranks 24th (6.1% sack rate) against a Bears O-line allowing just 5.4% (#12), giving Chicago's QB clean pockets. **Chase Brown OVER 50.5 rush yards (-110)** fits the game script - he averages 68 yards/game against bottom-10 run defenses, and Cincinnati's 27th-ranked run D allows 5.1 yards/carry to opposing backs..."\n\n`
+  prompt += `⚠️ CRITICAL: Only use analyst names if they appear in the ANALYST PICKS section above. Otherwise format as **Pick (Odds)** without any invented names.\n\n`
 
   return prompt
 }
