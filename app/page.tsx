@@ -438,14 +438,19 @@ export default function Home() {
                   scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
                 }}>
                   {filteredGames.map((game, index) => {
-                    // Parse the game time - API returns times offset by 1 hour
-                    // Extract the hour and subtract 1 to get correct EST time
+                    // Parse the game time and date
+                    const gameDate = new Date(game.gameTime)
                     const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
                     const [hours, minutes] = gameTimeStr.split(':')
                     let hour = parseInt(hours)
                     const ampm = hour >= 12 ? 'PM' : 'AM'
                     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
                     const time = `${displayHour}:${minutes} ${ampm}`
+                    
+                    // Format date as "Nov 3", "Oct 5", "Dec 12"
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    const formattedDate = `${monthNames[gameDate.getMonth()]} ${gameDate.getDate()}`
+                    
                     const isGenerating = generatingGameId === game.gameId
 
                     // Active data strength from API (defaults to 1 if not available)
@@ -535,19 +540,23 @@ export default function Home() {
                           Active Data: {strengthLabel}
                         </div>
 
-                        {/* Bottom Row: Game Time + AI Icon + Generate Text */}
+                        {/* Bottom Row: Date + Time + AI Icon + Generate Text */}
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           gap: '0.5rem'
                         }}>
-                          {/* Game Time */}
+                          {/* Date + Time */}
                           <div style={{ 
-                            fontSize: '0.65rem', 
-                            color: 'rgba(255, 255, 255, 0.5)'
+                            fontSize: '0.6rem', 
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            display: 'flex',
+                            flexDirection: 'column' as const,
+                            gap: '0.1rem'
                           }}>
-                            {time} EST
+                            <div style={{ fontWeight: '600', color: 'rgba(255, 255, 255, 0.6)' }}>{formattedDate}</div>
+                            <div>{time} EST</div>
                           </div>
 
                           {/* AI Icon + Generate Text */}
@@ -695,14 +704,19 @@ export default function Home() {
                   scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
                 }}>
                   {filteredGames.map((game, index) => {
-                    // Parse the game time - API returns times offset by 1 hour
-                    // Extract the hour and subtract 1 to get correct EST time
+                    // Parse the game time and date
+                    const gameDate = new Date(game.gameTime)
                     const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
                     const [hours, minutes] = gameTimeStr.split(':')
                     let hour = parseInt(hours)
                     const ampm = hour >= 12 ? 'PM' : 'AM'
                     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
                     const time = `${displayHour}:${minutes} ${ampm}`
+                    
+                    // Format date as "Nov 3", "Oct 5", "Dec 12"
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    const formattedDate = `${monthNames[gameDate.getMonth()]} ${gameDate.getDate()}`
+                    
                     const isGenerating = generatingGameId === game.gameId
 
                     // Active data strength from API (defaults to 1 if not available)
@@ -792,19 +806,23 @@ export default function Home() {
                           Active Data: {strengthLabel}
                         </div>
 
-                        {/* Bottom Row: Game Time + AI Icon + Generate Text */}
+                        {/* Bottom Row: Date + Time + AI Icon + Generate Text */}
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           gap: '0.5rem'
                         }}>
-                          {/* Game Time */}
+                          {/* Date + Time */}
                           <div style={{ 
-                            fontSize: '0.65rem', 
-                            color: 'rgba(255, 255, 255, 0.5)'
+                            fontSize: '0.6rem', 
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            display: 'flex',
+                            flexDirection: 'column' as const,
+                            gap: '0.1rem'
                           }}>
-                            {time} EST
+                            <div style={{ fontWeight: '600', color: 'rgba(255, 255, 255, 0.6)' }}>{formattedDate}</div>
+                            <div>{time} EST</div>
                           </div>
 
                           {/* AI Icon + Generate Text */}
