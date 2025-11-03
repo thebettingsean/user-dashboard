@@ -67,6 +67,7 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
     let currentStep = 0
     let currentProgress = 0
     
+    // Change text every 1.5 seconds with fade
     const stepInterval = setInterval(() => {
       if (currentStep < loadingSteps.length - 1) {
         // Fade out current text
@@ -79,14 +80,21 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
           setTextFading(false)
         }, 300)
       }
-    }, 1500) // Change text every 1.5 seconds (including fade transition)
+    }, 1500)
 
+    // Smooth progress animation - fills in ~10 seconds for new scripts, ~5 seconds for cached
+    // We'll fill to 95%, then the API completion will jump to 100%
+    const estimatedTime = 10000 // Assume 10 seconds for new generation
+    const incrementInterval = 50 // Update every 50ms
+    const incrementAmount = (95 / (estimatedTime / incrementInterval)) // How much to add each tick
+    
     const progressInterval = setInterval(() => {
-      if (currentProgress < 95) { // Cap at 95%, jump to 100% when done
-        currentProgress += 1
-        setProgress(currentProgress)
+      if (currentProgress < 95) {
+        currentProgress += incrementAmount
+        if (currentProgress > 95) currentProgress = 95 // Cap at 95%
+        setProgress(Math.round(currentProgress))
       }
-    }, 150) // Smooth progress animation
+    }, incrementInterval)
 
     return () => {
       clearInterval(stepInterval)
@@ -147,6 +155,7 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
 
     setLoading(true)
     setError(null)
+    const startTime = Date.now()
 
     try {
       // Step 1: Fetch aggregated data
@@ -179,6 +188,16 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
       }
 
       const result = await scriptResponse.json()
+      
+      // Calculate how long the API call took
+      const elapsedTime = Date.now() - startTime
+      
+      // If it's a cached script (result.cached === true), ensure we hit exactly 5 seconds
+      if (result.cached && elapsedTime < 5000) {
+        const remainingTime = 5000 - elapsedTime
+        console.log(`Cached script - adding ${remainingTime}ms delay to reach 5 seconds`)
+        await new Promise(resolve => setTimeout(resolve, remainingTime))
+      }
       
       // Complete the progress bar
       setProgress(100)
