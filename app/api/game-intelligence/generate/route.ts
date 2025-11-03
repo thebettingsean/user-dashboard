@@ -180,7 +180,7 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
           sport: league,
           home_team: data.game.home_team,
           away_team: data.game.away_team,
-          game_time: data.game.game_time,
+          game_time: data.game.game_date,
           script_content: script,
           data_strength: data.dataStrength,
           generated_at: new Date().toISOString(),
