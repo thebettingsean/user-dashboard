@@ -688,6 +688,12 @@ export default function SubmitAnalystPicks() {
       const sportLabel = performanceData.sport === 'All Sports' ? 'All Sports' : performanceData.sport
       const fullRecordText = `${label}: ${performanceData.formatted_record} - ${sportLabel}`
       
+      console.log('📊 Updating bettor record:', {
+        bettorId: currentBettorId,
+        fullRecordText,
+        winStreak: currentWinStreak
+      })
+      
       const { error: updateError } = await supabaseClient
         .from('bettors')
         .update({
@@ -696,7 +702,12 @@ export default function SubmitAnalystPicks() {
         })
         .eq('id', currentBettorId)
       
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('❌ Failed to update bettor record:', updateError)
+        throw updateError
+      }
+      
+      console.log('✅ Bettor record updated successfully')
       
       const easternNow = new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
       const easternTimestamp = new Date(easternNow)
