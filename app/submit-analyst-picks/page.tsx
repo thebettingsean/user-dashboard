@@ -96,12 +96,14 @@ const spinnerStyles = `
 // Rich Text Editor Component
 function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const editorRef = React.useRef<HTMLDivElement>(null)
+  const [isFocused, setIsFocused] = React.useState(false)
 
-  const execCommand = (command: string, value: string | undefined = undefined) => {
-    document.execCommand(command, false, value)
+  const execCommand = (command: string, commandValue: string | undefined = undefined) => {
+    document.execCommand(command, false, commandValue)
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML)
     }
+    editorRef.current?.focus()
   }
 
   const handleInput = () => {
@@ -110,11 +112,12 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
     }
   }
 
+  // Only update content when not focused to prevent cursor issues
   React.useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value
+    if (editorRef.current && !isFocused && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value || ''
     }
-  }, [value])
+  }, [value, isFocused])
 
   return (
     <div>
@@ -185,10 +188,25 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
       </div>
 
       {/* Editor */}
+      <style>
+        {`
+          .rich-text-editor a {
+            color: #60a5fa !important;
+            text-decoration: underline !important;
+          }
+          .rich-text-editor a:hover {
+            color: #93c5fd !important;
+          }
+        `}
+      </style>
       <div
         ref={editorRef}
+        className="rich-text-editor"
         contentEditable
         onInput={handleInput}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        suppressContentEditableWarning
         style={{
           width: '100%',
           padding: '0.5rem 0.75rem',
@@ -200,9 +218,9 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
           minHeight: '100px',
           maxHeight: '300px',
           overflowY: 'auto',
-          outline: 'none'
+          outline: 'none',
+          lineHeight: '1.5'
         }}
-        dangerouslySetInnerHTML={{ __html: value }}
       />
     </div>
   )
@@ -735,8 +753,18 @@ export default function SubmitAnalystPicks() {
 
   return (
     <>
-      <style>{spinnerStyles}</style>
-      <div style={styles.container}>
+    <style>{spinnerStyles}</style>
+    <style>{`
+      @media (max-width: 768px) {
+        .form-row {
+          grid-template-columns: 1fr !important;
+        }
+      }
+      input, select, textarea {
+        box-sizing: border-box !important;
+      }
+    `}</style>
+    <div style={styles.container}>
         <h1 style={styles.title}>Submit Your Picks</h1>
       <p style={styles.subtitle}>All times are in Eastern Time (EST/EDT)</p>
       
@@ -919,7 +947,7 @@ export default function SubmitAnalystPicks() {
                     
                     {!pickData.collapsed && (
                       <div style={styles.pickContent}>
-                        <div style={styles.formRow}>
+                        <div style={styles.formRow} className="form-row">
                           <div style={styles.formGroup}>
                             <label style={styles.label}>Sport</label>
                             <select
@@ -993,7 +1021,7 @@ export default function SubmitAnalystPicks() {
                           </div>
                         )}
                         
-                        <div style={styles.formRow}>
+                        <div style={styles.formRow} className="form-row">
                           <div style={styles.formGroup}>
                             <label style={styles.label}>Units at Risk</label>
                             <input
@@ -1022,7 +1050,7 @@ export default function SubmitAnalystPicks() {
                           </div>
                         </div>
                         
-                        <div style={styles.formRow}>
+                        <div style={styles.formRow} className="form-row">
                           <div style={styles.formGroup}>
                             <label style={styles.label}>Odds</label>
                             <input
@@ -1099,7 +1127,7 @@ export default function SubmitAnalystPicks() {
             
             <div style={styles.section}>
               <h2 style={styles.sectionHeader}>Select Your Display Record</h2>
-              <div style={styles.formRow}>
+              <div style={styles.formRow} className="form-row">
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Choose Performance Metric to Display</label>
                   <select
