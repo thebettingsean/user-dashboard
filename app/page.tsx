@@ -556,7 +556,7 @@ export default function Home() {
                             alignItems: 'center',
                             gap: '0.3rem'
                           }}>
-                            <Sparkles size={12} style={{ color: '#a78bfa' }} />
+                            <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
                             <span style={{
                               color: '#a78bfa',
                               fontSize: '0.7rem',
@@ -813,7 +813,7 @@ export default function Home() {
                             alignItems: 'center',
                             gap: '0.3rem'
                           }}>
-                            <Sparkles size={12} style={{ color: '#a78bfa' }} />
+                            <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
                             <span style={{
                               color: '#a78bfa',
                               fontSize: '0.7rem',
