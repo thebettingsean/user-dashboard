@@ -218,8 +218,12 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
           minHeight: '100px',
           maxHeight: '300px',
           overflowY: 'auto',
+          overflowX: 'hidden',
           outline: 'none',
-          lineHeight: '1.5'
+          lineHeight: '1.5',
+          boxSizing: 'border-box',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word'
         }}
       />
     </div>
@@ -760,7 +764,10 @@ export default function SubmitAnalystPicks() {
           grid-template-columns: 1fr !important;
         }
       }
-      input, select, textarea {
+      input, select, textarea, .rich-text-editor {
+        box-sizing: border-box !important;
+      }
+      .rich-text-editor * {
         box-sizing: border-box !important;
       }
     `}</style>
