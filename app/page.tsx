@@ -441,8 +441,7 @@ export default function Home() {
                     // Extract the hour and subtract 1 to get correct EST time
                     const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
                     const [hours, minutes] = gameTimeStr.split(':')
-                    let hour = parseInt(hours) - 1 // Subtract 1 hour
-                    if (hour < 0) hour = 23 // Handle midnight wrap-around
+                    let hour = parseInt(hours)
                     const ampm = hour >= 12 ? 'PM' : 'AM'
                     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
                     const time = `${displayHour}:${minutes} ${ampm}`
@@ -699,8 +698,7 @@ export default function Home() {
                     // Extract the hour and subtract 1 to get correct EST time
                     const gameTimeStr = game.gameTime.split('T')[1]?.split('.')[0] || '00:00:00'
                     const [hours, minutes] = gameTimeStr.split(':')
-                    let hour = parseInt(hours) - 1 // Subtract 1 hour
-                    if (hour < 0) hour = 23 // Handle midnight wrap-around
+                    let hour = parseInt(hours)
                     const ampm = hour >= 12 ? 'PM' : 'AM'
                     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
                     const time = `${displayHour}:${minutes} ${ampm}`
