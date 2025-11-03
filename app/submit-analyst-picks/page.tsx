@@ -671,8 +671,22 @@ export default function SubmitAnalystPicks() {
       
       if (performanceError) throw performanceError
       
-      const selectedMetric = performanceMetrics.find(m => m.id === selectedPerformance)
-      const fullRecordText = selectedMetric?.formatted_record || performanceData.formatted_record
+      // Build the full performance metric text with time period and sport
+      const timePeriodLabel: Record<string, string> = {
+        yesterday: 'Yesterday',
+        L3: 'Last 3 Days',
+        L5: 'Last 5 Days',
+        L7: 'Last 7 Days',
+        L14: 'Last 14 Days',
+        L30: 'Last 30 Days',
+        L6M: 'Last 6 Months',
+        year: 'Last Year',
+        all_time: 'All Time'
+      }
+      
+      const label = timePeriodLabel[performanceData.time_period] || performanceData.time_period
+      const sportLabel = performanceData.sport === 'All Sports' ? 'All Sports' : performanceData.sport
+      const fullRecordText = `${label}: ${performanceData.formatted_record} - ${sportLabel}`
       
       const { error: updateError } = await supabaseClient
         .from('bettors')
