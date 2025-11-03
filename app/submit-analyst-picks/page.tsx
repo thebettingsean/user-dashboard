@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseClient = createClient(
@@ -92,6 +92,133 @@ const spinnerStyles = `
     to { transform: rotate(360deg); }
   }
 `
+
+// Rich Text Editor Component
+function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const editorRef = React.useRef<HTMLDivElement>(null)
+
+  const execCommand = (command: string, value: string | undefined = undefined) => {
+    document.execCommand(command, false, value)
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
+  }
+
+  const handleInput = () => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
+  }
+
+  React.useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value
+    }
+  }, [value])
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div style={{
+        display: 'flex',
+        gap: '0.25rem',
+        padding: '0.5rem',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        borderBottom: 'none',
+        borderRadius: '8px 8px 0 0',
+        flexWrap: 'wrap'
+      }}>
+        <button
+          type="button"
+          onClick={() => execCommand('bold')}
+          style={toolbarButtonStyle}
+          title="Bold"
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          onClick={() => execCommand('italic')}
+          style={toolbarButtonStyle}
+          title="Italic"
+        >
+          <em>I</em>
+        </button>
+        <button
+          type="button"
+          onClick={() => execCommand('underline')}
+          style={toolbarButtonStyle}
+          title="Underline"
+        >
+          <u>U</u>
+        </button>
+        <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)', margin: '0 0.25rem' }} />
+        <button
+          type="button"
+          onClick={() => execCommand('insertUnorderedList')}
+          style={toolbarButtonStyle}
+          title="Bullet List"
+        >
+          • List
+        </button>
+        <button
+          type="button"
+          onClick={() => execCommand('insertOrderedList')}
+          style={toolbarButtonStyle}
+          title="Numbered List"
+        >
+          1. List
+        </button>
+        <div style={{ width: '1px', background: 'rgba(255,255,255,0.2)', margin: '0 0.25rem' }} />
+        <button
+          type="button"
+          onClick={() => {
+            const url = prompt('Enter URL:')
+            if (url) execCommand('createLink', url)
+          }}
+          style={toolbarButtonStyle}
+          title="Insert Link"
+        >
+          🔗 Link
+        </button>
+      </div>
+
+      {/* Editor */}
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={handleInput}
+        style={{
+          width: '100%',
+          padding: '0.5rem 0.75rem',
+          background: 'rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: '0 0 8px 8px',
+          color: '#fff',
+          fontSize: '0.85rem',
+          minHeight: '100px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+          outline: 'none'
+        }}
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    </div>
+  )
+}
+
+const toolbarButtonStyle: React.CSSProperties = {
+  padding: '0.25rem 0.5rem',
+  background: 'rgba(255,255,255,0.1)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  borderRadius: '4px',
+  color: 'rgba(255,255,255,0.8)',
+  fontSize: '0.75rem',
+  cursor: 'pointer',
+  transition: 'all 0.2s',
+  fontWeight: 500
+}
 
 export default function SubmitAnalystPicks() {
   const [bettors, setBettors] = useState<Bettor[]>([])
@@ -923,12 +1050,9 @@ export default function SubmitAnalystPicks() {
                         
                         <div style={styles.formGroup}>
                           <label style={styles.label}>Analysis / Reasoning</label>
-                          <textarea
-                            style={styles.textarea}
+                          <RichTextEditor
                             value={pickData.analysis}
-                            onChange={(e) => updatePick(pickId, 'analysis', e.target.value)}
-                            placeholder="Explain your reasoning for this pick..."
-                            required
+                            onChange={(value) => updatePick(pickId, 'analysis', value)}
                           />
                         </div>
                         
@@ -1034,15 +1158,15 @@ export default function SubmitAnalystPicks() {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    maxWidth: '800px',
+    maxWidth: '700px',
     margin: '0 auto',
-    padding: '14rem 1rem'
+    padding: '10rem 1rem 2rem'
   },
   title: {
-    fontSize: '2rem',
-    fontWeight: 800,
+    fontSize: '1.5rem',
+    fontWeight: 700,
     textAlign: 'center',
-    marginBottom: '0.5rem',
+    marginBottom: '0.25rem',
     background: 'linear-gradient(135deg, #1e3a8a, #60a5fa)',
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
@@ -1050,131 +1174,131 @@ const styles: Record<string, React.CSSProperties> = {
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: '0.9rem',
-    color: 'rgba(255,255,255,0.7)',
-    marginBottom: '3rem'
+    fontSize: '0.8rem',
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: '1.5rem'
   },
   card: {
     background: 'rgba(255,255,255,0.08)',
     backdropFilter: 'blur(20px)',
     border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: '20px',
-    padding: '2rem'
+    borderRadius: '16px',
+    padding: '1.25rem'
   },
   section: {
-    marginBottom: '2rem',
-    paddingBottom: '2rem',
-    borderBottom: '1px solid rgba(255,255,255,0.15)'
+    marginBottom: '1.25rem',
+    paddingBottom: '1.25rem',
+    borderBottom: '1px solid rgba(255,255,255,0.1)'
   },
   sectionHeader: {
-    fontSize: '1.2rem',
-    fontWeight: 700,
+    fontSize: '1rem',
+    fontWeight: 600,
     color: '#60a5fa',
-    marginBottom: '1rem'
+    marginBottom: '0.75rem'
   },
   formGroup: {
-    marginBottom: '1.5rem'
+    marginBottom: '0.75rem'
   },
   formRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '1rem'
+    gap: '0.75rem'
   },
   label: {
     display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: 600,
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: '0.95rem'
+    marginBottom: '0.35rem',
+    fontWeight: 500,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: '0.8rem'
   },
   input: {
     width: '100%',
-    padding: '0.75rem 1rem',
+    padding: '0.5rem 0.75rem',
     background: 'rgba(255,255,255,0.1)',
     border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '12px',
+    borderRadius: '8px',
     color: '#fff',
-    fontSize: '0.95rem'
+    fontSize: '0.85rem'
   },
   select: {
     width: '100%',
-    padding: '0.75rem 1rem',
+    padding: '0.5rem 0.75rem',
     background: 'rgba(255,255,255,0.1)',
     border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '12px',
+    borderRadius: '8px',
     color: '#fff',
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     cursor: 'pointer'
   },
   textarea: {
     width: '100%',
-    padding: '0.75rem 1rem',
+    padding: '0.5rem 0.75rem',
     background: 'rgba(255,255,255,0.1)',
     border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '12px',
+    borderRadius: '8px',
     color: '#fff',
-    fontSize: '0.95rem',
-    minHeight: '120px',
+    fontSize: '0.85rem',
+    minHeight: '100px',
     resize: 'vertical' as const
   },
   pickCard: {
-    background: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '16px',
-    padding: '1.5rem',
-    marginBottom: '1rem'
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    borderRadius: '12px',
+    padding: '1rem',
+    marginBottom: '0.75rem'
   },
   pickHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem',
+    marginBottom: '0.75rem',
     cursor: 'pointer'
   },
   pickNumber: {
-    fontWeight: 700,
+    fontWeight: 600,
     color: '#60a5fa',
-    fontSize: '1rem'
+    fontSize: '0.9rem'
   },
   pickContent: {
-    marginTop: '1rem'
+    marginTop: '0.75rem'
   },
   deletePick: {
     background: 'rgba(239,68,68,0.2)',
     border: 'none',
     color: '#ef4444',
-    padding: '0.4rem 0.8rem',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
+    padding: '0.35rem 0.65rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
     cursor: 'pointer',
     fontWeight: 600
   },
   freePickToggle: {
     background: 'rgba(255,255,255,0.1)',
     border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '8px',
-    padding: '0.5rem 0.75rem',
+    borderRadius: '6px',
+    padding: '0.4rem 0.6rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem',
+    gap: '0.4rem',
     cursor: 'pointer',
-    fontSize: '0.9rem'
+    fontSize: '0.8rem'
   },
   freePickToggleActive: {
     background: 'linear-gradient(135deg, #10b981, #34d399)',
     borderColor: '#10b981'
   },
   toggleIndicator: {
-    width: '16px',
-    height: '16px',
+    width: '14px',
+    height: '14px',
     border: '2px solid rgba(255,255,255,0.7)',
-    borderRadius: '4px',
+    borderRadius: '3px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   toggleText: {
-    fontWeight: 600,
+    fontWeight: 500,
     color: 'rgba(255,255,255,0.8)'
   },
   winStreakDisplay: {
