@@ -90,12 +90,16 @@ export async function POST(request: NextRequest) {
     const prompt = await buildGameScriptPrompt(data, league, origin)
 
     console.log('Sending request to OpenAI with GPT-4o...')
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
+    console.log('Prompt length:', prompt.length, 'characters')
+    
+    let completion
+    try {
+      completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
 
 🚨 CRITICAL RULE - NO HALLUCINATION:
 - DO NOT INVENT analyst names, bettor names, or sources
@@ -132,9 +136,18 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
       temperature: 0.7,
       max_tokens: 2000
     })
+    } catch (openaiError) {
+      console.error('❌ OpenAI API error:', openaiError)
+      if (openaiError instanceof Error) {
+        console.error('Error message:', openaiError.message)
+        console.error('Error stack:', openaiError.stack)
+      }
+      throw new Error(`OpenAI generation failed: ${openaiError instanceof Error ? openaiError.message : 'Unknown error'}`)
+    }
 
     const script = completion.choices[0]?.message?.content || 'Unable to generate script'
     console.log('✅ Script generated successfully')
+    console.log('Script length:', script.length, 'characters')
 
     // Cache the result in Vercel KV for 4 hours (if configured)
     try {
