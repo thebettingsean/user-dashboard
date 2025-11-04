@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     console.log(`\n=== GENERATING AI SCRIPT FOR GAME ${gameId} ===`)
     console.log(`League: ${league}, Data Strength: ${data.dataStrength}`)
 
-    // Get today's date for cache key (ensures fresh cache daily)
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    // Get game time from data (use game's actual timestamp)
+    const gameTime = data.game?.game_date || new Date().toISOString()
     
     // Determine current time window (EST) for cache refresh
     const now = new Date()
@@ -80,32 +80,40 @@ export async function POST(request: NextRequest) {
     }
     
     console.log(`🕐 Current time window: ${timeWindow} (${hour}:00 EST)`)
+    console.log(`📅 Game time: ${gameTime}`)
     
     // Get current user (for tracking who generated the script)
     const user = await currentUser()
     const clerkUserId = user?.id || 'anonymous'
     
-    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST (with time window)
+    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST (match on game_id and sport only, ignoring time_window for now)
+    // We'll check if ANY script exists for this game today, regardless of window
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD for comparison
+    
     try {
-      const { data: existingScript, error: fetchError } = await supabaseUsers
+      const { data: existingScripts, error: fetchError } = await supabaseUsers
         .from('game_scripts')
         .select('*')
         .eq('game_id', gameId)
         .eq('sport', league.toUpperCase())
-        .eq('game_date', today)
-        .eq('time_window', timeWindow)
-        .single()
+        .gte('game_time', `${today}T00:00:00.000Z`)
+        .lte('game_time', `${today}T23:59:59.999Z`)
+      
+      // Find script matching current time window
+      const existingScript = existingScripts?.find((s: any) => 
+        s.script_content && 
+        new Date(s.game_time).toISOString().split('T')[0] === today
+      )
 
       if (!fetchError && existingScript) {
-        console.log(`✅ Script found in Supabase (${timeWindow} window)! Reusing cached version.`)
-        console.log(`📊 Script has been viewed ${existingScript.view_count} times`)
+        console.log(`✅ Script found in Supabase! Reusing cached version.`)
+        console.log(`📊 Script ID: ${existingScript.id}`)
         
-        // Update view count and last_viewed_at
+        // Update updated_at timestamp
         await supabaseUsers
           .from('game_scripts')
           .update({ 
-            view_count: existingScript.view_count + 1,
-            last_viewed_at: new Date().toISOString()
+            updated_at: new Date().toISOString()
           })
           .eq('id', existingScript.id)
         
@@ -121,7 +129,7 @@ export async function POST(request: NextRequest) {
         } as GeneratedScript)
       }
       
-      console.log(`📝 No cached script found for ${timeWindow} window - generating new one...`)
+      console.log(`📝 No cached script found - generating new one...`)
     } catch (supabaseError) {
       console.error('⚠️ Supabase check failed:', supabaseError)
       // Continue to generate new script
@@ -198,22 +206,23 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
-    // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING (with time window)
+    // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING
     try {
       const { error: insertError } = await supabaseUsers
         .from('game_scripts')
         .insert({
           game_id: gameId,
           sport: league.toUpperCase(),
-          game_date: today,
-          time_window: timeWindow,
+          game_time: gameTime, // Use actual game timestamp
           away_team: data.game?.away_team || 'Unknown',
           home_team: data.game?.home_team || 'Unknown',
           script_content: script,
           data_strength: data.dataStrength,
           generated_by: clerkUserId,
-          view_count: 1,
-          last_viewed_at: new Date().toISOString()
+          generated_at: new Date().toISOString(),
+          expires_at: null, // Optional: set expiration if needed
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
 
       if (insertError) {
