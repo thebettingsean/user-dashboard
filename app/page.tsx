@@ -329,7 +329,44 @@ export default function Home() {
         }} />
 
         {/* AI GAME INTELLIGENCE SECTION - MOBILE */}
-        <div className="mobile-view" style={{ marginBottom: '2.5rem' }}>
+        <div className="mobile-view" style={{ marginBottom: '2.5rem', position: 'relative' }}>
+          {/* MAINTENANCE OVERLAY */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999,
+            padding: '2rem',
+            textAlign: 'center',
+            pointerEvents: 'all'
+          }}>
+            <FaWandMagicSparkles style={{ fontSize: '3rem', color: '#9333ea', marginBottom: '1rem', opacity: 0.5 }} />
+            <h3 style={{ 
+              fontSize: '1.2rem', 
+              fontWeight: '600', 
+              color: '#ffffff',
+              marginBottom: '0.5rem'
+            }}>
+              Upgrading Infrastructure
+            </h3>
+            <p style={{ 
+              fontSize: '0.9rem', 
+              color: 'rgba(255, 255, 255, 0.7)',
+              maxWidth: '500px',
+              lineHeight: '1.5'
+            }}>
+              We have a lot of data... be patient with us while we upgrade our infrastructure
+            </p>
+          </div>
           <h3 
             onClick={() => toggleSection('ai-intelligence')}
             style={{ 
@@ -590,7 +627,44 @@ export default function Home() {
         </div>
 
         {/* AI GAME INTELLIGENCE SECTION - DESKTOP */}
-        <div className="desktop-view" style={{ marginBottom: '2.5rem' }}>
+        <div className="desktop-view" style={{ marginBottom: '2.5rem', position: 'relative' }}>
+          {/* MAINTENANCE OVERLAY */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999,
+            padding: '2rem',
+            textAlign: 'center',
+            pointerEvents: 'all'
+          }}>
+            <FaWandMagicSparkles style={{ fontSize: '3rem', color: '#9333ea', marginBottom: '1rem', opacity: 0.5 }} />
+            <h3 style={{ 
+              fontSize: '1.2rem', 
+              fontWeight: '600', 
+              color: '#ffffff',
+              marginBottom: '0.5rem'
+            }}>
+              Upgrading Infrastructure
+            </h3>
+            <p style={{ 
+              fontSize: '0.9rem', 
+              color: 'rgba(255, 255, 255, 0.7)',
+              maxWidth: '500px',
+              lineHeight: '1.5'
+            }}>
+              We have a lot of data... be patient with us while we upgrade our infrastructure
+            </p>
+          </div>
           <h3 
             onClick={() => toggleSection('ai-intelligence-desktop')}
             style={{ 
