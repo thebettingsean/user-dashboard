@@ -239,7 +239,6 @@ DISCLAIMER: Educational purposes only. Not financial advice.`,
           home_team: data.game?.home_team || 'Unknown',
           script_content: script,
           data_strength: data.dataStrength,
-          generated_by: clerkUserId,
           generated_at: new Date().toISOString(),
           expires_at: null, // Optional: set expiration if needed
           created_at: new Date().toISOString(),
