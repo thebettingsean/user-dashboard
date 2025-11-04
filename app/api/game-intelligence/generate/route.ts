@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     try {
       completion = await anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8192,
+        max_tokens: 1500, // FORCE SHORT OUTPUTS - 1500 tokens ≈ 400 words MAX
         temperature: 1.0,
         system: `You are a sharp sports analyst. Write ULTRA-CONCISE, DATA-HEAVY game scripts.
 
@@ -235,6 +235,8 @@ DISCLAIMER: Educational purposes only. Not financial advice.`,
       console.log('Script length:', script.length, 'characters')
       console.log('Game ID:', gameId)
       console.log('Sport:', league.toUpperCase())
+      console.log('Supabase URL:', process.env.SUPABASE_USERS_URL || 'FALLBACK URL')
+      console.log('Supabase Key exists:', !!process.env.SUPABASE_USERS_SERVICE_KEY)
       
       const { data: insertData, error: insertError } = await supabaseUsers
         .from('game_scripts')
