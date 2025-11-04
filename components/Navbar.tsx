@@ -24,7 +24,6 @@ export default function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [dashboardSubOpen, setDashboardSubOpen] = useState(false)
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [signInDropdownOpen, setSignInDropdownOpen] = useState(false)
 
   const premiumFeatures = [
     {
@@ -331,36 +330,11 @@ export default function Navbar() {
             </UserButton>
             )
           ) : (
-            <div 
-              style={{ position: 'relative' }}
-              onMouseEnter={() => handleMouseEnter('signin')}
-              onMouseLeave={handleMouseLeave}
-            >
+            <SignInButton mode="modal">
               <button style={styles.signInButton}>
                 Sign In
               </button>
-              
-              {openDropdown === 'signin' && (
-                <div 
-                  style={styles.signInDropdown}
-                  onMouseEnter={() => handleMouseEnter('signin')}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <SignInButton mode="modal">
-                    <button style={styles.signInDropdownItem}>
-                      Returning
-                    </button>
-                  </SignInButton>
-                  <div style={styles.dropdownDivider} />
-                  <a 
-                    href="https://www.thebettinginsider.com/pricing"
-                    style={styles.signInDropdownItem}
-                  >
-                    New User
-                  </a>
-                </div>
-              )}
-            </div>
+            </SignInButton>
           )}
           </div>
         </div>
@@ -478,34 +452,11 @@ export default function Navbar() {
               </UserButton>
             )
             ) : (
-              <div style={{ position: 'relative' }}>
-                <button 
-                  onClick={() => setSignInDropdownOpen(!signInDropdownOpen)}
-                  style={styles.mobileSignInButton}
-                >
+              <SignInButton mode="modal">
+                <button style={styles.mobileSignInButton}>
                   Sign In
                 </button>
-                
-                {signInDropdownOpen && (
-                  <div style={styles.mobileSignInDropdown}>
-                    <SignInButton mode="modal">
-                      <button 
-                        style={styles.signInDropdownItem}
-                        onClick={() => setSignInDropdownOpen(false)}
-                      >
-                        Returning
-                      </button>
-                    </SignInButton>
-                    <div style={styles.dropdownDivider} />
-                    <a 
-                      href="https://www.thebettinginsider.com/pricing"
-                      style={styles.signInDropdownItem}
-                    >
-                      New User
-                    </a>
-                  </div>
-                )}
-              </div>
+              </SignInButton>
             )}
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSubscription } from '../lib/hooks/useSubscription'
+import { useUser, SignInButton } from '@clerk/nextjs'
 import LockedWidget from '../components/LockedWidget'
 import PicksWidget from '../components/PicksWidget'
 import StatsWidget from '../components/StatsWidget'
@@ -35,6 +36,9 @@ interface GameSummary {
 }
 
 export default function Home() {
+  const { isSignedIn } = useUser()
+  const [triggerSignIn, setTriggerSignIn] = useState(false)
+  
   // Track which SECTIONS are open (not individual widgets)
   // AI Game Intelligence is open by default
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['ai-intelligence', 'ai-intelligence-desktop']))
@@ -46,7 +50,7 @@ export default function Home() {
   const [scriptModalOpen, setScriptModalOpen] = useState(false)
   const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'MLB'>('NFL')
   const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
-  const { isLoading, isSubscribed, firstName } = useSubscription()
+  const { isLoading, isSubscribed, firstName} = useSubscription()
 
   useEffect(() => {
     // Set welcome message immediately, update when firstName changes
@@ -137,6 +141,13 @@ export default function Home() {
   }
 
   async function handleAnalyzeGame(gameId: string, sport: string) {
+    // Check if user is signed in first
+    if (!isSignedIn) {
+      // Trigger Clerk sign-in modal
+      setTriggerSignIn(true)
+      return
+    }
+    
     setGeneratingGameId(gameId)
     setSelectedGameId(gameId)
     setSelectedGameSport(sport)
@@ -302,12 +313,11 @@ export default function Home() {
         position: 'relative',
         zIndex: 1
       }}>
-          <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.5rem', fontWeight: '600' }}>
+          <p style={{ fontSize: '1.3rem', color: '#ffffff', marginBottom: '0.75rem', fontWeight: '600' }}>
             {welcomeMessage}
           </p>
-          <p style={{ fontSize: '0.85rem', color: '#ffffff', opacity: 0.6, marginBottom: '0' }}>
-            These are the tools you need to be a profitable bettor
-          </p>
+          {/* Credits Badge - directly under personalized headline */}
+          <AICreditBadge />
         </div>
 
         {/* Divider line above AI section */}
@@ -361,11 +371,6 @@ export default function Home() {
               }}>
                 Select a sport, pick a game, and get an AI powered script with real Insider picks and data
               </p>
-
-              {/* Credit Badge */}
-              <div style={{ marginBottom: '1rem' }}>
-                <AICreditBadge />
-              </div>
 
               {/* Sport Tabs */}
               <div style={{ 
@@ -627,11 +632,6 @@ export default function Home() {
               }}>
                 Select a sport, pick a game, and get an AI powered script with real Insider picks and data
               </p>
-
-              {/* Credit Badge */}
-              <div style={{ marginBottom: '1rem' }}>
-                <AICreditBadge />
-              </div>
 
               {/* Sport Tabs */}
               <div style={{ 
@@ -1200,6 +1200,21 @@ export default function Home() {
       sport={selectedGameSport}
       onClose={closeScriptModal}
     />
+
+    {/* Hidden SignInButton for triggering Clerk modal */}
+    {triggerSignIn && (
+      <SignInButton mode="modal">
+        <button 
+          ref={(el) => {
+            if (el && triggerSignIn) {
+              el.click()
+              setTriggerSignIn(false)
+            }
+          }}
+          style={{ display: 'none' }}
+        />
+      </SignInButton>
+    )}
     </>
   )
 }

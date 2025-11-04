@@ -107,8 +107,9 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
 
     // Step 1: Check if user is authenticated
     if (!isSignedIn) {
-      console.log('User not authenticated - showing auth prompt')
-      setShowAuthPrompt(true)
+      console.log('User not authenticated - will be handled by Clerk modal')
+      // Close the modal so user can sign in via Clerk
+      onClose()
       return
     }
 
@@ -222,8 +223,15 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
   const strengthLabel = scriptData?.dataStrength === 3 ? 'Strong' : scriptData?.dataStrength === 2 ? 'Above Avg' : 'Minimal'
   const strengthColor = scriptData?.dataStrength === 3 ? '#10b981' : scriptData?.dataStrength === 2 ? '#f59e0b' : '#ef4444'
 
-  // Show auth prompt
+  // Don't show a custom auth prompt - the modal should just close and let Clerk handle it
   if (showAuthPrompt) {
+    return null
+  }
+
+  // Removed the custom auth prompt modal below (lines 229-289 in original file)
+  // The game card click now triggers Clerk modal directly via the page.tsx logic
+  
+  if (false) { // Keep this dead code path for now in case we want to reference the old auth prompt
     return (
       <div style={{
         position: 'fixed',
