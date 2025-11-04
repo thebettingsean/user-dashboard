@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
 import type { GameIntelligenceData } from '../data/route'
 import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
+import { TRENDLINE_API_GUIDE } from '@/lib/ai/trendline-guide'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -240,7 +241,11 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
   }
   
-  // First, inject the team statistics interpretation guide
+  // First, inject the comprehensive API data interpretation guide
+  prompt += TRENDLINE_API_GUIDE
+  prompt += `\n\n═══════════════════════════════════════════════════════════════════════════════\n\n`
+  
+  // Then inject the team statistics interpretation guide
   prompt += TEAM_STATS_GUIDE
   prompt += `\n\n═══════════════════════════════════════════════════════════════════════════════\n\n`
   
