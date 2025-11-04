@@ -135,19 +135,47 @@ export async function GET(request: NextRequest) {
     const toDate = sevenDaysFromNow.toISOString().split('T')[0]
     
     console.log(`Fetching games from ${fromDate} to ${toDate}`)
-    const games = await fetchGames(league, fromDate, toDate)
+    
+    // Fetch games directly here instead of using the helper (for better error visibility)
+    const gamesUrl = `${process.env.INSIDER_API_URL || 'https://api.trendlinelabs.ai'}/api/${league}/games?from=${fromDate}&to=${toDate}`
+    console.log(`🎮 Direct API call: ${gamesUrl}`)
+    
+    const gamesResponse = await fetch(gamesUrl, {
+      headers: {
+        'insider-api-key': process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
+      },
+      cache: 'no-store'
+    })
+    
+    console.log(`📡 Games API status: ${gamesResponse.status}`)
+    
+    if (!gamesResponse.ok) {
+      const errorBody = await gamesResponse.text()
+      console.error(`❌ Games API error body: ${errorBody}`)
+      return NextResponse.json(
+        { 
+          error: `Failed to fetch games: ${gamesResponse.status}`,
+          details: errorBody,
+          url: gamesUrl
+        },
+        { status: 500 }
+      )
+    }
+    
+    const gamesData = await gamesResponse.json()
+    const games: Game[] = gamesData.games || []
     console.log(`Found ${games.length} games for ${league.toUpperCase()}`)
     
-    const game = games.find(g => g.game_id === gameId) || null
+    const game = games.find((g: Game) => g.game_id === gameId) || null
 
     if (!game) {
       console.log(`❌ Game not found. Looking for gameId: ${gameId}`)
-      console.log(`Available games:`, games.map(g => ({ id: g.game_id, matchup: `${g.away_team} @ ${g.home_team}` })))
+      console.log(`Available games:`, games.map((g: Game) => ({ id: g.game_id, matchup: `${g.away_team} @ ${g.home_team}` })))
       return NextResponse.json(
         { 
           error: 'Game not found',
           gameId,
-          availableGames: games.map(g => g.game_id)
+          availableGames: games.map((g: Game) => g.game_id)
         },
         { status: 404 }
       )
