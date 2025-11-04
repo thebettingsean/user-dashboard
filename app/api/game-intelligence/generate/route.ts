@@ -185,8 +185,8 @@ WRITING STYLE - DATA-DENSE NARRATIVE:
 - ⚠️ CRITICAL: DO NOT INVENT ANALYST NAMES. Only use names provided in the analyst picks data. If no analyst picks, just format as **Bears -2.5 (-112)** without any name.
 - Find 3-5 ADDITIONAL plays beyond analyst picks based on the game script you're building
 
-DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`,
-        messages: [
+DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`
+          },
           {
             role: 'user',
             content: prompt
