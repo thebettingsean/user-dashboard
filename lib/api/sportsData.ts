@@ -145,18 +145,25 @@ export async function fetchGames(
 ): Promise<Game[]> {
   try {
     const url = `${API_BASE_URL}/api/${league}/games?from=${from}&to=${to}`
+    console.log(`🎮 Fetching games: ${url}`)
+    
     const response = await fetch(url, {
       headers: {
         'insider-api-key': API_KEY,
       },
-      next: { revalidate: 86400 } // Cache for 24 hours
+      cache: 'no-store' // Don't cache - use fresh data
     })
 
+    console.log(`📡 API Response status: ${response.status}`)
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${league} games: ${response.status}`)
+      const errorText = await response.text()
+      console.error(`❌ API Error Response: ${errorText}`)
+      throw new Error(`Failed to fetch ${league} games: ${response.status} - ${errorText}`)
     }
 
     const data: GamesResponse = await response.json()
+    console.log(`✅ Found ${data.games?.length || 0} games`)
     return data.games || []
   } catch (error) {
     console.error(`Error fetching ${league} games:`, error)
