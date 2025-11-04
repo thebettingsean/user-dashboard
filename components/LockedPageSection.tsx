@@ -1,25 +1,30 @@
 'use client'
 
+import { useUser, SignInButton } from '@clerk/nextjs'
+
 interface LockedPageSectionProps {
   isLocked: boolean
   children: React.ReactNode
 }
 
 export default function LockedPageSection({ isLocked, children }: LockedPageSectionProps) {
+  const { isSignedIn } = useUser()
+
   if (!isLocked) {
     return <>{children}</>
   }
 
-  const handleSignUpClick = () => {
-    window.location.href = 'https://www.thebettinginsider.com/pricing'
+  const handleUpgradeClick = () => {
+    window.location.href = '/upgrade'
   }
 
   const handleBackClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    window.location.href = 'https://dashboard.thebettinginsider.com/prop-parlay-tool'
+    window.location.href = '/'
   }
 
-  return (
+  // Different content based on sign-in status
+  const lockContent = (onClick?: () => void) => (
     <>
       {/* Show preview content but make it non-interactive and blurred */}
       <div style={{ 
@@ -44,7 +49,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           alignItems: 'center',
           justifyContent: 'center',
           gap: '1.5rem',
-          cursor: 'pointer',
+          cursor: onClick ? 'pointer' : 'default',
           zIndex: 9999,
           background: 'rgba(15, 23, 42, 0.95)',
           backdropFilter: 'blur(8px)',
@@ -52,7 +57,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
           padding: '2rem',
           overflow: 'hidden'
         }}
-        onClick={handleSignUpClick}
+        onClick={onClick}
       >
         {/* Back button in top left */}
         <button
@@ -112,7 +117,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
             fontWeight: '500',
             margin: 0
           }}>
-            Please sign-up to access
+            {isSignedIn ? 'Please upgrade to access' : 'Please sign in to access'}
           </p>
         </div>
         <button 
@@ -129,9 +134,21 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
             marginTop: '0.5rem'
           }}
         >
-          Sign Up Now
+          {isSignedIn ? 'Upgrade Now' : 'Sign In'}
         </button>
       </div>
     </>
   )
+
+  // If not signed in, wrap in SignInButton
+  if (!isSignedIn) {
+    return (
+      <SignInButton mode="modal">
+        {lockContent()}
+      </SignInButton>
+    )
+  }
+
+  // Signed in but no subscription → redirect to /upgrade
+  return lockContent(handleUpgradeClick)
 }
