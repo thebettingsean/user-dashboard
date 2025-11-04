@@ -148,6 +148,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Sending request to Claude 3.5 Sonnet...')
     console.log('Prompt length:', prompt.length, 'characters')
+    console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY)
+    console.log('API Key starts with:', process.env.ANTHROPIC_API_KEY?.substring(0, 10))
     
     let completion
     try {
@@ -190,13 +192,17 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
           }
         ]
       })
-    } catch (anthropicError) {
+    } catch (anthropicError: any) {
       console.error('❌ Claude API error:', anthropicError)
+      console.error('Error type:', typeof anthropicError)
+      console.error('Error status:', anthropicError?.status)
+      console.error('Error message:', anthropicError?.message)
+      console.error('Error response:', anthropicError?.error)
       if (anthropicError instanceof Error) {
         console.error('Error message:', anthropicError.message)
         console.error('Error stack:', anthropicError.stack)
       }
-      throw new Error(`Claude generation failed: ${anthropicError instanceof Error ? anthropicError.message : 'Unknown error'}`)
+      throw new Error(`Claude generation failed: ${anthropicError?.message || anthropicError?.error?.message || 'Unknown error'}`)
     }
 
     const script = completion.content[0]?.type === 'text' ? completion.content[0].text : 'Unable to generate script'
