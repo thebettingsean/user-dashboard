@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
 import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
@@ -7,8 +7,8 @@ import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
 import { TRENDLINE_API_GUIDE } from '@/lib/ai/trendline-guide'
 import { currentUser } from '@clerk/nextjs/server'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 })
 
 // Supabase client for game scripts cache
@@ -35,11 +35,11 @@ interface GeneratedScript {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check if Anthropic API key is configured
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('❌ ANTHROPIC_API_KEY not configured')
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured')
       return NextResponse.json(
-        { error: 'AI service not configured. Please add ANTHROPIC_API_KEY to environment variables.' },
+        { error: 'AI service not configured. Please add OPENAI_API_KEY to environment variables.' },
         { status: 500 }
       )
     }
@@ -146,16 +146,19 @@ export async function POST(request: NextRequest) {
     const origin = request.nextUrl.origin
     const prompt = await buildGameScriptPrompt(data, league, origin)
 
-    console.log('Sending request to Claude Sonnet 3.5...')
+    console.log('Sending request to OpenAI GPT-4o-mini...')
     console.log('Prompt length:', prompt.length, 'characters')
     
     let completion
     try {
-      completion = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929', // Claude Sonnet 4.5 - latest available model
-        max_tokens: 8192,
-        temperature: 1.0, // Claude's default
-        system: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
+      completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        max_tokens: 4096,
+        temperature: 1.0,
+        messages: [
+          {
+            role: 'system',
+            content: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
 
 🚨 CRITICAL RULE - NO HALLUCINATION:
 - DO NOT INVENT analyst names, bettor names, or sources
@@ -190,14 +193,14 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
           }
         ]
       })
-    } catch (anthropicError: any) {
-      console.error('❌ Claude API error:', anthropicError)
-      console.error('Error status:', anthropicError?.status)
-      console.error('Error message:', anthropicError?.message)
-      throw new Error(`Claude generation failed: ${anthropicError?.message || 'Unknown error'}`)
+    } catch (openaiError: any) {
+      console.error('❌ OpenAI API error:', openaiError)
+      console.error('Error status:', openaiError?.status)
+      console.error('Error message:', openaiError?.message)
+      throw new Error(`OpenAI generation failed: ${openaiError?.message || 'Unknown error'}`)
     }
 
-    const script = completion.content[0]?.type === 'text' ? completion.content[0].text : 'Unable to generate script'
+    const script = completion.choices[0]?.message?.content || 'Unable to generate script'
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
