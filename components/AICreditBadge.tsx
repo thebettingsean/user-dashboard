@@ -141,9 +141,7 @@ export default function AICreditBadge() {
           0 credits remaining
         </div>
         <a
-          href="https://www.thebettinginsider.com/pricing"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/upgrade"
           style={{
             fontSize: '0.8rem',
             color: 'rgba(255, 255, 255, 0.5)',
@@ -187,9 +185,7 @@ export default function AICreditBadge() {
       </div>
       {creditStatus.accessLevel === 'ai_only' && (
         <a
-          href="https://www.thebettinginsider.com/pricing"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/upgrade"
           style={{
             fontSize: '0.8rem',
             color: 'rgba(255, 255, 255, 0.5)',
