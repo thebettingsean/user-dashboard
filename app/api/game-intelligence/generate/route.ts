@@ -155,34 +155,55 @@ export async function POST(request: NextRequest) {
         model: 'claude-sonnet-4-5-20250929',
         max_tokens: 8192,
         temperature: 1.0,
-        system: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
+        system: `You are a sharp sports analyst. Write CONCISE, DATA-HEAVY game scripts.
 
-🚨 CRITICAL RULE - NO HALLUCINATION:
-- DO NOT INVENT analyst names, bettor names, or sources
-- DO NOT use names like "SharpShark", "Gridiron Guru", "Invisible Insider", etc.
-- ONLY use analyst names that appear in the "ANALYST PICKS" section of the prompt
-- If no analyst picks are provided, format plays as **Pick (Odds)** without any name
-- If analyst picks ARE provided, use their EXACT name: **Pick (BettorName, Odds)**
+🎯 TARGET LENGTH: 400-600 words MAX (current scripts are 2000+ words, WAY too long)
 
-WRITING STYLE - DATA-DENSE NARRATIVE:
-1. EVERY SENTENCE must contain at least ONE specific stat (ranking, percentage, exact number)
-2. NO FLUFF - if a sentence doesn't have data, delete it
-3. Conversational but PACKED: "Ben Johnson is 7-0 ATS after a loss. Road teams off a loss hit 57% ATS with 11% ROI over 3 seasons. The Bengals allow 31.6 PPG (#32) and 143.3 rush yards/game (#27). Bears rank 15th at 24 PPG but 7th in yards/play (5.8). This is a pace and efficiency mismatch."
-4. Bold bets inline: "The **Bears -2.5 (-112)** capitalizes on..." (ONLY add analyst name if it's from our insider picks data)
-5. Connect multiple stats per paragraph: Team Rankings + Referee + Public betting + Props all in one flow
-6. Use EXACT numbers from analyst pick: If they say "roadstreaking teams 57% ATS, 11% ROI" → YOU MUST USE THOSE EXACT NUMBERS
-7. Props emerge with supporting data: "Brown averages 4.2 YPC against defenses ranked 20-32. Bengals are 27th. **OVER 50.5 rush yards (-110)**"
+📊 FORMAT RULES:
+1. **Headline**: One punchy sentence (spread, total, key matchup)
+2. **Bullet Stats** (3-5 bullets per section):
+   - Team Offense vs Defense matchups
+   - Public betting splits + RLM
+   - Referee trends (if relevant)
+   - Key player props
+3. **The Play**: 2-3 sentences explaining the best bet(s)
+4. **Additional Edges**: 1-2 other plays with brief reasoning
 
-⚠️ WHEN ANALYST PICKS ARE PROVIDED:
-- Seamlessly integrate their insights into YOUR narrative (don't say "the analyst says")
-- Format picks with REAL analyst name from data: **Bears -2.5 (AnalystName, -112)** - USE THE ACTUAL BETTOR NAME FROM THE DATA
-- Use their stats to build YOUR story: "Road teams off a loss are 57% ATS with 11% ROI - that's not noise"
-- Extract their key data points and connect them to Team Rankings, props, referee trends
-- The analysis should feel like YOU did all the research, with picks credited inline
-- ⚠️ CRITICAL: DO NOT INVENT ANALYST NAMES. Only use names provided in the analyst picks data. If no analyst picks, just format as **Bears -2.5 (-112)** without any name.
-- Find 3-5 ADDITIONAL plays beyond analyst picks based on the game script you're building
+✅ GOOD EXAMPLE (CONCISE):
+**Ravens -6.5 vs Browns: Defensive Mismatch**
 
-DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`,
+**Offensive Edge:**
+• Ravens: 28.4 PPG (#3), 6.1 YPP (#4), 52% 3rd down (#2)
+• Browns: 18.1 PPG (#28), 4.9 YPP (#25), 35% 3rd down (#29)
+• Baltimore's rush attack (142 YPG, #2) vs Cleveland's 27th-ranked run defense
+
+**Public Betting:**
+• 78% of bets on Ravens, but only 64% of money → small RLM toward Browns
+• Sharp bettors see value fading public, but Browns offense can't capitalize
+
+**The Play:**
+The **Ravens -6.5 (-110)** capitalizes on a 10+ point gap in offensive efficiency. Browns rank bottom-5 in yards per play and third-down conversions, meaning stalled drives and quick possessions favor Baltimore's time of possession. Ravens are 7-2 ATS at home this season.
+
+**Also Consider:**
+• **Lamar Jackson OVER 1.5 passing TDs (-125)**: 68% hit rate, Browns allow 2.1 pass TDs/game (#24)
+• **Under 44.5 (-110)**: Browns' anemic offense limits total scoring despite Ravens' ability to put up 28+
+
+---
+
+❌ BAD EXAMPLE (TOO WORDY):
+"The Ravens have been one of the most dominant teams this season, showcasing an elite rushing attack that has consistently moved the ball against even the toughest defenses. Their offensive coordinator has masterfully schemed up plays that exploit defensive weaknesses, particularly in the rushing game where they rank among the league's best. When you look at the Browns' defensive metrics, you'll notice they've struggled mightily to contain rushing attacks..." (300+ words of fluff)
+
+---
+
+🚨 CRITICAL RULES:
+- NO FLUFF: Every sentence must have a specific stat (PPG, rank, %, exact number)
+- USE BULLET POINTS: Group related stats into bullets, not long paragraphs
+- KEEP IT SHORT: 400-600 words total. If you write 1000+ words, you FAILED
+- Bold all bets: **Ravens -6.5 (-110)**
+- Analyst picks: Use EXACT names from data → **Ravens -6.5 (@AnalystName, -110)**
+- NO INVENTED NAMES: Only use analyst names provided in the data
+
+DISCLAIMER: Educational purposes only. Not financial advice.`,
         messages: [
           {
             role: 'user',
@@ -203,7 +224,12 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
 
     // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING
     try {
-      const { error: insertError } = await supabaseUsers
+      console.log('💾 Attempting to save script to Supabase...')
+      console.log('Script length:', script.length, 'characters')
+      console.log('Game ID:', gameId)
+      console.log('Sport:', league.toUpperCase())
+      
+      const { data: insertData, error: insertError } = await supabaseUsers
         .from('game_scripts')
         .insert({
           game_id: gameId,
@@ -219,15 +245,23 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
+        .select()
 
       if (insertError) {
-        console.error('⚠️ Failed to save script to Supabase:', insertError)
+        console.error('⚠️ Failed to save script to Supabase!')
+        console.error('Error code:', insertError.code)
+        console.error('Error message:', insertError.message)
+        console.error('Error details:', insertError.details)
+        console.error('Error hint:', insertError.hint)
         // Continue anyway - script still generated
       } else {
-        console.log(`💾 Script saved to Supabase successfully (${timeWindow} window)!`)
+        console.log(`✅ Script saved to Supabase successfully!`)
+        console.log('Inserted row ID:', insertData?.[0]?.id)
       }
-    } catch (supabaseError) {
-      console.error('⚠️ Supabase save failed:', supabaseError)
+    } catch (supabaseError: any) {
+      console.error('⚠️ Supabase save failed with exception:')
+      console.error('Exception message:', supabaseError?.message)
+      console.error('Exception stack:', supabaseError?.stack)
       // Continue anyway
     }
 
