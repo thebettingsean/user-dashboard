@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import { kv } from '@vercel/kv'
 import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
@@ -7,8 +7,8 @@ import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
 import { TRENDLINE_API_GUIDE } from '@/lib/ai/trendline-guide'
 import { currentUser } from '@clerk/nextjs/server'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY
 })
 
 // Supabase client for game scripts cache
@@ -35,11 +35,11 @@ interface GeneratedScript {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OPENAI_API_KEY not configured')
+    // Check if Anthropic API key is configured
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('❌ ANTHROPIC_API_KEY not configured')
       return NextResponse.json(
-        { error: 'AI service not configured. Please add OPENAI_API_KEY to environment variables.' },
+        { error: 'AI service not configured. Please add ANTHROPIC_API_KEY to environment variables.' },
         { status: 500 }
       )
     }
@@ -146,17 +146,16 @@ export async function POST(request: NextRequest) {
     const origin = request.nextUrl.origin
     const prompt = await buildGameScriptPrompt(data, league, origin)
 
-    console.log('Sending request to OpenAI GPT-4o-mini...')
+    console.log('Sending request to Claude Sonnet 3.5...')
     console.log('Prompt length:', prompt.length, 'characters')
     
     let completion
     try {
-      completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
+      completion = await anthropic.messages.create({
+        model: 'claude-sonnet-3-5-20241022', // CORRECT model name format
+        max_tokens: 8192,
+        temperature: 1.0, // Claude's default
+        system: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
 
 🚨 CRITICAL RULE - NO HALLUCINATION:
 - DO NOT INVENT analyst names, bettor names, or sources
@@ -183,26 +182,22 @@ WRITING STYLE - DATA-DENSE NARRATIVE:
 - ⚠️ CRITICAL: DO NOT INVENT ANALYST NAMES. Only use names provided in the analyst picks data. If no analyst picks, just format as **Bears -2.5 (-112)** without any name.
 - Find 3-5 ADDITIONAL plays beyond analyst picks based on the game script you're building
 
-DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`
-          },
+DISCLAIMER: All analysis is for educational and entertainment purposes only. This is not financial or gambling advice.`,
+        messages: [
           {
             role: 'user',
             content: prompt
           }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
+        ]
       })
-    } catch (openaiError) {
-      console.error('❌ OpenAI API error:', openaiError)
-      if (openaiError instanceof Error) {
-        console.error('Error message:', openaiError.message)
-        console.error('Error stack:', openaiError.stack)
-      }
-      throw new Error(`OpenAI generation failed: ${openaiError instanceof Error ? openaiError.message : 'Unknown error'}`)
+    } catch (anthropicError: any) {
+      console.error('❌ Claude API error:', anthropicError)
+      console.error('Error status:', anthropicError?.status)
+      console.error('Error message:', anthropicError?.message)
+      throw new Error(`Claude generation failed: ${anthropicError?.message || 'Unknown error'}`)
     }
 
-    const script = completion.choices[0]?.message?.content || 'Unable to generate script'
+    const script = completion.content[0]?.type === 'text' ? completion.content[0].text : 'Unable to generate script'
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
