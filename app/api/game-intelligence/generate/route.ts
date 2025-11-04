@@ -64,11 +64,28 @@ export async function POST(request: NextRequest) {
     // Get today's date for cache key (ensures fresh cache daily)
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     
+    // Determine current time window (EST) for cache refresh
+    const now = new Date()
+    const estDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+    const hour = estDate.getHours()
+    
+    // Time windows: Morning (10am-3pm), Afternoon (3pm-7pm), Evening (7pm-10am next day)
+    let timeWindow: string
+    if (hour >= 10 && hour < 15) {
+      timeWindow = 'morning' // 10 AM - 2:59 PM EST
+    } else if (hour >= 15 && hour < 19) {
+      timeWindow = 'afternoon' // 3 PM - 6:59 PM EST
+    } else {
+      timeWindow = 'evening' // 7 PM - 9:59 AM EST
+    }
+    
+    console.log(`🕐 Current time window: ${timeWindow} (${hour}:00 EST)`)
+    
     // Get current user (for tracking who generated the script)
     const user = await currentUser()
     const clerkUserId = user?.id || 'anonymous'
     
-    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST
+    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST (with time window)
     try {
       const { data: existingScript, error: fetchError } = await supabaseUsers
         .from('game_scripts')
@@ -76,10 +93,11 @@ export async function POST(request: NextRequest) {
         .eq('game_id', gameId)
         .eq('sport', league.toUpperCase())
         .eq('game_date', today)
+        .eq('time_window', timeWindow)
         .single()
 
       if (!fetchError && existingScript) {
-        console.log('✅ Script found in Supabase! Reusing cached version.')
+        console.log(`✅ Script found in Supabase (${timeWindow} window)! Reusing cached version.`)
         console.log(`📊 Script has been viewed ${existingScript.view_count} times`)
         
         // Update view count and last_viewed_at
@@ -103,7 +121,7 @@ export async function POST(request: NextRequest) {
         } as GeneratedScript)
       }
       
-      console.log('📝 No cached script found - generating new one...')
+      console.log(`📝 No cached script found for ${timeWindow} window - generating new one...`)
     } catch (supabaseError) {
       console.error('⚠️ Supabase check failed:', supabaseError)
       // Continue to generate new script
@@ -180,7 +198,7 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
-    // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING
+    // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING (with time window)
     try {
       const { error: insertError } = await supabaseUsers
         .from('game_scripts')
@@ -188,6 +206,7 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
           game_id: gameId,
           sport: league.toUpperCase(),
           game_date: today,
+          time_window: timeWindow,
           away_team: data.game?.away_team || 'Unknown',
           home_team: data.game?.home_team || 'Unknown',
           script_content: script,
@@ -201,7 +220,7 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
         console.error('⚠️ Failed to save script to Supabase:', insertError)
         // Continue anyway - script still generated
       } else {
-        console.log('💾 Script saved to Supabase successfully!')
+        console.log(`💾 Script saved to Supabase successfully (${timeWindow} window)!`)
       }
     } catch (supabaseError) {
       console.error('⚠️ Supabase save failed:', supabaseError)

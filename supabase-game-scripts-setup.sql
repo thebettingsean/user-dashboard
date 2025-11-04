@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS game_scripts (
   game_id TEXT NOT NULL,
   sport TEXT NOT NULL,
   game_date DATE NOT NULL,
+  time_window TEXT NOT NULL CHECK (time_window IN ('morning', 'afternoon', 'evening')),
   away_team TEXT NOT NULL,
   home_team TEXT NOT NULL,
   
@@ -22,14 +23,15 @@ CREATE TABLE IF NOT EXISTS game_scripts (
   view_count INT DEFAULT 0,
   last_viewed_at TIMESTAMP DEFAULT NOW(),
   
-  -- Constraints
-  UNIQUE(game_id, sport, game_date)
+  -- Constraints (unique per game, sport, date, AND time window)
+  UNIQUE(game_id, sport, game_date, time_window)
 );
 
 -- Indexes for fast lookups
-CREATE INDEX IF NOT EXISTS idx_game_scripts_lookup ON game_scripts(game_id, sport, game_date);
+CREATE INDEX IF NOT EXISTS idx_game_scripts_lookup ON game_scripts(game_id, sport, game_date, time_window);
 CREATE INDEX IF NOT EXISTS idx_game_scripts_date ON game_scripts(game_date);
 CREATE INDEX IF NOT EXISTS idx_game_scripts_sport ON game_scripts(sport);
+CREATE INDEX IF NOT EXISTS idx_game_scripts_window ON game_scripts(time_window);
 
 -- Enable Row Level Security
 ALTER TABLE game_scripts ENABLE ROW LEVEL SECURITY;
