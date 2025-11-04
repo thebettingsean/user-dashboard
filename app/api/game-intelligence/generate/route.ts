@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     let completion
     try {
       completion = await anthropic.messages.create({
-        model: 'claude-sonnet-3-5-20241022', // CORRECT model name format
+        model: 'claude-3-5-sonnet-20241022', // ACTUAL correct format from docs
         max_tokens: 8192,
         temperature: 1.0, // Claude's default
         system: `You are a professional sports data analyst providing educational content about sports statistics and trends for informational purposes only. Your analysis helps users understand betting markets, player performance data, and game trends. This is for educational and entertainment purposes.
