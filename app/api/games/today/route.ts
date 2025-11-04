@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
           
           // Transform and add sport label
           const formattedGames = games.map((game: any) => ({
-            id: game.game_id || game.id, // Use game_id if available, fallback to id
+            game_id: game.game_id, // Keep game_id to match other endpoints
             away_team: game.away_team,
             home_team: game.home_team,
             game_date: game.game_date,

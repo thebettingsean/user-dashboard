@@ -87,7 +87,7 @@ export default function Home() {
         const homeNickname = homeTeamParts[homeTeamParts.length - 1]
         
         return {
-          gameId: game.id,
+          gameId: game.game_id, // Changed from game.id to match API format
           sport: game.sport,
           awayTeam: awayNickname,
           homeTeam: homeNickname,
