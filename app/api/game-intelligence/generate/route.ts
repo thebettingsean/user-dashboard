@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
+import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
 import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
 import { TRENDLINE_API_GUIDE } from '@/lib/ai/trendline-guide'
+import { currentUser } from '@clerk/nextjs/server'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-// Cache TTL: 4 hours (14,400 seconds)
+// Supabase client for game scripts cache
+const supabaseUsers = createClient(
+  process.env.SUPABASE_USERS_URL!,
+  process.env.SUPABASE_USERS_SERVICE_KEY!
+)
+
+// Cache TTL: 4 hours (14,400 seconds) - DEPRECATED, now using Supabase
 const CACHE_TTL = 4 * 60 * 60 // 4 hours in seconds
 
 interface GeneratedScript {
@@ -55,28 +63,50 @@ export async function POST(request: NextRequest) {
 
     // Get today's date for cache key (ensures fresh cache daily)
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-    const cacheKey = `game-script:${league}:${gameId}:${today}`
     
-    // Check Vercel KV cache (if configured)
+    // Get current user (for tracking who generated the script)
+    const user = await currentUser()
+    const clerkUserId = user?.id || 'anonymous'
+    
+    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST
     try {
-      const cached = await kv.get<string>(cacheKey)
-      if (cached) {
-        console.log('✅ Script found in cache - adding 5s delay for UX')
+      const { data: existingScript, error: fetchError } = await supabaseUsers
+        .from('game_scripts')
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('sport', league.toUpperCase())
+        .eq('game_date', today)
+        .single()
+
+      if (!fetchError && existingScript) {
+        console.log('✅ Script found in Supabase! Reusing cached version.')
+        console.log(`📊 Script has been viewed ${existingScript.view_count} times`)
+        
+        // Update view count and last_viewed_at
+        await supabaseUsers
+          .from('game_scripts')
+          .update({ 
+            view_count: existingScript.view_count + 1,
+            last_viewed_at: new Date().toISOString()
+          })
+          .eq('id', existingScript.id)
         
         // Artificial 5-second delay so user feels like script is being generated
         await new Promise(resolve => setTimeout(resolve, 5000))
         
         return NextResponse.json({
           gameId,
-          script: cached,
-          dataStrength: data.dataStrength,
-          generatedAt: new Date().toISOString(),
+          script: existingScript.script_content,
+          dataStrength: existingScript.data_strength,
+          generatedAt: existingScript.generated_at,
           cached: true
         } as GeneratedScript)
       }
-    } catch (kvError) {
-      console.warn('⚠️ Cache check failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
-      // Continue without cache
+      
+      console.log('📝 No cached script found - generating new one...')
+    } catch (supabaseError) {
+      console.error('⚠️ Supabase check failed:', supabaseError)
+      // Continue to generate new script
     }
 
     if (!data.game) {
@@ -150,13 +180,32 @@ DISCLAIMER: All analysis is for educational and entertainment purposes only. Thi
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
-    // Cache the result in Vercel KV for 4 hours (if configured)
+    // ✅ SAVE TO SUPABASE FOR PERSISTENT CACHING
     try {
-      await kv.set(cacheKey, script, { ex: CACHE_TTL })
-      console.log(`📦 Script cached for 4 hours with key: ${cacheKey}`)
-    } catch (kvError) {
-      console.warn('⚠️ Cache write failed (KV not configured):', kvError instanceof Error ? kvError.message : 'Unknown error')
-      // Continue without caching
+      const { error: insertError } = await supabaseUsers
+        .from('game_scripts')
+        .insert({
+          game_id: gameId,
+          sport: league.toUpperCase(),
+          game_date: today,
+          away_team: data.game?.away_team || 'Unknown',
+          home_team: data.game?.home_team || 'Unknown',
+          script_content: script,
+          data_strength: data.dataStrength,
+          generated_by: clerkUserId,
+          view_count: 1,
+          last_viewed_at: new Date().toISOString()
+        })
+
+      if (insertError) {
+        console.error('⚠️ Failed to save script to Supabase:', insertError)
+        // Continue anyway - script still generated
+      } else {
+        console.log('💾 Script saved to Supabase successfully!')
+      }
+    } catch (supabaseError) {
+      console.error('⚠️ Supabase save failed:', supabaseError)
+      // Continue anyway
     }
 
     console.log('=== SCRIPT GENERATION COMPLETE ===\n')
