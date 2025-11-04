@@ -49,61 +49,34 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log(`✅ User ${userId} loaded (Premium: ${user.is_premium})`)
+    console.log(`✅ User ${userId} loaded (Premium: ${user.is_premium}, Access: ${user.access_level}, Purchased: ${user.purchased_credits})`)
 
-    // Premium users have unlimited access
-    if (user.is_premium) {
+    // Premium users (full subscription) have unlimited access
+    if (user.is_premium || user.access_level === 'full') {
       return NextResponse.json({
         authenticated: true,
         hasAccess: true,
-        scriptsUsed: 0,
-        scriptsLimit: 'unlimited',
-        isPremium: true,
-        resetAt: null
+        creditsRemaining: 'unlimited',
+        accessLevel: 'full',
+        isPremium: true
       })
     }
 
-    // Check if free user needs a reset
-    const now = new Date()
-    const resetAt = new Date(user.ai_scripts_reset_at)
-    
-    if (now >= resetAt) {
-      // Reset credits
-      const { data: resetUser, error: resetError } = await supabaseUsers
-        .from('users')
-        .update({
-          ai_scripts_used: 0,
-          ai_scripts_reset_at: getNextMonday()
-        })
-        .eq('clerk_user_id', userId)
-        .select()
-        .single()
-
-      if (resetError) {
-        console.error('Error resetting credits:', resetError)
-      } else {
-        console.log(`Reset credits for user ${userId}`)
-        return NextResponse.json({
-          authenticated: true,
-          hasAccess: true,
-          scriptsUsed: 0,
-          scriptsLimit: 3,
-          isPremium: false,
-          resetAt: resetUser.ai_scripts_reset_at
-        })
-      }
-    }
-
-    // Free user - check if they have credits remaining
-    const hasAccess = user.ai_scripts_used < user.ai_scripts_limit
+    // Credit pack users or no purchase users
+    // Total available credits = purchased credits (no free credits)
+    const totalCredits = user.purchased_credits || 0
+    const creditsUsed = user.ai_scripts_used || 0
+    const creditsRemaining = Math.max(0, totalCredits - creditsUsed)
+    const hasAccess = creditsRemaining > 0
 
     return NextResponse.json({
       authenticated: true,
       hasAccess,
-      scriptsUsed: user.ai_scripts_used,
-      scriptsLimit: user.ai_scripts_limit,
-      isPremium: false,
-      resetAt: user.ai_scripts_reset_at
+      creditsRemaining,
+      creditsUsed,
+      totalCredits,
+      accessLevel: user.access_level || 'none',
+      isPremium: false
     })
 
   } catch (error) {

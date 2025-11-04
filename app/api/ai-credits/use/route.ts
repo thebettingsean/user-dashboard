@@ -29,18 +29,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Premium users don't need credit tracking
-    if (user.is_premium) {
+    // Premium users (full subscription) don't need credit tracking
+    if (user.is_premium || user.access_level === 'full') {
       return NextResponse.json({
         success: true,
         isPremium: true,
-        scriptsUsed: 0,
-        scriptsLimit: 'unlimited'
+        creditsRemaining: 'unlimited',
+        accessLevel: 'full'
       })
     }
 
-    // Increment free user's script usage
-    const newUsage = user.ai_scripts_used + 1
+    // Increment credit usage for credit pack users
+    const newUsage = (user.ai_scripts_used || 0) + 1
+    const totalCredits = user.purchased_credits || 0
+    const remaining = Math.max(0, totalCredits - newUsage)
 
     const { data: updatedUser, error: updateError } = await supabaseUsers
       .from('users')
@@ -60,13 +62,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`User ${userId} used credit: ${newUsage}/${user.ai_scripts_limit}`)
+    console.log(`User ${userId} used credit: ${newUsage}/${totalCredits} (${remaining} remaining)`)
 
     return NextResponse.json({
       success: true,
       isPremium: false,
-      scriptsUsed: updatedUser.ai_scripts_used,
-      scriptsLimit: updatedUser.ai_scripts_limit
+      creditsUsed: newUsage,
+      creditsRemaining: remaining,
+      totalCredits,
+      accessLevel: user.access_level
     })
 
   } catch (error) {
