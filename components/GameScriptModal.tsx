@@ -112,10 +112,54 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
       return
     }
 
-    // Step 2: Just generate the script immediately
-    // The AICreditBadge already handles showing credit status
-    // The backend will handle credit deduction if needed
-    await generateScript()
+    // Step 2: Sync user to Supabase (creates if doesn't exist)
+    try {
+      await fetch('/api/users/sync', { method: 'POST' })
+    } catch (err) {
+      console.error('Error syncing user:', err)
+    }
+
+    // Step 3: Check credit status
+    try {
+      const creditResponse = await fetch('/api/ai-credits/check')
+      
+      if (!creditResponse.ok) {
+        console.error('Credit check failed:', creditResponse.status)
+        // Allow generation on API error (fail open for better UX)
+        await generateScript()
+        return
+      }
+      
+      const creditStatus = await creditResponse.json()
+      console.log('📊 Credit status:', creditStatus)
+
+      // If user has no access AND is not premium, show upgrade prompt
+      if (!creditStatus.hasAccess && !creditStatus.isPremium) {
+        console.log('❌ User has no credits and no subscription')
+        setShowUpgradePrompt(true)
+        return
+      }
+
+      console.log('✅ User has access - generating script')
+      // User has access - generate script
+      await generateScript()
+
+      // Decrement credits (only for free users with credits)
+      if (!creditStatus.isPremium && creditStatus.hasAccess) {
+        console.log('📉 Decrementing free user credits')
+        await fetch('/api/ai-credits/use', { method: 'POST' })
+        
+        // Refresh credit badge
+        if ((window as any).refreshAICredits) {
+          (window as any).refreshAICredits()
+        }
+      }
+
+    } catch (err) {
+      console.error('Error checking credits:', err)
+      // Allow generation on error (fail open for better UX)
+      await generateScript()
+    }
   }
 
   const generateScript = async () => {
