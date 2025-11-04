@@ -135,12 +135,19 @@ export async function GET(request: NextRequest) {
     
     console.log(`Fetching games from ${fromDate} to ${toDate}`)
     const games = await fetchGames(league, fromDate, toDate)
+    console.log(`Found ${games.length} games for ${league.toUpperCase()}`)
+    
     const game = games.find(g => g.game_id === gameId) || null
 
     if (!game) {
-      console.log('❌ Game not found')
+      console.log(`❌ Game not found. Looking for gameId: ${gameId}`)
+      console.log(`Available games:`, games.map(g => ({ id: g.game_id, matchup: `${g.away_team} @ ${g.home_team}` })))
       return NextResponse.json(
-        { error: 'Game not found' },
+        { 
+          error: 'Game not found',
+          gameId,
+          availableGames: games.map(g => g.game_id)
+        },
         { status: 404 }
       )
     }
