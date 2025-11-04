@@ -123,19 +123,32 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
     // Step 3: Check credit status
     try {
       const creditResponse = await fetch('/api/ai-credits/check')
+      
+      if (!creditResponse.ok) {
+        console.error('Credit check failed:', creditResponse.status)
+        // Allow generation on API error (fail open)
+        await generateScript()
+        return
+      }
+      
       const creditStatus = await creditResponse.json()
+      console.log('📊 Credit status:', creditStatus)
 
       if (!creditStatus.hasAccess) {
-        console.log('User has no credits remaining - showing upgrade prompt')
+        console.log('❌ User has no credits remaining - showing upgrade prompt')
+        console.log('   isPremium:', creditStatus.isPremium)
+        console.log('   creditsRemaining:', creditStatus.creditsRemaining)
         setShowUpgradePrompt(true)
         return
       }
 
+      console.log('✅ User has access - generating script')
       // User has access - generate script
       await generateScript()
 
       // Decrement credits (only for free users)
       if (!creditStatus.isPremium) {
+        console.log('📉 Decrementing free user credits')
         await fetch('/api/ai-credits/use', { method: 'POST' })
         
         // Refresh credit badge
