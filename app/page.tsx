@@ -330,7 +330,8 @@ export default function Home() {
 
         {/* AI GAME INTELLIGENCE SECTION - MOBILE */}
         <div className="mobile-view" style={{ marginBottom: '2.5rem', position: 'relative' }}>
-          {/* MAINTENANCE OVERLAY */}
+          {/* MAINTENANCE OVERLAY - Only show in production */}
+          {process.env.NODE_ENV === 'production' && (
           <div style={{
             position: 'absolute',
             top: 0,
@@ -367,6 +368,7 @@ export default function Home() {
               We have a lot of data... be patient with us while we upgrade our infrastructure
             </p>
           </div>
+          )}
           <h3 
             onClick={() => toggleSection('ai-intelligence')}
             style={{ 
@@ -628,7 +630,8 @@ export default function Home() {
 
         {/* AI GAME INTELLIGENCE SECTION - DESKTOP */}
         <div className="desktop-view" style={{ marginBottom: '2.5rem', position: 'relative' }}>
-          {/* MAINTENANCE OVERLAY */}
+          {/* MAINTENANCE OVERLAY - Only show in production */}
+          {process.env.NODE_ENV === 'production' && (
           <div style={{
             position: 'absolute',
             top: 0,
@@ -665,6 +668,7 @@ export default function Home() {
               We have a lot of data... be patient with us while we upgrade our infrastructure
             </p>
           </div>
+          )}
           <h3 
             onClick={() => toggleSection('ai-intelligence-desktop')}
             style={{ 
