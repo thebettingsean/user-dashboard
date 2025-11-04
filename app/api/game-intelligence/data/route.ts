@@ -127,12 +127,12 @@ export async function GET(request: NextRequest) {
     let dataSourceCount = 0
 
     // 1. Fetch base game data
-    // Use a wider date range to catch games in the past week and next week
-    // (accounts for timezone differences and late night games)
-    const twoDaysAgo = new Date(Date.now() - 2 * 86400000)
-    const sevenDaysFromNow = new Date(Date.now() + 7 * 86400000)
-    const fromDate = twoDaysAgo.toISOString().split('T')[0]
-    const toDate = sevenDaysFromNow.toISOString().split('T')[0]
+    // Use a 7-day range (API limit) - look 1 day back and 6 days forward
+    // This catches yesterday's games (timezone issues) and this week's games
+    const oneDayAgo = new Date(Date.now() - 1 * 86400000)
+    const sixDaysFromNow = new Date(Date.now() + 6 * 86400000)
+    const fromDate = oneDayAgo.toISOString().split('T')[0]
+    const toDate = sixDaysFromNow.toISOString().split('T')[0]
     
     console.log(`Fetching games from ${fromDate} to ${toDate}`)
     
