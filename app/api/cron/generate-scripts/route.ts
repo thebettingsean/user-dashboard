@@ -39,10 +39,17 @@ export async function GET(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://dashboard.thebettinginsider.com')
     console.log(`📍 Using base URL: ${baseUrl}`)
-    const gamesResponse = await fetch(`${baseUrl}/api/games/today`)
+    
+    const gamesUrl = `${baseUrl}/api/games/today`
+    console.log(`🎮 Fetching games from: ${gamesUrl}`)
+    const gamesResponse = await fetch(gamesUrl)
+    
+    console.log(`📡 Games API response status: ${gamesResponse.status}`)
     
     if (!gamesResponse.ok) {
-      throw new Error('Failed to fetch games')
+      const errorText = await gamesResponse.text()
+      console.error(`❌ Games API failed: ${errorText}`)
+      throw new Error(`Failed to fetch games: ${gamesResponse.status} - ${errorText}`)
     }
 
     const gamesData = await gamesResponse.json()
