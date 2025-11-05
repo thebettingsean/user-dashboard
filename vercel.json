@@ -10,7 +10,11 @@
     },
     {
       "path": "/api/cron/generate-scripts",
-      "schedule": "30 15 * * *"
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/generate-scripts",
+      "schedule": "0 16 * * *"
     },
     {
       "path": "/api/cron/generate-scripts",
@@ -18,7 +22,11 @@
     },
     {
       "path": "/api/cron/generate-scripts",
-      "schedule": "30 18 * * *"
+      "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/generate-scripts",
+      "schedule": "0 19 * * *"
     },
     {
       "path": "/api/cron/generate-scripts",
@@ -26,7 +34,11 @@
     },
     {
       "path": "/api/cron/generate-scripts",
-      "schedule": "30 21 * * *"
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/generate-scripts",
+      "schedule": "0 22 * * *"
     },
     {
       "path": "/api/cron/generate-scripts",

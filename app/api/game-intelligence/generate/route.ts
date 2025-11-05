@@ -34,51 +34,64 @@ interface GeneratedScript {
  */
 export async function POST(request: NextRequest) {
   try {
-    // ✅ STEP 1: AUTHENTICATION CHECK
-    const { userId } = await auth()
-    const user = await currentUser()
+    // Check if this is a cron job request (bypass auth)
+    const isCronJob = request.headers.get('x-cron-secret') === process.env.CRON_SECRET
+    
+    let userId: string | null = null
+    let user: any = null
+    let isPremium = false
+    let purchasedCreditsRemaining = 0
 
-    if (!userId || !user) {
-      console.log('❌ Unauthorized: No user authenticated')
-      return NextResponse.json(
-        { error: 'Authentication required. Please sign in to generate AI scripts.' },
-        { status: 401 }
-      )
+    if (!isCronJob) {
+      // ✅ STEP 1: AUTHENTICATION CHECK (only for non-cron requests)
+      const authResult = await auth()
+      userId = authResult.userId
+      user = await currentUser()
+
+      if (!userId || !user) {
+        console.log('❌ Unauthorized: No user authenticated')
+        return NextResponse.json(
+          { error: 'Authentication required. Please sign in to generate AI scripts.' },
+          { status: 401 }
+        )
+      }
+
+      console.log(`👤 User authenticated: ${userId}`)
+
+      // ✅ STEP 2: CHECK CREDITS IN SUPABASE USERS TABLE
+      const { data: dbUser, error: fetchError } = await supabaseUsers
+        .from('users')
+        .select('*')
+        .eq('clerk_user_id', userId)
+        .single()
+
+      if (fetchError || !dbUser) {
+        console.error('❌ User not found in database:', fetchError)
+        return NextResponse.json(
+          { error: 'User not found. Please try signing in again.' },
+          { status: 404 }
+        )
+      }
+
+      console.log(`📊 User credits: Premium=${dbUser.is_premium}, Purchased=${dbUser.purchased_credits}, Used=${dbUser.ai_scripts_used}`)
+
+      // ✅ STEP 3: CHECK IF USER HAS ACCESS (Premium OR has purchased credits remaining)
+      isPremium = dbUser.is_premium || dbUser.access_level === 'full'
+      purchasedCreditsRemaining = (dbUser.purchased_credits || 0) - (dbUser.ai_scripts_used || 0)
+      const hasAccess = isPremium || purchasedCreditsRemaining > 0
+
+      if (!hasAccess) {
+        console.log('❌ No credits: User has no subscription and no purchased credits')
+        return NextResponse.json(
+          { error: 'No credits remaining. Please purchase credits or subscribe to continue.' },
+          { status: 403 }
+        )
+      }
+
+      console.log(`✅ User has access. Premium: ${isPremium}, Remaining credits: ${isPremium ? '∞' : purchasedCreditsRemaining}`)
+    } else {
+      console.log('🤖 Cron job request - bypassing auth')
     }
-
-    console.log(`👤 User authenticated: ${userId}`)
-
-    // ✅ STEP 2: CHECK CREDITS IN SUPABASE USERS TABLE
-    const { data: dbUser, error: fetchError } = await supabaseUsers
-      .from('users')
-      .select('*')
-      .eq('clerk_user_id', userId)
-      .single()
-
-    if (fetchError || !dbUser) {
-      console.error('❌ User not found in database:', fetchError)
-      return NextResponse.json(
-        { error: 'User not found. Please try signing in again.' },
-        { status: 404 }
-      )
-    }
-
-    console.log(`📊 User credits: Premium=${dbUser.is_premium}, Purchased=${dbUser.purchased_credits}, Used=${dbUser.ai_scripts_used}`)
-
-    // ✅ STEP 3: CHECK IF USER HAS ACCESS (Premium OR has purchased credits remaining)
-    const isPremium = dbUser.is_premium || dbUser.access_level === 'full'
-    const purchasedCreditsRemaining = (dbUser.purchased_credits || 0) - (dbUser.ai_scripts_used || 0)
-    const hasAccess = isPremium || purchasedCreditsRemaining > 0
-
-    if (!hasAccess) {
-      console.log('❌ No credits: User has no subscription and no purchased credits')
-      return NextResponse.json(
-        { error: 'No credits remaining. Please purchase credits or subscribe to continue.' },
-        { status: 403 }
-      )
-    }
-
-    console.log(`✅ User has access. Premium: ${isPremium}, Remaining credits: ${isPremium ? '∞' : purchasedCreditsRemaining}`)
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
@@ -162,13 +175,21 @@ export async function POST(request: NextRequest) {
           .eq('id', existingScript.id)
         
         // ✅ DEDUCT CREDITS based on data strength (only for non-premium users)
-        if (!isPremium) {
+        if (!isCronJob && !isPremium && userId) {
           const creditsToDeduct = existingScript.data_strength // Use stored data strength from cached script
           console.log(`💳 Deducting ${creditsToDeduct} credit(s) from user ${userId} (Cached - Data Strength: ${creditsToDeduct})`)
+          
+          // Re-fetch dbUser since it's in the if block scope
+          const { data: dbUser } = await supabaseUsers
+            .from('users')
+            .select('ai_scripts_used')
+            .eq('clerk_user_id', userId)
+            .single()
+          
           const { error: deductError } = await supabaseUsers
             .from('users')
             .update({ 
-              ai_scripts_used: (dbUser.ai_scripts_used || 0) + creditsToDeduct,
+              ai_scripts_used: (dbUser?.ai_scripts_used || 0) + creditsToDeduct,
               last_active_at: new Date().toISOString()
             })
             .eq('clerk_user_id', userId)
@@ -176,7 +197,7 @@ export async function POST(request: NextRequest) {
           if (deductError) {
             console.error('❌ Failed to deduct credits:', deductError)
           } else {
-            console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser.ai_scripts_used || 0) + creditsToDeduct}`)
+            console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser?.ai_scripts_used || 0) + creditsToDeduct}`)
           }
         }
         
@@ -393,14 +414,22 @@ Educational purposes only. Not financial advice.`
       // Continue anyway
     }
 
-    // ✅ DEDUCT CREDITS based on data strength (only for non-premium users)
-    if (!isPremium) {
+    // ✅ DEDUCT CREDITS based on data strength (only for non-premium users and non-cron)
+    if (!isCronJob && !isPremium && userId) {
       const creditsToDeduct = data.dataStrength // 1, 2, or 3 credits based on data quality
       console.log(`💳 Deducting ${creditsToDeduct} credit(s) from user ${userId} (Data Strength: ${data.dataStrength})`)
+      
+      // Re-fetch dbUser since it's in the if block scope
+      const { data: dbUser } = await supabaseUsers
+        .from('users')
+        .select('ai_scripts_used')
+        .eq('clerk_user_id', userId)
+        .single()
+      
       const { error: deductError } = await supabaseUsers
         .from('users')
         .update({ 
-          ai_scripts_used: (dbUser.ai_scripts_used || 0) + creditsToDeduct,
+          ai_scripts_used: (dbUser?.ai_scripts_used || 0) + creditsToDeduct,
           last_active_at: new Date().toISOString()
         })
         .eq('clerk_user_id', userId)
@@ -408,7 +437,7 @@ Educational purposes only. Not financial advice.`
       if (deductError) {
         console.error('❌ Failed to deduct credits:', deductError)
       } else {
-        console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser.ai_scripts_used || 0) + creditsToDeduct}`)
+        console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser?.ai_scripts_used || 0) + creditsToDeduct}`)
       }
     }
 

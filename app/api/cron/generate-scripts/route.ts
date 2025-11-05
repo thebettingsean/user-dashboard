@@ -9,19 +9,20 @@ const supabase = createClient(
 
 /**
  * Cron job to pre-generate AI scripts for all games
- * Runs every 1.5 hours between 9am-7pm EST
+ * Runs every hour from 9am-7pm EST (11 runs per day)
  * 
- * Vercel Cron Schedule (in UTC):
+ * Vercel Cron Schedule (in UTC, EST = UTC-5):
  * - 9:00 AM EST = 2:00 PM UTC  -> 0 14 * * *
- * - 10:30 AM EST = 3:30 PM UTC -> 30 15 * * *
+ * - 10:00 AM EST = 3:00 PM UTC -> 0 15 * * *
+ * - 11:00 AM EST = 4:00 PM UTC -> 0 16 * * *
  * - 12:00 PM EST = 5:00 PM UTC -> 0 17 * * *
- * - 1:30 PM EST = 6:30 PM UTC  -> 30 18 * * *
+ * - 1:00 PM EST = 6:00 PM UTC  -> 0 18 * * *
+ * - 2:00 PM EST = 7:00 PM UTC  -> 0 19 * * *
  * - 3:00 PM EST = 8:00 PM UTC  -> 0 20 * * *
- * - 4:30 PM EST = 9:30 PM UTC  -> 30 21 * * *
+ * - 4:00 PM EST = 9:00 PM UTC  -> 0 21 * * *
+ * - 5:00 PM EST = 10:00 PM UTC -> 0 22 * * *
  * - 6:00 PM EST = 11:00 PM UTC -> 0 23 * * *
  * - 7:00 PM EST = 12:00 AM UTC -> 0 0 * * * (next day)
- * 
- * Add all these to vercel.json cron config
  */
 
 export async function GET(request: NextRequest) {
@@ -84,12 +85,12 @@ export async function GET(request: NextRequest) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-cron-job': 'true' // Flag to identify cron requests
+            'x-cron-secret': process.env.CRON_SECRET || '' // Cron authentication
           },
           body: JSON.stringify({
             gameId,
             sport,
-            fromCron: true
+            league: sport // Add league field for compatibility
           })
         })
 
