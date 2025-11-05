@@ -161,21 +161,22 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', existingScript.id)
         
-        // ✅ DEDUCT CREDIT (only for non-premium users)
+        // ✅ DEDUCT CREDITS based on data strength (only for non-premium users)
         if (!isPremium) {
-          console.log(`💳 Deducting 1 credit from user ${userId}`)
+          const creditsToDeduct = existingScript.data_strength // Use stored data strength from cached script
+          console.log(`💳 Deducting ${creditsToDeduct} credit(s) from user ${userId} (Cached - Data Strength: ${creditsToDeduct})`)
           const { error: deductError } = await supabaseUsers
             .from('users')
             .update({ 
-              ai_scripts_used: (dbUser.ai_scripts_used || 0) + 1,
+              ai_scripts_used: (dbUser.ai_scripts_used || 0) + creditsToDeduct,
               last_active_at: new Date().toISOString()
             })
             .eq('clerk_user_id', userId)
           
           if (deductError) {
-            console.error('❌ Failed to deduct credit:', deductError)
+            console.error('❌ Failed to deduct credits:', deductError)
           } else {
-            console.log(`✅ Credit deducted. New total: ${(dbUser.ai_scripts_used || 0) + 1}`)
+            console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser.ai_scripts_used || 0) + creditsToDeduct}`)
           }
         }
         
@@ -392,21 +393,22 @@ Educational purposes only. Not financial advice.`
       // Continue anyway
     }
 
-    // ✅ DEDUCT CREDIT (only for non-premium users)
+    // ✅ DEDUCT CREDITS based on data strength (only for non-premium users)
     if (!isPremium) {
-      console.log(`💳 Deducting 1 credit from user ${userId}`)
+      const creditsToDeduct = data.dataStrength // 1, 2, or 3 credits based on data quality
+      console.log(`💳 Deducting ${creditsToDeduct} credit(s) from user ${userId} (Data Strength: ${data.dataStrength})`)
       const { error: deductError } = await supabaseUsers
         .from('users')
         .update({ 
-          ai_scripts_used: (dbUser.ai_scripts_used || 0) + 1,
+          ai_scripts_used: (dbUser.ai_scripts_used || 0) + creditsToDeduct,
           last_active_at: new Date().toISOString()
         })
         .eq('clerk_user_id', userId)
       
       if (deductError) {
-        console.error('❌ Failed to deduct credit:', deductError)
+        console.error('❌ Failed to deduct credits:', deductError)
       } else {
-        console.log(`✅ Credit deducted. New total: ${(dbUser.ai_scripts_used || 0) + 1}`)
+        console.log(`✅ ${creditsToDeduct} credit(s) deducted. New total: ${(dbUser.ai_scripts_used || 0) + creditsToDeduct}`)
       }
     }
 
