@@ -289,15 +289,19 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
                 {/* Pick content */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-                    {/* Units */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                    {/* Units Badge */}
                     <span style={{
-                      fontSize: '0.9rem',
-                      fontWeight: '700',
+                      fontSize: '0.6rem',
+                      fontWeight: '600',
                       color: '#fbbf24',
-                      minWidth: '3rem'
+                      background: 'rgba(251, 191, 36, 0.1)',
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                      borderRadius: '4px',
+                      padding: '2px 6px',
+                      flexShrink: 0
                     }}>
-                      [{pick.units.toFixed(1)}u]
+                      {pick.units.toFixed(1)}u
                     </span>
 
                     {/* Pick Title - blur if signed in but not unlocked */}
@@ -306,25 +310,38 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                         <span style={{
                           filter: 'blur(6px)',
                           userSelect: 'none',
-                          fontSize: '0.95rem',
+                          fontSize: '0.75rem',
                           color: '#fff',
-                          fontWeight: '600'
+                          fontWeight: '600',
+                          lineHeight: '1.2'
                         }}>
                           {pick.bet_title}
                         </span>
                       ) : (
                         <span style={{
-                          fontSize: '0.95rem',
+                          fontSize: '0.75rem',
                           color: '#fff',
-                          fontWeight: '600'
+                          fontWeight: '600',
+                          lineHeight: '1.2'
                         }}>
                           {pick.bet_title}
                         </span>
                       )}
                       
-                      {/* Sport & Odds */}
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-                        {pick.sport} | {pick.odds}
+                      {/* Sport, Game Time & Odds */}
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
+                        {pick.sport}, {(() => {
+                          const gameDate = new Date(pick.game_time)
+                          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                          const month = monthNames[gameDate.getUTCMonth()]
+                          const day = gameDate.getUTCDate()
+                          const hours = gameDate.getUTCHours()
+                          const minutes = gameDate.getUTCMinutes()
+                          const ampm = hours >= 12 ? 'PM' : 'AM'
+                          const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+                          const displayMinutes = minutes.toString().padStart(2, '0')
+                          return `${month} ${day} ${displayHour}:${displayMinutes}${ampm} EST`
+                        })()} | {pick.odds}
                       </div>
                     </div>
                   </div>
