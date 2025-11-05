@@ -2,18 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import { HiOutlineTrophy } from "react-icons/hi2"
 import { GiTwoCoins } from "react-icons/gi"
 import { TiMinusOutline } from 'react-icons/ti'
 import { GoPlusCircle } from 'react-icons/go'
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyMzAwMDAsImV4cCI6MjA2MTgwNjAwMH0.0zvZH_7Xd1TXwXxhxqw_Q7YcVV3JE5nYIHSN7wfD8lo'
-)
 
 interface Pick {
   id: string
