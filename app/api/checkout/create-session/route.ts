@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/?purchase=success`,
+      success_url: `${origin}?purchase=success`,
       cancel_url: `${origin}/pricing?cancelled=true`,
       customer_email: userEmail,
       metadata,
