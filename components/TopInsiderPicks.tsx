@@ -55,6 +55,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
   async function fetchPicks() {
     try {
+      console.log('🎯 [TopInsiderPicks] Fetching picks...')
       const now = new Date()
       const estOffset = -5 * 60 // EST is UTC-5
       const estNow = new Date(now.getTime() + estOffset * 60 * 1000)
@@ -70,6 +71,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
         const endOfDay = new Date(targetDate)
         endOfDay.setHours(23, 59, 59, 999)
 
+        console.log(`📅 Searching picks for day +${daysAhead}: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`)
+
         const { data, error } = await supabase
           .from('picks')
           .select('*, bettors(name)')
@@ -78,7 +81,12 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
           .is('recap', null) // Only get active/un-recapped picks
           .order('units_at_risk', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+          console.error(`❌ Error fetching picks for day +${daysAhead}:`, error)
+          throw error
+        }
+
+        console.log(`📊 Found ${data?.length || 0} picks for day +${daysAhead}`)
 
         if (data && data.length > 0) {
           formattedPicks = data.map(p => ({
@@ -91,13 +99,15 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
             write_up: p.write_up || '',
             game_time: p.game_time
           }))
+          console.log(`✅ Using ${formattedPicks.length} picks from day +${daysAhead}`)
           break // Found picks, stop searching
         }
       }
 
+      console.log(`🏁 Final pick count: ${formattedPicks.length}`)
       setPicks(formattedPicks)
     } catch (error) {
-      console.error('Error fetching picks:', error)
+      console.error('❌ [TopInsiderPicks] Error fetching picks:', error)
     } finally {
       setLoading(false)
     }
