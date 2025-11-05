@@ -157,22 +157,6 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
     return isPremium || hasAllDayAccess || unlockedPicks.includes(pickId)
   }
 
-  if (loading) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
-        Loading picks...
-      </div>
-    )
-  }
-
-  if (picks.length === 0) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
-        No picks available today
-      </div>
-    )
-  }
-
   return (
     <div style={{ marginBottom: '2.5rem' }}>
       {/* Header */}
@@ -241,7 +225,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
       {/* Picks List */}
       {expanded && (
-        <div style={{
+        loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+            Loading picks...
+          </div>
+        ) : picks.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
+            No picks available today
+          </div>
+        ) : (
+          <div style={{
           background: 'rgba(255, 255, 255, 0.02)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -405,7 +398,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
               </div>
             )
           })}
-        </div>
+          </div>
+        )
       )}
     </div>
   )
