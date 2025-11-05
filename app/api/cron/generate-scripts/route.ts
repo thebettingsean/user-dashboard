@@ -80,23 +80,26 @@ export async function GET(request: NextRequest) {
       const sport = game.sport || 'nfl'
 
       try {
-        console.log(`🎯 Generating script for ${sport.toUpperCase()} game: ${gameId}`)
+        console.log(`🎯 Checking script for ${sport.toUpperCase()} game: ${gameId}`)
 
-        // Check if script already exists and was generated recently (within 1 hour)
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-        
+        // Check if script already exists (any age) - we'll regenerate hourly but for cron, 
+        // we just need to ensure all games have scripts
         const { data: existingScript } = await supabase
           .from('game_scripts')
-          .select('generated_at')
+          .select('id, generated_at')
           .eq('game_id', gameId)
           .eq('sport', sport)
-          .gte('generated_at', oneHourAgo)
           .single()
 
         if (existingScript) {
-          console.log(`⏭️  Script already fresh for ${gameId}, skipping`)
-          skippedCount++
-          continue
+          // Check if it's older than 1 hour - if so, regenerate
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+          if (existingScript.generated_at >= oneHourAgo) {
+            console.log(`⏭️  Script fresh for ${gameId} (generated ${existingScript.generated_at}), skipping`)
+            skippedCount++
+            continue
+          }
+          console.log(`🔄 Script stale for ${gameId} (generated ${existingScript.generated_at}), regenerating`)
         }
 
         // Step 1: Fetch game intelligence data
