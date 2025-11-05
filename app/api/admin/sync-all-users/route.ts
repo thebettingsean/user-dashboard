@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     console.log('🔄 Starting bulk user sync...')
 
     // Fetch all users from Clerk
-    const { data: clerkUsers } = await clerkClient.users.getUserList({
+    const clerk = await clerkClient()
+    const { data: clerkUsers } = await clerk.users.getUserList({
       limit: 500 // Adjust if you have more users
     })
 
