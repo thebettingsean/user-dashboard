@@ -7,7 +7,7 @@ import { HiOutlineTrophy } from "react-icons/hi2"
 import { GiTwoCoins } from "react-icons/gi"
 import { TiMinusOutline } from 'react-icons/ti'
 import { GoPlusCircle } from 'react-icons/go'
-import { Lock } from 'lucide-react'
+import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const supabase = createClient(
