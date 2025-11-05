@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
 
     console.log('🤖 [CRON] Starting script generation job...')
 
-    // Get all upcoming games from API
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://dashboard.thebettinginsider.com')
+    // Always use production URL for cron jobs (avoid Vercel preview deployment protection)
+    const baseUrl = 'https://dashboard.thebettinginsider.com'
     console.log(`📍 Using base URL: ${baseUrl}`)
     
     const gamesUrl = `${baseUrl}/api/games/today`
