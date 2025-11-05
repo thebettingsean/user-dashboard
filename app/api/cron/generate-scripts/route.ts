@@ -89,7 +89,22 @@ export async function GET(request: NextRequest) {
           continue
         }
 
-        // Generate script via API
+        // Step 1: Fetch game intelligence data
+        console.log(`📊 Fetching game data for ${gameId}...`)
+        const dataResponse = await fetch(`${baseUrl}/api/game-intelligence/data?gameId=${gameId}&league=${sport}`)
+        
+        if (!dataResponse.ok) {
+          const errorText = await dataResponse.text()
+          console.error(`❌ Failed to fetch game data for ${gameId}: ${errorText}`)
+          errors.push(`${gameId}: Failed to fetch data - ${errorText}`)
+          errorCount++
+          continue
+        }
+
+        const gameData = await dataResponse.json()
+        console.log(`✅ Game data fetched for ${gameId}, strength: ${gameData.dataStrength}`)
+
+        // Step 2: Generate script via API with the data
         const generateResponse = await fetch(`${baseUrl}/api/game-intelligence/generate`, {
           method: 'POST',
           headers: {
@@ -98,8 +113,8 @@ export async function GET(request: NextRequest) {
           },
           body: JSON.stringify({
             gameId,
-            sport,
-            league: sport // Add league field for compatibility
+            league: sport,
+            data: gameData // Pass the fetched game data
           })
         })
 
