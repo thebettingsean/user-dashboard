@@ -213,8 +213,9 @@ export async function fetchPublicMoney(
       public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
       public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
       public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
-      sharp_money_stats: fullResponse.sharp_money_stats || [],
-      rlm_stats: fullResponse.rlm_stats || [],
+      // Limit to top 3 sharp money and RLM stats to reduce token usage
+      sharp_money_stats: (fullResponse.sharp_money_stats || []).slice(0, 3),
+      rlm_stats: (fullResponse.rlm_stats || []).slice(0, 3),
       // These aren't in the response, so we'll derive from the game's odds
       away_team_ml: 0, // Will be set from game.odds
       home_team_ml: 0,

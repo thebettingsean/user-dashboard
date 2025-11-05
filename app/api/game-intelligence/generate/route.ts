@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
 import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
-import { TEAM_STATS_GUIDE } from '@/lib/ai/teamrankings-guide'
-import { TRENDLINE_API_GUIDE } from '@/lib/ai/trendline-guide'
 import { currentUser } from '@clerk/nextjs/server'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 })
 
-// Supabase client for game scripts cache
-const supabaseUsers = createClient(
-  process.env.SUPABASE_USERS_URL!,
-  process.env.SUPABASE_USERS_SERVICE_KEY!
+// Supabase client for game scripts cache (using main Supabase project)
+const supabaseMain = createClient(
+  process.env.SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co',
+  process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
 )
 
 // Cache TTL: 4 hours (14,400 seconds) - DEPRECATED, now using Supabase
@@ -35,11 +33,11 @@ interface GeneratedScript {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check if Anthropic API key is configured
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('❌ ANTHROPIC_API_KEY not configured')
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured')
       return NextResponse.json(
-        { error: 'AI service not configured. Please add ANTHROPIC_API_KEY to environment variables.' },
+        { error: 'AI service not configured. Please add OPENAI_API_KEY to environment variables.' },
         { status: 500 }
       )
     }
@@ -86,31 +84,31 @@ export async function POST(request: NextRequest) {
     const user = await currentUser()
     const clerkUserId = user?.id || 'anonymous'
     
-    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST (match on game_id and sport only, ignoring time_window for now)
-    // We'll check if ANY script exists for this game today, regardless of window
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD for comparison
+    // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST
+    // Check if a script for this game was generated within the last 4 hours (cache expiry)
+    const fourHoursAgo = new Date()
+    fourHoursAgo.setHours(fourHoursAgo.getHours() - 4)
     
     try {
-      const { data: existingScripts, error: fetchError } = await supabaseUsers
+      const { data: existingScripts, error: fetchError } = await supabaseMain
         .from('game_scripts')
         .select('*')
         .eq('game_id', gameId)
         .eq('sport', league.toUpperCase())
-        .gte('game_time', `${today}T00:00:00.000Z`)
-        .lte('game_time', `${today}T23:59:59.999Z`)
+        .gte('generated_at', fourHoursAgo.toISOString()) // Only fetch scripts generated in last 4 hours
+        .order('generated_at', { ascending: false })
+        .limit(1)
       
-      // Find script matching current time window
-      const existingScript = existingScripts?.find((s: any) => 
-        s.script_content && 
-        new Date(s.game_time).toISOString().split('T')[0] === today
-      )
+      const existingScript = existingScripts && existingScripts.length > 0 ? existingScripts[0] : null
 
-      if (!fetchError && existingScript) {
+      if (!fetchError && existingScript && existingScript.script_content) {
         console.log(`✅ Script found in Supabase! Reusing cached version.`)
         console.log(`📊 Script ID: ${existingScript.id}`)
+        console.log(`📅 Generated: ${existingScript.generated_at}`)
+        console.log(`⏰ Cache expires: ${existingScript.expires_at}`)
         
-        // Update updated_at timestamp
-        await supabaseUsers
+        // Update updated_at timestamp to track views
+        await supabaseMain
           .from('game_scripts')
           .update({ 
             updated_at: new Date().toISOString()
@@ -146,101 +144,109 @@ export async function POST(request: NextRequest) {
     const origin = request.nextUrl.origin
     const prompt = await buildGameScriptPrompt(data, league, origin)
 
-    console.log('Sending request to Claude Sonnet 4.5...')
-    console.log('Prompt length:', prompt.length, 'characters')
+    console.log('Sending request to GPT-4o-mini...')
+    console.log('Prompt length:', prompt.length, 'characters (~', Math.round(prompt.length / 4), 'tokens)')
     
     let completion
     try {
-      completion = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 2000, // 2000 tokens ≈ 500-700 words
-        temperature: 1.0,
-        system: `You are a sharp sports analyst. Write DATA-DENSE game scripts.
+      completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        max_tokens: 1200, // 1200 tokens ≈ 800-900 words (allows full 500-700 word scripts with buffer)
+        temperature: 0.7,
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert sports analyst here to connect the dots between all available data for this matchup.
 
-🚨 STRICT RULES:
-- TARGET: 500-700 words TOTAL
-- MAX 3-4 PARAGRAPHS of text
-- REST = BULLET POINTS with data
-- If a paragraph has 5+ stats, use bullets instead
+YOUR JOB:
+Write a well-thought-out, well-connected article (600-700 words) that creates a cohesive narrative for this game. 
 
-📊 STRUCTURE:
-**[Headline]** (1 sentence - spread, total, key angle)
+🎯 CORE PRINCIPLES:
 
-**Matchup Overview:** (2-3 sentences max)
-Brief context on spread, public betting, and primary mismatch
+1. **CONNECT EVERYTHING**: Don't just list stats - explain HOW they relate to each other and WHY they matter for the game outcome.
+   - Example: "76ers' #1 offense (125.7 PPG) faces Cavaliers' #9 defense (113.9 PPG) → 10+ point scoring advantage → 76ers -2.5 has value because they can exploit Cleveland's weak interior (allowing 52 paint points/game, #23)"
 
-**Key Stats:**
-• Offense: [Team] [PPG] (#rank), [YPP] (#rank), [3rd down %]
-• Defense: [Opponent] allows [PPG] (#rank), [YPP allowed]
-• Public: [X]% bets, [Y]% money → [RLM direction]
-• Referee: [Name] O/U record, spread tendencies (if strong trend)
+2. **ONLY USE PROVIDED DATA**: Do NOT create, invent, or hallucinate ANY bets, props, trends, or player names that aren't explicitly in the data provided.
+   - ✅ GOOD: Using props with hit rates from the data
+   - ❌ BAD: Making up "Aaron Rodgers OVER 250.5 yards" if that prop isn't in the data
 
-**The Edge:** (2-3 sentences)
-Why this bet wins based on the data above
+3. **UNDERSTAND BETTING CONCEPTS**:
+   - **RLM (Reverse Line Movement)**: Line moving AGAINST public betting → indicates sharp action on the other side → GOOD sign
+     Example: "78% public on Ravens, but line moved from -5.5 to -6.5 → RLM toward Ravens → sharp confirmation"
+   - **Sharp Money**: Positive difference between bet% and money% on a side → large bettors (sharps) backing this side → GOOD sign
+     Example: "Browns have 35% of bets but 48% of money → +13% sharp money indicator"
+   - **High Public %**: When public heavily backs one side (70%+) → potential overvalue → fade opportunity if data doesn't support it
 
-**Top Plays:**
-• **[Team] [Spread/Total] ([Odds])**: [1 sentence why]
-• **[Player] OVER/UNDER [Line] ([Odds])**: [Hit rate %], [Record], [1 sentence why]
-• **[Player] OVER/UNDER [Line] ([Odds])**: [Hit rate %], [Record], [1 sentence why]
+4. **FAVOR ANALYST PICKS**: When in-house analysts provide picks with detailed analysis:
+   - Use their EXACT narrative and data points
+   - Reference them by name: **Bears -2.5 (@AnalystName, -110)**
+   - Their write-ups should be woven throughout your analysis, not just mentioned
 
-✅ GOOD EXAMPLE (CONCISE):
-**Ravens -6.5 vs Browns: Defensive Mismatch**
+5. **SUGGEST SPREADS/TOTALS/ML WHEN PROPS ARE WEAK**: If player props lack strong hit rates or sample size, focus on game-level bets (spread, total, moneyline) instead.
 
-**Offensive Edge:**
-• Ravens: 28.4 PPG (#3), 6.1 YPP (#4), 52% 3rd down (#2)
-• Browns: 18.1 PPG (#28), 4.9 YPP (#25), 35% 3rd down (#29)
-• Baltimore's rush attack (142 YPG, #2) vs Cleveland's 27th-ranked run defense
+📝 STRUCTURE (600-700 WORDS):
 
-**Public Betting:**
-• 78% of bets on Ravens, but only 64% of money → small RLM toward Browns
-• Sharp bettors see value fading public, but Browns offense can't capitalize
+**Opening Paragraph** (100-150 words):
+Set the scene - spread, total, key matchup angles, what immediately stands out from the data. Connect public betting splits with the actual statistical matchup.
 
-**The Play:**
-The **Ravens -6.5 (-110)** capitalizes on a 10+ point gap in offensive efficiency. Browns rank bottom-5 in yards per play and third-down conversions, meaning stalled drives and quick possessions favor Baltimore's time of possession. Ravens are 7-2 ATS at home this season.
+**Body Paragraphs** (400-500 words):
+Build your narrative by connecting multiple data layers:
+- Team offense (#PPG, #YPP, situational stats) vs opponent defense (#PPG allowed, #yards allowed)
+- How this creates game script → how game script affects player props
+- Public vs sharp money → what the line movement tells us
+- Referee trends (if available) → how this impacts total/pace
+- Recent ATS performance → situational patterns
+- Team Rankings stats → specific matchup advantages
+- **Weave in plays naturally as you explain WHY they make sense**
 
-**Also Consider:**
-• **Lamar Jackson OVER 1.5 passing TDs (-125)**: 68% hit rate, Browns allow 2.1 pass TDs/game (#24)
-• **Under 44.5 (-110)**: Browns' anemic offense limits total scoring despite Ravens' ability to put up 28+
+**Closing Paragraph** (100 words):
+Summarize the key angles and list 3-5 plays that capitalize on these edges.
 
----
+🎯 FORMATTING:
 
-❌ BAD EXAMPLE (TOO WORDY):
-"The Ravens have been one of the most dominant teams this season, showcasing an elite rushing attack that has consistently moved the ball against even the toughest defenses. Their offensive coordinator has masterfully schemed up plays that exploit defensive weaknesses, particularly in the rushing game where they rank among the league's best. When you look at the Browns' defensive metrics, you'll notice they've struggled mightily to contain rushing attacks..." (300+ words of fluff)
+**For Spreads/Totals/ML:**
+- **76ers -2.5 (-110)**: Brief explanation with 2-3 supporting stats
 
----
+**For Player Props (ONLY if in provided data):**
+- **Joel Embiid OVER 29.5 points (-125)**: 68% hit rate (18-8), Cavaliers allow 32.4 PPG to opposing centers (#27)
+
+**For Analyst Picks:**
+- **Bears -2.5 (@InvisibleInsider, -112)**: [Use their analysis and data]
 
 🚨 CRITICAL RULES:
-- TARGET: 500-700 words (NOT 400, NOT 2000)
-- MAX 3-4 PARAGRAPHS - rest is bullets
-- EVERY stat needs a rank: "28.4 PPG (#3)" not just "28.4 PPG"
-- NO FLUFF: Zero sentences without specific numbers
-- Bold all bets: **Ravens -6.5 (-110)**
-- Analyst picks: **Ravens -6.5 (@AnalystName, -110)** - EXACT names only
-- Props MUST show: Hit rate %, W-L record, odds
 
-BULLET POINT RULES:
-- Use bullets for ANY section with 3+ stats
-- Offense/Defense stats = bullets
-- Public betting = bullets  
-- Props = bullets with hit rates
-- NO long paragraphs listing stats - break into bullets
+1. **600-700 words** - not 400, not 1000
+2. **Every stat needs context**: "76ers score 125.7 PPG (#1)" not just "76ers score a lot"
+3. **Connect cause and effect**: Don't say "Team A is good at X and Team B is bad at Y" - explain HOW X vs Y creates an edge
+4. **NO section headers**: Write in flowing paragraphs, not sectioned bullet points
+5. **Props MUST include hit rate and record**: Never suggest a prop without showing historical performance
+6. **NEVER invent players**: If data doesn't show who the QB is, say "the quarterback" not "Aaron Rodgers"
+7. **Bold all plays**: **Team/Player Action (Source/Analyst if applicable, Odds)**
 
-DISCLAIMER: Educational purposes only. Not financial advice.`,
-        messages: [
+❌ WHAT NOT TO DO:
+- Don't write: "The 76ers have been impressive this season with strong offensive numbers"
+- Don't list disconnected stats: "76ers: 125.7 PPG, Cavaliers: 114.1 PPG, 76ers: 48.2 FG%"
+- Don't suggest props that aren't in the provided data
+
+✅ WHAT TO DO:
+- Write: "The 76ers' league-leading 125.7 PPG (#1) and 48.2 FG% (#2) creates a 10+ point scoring advantage over Cleveland's 114.1 PPG (#23), especially when you factor in the Cavaliers' poor 3PT defense (34.1%, #25) against Philly's 37.5% shooting (#5). This efficiency gap points to **76ers -2.5 (-110)** covering easily."
+
+Educational purposes only. Not financial advice.`
+          },
           {
             role: 'user',
             content: prompt
           }
         ]
       })
-    } catch (anthropicError: any) {
-      console.error('❌ Claude API error:', anthropicError)
-      console.error('Error status:', anthropicError?.status)
-      console.error('Error message:', anthropicError?.message)
-      throw new Error(`Claude generation failed: ${anthropicError?.message || 'Unknown error'}`)
+    } catch (openaiError: any) {
+      console.error('❌ OpenAI API error:', openaiError)
+      console.error('Error status:', openaiError?.status)
+      console.error('Error message:', openaiError?.message)
+      throw new Error(`OpenAI generation failed: ${openaiError?.message || 'Unknown error'}`)
     }
 
-    const script = completion.content[0]?.type === 'text' ? completion.content[0].text : 'Unable to generate script'
+    const script = completion.choices[0]?.message?.content || 'Unable to generate script'
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
@@ -250,36 +256,70 @@ DISCLAIMER: Educational purposes only. Not financial advice.`,
       console.log('Script length:', script.length, 'characters')
       console.log('Game ID:', gameId)
       console.log('Sport:', league.toUpperCase())
-      console.log('Supabase URL:', process.env.SUPABASE_USERS_URL || 'FALLBACK URL')
-      console.log('Supabase Key exists:', !!process.env.SUPABASE_USERS_SERVICE_KEY)
+      console.log('Supabase URL:', process.env.SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co')
+      console.log('Supabase Key exists:', !!process.env.SUPABASE_KEY)
       
-      const { data: insertData, error: insertError } = await supabaseUsers
+      const expiresAt = new Date()
+      expiresAt.setHours(expiresAt.getHours() + 4) // Expires in 4 hours
+      
+      const now = new Date().toISOString()
+      
+      // Check if a script already exists for this game
+      const { data: existingCheck } = await supabaseMain
         .from('game_scripts')
-        .insert({
-          game_id: gameId,
-          sport: league.toUpperCase(),
-          game_time: gameTime, // Use actual game timestamp
-          away_team: data.game?.away_team || 'Unknown',
-          home_team: data.game?.home_team || 'Unknown',
-          script_content: script,
-          data_strength: data.dataStrength,
-          generated_at: new Date().toISOString(),
-          expires_at: null, // Optional: set expiration if needed
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
+        .select('id')
+        .eq('game_id', gameId)
+        .eq('sport', league.toUpperCase())
+        .limit(1)
+      
+      let saveResult
+      
+      if (existingCheck && existingCheck.length > 0) {
+        // Update existing script
+        console.log('📝 Updating existing script in database...')
+        saveResult = await supabaseMain
+          .from('game_scripts')
+          .update({
+            script_content: script,
+            data_strength: data.dataStrength,
+            generated_at: now,
+            expires_at: expiresAt.toISOString(),
+            updated_at: now
+          })
+          .eq('game_id', gameId)
+          .eq('sport', league.toUpperCase())
+          .select()
+      } else {
+        // Insert new script
+        console.log('📝 Inserting new script into database...')
+        saveResult = await supabaseMain
+          .from('game_scripts')
+          .insert({
+            game_id: gameId,
+            sport: league.toUpperCase(),
+            game_time: gameTime,
+            away_team: data.game?.away_team || 'Unknown',
+            home_team: data.game?.home_team || 'Unknown',
+            script_content: script,
+            data_strength: data.dataStrength,
+            generated_at: now,
+            expires_at: expiresAt.toISOString(),
+            created_at: now,
+            updated_at: now
+          })
+          .select()
+      }
 
-      if (insertError) {
+      if (saveResult.error) {
         console.error('⚠️ Failed to save script to Supabase!')
-        console.error('Error code:', insertError.code)
-        console.error('Error message:', insertError.message)
-        console.error('Error details:', insertError.details)
-        console.error('Error hint:', insertError.hint)
+        console.error('Error code:', saveResult.error.code)
+        console.error('Error message:', saveResult.error.message)
+        console.error('Error details:', saveResult.error.details)
+        console.error('Error hint:', saveResult.error.hint)
         // Continue anyway - script still generated
       } else {
         console.log(`✅ Script saved to Supabase successfully!`)
-        console.log('Inserted row ID:', insertData?.[0]?.id)
+        console.log('Row ID:', saveResult.data?.[0]?.id)
       }
     } catch (supabaseError: any) {
       console.error('⚠️ Supabase save failed with exception:')
@@ -370,13 +410,7 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
   }
   
-  // First, inject the comprehensive API data interpretation guide
-  prompt += TRENDLINE_API_GUIDE
-  prompt += `\n\n═══════════════════════════════════════════════════════════════════════════════\n\n`
-  
-  // Then inject the team statistics interpretation guide
-  prompt += TEAM_STATS_GUIDE
-  prompt += `\n\n═══════════════════════════════════════════════════════════════════════════════\n\n`
+  // Documentation removed - AI already knows these metrics, saves ~4,500 tokens per generation
   
   // Fetch analyst write-ups from the library (30 examples for comprehensive training)
   try {
@@ -865,78 +899,42 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     prompt += `⚠️ **CRITICAL: You may ONLY reference players from the list above. NEVER mention any other player names (e.g., DO NOT say "Aaron Rodgers" if he's not in the list). If you don't know who the QB is, just say "the quarterback" or "the home QB".**\n\n`
   }
 
-  prompt += `**ANALYSIS DEPTH GUIDELINES - USE ALL AVAILABLE DATA:**\n\n`
+  prompt += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+  prompt += `🎯 YOUR TASK: CONNECT ALL THE DOTS\n`
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
   
-  prompt += `**MANDATORY MINIMUM: 1000 WORDS (This is NOT optional)**\n`
-  prompt += `Your analysis MUST be detailed and comprehensive. If you write less than 1000 words, you have failed.\n`
-  prompt += `Every paragraph should be packed with specific stats, exact numbers, and detailed observations.\n\n`
+  prompt += `Write a 600-700 word narrative that:\n\n`
   
-  prompt += `**KEY DATA POINTS TO INCLUDE (when available):**\n\n`
+  prompt += `1. **Explains the matchup story**: How do these teams' strengths/weaknesses create opportunities?\n`
+  prompt += `2. **Connects offense vs defense**: Don't just say "Team A scores 28 PPG, Team B allows 24" - explain WHY the matchup matters\n`
+  prompt += `3. **Uses public/sharp splits intelligently**:\n`
+  prompt += `   - High public % + weak data = fade opportunity\n`
+  prompt += `   - RLM (line against public) = sharp confirmation\n`
+  prompt += `   - Sharp money indicator = bet% vs money% difference\n`
+  prompt += `4. **Weaves in plays naturally**: As you explain game script, introduce bets that capitalize on the edges you're describing\n`
+  prompt += `5. **Only suggests plays from the data**: If a prop isn't listed above with hit rate/odds, DON'T mention it\n\n`
   
-  prompt += `1. **REFEREE TRENDS (if referee data provided):**\n`
-  prompt += `   - Include referee's O/U and spread tendencies\n`
-  prompt += `   - Connect patterns to game outlook\n`
-  prompt += `   - Example: "Historical data shows this referee's games average 44.2 points"\n\n`
+  prompt += `**FLOW EXAMPLE:**\n`
+  prompt += `"The 76ers open as 2.5-point favorites against Cleveland, and the public is all over Philly (65% bets, 70% money). But here's the thing - Philadelphia's league-leading 125.7 PPG (#1) isn't just empty scoring. They rank 2nd in FG% (48.2%) and 5th in 3PT% (37.5%), creating a legitimate 10+ point offensive advantage over Cleveland's 114.1 PPG (#23). The Cavaliers' defense allows 25.5 assists per game (#11), suggesting defensive breakdowns that favor Philly's ball movement (27.3 APG, #3). This efficiency gap supports the **76ers -2.5 (-110)** even with heavy public backing.\n\nThe game script gets more interesting when you look at pace. Cleveland's 23rd-ranked offense typically plays slower (22.1 seconds per possession), but facing Philadelphia's elite transition defense forces them further into their half-court weaknesses..."\n\n`
   
-  prompt += `2. **RECENT TEAM PERFORMANCE (if ATS data provided):**\n`
-  prompt += `   - Discuss recent game results for both teams\n`
-  prompt += `   - Note opponent strength and situational patterns\n`
-  prompt += `   - Example: "In their last 5 games against top-15 opponents..."\n\n`
+  prompt += `**KEY REMINDERS:**\n\n`
+  prompt += `✅ DO:\n`
+  prompt += `- Connect stats: "Team X's #1 rush offense vs Team Y's #27 rush defense → RB props OVER"\n`
+  prompt += `- Explain betting concepts: "78% public but line moved away = RLM = sharp fade"\n`
+  prompt += `- Use analyst write-ups: If an analyst provided detailed analysis, USE IT and credit them\n`
+  prompt += `- Focus on spreads/totals if props are weak: Not every game needs 5 player props\n`
+  prompt += `- Include hit rates: **Player OVER X.X (odds)**: 68% hit rate (15-7)\n\n`
   
-  prompt += `3. **STATISTICAL MATCHUP ANALYSIS:**\n`
-  prompt += `   - Use detailed team statistics with rankings\n`
-  prompt += `   - For NFL: efficiency metrics, situational stats, matchup-specific data\n`
-  prompt += `   - For NBA: shooting efficiency, pace factors, scoring distribution\n`
-  prompt += `   - Connect statistical advantages to player performance expectations\n\n`
+  prompt += `❌ DON'T:\n`
+  prompt += `- List disconnected stats: "Team A: 28 PPG. Team B: 24 PPG."\n`
+  prompt += `- Invent props that aren't in the data\n`
+  prompt += `- Make up player names (if you don't know the QB, say "the quarterback")\n`
+  prompt += `- Use section headers like "Matchup Analysis" or "Top Plays"\n`
+  prompt += `- Write generic fluff: "This should be a competitive game" or "Both teams are playing well"\n\n`
   
-  prompt += `4. **HIGH-CONFIDENCE OPPORTUNITIES (if 90%+ hit rate props exist):**\n`
-  prompt += `   - Highlight props with exceptional historical success\n`
-  prompt += `   - Explain the statistical basis for high confidence\n`
-  prompt += `   - Show how multiple high-confidence plays can work together\n\n`
+  prompt += `**TARGET: 600-700 words. Every paragraph should connect 3+ specific stats with context and causality.**\n\n`
   
-  prompt += `5. **MULTIPLE ANALYSIS ANGLES:**\n`
-  prompt += `   - Present various statistical perspectives\n`
-  prompt += `   - Show primary insights and supporting data\n`
-  prompt += `   - Discuss different scenarios and correlations\n\n`
-  
-  prompt += `6. **MARKET ANALYSIS (if public betting data provided):**\n`
-  prompt += `   - Include betting market percentages when available\n`
-  prompt += `   - Note any discrepancies between public and sharp action\n`
-  prompt += `   - Discuss line movement patterns\n\n`
-  
-  prompt += `**NARRATIVE APPROACH (MINIMUM 1000 WORDS):**\n\n`
-  prompt += `Write this like you're building a case for why certain plays make sense. NO section headers, just flowing paragraphs:\n\n`
-  prompt += `- **Opening**: Set the stage - spread, total, weather, market sentiment, what makes this game interesting\n`
-  prompt += `- **Build the matchup**: Use Team Rankings to paint the picture (offense vs defense, pace, efficiency)\n`
-  prompt += `- **Introduce plays naturally**: As you explain game script, weave in picks: "The **Bears -2.5 (-112)** makes sense here because..." then explain with data (only add analyst name if from insider picks data)\n`
-  prompt += `- **Layer in supporting angles**: "This same logic points to..." and introduce props that fit\n`
-  prompt += `- **Use referee/market data**: "Public is on Bengals (59%) but..." or "Blakeman's O/U history suggests..."\n`
-  prompt += `- **Connect everything**: Show how all data points to the same conclusion or reveal contrarian angles\n`
-  prompt += `- **Close with conviction**: What's happening in this game and what plays capitalize on it\n\n`
-  prompt += `Include 4-6 total plays organically throughout. Bold them as: **Pick (Analyst/Source, Odds)**\n\n`
-  
-  prompt += `**FORMATTING PREFERENCES:**\n`
-  prompt += `- Bold player performance expectations: **Player Name OVER/UNDER X.X stat (odds)**\n`
-  prompt += `- Include historical success rates: (68.2% hit rate, 15-7 record)\n`
-  prompt += `- Always show odds: (-112), (+180), etc.\n`
-  prompt += `- Cite team rankings: "Team ranks #28 in yards/play (4.9)"\n`
-  prompt += `- Write in flowing paragraphs without bullet points or headers\n`
-  prompt += `- Reference only players from the provided data\n`
-  prompt += `- Bold only specific player performance expectations, not raw statistics\n\n`
-  
-  prompt += `**GOAL: Write a 1000+ word narrative that predicts this game, explains WHY certain plays make sense, and identifies 4-6 value opportunities using ALL available data.**\n\n`
-  prompt += `🚨 CRITICAL - YOU FAIL IF:\n`
-  prompt += `1. You write less than 1000 words\n`
-  prompt += `2. Any paragraph has fewer than 3-4 specific stats (rankings, percentages, exact numbers)\n`
-  prompt += `3. You use section headers like "Team Matchup Analysis" or "Player Props"\n`
-  prompt += `4. You say vague things like "strong offense" or "struggled" without exact numbers\n`
-  prompt += `5. You ignore stats from the analyst's analysis (if they mention "57% ATS" you MUST include it)\n`
-  prompt += `6. You ignore Team Rankings stats provided (use PPG ranks, yards/play, 3rd down %, red zone %, etc.)\n`
-  prompt += `7. You list props at the end instead of weaving them into the narrative\n`
-  prompt += `8. You write MORE THAN 5 sentences without including a specific stat\n\n`
-  prompt += `✅ SUCCESS LOOKS LIKE (DATA-DENSE):\n`
-  prompt += `"The Bears are 2.5-point favorites with a 51.5 total in 55-degree sunny weather. The **Bears -2.5 (-112)** exploits Cincinnati's league-worst defense: 31.6 PPG allowed (#32), 143.3 rush yards/game (#27), 44.2% opponent 3rd down conversion (#29), and 68% red zone TD rate allowed (#30). Chicago's offense ranks 15th in PPG (24.0) but 7th in yards/play (5.8), suggesting explosive efficiency. Ben Johnson is 7-0 ATS as an OC following a loss - teams under him average 28.4 PPG in bounce-back spots. Road teams off a loss historically hit 57% ATS with 11% ROI over 300+ games. Public is backing Cincinnati (58% spread bets, 57% money) creating contrarian value. The Bengals' pass rush ranks 24th (6.1% sack rate) against a Bears O-line allowing just 5.4% (#12), giving Chicago's QB clean pockets. **Chase Brown OVER 50.5 rush yards (-110)** fits the game script - he averages 68 yards/game against bottom-10 run defenses, and Cincinnati's 27th-ranked run D allows 5.1 yards/carry to opposing backs..."\n\n`
-  prompt += `⚠️ CRITICAL: Only use analyst names if they appear in the ANALYST PICKS section above. Otherwise format as **Pick (Odds)** without any invented names.\n\n`
+  prompt += `⚠️ ANALYST PICKS: If in-house analysts provided picks above, their analysis should be the FOUNDATION of your write-up. Use their exact data points and reasoning.\n\n`
 
   return prompt
 }

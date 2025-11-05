@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         // Check if script already exists and was generated recently (within 1 hour)
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
         
-        const { data: existingScript } = await supabaseMain
+        const { data: existingScript } = await supabase
           .from('game_scripts')
           .select('generated_at')
           .eq('game_id', gameId)
