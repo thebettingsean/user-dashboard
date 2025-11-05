@@ -52,13 +52,16 @@ export async function GET(request: NextRequest) {
     }
 
     const gamesData = await gamesResponse.json()
-    const allGames = [
-      ...(gamesData.nfl || []),
-      ...(gamesData.nba || []),
-      ...(gamesData.cfb || [])
-    ]
+    
+    // The API returns { games: [...] } format
+    const allGames = gamesData.games || []
 
     console.log(`📊 Found ${allGames.length} games to process`)
+    
+    if (allGames.length === 0) {
+      console.log('⚠️ No games found - check API response format')
+      console.log('Response structure:', Object.keys(gamesData))
+    }
 
     let successCount = 0
     let errorCount = 0
@@ -72,8 +75,9 @@ export async function GET(request: NextRequest) {
       console.log(`\n🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allGames.length / batchSize)} (${batch.length} games)`)
       
       for (const game of batch) {
+      // Games use game_id from API, not gameId
+      const gameId = game.game_id || game.gameId
       const sport = game.sport || 'nfl'
-      const gameId = game.gameId
 
       try {
         console.log(`🎯 Generating script for ${sport.toUpperCase()} game: ${gameId}`)
