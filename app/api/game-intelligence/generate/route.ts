@@ -560,18 +560,20 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
         prompt += `🚨 CRITICAL REQUIREMENTS (MUST FOLLOW):\n\n`
         prompt += `1. **NO FLUFF INTROS**: Skip "In this NFL showdown" or "A deep dive into". START with the best data point immediately.\n`
         prompt += `2. **NEVER MENTION "TEAMRANKINGS" OR "TEAM RANKINGS"**: Say "Statistical analysis", "Team ranks", or just cite the stat directly\n`
-        prompt += `3. **NEVER INVENT PLAYER PROPS**: ONLY suggest props that exist in playerProps, propParlayRecs, or anytimeTDRecs data below\n`
-        prompt += `4. **CONNECT MULTIPLE DATA POINTS**: Always link spread → game script → team stats → props\n`
-        prompt += `   Example: "Rams -6.5 + elite rushing offense (128 YPG, #8) → early lead → run-heavy 2nd half → Stafford UNDER pass attempts"\n`
-        prompt += `5. **USE SPREAD TO EXPLAIN GAME SCRIPT**: If a team is -7 or more, explain early lead implications\n`
-        prompt += `6. **Cite specific ranks**: "Patriots rank 28th in yards/play (4.9)" not "Patriots have a weak offense"\n`
-        prompt += `7. **Explain causal chains**: Low 3rd down % → stalled drives → fewer possessions → UNDER total\n`
-        prompt += `8. **Identify exploitable mismatches**: When Top 10 meets Bottom 10, THIS IS WHERE VALUE EXISTS\n`
-        prompt += `9. **Bold all specific plays/bets**: Any prop, spread, or total you're highlighting (but ONLY if it exists in the data)\n`
-        prompt += `10. **MINIMUM 400 WORDS**: Deep, data-packed analysis. Every sentence has a specific stat.\n`
-        prompt += `11. **Write like a sharp texting a friend**: Direct, confident, data-heavy. Not an AI essay.\n`
-        prompt += `12. **CITE EXACT NUMBERS**: Never say "strong" or "high-scoring" - say "28.4 PPG (#3 in NFL)" or "67% ATS"\n\n`
-        prompt += `⚠️ IF NO GOOD PROPS EXIST IN THE DATA: Focus on spreads, totals, or general matchup analysis. DO NOT make up props!\n\n`
+        prompt += `3. **WEAVE PLAYER PROPS THROUGHOUT**: If props are provided below, integrate them into your narrative naturally. Connect game script → player roles → prop recommendations. DO NOT just list them at the end!\n`
+        prompt += `4. **NEVER INVENT PLAYER PROPS**: ONLY suggest props that exist in the data provided below\n`
+        prompt += `5. **CONNECT MULTIPLE DATA POINTS**: Always link spread → game script → team stats → props\n`
+        prompt += `   Example: "Rams -6.5 + elite rushing offense (128 YPG, #8) → early lead → run-heavy 2nd half → Stafford UNDER pass attempts (30.5 at -110, 65% hit rate)"\n`
+        prompt += `6. **USE SPREAD TO EXPLAIN GAME SCRIPT**: If a team is -7 or more, explain early lead implications\n`
+        prompt += `7. **Cite specific ranks**: "Patriots rank 28th in yards/play (4.9)" not "Patriots have a weak offense"\n`
+        prompt += `8. **Explain causal chains**: Low 3rd down % → stalled drives → fewer possessions → UNDER total → UNDER QB pass yards prop\n`
+        prompt += `9. **Identify exploitable mismatches**: When Top 10 meets Bottom 10, THIS IS WHERE VALUE EXISTS\n`
+        prompt += `10. **Bold all specific plays/bets**: Any prop, spread, or total you're highlighting (but ONLY if it exists in the data)\n`
+        prompt += `11. **MINIMUM 400 WORDS**: Deep, data-packed analysis. Every sentence has a specific stat.\n`
+        prompt += `12. **Write like a sharp texting a friend**: Direct, confident, data-heavy. Not an AI essay.\n`
+        prompt += `13. **CITE EXACT NUMBERS**: Never say "strong" or "high-scoring" - say "28.4 PPG (#3 in NFL)" or "67% ATS"\n\n`
+        prompt += `⚠️ IF PROPS ARE PROVIDED: You MUST suggest at least 2-3 prop plays woven into your analysis!\n`
+        prompt += `⚠️ IF NO PROPS EXIST IN THE DATA: Focus on spreads, totals, or general matchup analysis. DO NOT make up props!\n\n`
       }
     }
   } catch (error) {
@@ -854,6 +856,9 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
 
   // Player props - PRIORITIZE QB/RB/WR, show kickers last
   if (playerProps && playerProps.length > 0) {
+    console.log(`🎯 [PROPS] Adding ${playerProps.length} prop categories to prompt`)
+    console.log(`🎯 [PROPS] Total players: ${playerProps.reduce((sum, cat) => sum + cat.players.length, 0)}`)
+    
     // Separate skill position props from kicking props
     const skillPositionProps = playerProps.filter(cat => 
       !cat.title.toLowerCase().includes('kick') && 
