@@ -62,10 +62,16 @@ export async function GET(request: NextRequest) {
 
     let successCount = 0
     let errorCount = 0
+    let skippedCount = 0
     const errors: string[] = []
 
-    // Process each game
-    for (const game of allGames) {
+    // Process games in smaller batches to avoid timeout
+    const batchSize = 5
+    for (let i = 0; i < allGames.length; i += batchSize) {
+      const batch = allGames.slice(i, i + batchSize)
+      console.log(`\n🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allGames.length / batchSize)} (${batch.length} games)`)
+      
+      for (const game of batch) {
       const sport = game.sport || 'nfl'
       const gameId = game.gameId
 
@@ -85,7 +91,7 @@ export async function GET(request: NextRequest) {
 
         if (existingScript) {
           console.log(`⏭️  Script already fresh for ${gameId}, skipping`)
-          successCount++
+          skippedCount++
           continue
         }
 
@@ -136,12 +142,19 @@ export async function GET(request: NextRequest) {
         errors.push(`${gameId}: ${error.message}`)
         errorCount++
       }
+      }
+      
+      // Small delay between batches
+      if (i + batchSize < allGames.length) {
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
     }
 
     const summary = {
       timestamp: new Date().toISOString(),
       totalGames: allGames.length,
       successCount,
+      skippedCount,
       errorCount,
       errors: errors.slice(0, 5) // Only return first 5 errors to avoid huge response
     }
