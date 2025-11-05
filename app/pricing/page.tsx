@@ -10,6 +10,9 @@ export default function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Credit pack checkout link
+  const creditPackCheckoutUrl = 'https://buy.stripe.com/aFa00b76L9ST9fJbTIenS0g'
+
   const subscriptionPlans = [
     { 
       id: 'weekly', 
@@ -39,27 +42,8 @@ export default function PricingPage() {
     setLoading(true)
 
     if (selectedPlan === 'credits') {
-      // One-time credit purchase via API
-      try {
-        const response = await fetch('/api/purchase-credits', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data.url) {
-          window.location.href = data.url
-        } else {
-          console.error('Failed to create checkout session:', data.error)
-          alert('Failed to start checkout. Please try again.')
-          setLoading(false)
-        }
-      } catch (error) {
-        console.error('Error creating checkout session:', error)
-        alert('Failed to start checkout. Please try again.')
-        setLoading(false)
-      }
+      // Redirect to credit pack checkout
+      window.location.href = creditPackCheckoutUrl
     } else {
       // Navigate to subscription checkout
       const plan = subscriptionPlans.find(p => p.id === selectedPlan)
