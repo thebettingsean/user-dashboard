@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { Loader2 } from 'lucide-react'
-import { loadStripe } from '@stripe/stripe-js'
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -52,20 +49,13 @@ export default function CheckoutPage() {
         throw new Error(errorData.error || 'Failed to create checkout session')
       }
 
-      const { sessionId } = await response.json()
+      const { url } = await response.json()
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise
-      if (!stripe) {
-        throw new Error('Stripe failed to load')
-      }
-
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId,
-      })
-
-      if (stripeError) {
-        throw new Error(stripeError.message)
+      // Redirect to Stripe Checkout URL directly
+      if (url) {
+        window.location.href = url
+      } else {
+        throw new Error('No checkout URL returned')
       }
     } catch (err: any) {
       console.error('Checkout error:', err)
