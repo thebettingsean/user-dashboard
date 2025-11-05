@@ -118,12 +118,12 @@ export default function AICreditBadge() {
     )
   }
 
-  // Signed in but no credits (show purchase options)
+  // Signed in but no credits/subscription - Calculate remaining credits from purchased_credits
   const remaining = typeof creditStatus.creditsRemaining === 'number' ? creditStatus.creditsRemaining : 0
   const hasCredits = remaining > 0
 
   if (!hasCredits) {
-    // No credits - show upgrade options
+    // No credits - show "Get More Credits" link that triggers purchase modal
     return (
       <div style={{
         display: 'inline-flex',
@@ -141,26 +141,34 @@ export default function AICreditBadge() {
           Credit Balance: 0
         </div>
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
-        <a
-          href="/upgrade"
+        <button
+          onClick={() => {
+            // Trigger the UnlockModal globally
+            if ((window as any).showUnlockModal) {
+              (window as any).showUnlockModal()
+            }
+          }}
           style={{
             fontSize: '0.8rem',
             color: 'rgba(255, 255, 255, 0.5)',
             textDecoration: 'none',
             transition: 'color 0.2s',
             cursor: 'pointer',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            background: 'none',
+            border: 'none',
+            padding: 0
           }}
           onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
           onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
         >
           Get More Credits →
-        </a>
+        </button>
       </div>
     )
   }
 
-  // Has credits - show remaining
+  // Has credits - show remaining (from purchased_credits)
   const isLow = remaining <= 3
 
   return (
@@ -183,26 +191,30 @@ export default function AICreditBadge() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)' }}>
         Credit Balance: {remaining}
       </div>
-      {creditStatus.accessLevel === 'ai_only' && (
-        <>
-          <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
-          <a
-            href="/upgrade"
-            style={{
-              fontSize: '0.8rem',
-              color: 'rgba(255, 255, 255, 0.5)',
-              textDecoration: 'none',
-              transition: 'color 0.2s',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
-          >
-            Get More Credits →
-          </a>
-        </>
-      )}
+      <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
+      <button
+        onClick={() => {
+          // Trigger the UnlockModal globally
+          if ((window as any).showUnlockModal) {
+            (window as any).showUnlockModal()
+          }
+        }}
+        style={{
+          fontSize: '0.8rem',
+          color: 'rgba(255, 255, 255, 0.5)',
+          textDecoration: 'none',
+          transition: 'color 0.2s',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          background: 'none',
+          border: 'none',
+          padding: 0
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
+        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
+      >
+        Get More Credits →
+      </button>
     </div>
   )
 }

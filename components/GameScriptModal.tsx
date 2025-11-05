@@ -109,43 +109,37 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
     console.log('🔍 Starting credit check and generate...')
     console.log('👤 isSignedIn:', isSignedIn, 'Type:', typeof isSignedIn)
 
-    // For localhost testing, bypass all auth/credit checks
-    // Just generate the script directly
-    console.log('⚡ Bypassing auth for localhost - generating script')
-    await generateScript()
-    return
-
     // Step 1: Check if user is authenticated
     if (!isSignedIn) {
-      console.log('User not authenticated')
-      onClose()
+      console.log('❌ User not authenticated - showing auth prompt')
+      setShowAuthPrompt(true)
       return
     }
 
     // Step 2: Sync user to Supabase (creates if doesn't exist)
     try {
+      console.log('🔄 Syncing user to Supabase...')
       await fetch('/api/users/sync', { method: 'POST' })
     } catch (err) {
       console.error('Error syncing user:', err)
     }
 
-    // Step 3: Check credit status
+    // Step 3: Check credit status from Supabase users table
     try {
       const creditResponse = await fetch('/api/ai-credits/check')
       
       if (!creditResponse.ok) {
-        console.error('Credit check failed:', creditResponse.status)
-        // Allow generation on API error (fail open for better UX)
-        await generateScript()
+        console.error('❌ Credit check failed:', creditResponse.status)
+        setError('Failed to verify credits. Please try again.')
         return
       }
       
       const creditStatus = await creditResponse.json()
       console.log('📊 Credit status:', creditStatus)
 
-      // If user has no access AND is not premium, show upgrade prompt
+      // If user has no access (no credits and not premium), show upgrade prompt
       if (!creditStatus.hasAccess && !creditStatus.isPremium) {
-        console.log('❌ User has no credits and no subscription')
+        console.log('❌ User has no credits and no subscription - showing upgrade prompt')
         setShowUpgradePrompt(true)
         return
       }
@@ -154,21 +148,14 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
       // User has access - generate script
       await generateScript()
 
-      // Decrement credits (only for free users with credits)
-      if (!creditStatus.isPremium && creditStatus.hasAccess) {
-        console.log('📉 Decrementing free user credits')
-        await fetch('/api/ai-credits/use', { method: 'POST' })
-        
-        // Refresh credit badge
-        if ((window as any).refreshAICredits) {
-          (window as any).refreshAICredits()
-        }
+      // Refresh credit badge after generation
+      if ((window as any).refreshAICredits) {
+        (window as any).refreshAICredits()
       }
 
     } catch (err) {
       console.error('Error checking credits:', err)
-      // Allow generation on error (fail open for better UX)
-      await generateScript()
+      setError('Failed to verify credits. Please try again.')
     }
   }
 

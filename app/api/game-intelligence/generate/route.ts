@@ -3,7 +3,8 @@ import OpenAI from 'openai'
 import { kv } from '@vercel/kv'
 import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser, auth } from '@clerk/nextjs/server'
+import { supabaseUsers } from '@/lib/supabase-users'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -33,6 +34,52 @@ interface GeneratedScript {
  */
 export async function POST(request: NextRequest) {
   try {
+    // ✅ STEP 1: AUTHENTICATION CHECK
+    const { userId } = await auth()
+    const user = await currentUser()
+
+    if (!userId || !user) {
+      console.log('❌ Unauthorized: No user authenticated')
+      return NextResponse.json(
+        { error: 'Authentication required. Please sign in to generate AI scripts.' },
+        { status: 401 }
+      )
+    }
+
+    console.log(`👤 User authenticated: ${userId}`)
+
+    // ✅ STEP 2: CHECK CREDITS IN SUPABASE USERS TABLE
+    const { data: dbUser, error: fetchError } = await supabaseUsers
+      .from('users')
+      .select('*')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (fetchError || !dbUser) {
+      console.error('❌ User not found in database:', fetchError)
+      return NextResponse.json(
+        { error: 'User not found. Please try signing in again.' },
+        { status: 404 }
+      )
+    }
+
+    console.log(`📊 User credits: Premium=${dbUser.is_premium}, Purchased=${dbUser.purchased_credits}, Used=${dbUser.ai_scripts_used}`)
+
+    // ✅ STEP 3: CHECK IF USER HAS ACCESS (Premium OR has purchased credits remaining)
+    const isPremium = dbUser.is_premium || dbUser.access_level === 'full'
+    const purchasedCreditsRemaining = (dbUser.purchased_credits || 0) - (dbUser.ai_scripts_used || 0)
+    const hasAccess = isPremium || purchasedCreditsRemaining > 0
+
+    if (!hasAccess) {
+      console.log('❌ No credits: User has no subscription and no purchased credits')
+      return NextResponse.json(
+        { error: 'No credits remaining. Please purchase credits or subscribe to continue.' },
+        { status: 403 }
+      )
+    }
+
+    console.log(`✅ User has access. Premium: ${isPremium}, Remaining credits: ${isPremium ? '∞' : purchasedCreditsRemaining}`)
+
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.error('❌ OPENAI_API_KEY not configured')
@@ -114,6 +161,24 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString()
           })
           .eq('id', existingScript.id)
+        
+        // ✅ DEDUCT CREDIT (only for non-premium users)
+        if (!isPremium) {
+          console.log(`💳 Deducting 1 credit from user ${userId}`)
+          const { error: deductError } = await supabaseUsers
+            .from('users')
+            .update({ 
+              ai_scripts_used: (dbUser.ai_scripts_used || 0) + 1,
+              last_active_at: new Date().toISOString()
+            })
+            .eq('clerk_user_id', userId)
+          
+          if (deductError) {
+            console.error('❌ Failed to deduct credit:', deductError)
+          } else {
+            console.log(`✅ Credit deducted. New total: ${(dbUser.ai_scripts_used || 0) + 1}`)
+          }
+        }
         
         // Artificial 5-second delay so user feels like script is being generated
         await new Promise(resolve => setTimeout(resolve, 5000))
@@ -326,6 +391,24 @@ Educational purposes only. Not financial advice.`
       console.error('Exception message:', supabaseError?.message)
       console.error('Exception stack:', supabaseError?.stack)
       // Continue anyway
+    }
+
+    // ✅ DEDUCT CREDIT (only for non-premium users)
+    if (!isPremium) {
+      console.log(`💳 Deducting 1 credit from user ${userId}`)
+      const { error: deductError } = await supabaseUsers
+        .from('users')
+        .update({ 
+          ai_scripts_used: (dbUser.ai_scripts_used || 0) + 1,
+          last_active_at: new Date().toISOString()
+        })
+        .eq('clerk_user_id', userId)
+      
+      if (deductError) {
+        console.error('❌ Failed to deduct credit:', deductError)
+      } else {
+        console.log(`✅ Credit deducted. New total: ${(dbUser.ai_scripts_used || 0) + 1}`)
+      }
     }
 
     console.log('=== SCRIPT GENERATION COMPLETE ===\n')
