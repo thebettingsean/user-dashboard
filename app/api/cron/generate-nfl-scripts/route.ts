@@ -9,19 +9,14 @@ const supabase = createClient(
 
 /**
  * NFL-specific cron job to pre-generate AI scripts
- * Runs every hour from 9am-7pm EST (9:00, 10:00, 11:00... 7:00 PM)
+ * Runs every 2 hours from 9am-7pm EST (9:00, 11:00, 1:00, 3:00, 5:00, 7:00 PM)
  * 
  * Vercel Cron Schedule (in UTC, EST = UTC-5):
  * - 9 AM EST  = 2 PM UTC  = 0 14 * * *
- * - 10 AM EST = 3 PM UTC  = 0 15 * * *
  * - 11 AM EST = 4 PM UTC  = 0 16 * * *
- * - 12 PM EST = 5 PM UTC  = 0 17 * * *
  * - 1 PM EST  = 6 PM UTC  = 0 18 * * *
- * - 2 PM EST  = 7 PM UTC  = 0 19 * * *
  * - 3 PM EST  = 8 PM UTC  = 0 20 * * *
- * - 4 PM EST  = 9 PM UTC  = 0 21 * * *
  * - 5 PM EST  = 10 PM UTC = 0 22 * * *
- * - 6 PM EST  = 11 PM UTC = 0 23 * * *
  * - 7 PM EST  = 0 AM UTC  = 0 0 * * * (next day)
  */
 

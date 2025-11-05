@@ -9,19 +9,14 @@ const supabase = createClient(
 
 /**
  * NBA-specific cron job to pre-generate AI scripts
- * Runs every hour from 10:30am-8:30pm EST (10:30, 11:30, 12:30... 8:30 PM)
+ * Runs every 2 hours from 10:30am-8:30pm EST (10:30, 12:30, 2:30, 4:30, 6:30, 8:30 PM)
  * 
  * Vercel Cron Schedule (in UTC, EST = UTC-5):
  * - 10:30 AM EST = 3:30 PM UTC  = 30 15 * * *
- * - 11:30 AM EST = 4:30 PM UTC  = 30 16 * * *
  * - 12:30 PM EST = 5:30 PM UTC  = 30 17 * * *
- * - 1:30 PM EST  = 6:30 PM UTC  = 30 18 * * *
  * - 2:30 PM EST  = 7:30 PM UTC  = 30 19 * * *
- * - 3:30 PM EST  = 8:30 PM UTC  = 30 20 * * *
  * - 4:30 PM EST  = 9:30 PM UTC  = 30 21 * * *
- * - 5:30 PM EST  = 10:30 PM UTC = 30 22 * * *
  * - 6:30 PM EST  = 11:30 PM UTC = 30 23 * * *
- * - 7:30 PM EST  = 0:30 AM UTC  = 30 0 * * * (next day)
  * - 8:30 PM EST  = 1:30 AM UTC  = 30 1 * * * (next day)
  */
 
