@@ -64,7 +64,7 @@ export default function Home() {
 
   useEffect(() => {
     // Set welcome message immediately, update when firstName or user changes
-    setWelcomeMessage(getWelcomeMessage(firstName))
+      setWelcomeMessage(getWelcomeMessage(firstName))
   }, [firstName, user])
   
   // Fetch credit status
@@ -81,7 +81,7 @@ export default function Home() {
         
         if (data.isPremium || data.creditsRemaining === 'unlimited') {
           setCreditsRemaining('unlimited')
-        } else {
+    } else {
           setCreditsRemaining(data.creditsRemaining || 0)
         }
       } catch (error) {
@@ -373,6 +373,7 @@ export default function Home() {
       <div style={{ 
         marginBottom: '2rem',
         padding: '0.5rem 0',
+        paddingLeft: '0', // Remove left padding on mobile to match sections below
         textAlign: 'left' as const,
         position: 'relative',
         zIndex: 1
@@ -479,8 +480,8 @@ export default function Home() {
                     {sport.label}
                   </button>
                 ))}
-              </div>
-
+        </div>
+        
               {/* Game Cards - Horizontal Scroll */}
               {loadingGames ? (
                 <div style={{ 
@@ -847,14 +848,14 @@ export default function Home() {
                       <div
                         key={game.gameId}
                         onClick={() => !isGenerating && handleAnalyzeGame(game.gameId, game.sport)}
-                        style={{
+                  style={{ 
                           minWidth: '220px',
                           background: 'rgba(255, 255, 255, 0.04)',
                           backdropFilter: 'blur(20px)',
                           border: '0.5px solid rgba(255, 255, 255, 0.08)',
                           borderRadius: '10px',
                           padding: '0.75rem',
-                          display: 'flex',
+                    display: 'flex',
                           flexDirection: 'column' as const,
                           gap: '0.5rem',
                           transition: 'all 0.3s',
@@ -866,7 +867,7 @@ export default function Home() {
                         <div style={{ 
                           display: 'flex', 
                           alignItems: 'center',
-                          justifyContent: 'space-between',
+                    justifyContent: 'space-between',
                           gap: '0.5rem'
                         }}>
                           <div style={{ 
@@ -921,7 +922,7 @@ export default function Home() {
                             /* Credit Cost Badge (Non-Premium Users) - Orange (1), Yellow (2), Green (3) */
                             <div style={{
                               display: 'flex',
-                              alignItems: 'center',
+                    alignItems: 'center',
                               gap: '0.3rem',
                               padding: '0.25rem 0.5rem',
                               background: scriptStrength === 3 
@@ -1048,8 +1049,8 @@ export default function Home() {
                     <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
-                  </div>
-                ))}
+              </div>
+            ))}
               </div>
             )}
           </div>
@@ -1114,8 +1115,8 @@ export default function Home() {
                 {row3Widgets.map(widget => (
                   <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
                     {widget.component}
-                  </div>
-                ))}
+              </div>
+            ))}
               </div>
             )}
           </div>

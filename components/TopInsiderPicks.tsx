@@ -443,8 +443,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'rgba(0, 0, 0, 0.7)',
-                      backdropFilter: 'blur(8px)',
+                      background: 'rgba(0, 0, 0, 0.85)',
+                      backdropFilter: 'blur(20px)',
                       borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',

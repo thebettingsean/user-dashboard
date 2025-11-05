@@ -121,7 +121,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
         }}
       >
         <GiTwoCoins size={16} style={{ color: '#8b5cf6', opacity: 0.6 }} />
-        Sign up to get credits →
+        Sign up to get free credits →
       </button>
     )
   }
