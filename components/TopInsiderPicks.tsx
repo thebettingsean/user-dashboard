@@ -436,15 +436,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   position: 'relative'
                 }}
               >
-                {/* Not signed in - blur everything */}
+                {/* Not signed in - blur everything (same as LockedWidget) */}
                 {!isSignedIn && (
                   <div
                     onClick={() => router.push('/sign-in')}
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'rgba(0, 0, 0, 0.85)',
-                      backdropFilter: 'blur(20px)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      background: 'rgba(0, 0, 0, 0.3)',
                       borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',

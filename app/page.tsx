@@ -372,8 +372,7 @@ export default function Home() {
       <div style={{ padding: '120px 1rem 1.5rem 1rem', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
       <div style={{ 
         marginBottom: '2rem',
-        padding: '0.5rem 0',
-        paddingLeft: '0', // Remove left padding on mobile to match sections below
+        padding: '0.5rem 0', // Only vertical padding, horizontal is inherited from parent
         textAlign: 'left' as const,
         position: 'relative',
         zIndex: 1
