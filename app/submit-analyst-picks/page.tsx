@@ -48,7 +48,7 @@ interface Pick {
 }
 
 interface Game {
-  id: string
+  game_id: string  // Changed from 'id' to match API format
   away_team: string
   home_team: string
   game_date: string
@@ -1044,7 +1044,7 @@ export default function SubmitAnalystPicks() {
                                   minute: '2-digit'
                                 })
                                 return (
-                                  <option key={game.id} value={game.id}>
+                                  <option key={game.game_id} value={game.game_id}>
                                     {game.away_team} @ {game.home_team} ({gameTime})
                                   </option>
                                 )
