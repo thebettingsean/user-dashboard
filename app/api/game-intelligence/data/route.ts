@@ -227,11 +227,12 @@ export async function GET(request: NextRequest) {
     console.log('Fetching player props...')
     const playerProps = await fetchPlayerProps(league, gameId)
     if (playerProps && playerProps.length > 0) {
-      console.log(`✅ Player props available (${playerProps.length} categories)`)
+      const totalPlayers = playerProps.reduce((sum, cat) => sum + cat.players.length, 0)
+      console.log(`✅ Player props available (${playerProps.length} categories, ${totalPlayers} players)`)
       availableDataSources.push('player_props')
       dataSourceCount++
     } else {
-      console.log('⚠️ No player props')
+      console.log(`❌ NO PLAYER PROPS FOUND for ${gameId}`)
     }
 
     // 6. Fetch prop parlay recommendations (PROPRIETARY TOOL)
@@ -348,10 +349,9 @@ export async function GET(request: NextRequest) {
     // What matters: TOP PROPS and ANALYST PICKS
     // Everything else (public money, team rankings, etc.) are refinement data
     
-    // Check for TOP PROPS (player props OR prop parlay tool OR anytime TD tool)
-    const hasTopProps = (playerProps && playerProps.length > 0) || 
-                        propParlayRecs.length > 0 || 
-                        anytimeTDRecs.length > 0
+    // Check for TOP PROPS (ONLY from Trendline API player-props endpoint)
+    // Railway tools (prop-parlay, anytime-td, fantasy) are NOT ready yet (no team names)
+    const hasTopProps = playerProps && playerProps.length > 0
     
     // Check for analyst picks tied to this game
     let hasAnalystPicks = false
