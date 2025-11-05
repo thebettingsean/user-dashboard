@@ -54,8 +54,9 @@ export async function GET(request: NextRequest) {
           const data = await response.json()
           const games = data.games || []
           
-          // Get current time in UTC (for comparison)
+          // Get current time in EST (for comparison with API times which are EST)
           const now = new Date()
+          const nowEST = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
           
           // Transform and add sport label, filter out games that have already started
           const formattedGames = games
@@ -67,12 +68,12 @@ export async function GET(request: NextRequest) {
               sport: sport.toUpperCase()
             }))
             .filter((game: any) => {
-              // Compare game time (UTC) with current time (UTC)
+              // API returns game times in EST, so compare EST to EST
               const gameTime = new Date(game.game_date)
-              const isFuture = gameTime > now
+              const isFuture = gameTime > nowEST
               
               if (!isFuture) {
-                console.log(`⏭️  Filtering out past game: ${game.game_id} (${gameTime.toISOString()})`)
+                console.log(`⏭️  Filtering out past game: ${game.game_id} (Game: ${gameTime.toLocaleString('en-US', { timeZone: 'America/New_York' })}, Now EST: ${nowEST.toLocaleString('en-US')})`)
               }
               
               return isFuture

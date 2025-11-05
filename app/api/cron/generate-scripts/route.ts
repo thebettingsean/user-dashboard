@@ -91,15 +91,36 @@ export async function GET(request: NextRequest) {
           .eq('sport', sport)
           .single()
 
+        // First check if there are analyst picks for this game (for proper strength calculation)
+        let hasAnalystPicks = false
+        try {
+          const picksCheckUrl = `${baseUrl}/api/analyst-library?gameId=${gameId}`
+          const picksCheckRes = await fetch(picksCheckUrl)
+          if (picksCheckRes.ok) {
+            const picksData = await picksCheckRes.json()
+            hasAnalystPicks = picksData.picks && picksData.picks.length > 0
+            if (hasAnalystPicks) {
+              console.log(`✨ Found ${picksData.picks.length} analyst picks for ${gameId}`)
+            }
+          }
+        } catch (error) {
+          console.log(`⚠️ Could not check analyst picks for ${gameId}:`, error)
+        }
+        
         if (existingScript) {
           // Check if it's older than 1 hour - if so, regenerate
           const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-          if (existingScript.generated_at >= oneHourAgo) {
+          
+          // ALWAYS regenerate if analyst picks exist (to ensure 3-credit strength is reflected)
+          if (hasAnalystPicks) {
+            console.log(`🔄 Analyst picks found for ${gameId} - forcing regeneration for 3-credit strength`)
+          } else if (existingScript.generated_at >= oneHourAgo) {
             console.log(`⏭️  Script fresh for ${gameId} (generated ${existingScript.generated_at}), skipping`)
             skippedCount++
             continue
+          } else {
+            console.log(`🔄 Script stale for ${gameId} (generated ${existingScript.generated_at}), regenerating`)
           }
-          console.log(`🔄 Script stale for ${gameId} (generated ${existingScript.generated_at}), regenerating`)
         }
 
         // Step 1: Fetch game intelligence data
