@@ -436,16 +436,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   position: 'relative'
                 }}
               >
-                {/* Not signed in - strong blur (MUCH stronger than before) */}
+                {/* Not signed in - MAXIMUM blur (nothing visible) */}
                 {!isSignedIn && (
                   <div
                     onClick={() => router.push('/sign-in')}
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      backdropFilter: 'blur(16px)',
-                      WebkitBackdropFilter: 'blur(16px)',
-                      background: 'rgba(0, 0, 0, 0.7)',
+                      backdropFilter: 'blur(30px)',
+                      WebkitBackdropFilter: 'blur(30px)',
+                      background: 'rgba(0, 0, 0, 0.92)',
                       borderRadius: '10px',
                       display: 'flex',
                       alignItems: 'center',
