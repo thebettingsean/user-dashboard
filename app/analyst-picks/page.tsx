@@ -322,6 +322,7 @@ export default function AnalystPicksPage() {
 
   const checkUnlockAccess = async () => {
     try {
+      // First check for all-day access
       const response = await fetch('/api/picks/check-access')
       const data = await response.json()
 
@@ -330,17 +331,24 @@ export default function AnalystPicksPage() {
           setHasAllDayAccess(true)
           // Unlock all picks
           setUnlockedPicks(new Set(allPicks.map(p => p.id)))
+          return // No need to check individual picks
         }
       }
 
-      // Check individual pick unlocks
+      // If no all-day access, check each pick individually
+      // We need to check all picks to build the unlocked set
+      const unlockedIds = new Set<string>()
+      
       for (const pick of allPicks) {
         const pickResponse = await fetch(`/api/picks/check-access?pickId=${pick.id}`)
         const pickData = await pickResponse.json()
-        if (pickData.hasAccess) {
-          setUnlockedPicks(prev => new Set([...prev, pick.id]))
+        
+        if (pickData.hasAccess && pickData.reason === 'single_unlocked') {
+          unlockedIds.add(pick.id)
         }
       }
+
+      setUnlockedPicks(unlockedIds)
     } catch (error) {
       console.error('Error checking unlock access:', error)
     }

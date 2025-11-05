@@ -98,13 +98,35 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
   async function checkAccess() {
     try {
-      const pickIds = picks.map(p => p.id).join(',')
-      const response = await fetch(`/api/picks/check-access?pickIds=${pickIds}`)
+      // First check for all-day access or premium status
+      const response = await fetch('/api/picks/check-access')
       const data = await response.json()
 
-      setIsPremium(data.isPremium || false)
-      setHasAllDayAccess(data.hasAllDayAccess || false)
-      setUnlockedPicks(data.unlockedPicks || [])
+      if (data.hasAccess) {
+        if (data.reason === 'premium') {
+          setIsPremium(true)
+          setUnlockedPicks(picks.map(p => p.id))
+          return
+        } else if (data.reason === 'all_day_unlocked') {
+          setHasAllDayAccess(true)
+          setUnlockedPicks(picks.map(p => p.id))
+          return
+        }
+      }
+
+      // Check individual pick unlocks
+      const unlockedIds: string[] = []
+      
+      for (const pick of picks) {
+        const pickResponse = await fetch(`/api/picks/check-access?pickId=${pick.id}`)
+        const pickData = await pickResponse.json()
+        
+        if (pickData.hasAccess && pickData.reason === 'single_unlocked') {
+          unlockedIds.push(pick.id)
+        }
+      }
+
+      setUnlockedPicks(unlockedIds)
     } catch (error) {
       console.error('Error checking access:', error)
     }
