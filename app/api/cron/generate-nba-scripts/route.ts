@@ -8,21 +8,21 @@ const supabase = createClient(
 )
 
 /**
- * Cron job to pre-generate AI scripts for all games
- * Runs every hour from 9am-7pm EST (11 runs per day)
+ * NBA-specific cron job to pre-generate AI scripts
+ * Runs every hour from 10:30am-8:30pm EST (10:30, 11:30, 12:30... 8:30 PM)
  * 
  * Vercel Cron Schedule (in UTC, EST = UTC-5):
- * - 9:00 AM EST = 2:00 PM UTC  -> 0 14 * * *
- * - 10:00 AM EST = 3:00 PM UTC -> 0 15 * * *
- * - 11:00 AM EST = 4:00 PM UTC -> 0 16 * * *
- * - 12:00 PM EST = 5:00 PM UTC -> 0 17 * * *
- * - 1:00 PM EST = 6:00 PM UTC  -> 0 18 * * *
- * - 2:00 PM EST = 7:00 PM UTC  -> 0 19 * * *
- * - 3:00 PM EST = 8:00 PM UTC  -> 0 20 * * *
- * - 4:00 PM EST = 9:00 PM UTC  -> 0 21 * * *
- * - 5:00 PM EST = 10:00 PM UTC -> 0 22 * * *
- * - 6:00 PM EST = 11:00 PM UTC -> 0 23 * * *
- * - 7:00 PM EST = 12:00 AM UTC -> 0 0 * * * (next day)
+ * - 10:30 AM EST = 3:30 PM UTC  = 30 15 * * *
+ * - 11:30 AM EST = 4:30 PM UTC  = 30 16 * * *
+ * - 12:30 PM EST = 5:30 PM UTC  = 30 17 * * *
+ * - 1:30 PM EST  = 6:30 PM UTC  = 30 18 * * *
+ * - 2:30 PM EST  = 7:30 PM UTC  = 30 19 * * *
+ * - 3:30 PM EST  = 8:30 PM UTC  = 30 20 * * *
+ * - 4:30 PM EST  = 9:30 PM UTC  = 30 21 * * *
+ * - 5:30 PM EST  = 10:30 PM UTC = 30 22 * * *
+ * - 6:30 PM EST  = 11:30 PM UTC = 30 23 * * *
+ * - 7:30 PM EST  = 0:30 AM UTC  = 30 0 * * * (next day)
+ * - 8:30 PM EST  = 1:30 AM UTC  = 30 1 * * * (next day)
  */
 
 export async function GET(request: NextRequest) {
@@ -30,11 +30,13 @@ export async function GET(request: NextRequest) {
     // Verify cron secret to prevent unauthorized access
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      console.error('❌ Unauthorized cron request')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('🤖 [CRON] Starting script generation job...')
-
+    console.log('\n🏀 ========== NBA SCRIPT GENERATION CRON START ==========')
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`)
+    
     // Always use production URL for cron jobs (avoid Vercel preview deployment protection)
     const baseUrl = 'https://dashboard.thebettinginsider.com'
     console.log(`📍 Using base URL: ${baseUrl}`)
@@ -53,24 +55,22 @@ export async function GET(request: NextRequest) {
 
     const gamesData = await gamesResponse.json()
     
-    // The API returns { games: [...] } format
-    let allGames = gamesData.games || []
+    // Filter for NBA games only
+    const allGames = (gamesData.games || []).filter((game: any) => game.sport === 'NBA')
     
-    // PRIORITIZE NFL GAMES - process them first to avoid timeout issues
-    // Sort by: 1) NFL first, 2) then by game time
-    allGames = allGames.sort((a: any, b: any) => {
-      // NFL games go first
-      if (a.sport === 'NFL' && b.sport !== 'NFL') return -1
-      if (a.sport !== 'NFL' && b.sport === 'NFL') return 1
-      // Within same sport, sort by game time
-      return new Date(a.game_date).getTime() - new Date(b.game_date).getTime()
-    })
-
-    console.log(`📊 Found ${allGames.length} games to process (NFL prioritized)`)
+    console.log(`📊 Found ${allGames.length} NBA games to process`)
     
     if (allGames.length === 0) {
-      console.log('⚠️ No games found - check API response format')
-      console.log('Response structure:', Object.keys(gamesData))
+      console.log('⚠️ No NBA games found today')
+      return NextResponse.json({
+        success: true,
+        message: 'No NBA games to process',
+        timestamp: new Date().toISOString(),
+        totalGames: 0,
+        successCount: 0,
+        skippedCount: 0,
+        errorCount: 0
+      })
     }
 
     let successCount = 0
@@ -78,38 +78,32 @@ export async function GET(request: NextRequest) {
     let skippedCount = 0
     const errors: string[] = []
 
-    // OPTIMIZATION: Fetch ALL existing scripts at once (single DB query instead of 27)
+    // OPTIMIZATION: Fetch ALL existing NBA scripts at once (single DB query)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { data: existingScripts } = await supabase
       .from('game_scripts')
       .select('game_id, sport, generated_at')
+      .eq('sport', 'NBA')
       .gte('generated_at', oneHourAgo)
     
     const freshScriptsMap = new Map<string, string>()
     if (existingScripts) {
       existingScripts.forEach(script => {
-        freshScriptsMap.set(`${script.sport}-${script.game_id}`, script.generated_at)
+        freshScriptsMap.set(script.game_id, script.generated_at)
       })
-      console.log(`📝 Found ${existingScripts.length} fresh scripts (< 1 hour old)`)
+      console.log(`📝 Found ${existingScripts.length} fresh NBA scripts (< 1 hour old)`)
     }
 
-    // Process games in parallel batches for speed
-    const batchSize = 10 // Increased from 5
-    for (let i = 0; i < allGames.length; i += batchSize) {
-      const batch = allGames.slice(i, i + batchSize)
-      console.log(`\n🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allGames.length / batchSize)} (${batch.length} games)`)
-      
-      for (const game of batch) {
-      // Games use game_id from API, not gameId
+    // Process all NBA games
+    for (const game of allGames) {
       const gameId = game.game_id || game.gameId
-      const sport = game.sport || 'nfl'
-      const scriptKey = `${sport}-${gameId}`
+      const sport = 'NBA'
 
       try {
-        console.log(`🎯 Checking script for ${sport.toUpperCase()} game: ${gameId}`)
+        console.log(`🎯 Checking script for NBA game: ${gameId}`)
 
         // Check if this game has a fresh script (< 1 hour old)
-        const existingGeneratedAt = freshScriptsMap.get(scriptKey)
+        const existingGeneratedAt = freshScriptsMap.get(gameId)
         
         // Quick check for analyst picks (only if script is fresh, to determine if we force regen)
         let hasAnalystPicks = false
@@ -188,11 +182,12 @@ export async function GET(request: NextRequest) {
         errors.push(`${gameId}: ${error.message}`)
         errorCount++
       }
-      }
     }
 
     const summary = {
+      success: true,
       timestamp: new Date().toISOString(),
+      sport: 'NBA',
       totalGames: allGames.length,
       successCount,
       skippedCount,
@@ -200,21 +195,23 @@ export async function GET(request: NextRequest) {
       errors: errors.slice(0, 5) // Only return first 5 errors to avoid huge response
     }
 
-    console.log('🏁 [CRON] Job completed:', summary)
+    console.log('\n📊 ========== NBA CRON SUMMARY ==========')
+    console.log(`✅ Success: ${successCount}`)
+    console.log(`⏭️  Skipped: ${skippedCount}`)
+    console.log(`❌ Errors: ${errorCount}`)
+    console.log('🏀 ========== NBA SCRIPT GENERATION CRON END ==========\n')
 
-    return NextResponse.json({
-      success: true,
-      message: 'Cron job completed',
-      ...summary
-    })
+    return NextResponse.json(summary)
 
   } catch (error: any) {
-    console.error('❌ [CRON] Fatal error:', error)
+    console.error('❌ NBA Cron job failed:', error)
     return NextResponse.json(
       { 
-        error: 'Cron job failed', 
-        message: error.message 
-      },
+        error: 'Internal server error', 
+        message: error.message,
+        timestamp: new Date().toISOString(),
+        sport: 'NBA'
+      }, 
       { status: 500 }
     )
   }

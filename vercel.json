@@ -5,48 +5,92 @@
       "schedule": "0 10 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 14 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 15 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 15 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 16 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 16 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 17 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 17 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 18 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 18 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 19 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 19 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 20 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 20 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 21 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 21 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 22 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 22 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 23 * * *"
     },
     {
-      "path": "/api/cron/generate-scripts",
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 23 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/generate-nba-scripts",
+      "schedule": "30 1 * * *"
     }
   ]
 }
