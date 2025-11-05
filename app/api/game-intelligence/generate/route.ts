@@ -127,9 +127,8 @@ export async function POST(request: NextRequest) {
     console.log(`🕐 Current time window: ${timeWindow} (${hour}:00 EST)`)
     console.log(`📅 Game time: ${gameTime}`)
     
-    // Get current user (for tracking who generated the script)
-    const user = await currentUser()
-    const clerkUserId = user?.id || 'anonymous'
+    // User already authenticated at the top, use existing userId
+    const clerkUserId = userId // Already set from auth check at line 38
     
     // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST
     // Check if a script for this game was generated within the last 4 hours (cache expiry)
