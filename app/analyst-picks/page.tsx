@@ -302,11 +302,16 @@ export default function AnalystPicksPage() {
       const response = await fetch('/api/ai-credits/check')
       const data = await response.json()
       
-      if (data.isPremium) {
+      console.log('💳 [AnalystPicks] Credits API response:', data)
+      
+      // Use the SAME logic as AICreditBadge
+      if (data.isPremium || data.accessLevel === 'full') {
         setCreditsRemaining('unlimited')
       } else {
-        const remaining = (data.purchasedCredits || 0) - (data.scriptsUsed || 0)
-        setCreditsRemaining(Math.max(0, remaining))
+        // Use creditsRemaining directly from API response (same as AICreditBadge)
+        const remaining = typeof data.creditsRemaining === 'number' ? data.creditsRemaining : 0
+        console.log(`💰 [AnalystPicks] User has ${remaining} credits remaining`)
+        setCreditsRemaining(remaining)
       }
     } catch (error) {
       console.error('Error fetching credits:', error)

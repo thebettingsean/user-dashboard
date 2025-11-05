@@ -83,14 +83,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
       const data = await response.json()
       console.log('💳 [TopInsiderPicks] Credits API response:', data)
       
-      if (data.isPremium) {
+      // Use the SAME logic as AICreditBadge
+      if (data.isPremium || data.accessLevel === 'full') {
         console.log('✨ [TopInsiderPicks] User is premium, setting unlimited credits')
         setCreditsRemaining('unlimited')
         setIsPremium(true)
       } else {
-        const remaining = (data.purchasedCredits || 0) - (data.scriptsUsed || 0)
-        console.log(`💰 [TopInsiderPicks] User has ${remaining} credits remaining (${data.purchasedCredits} purchased - ${data.scriptsUsed} used)`)
-        setCreditsRemaining(Math.max(0, remaining))
+        // Use creditsRemaining directly from API response (same as AICreditBadge)
+        const remaining = typeof data.creditsRemaining === 'number' ? data.creditsRemaining : 0
+        console.log(`💰 [TopInsiderPicks] User has ${remaining} credits remaining`)
+        setCreditsRemaining(remaining)
       }
     } catch (error) {
       console.error('❌ [TopInsiderPicks] Error fetching credits:', error)
