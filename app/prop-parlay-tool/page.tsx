@@ -57,7 +57,7 @@ export default function PropParlayTool() {
   async function fetchData() {
     try {
       const url = sport === 'NFL' 
-        ? 'https://nfl-alt-prop-tool-database-production.up.railway.app'
+        ? 'https://nfl-perfect-prop-tool-production.up.railway.app'
         : 'https://nba-alt-prop-tool-production.up.railway.app'
       
       const res = await fetch(url)

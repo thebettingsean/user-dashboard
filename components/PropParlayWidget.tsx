@@ -12,7 +12,7 @@ export default function PropParlayWidget() {
 
   async function fetchData() {
     try {
-      const res = await fetch('https://nfl-alt-prop-tool-database-production.up.railway.app')
+      const res = await fetch('https://nfl-perfect-prop-tool-production.up.railway.app')
       const json = await res.json()
       setData(json)
       setLoading(false)

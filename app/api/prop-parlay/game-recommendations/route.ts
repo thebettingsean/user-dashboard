@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch all props from the prop parlay tool API
     const apiUrl = sport === 'nfl' 
-      ? 'https://nfl-alt-prop-tool-database-production.up.railway.app'
+      ? 'https://nfl-perfect-prop-tool-production.up.railway.app'
       : 'https://nba-alt-prop-tool-production.up.railway.app'
 
     console.log(`Fetching from: ${apiUrl}`)
