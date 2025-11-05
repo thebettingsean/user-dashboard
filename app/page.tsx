@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSubscription } from '../lib/hooks/useSubscription'
 import { useUser, SignInButton } from '@clerk/nextjs'
 import LockedWidget from '../components/LockedWidget'
-import PicksWidget from '../components/PicksWidget'
+import TopInsiderPicks from '../components/TopInsiderPicks'
 import StatsWidget from '../components/StatsWidget'
 import MatchupWidget from '../components/MatchupWidget'
 import FantasyWidget from '../components/FantasyWidget'
@@ -275,7 +275,7 @@ export default function Home() {
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg',
       borderColor: 'rgba(255, 202, 16, 0.6)',
       background: 'linear-gradient(135deg, rgba(255, 202, 16, 0.15) 0%, rgba(255, 202, 16, 0.08) 100%)',
-      component: <PicksWidget /> 
+      component: <TopInsiderPicks isCollapsible={false} defaultExpanded={true} /> 
     },
     { 
       id: 'stats', 
@@ -1113,7 +1113,7 @@ export default function Home() {
           }}>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <PicksWidget />
+                <TopInsiderPicks isCollapsible={true} defaultExpanded={true} />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
