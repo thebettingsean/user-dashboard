@@ -382,24 +382,26 @@ export async function GET(request: NextRequest) {
     
     let dataStrength: 1 | 2 | 3
     
-    if (hasTeamRankings && otherDataCount >= 3 && hasAnalystPicks) {
-      // Team rankings + 3+ other things + analyst picks = Strong
+    // New logic based on credit cost:
+    // Minimal (1 credit): Team Rankings + 1 data source
+    // Above Average (2 credits): Team Rankings + 2+ data sources (no analyst picks)
+    // Strong (3 credits): Team Rankings + 2+ data sources + analyst picks
+    
+    if (hasTeamRankings && otherDataCount >= 2 && hasAnalystPicks) {
+      // Team rankings + 2+ sources + analyst picks = Strong (3 credits)
       dataStrength = 3
-    } else if (hasTeamRankings && otherDataCount >= 3) {
-      // Team rankings + 3+ other things = Good
+    } else if (hasTeamRankings && otherDataCount >= 2) {
+      // Team rankings + 2+ sources (no analyst picks) = Above Average (2 credits)
       dataStrength = 2
-    } else if (hasTeamRankings && otherDataCount <= 2 && hasAnalystPicks) {
-      // Team rankings + 0-2 other things + analyst picks = Good
-      dataStrength = 2
-    } else if (hasTeamRankings && otherDataCount <= 2) {
-      // Team rankings + 0-2 other things = Minimal
+    } else if (hasTeamRankings && otherDataCount >= 1) {
+      // Team rankings + 1 source = Minimal (1 credit)
       dataStrength = 1
     } else {
-      // No team rankings (shouldn't happen) = Minimal
+      // No team rankings or insufficient data = Minimal (1 credit)
       dataStrength = 1
     }
 
-    console.log(`Data Strength: ${dataStrength} (Team Rankings: ${hasTeamRankings ? 'YES' : 'NO'}, Other Data: ${otherDataCount}, Analyst Picks: ${hasAnalystPicks ? 'YES' : 'NO'})`)
+    console.log(`💎 Data Strength: ${dataStrength} credits (Team Rankings: ${hasTeamRankings ? 'YES' : 'NO'}, Other Data: ${otherDataCount}, Analyst Picks: ${hasAnalystPicks ? 'YES' : 'NO'})`)
     console.log(`Available sources: ${availableDataSources.join(', ')}`)
     console.log('=== DATA AGGREGATION COMPLETE ===\n')
 

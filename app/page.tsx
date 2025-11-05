@@ -24,6 +24,7 @@ import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 import { GoPlusCircle } from 'react-icons/go'
 import { TiMinusOutline } from 'react-icons/ti'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
+import { GiTwoCoins } from 'react-icons/gi'
 
 interface GameSummary {
   gameId: string
@@ -503,7 +504,7 @@ export default function Home() {
                           opacity: isGenerating ? 0.7 : 1
                         }}
                       >
-                        {/* Top Row: Team names + Strength Indicator */}
+                        {/* Top Row: Team names + Strength Indicator or Credit Cost */}
                         <div style={{ 
                           display: 'flex', 
                           alignItems: 'center',
@@ -519,43 +520,67 @@ export default function Home() {
                             {game.awayTeam} @ {game.homeTeam}
                           </div>
                           
-                          {/* Horizontal Bar Chart - Red, Yellow, Green */}
-                          <div style={{
-                            display: 'flex',
-                            gap: '3px',
-                            alignItems: 'flex-end',
-                            flexShrink: 0
-                          }}>
-                            {/* Red bar (smallest) */}
+                          {/* Show credit cost for non-premium users, bar graph for premium */}
+                          {isSubscribed ? (
+                            /* Horizontal Bar Chart - Red, Yellow, Green (Premium Users) */
                             <div style={{
-                              width: '6px',
-                              height: '8px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                            
-                            {/* Yellow bar (medium) */}
+                              display: 'flex',
+                              gap: '3px',
+                              alignItems: 'flex-end',
+                              flexShrink: 0
+                            }}>
+                              {/* Red bar (smallest) */}
+                              <div style={{
+                                width: '6px',
+                                height: '8px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                              
+                              {/* Yellow bar (medium) */}
+                              <div style={{
+                                width: '6px',
+                                height: '12px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                              
+                              {/* Green bar (tallest) */}
+                              <div style={{
+                                width: '6px',
+                                height: '16px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                            </div>
+                          ) : (
+                            /* Credit Cost Badge (Non-Premium Users) */
                             <div style={{
-                              width: '6px',
-                              height: '12px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                            
-                            {/* Green bar (tallest) */}
-                            <div style={{
-                              width: '6px',
-                              height: '16px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                          </div>
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.25rem 0.5rem',
+                              background: 'rgba(251, 191, 36, 0.1)',
+                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              borderRadius: '6px',
+                              flexShrink: 0
+                            }}>
+                              <GiTwoCoins style={{ color: '#fbbf24', fontSize: '0.85rem' }} />
+                              <span style={{
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                color: '#fbbf24'
+                              }}>
+                                {scriptStrength}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Active Data Label */}
@@ -768,7 +793,7 @@ export default function Home() {
                           opacity: isGenerating ? 0.7 : 1
                         }}
                       >
-                        {/* Top Row: Team names + Strength Indicator */}
+                        {/* Top Row: Team names + Strength Indicator or Credit Cost */}
                         <div style={{ 
                           display: 'flex', 
                           alignItems: 'center',
@@ -784,43 +809,67 @@ export default function Home() {
                             {game.awayTeam} @ {game.homeTeam}
                           </div>
                           
-                          {/* Horizontal Bar Chart - Red, Yellow, Green */}
-                          <div style={{
-                            display: 'flex',
-                            gap: '3px',
-                            alignItems: 'flex-end',
-                            flexShrink: 0
-                          }}>
-                            {/* Red bar (smallest) */}
+                          {/* Show credit cost for non-premium users, bar graph for premium */}
+                          {isSubscribed ? (
+                            /* Horizontal Bar Chart - Red, Yellow, Green (Premium Users) */
                             <div style={{
-                              width: '6px',
-                              height: '8px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                            
-                            {/* Yellow bar (medium) */}
+                              display: 'flex',
+                              gap: '3px',
+                              alignItems: 'flex-end',
+                              flexShrink: 0
+                            }}>
+                              {/* Red bar (smallest) */}
+                              <div style={{
+                                width: '6px',
+                                height: '8px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 1 ? '#ef4444' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 1 ? '0 0 6px rgba(239, 68, 68, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                              
+                              {/* Yellow bar (medium) */}
+                              <div style={{
+                                width: '6px',
+                                height: '12px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                              
+                              {/* Green bar (tallest) */}
+                              <div style={{
+                                width: '6px',
+                                height: '16px',
+                                borderRadius: '2px',
+                                background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
+                                boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
+                                transition: 'all 0.3s'
+                              }} />
+                            </div>
+                          ) : (
+                            /* Credit Cost Badge (Non-Premium Users) */
                             <div style={{
-                              width: '6px',
-                              height: '12px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 2 ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 2 ? '0 0 6px rgba(245, 158, 11, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                            
-                            {/* Green bar (tallest) */}
-                            <div style={{
-                              width: '6px',
-                              height: '16px',
-                              borderRadius: '2px',
-                              background: scriptStrength >= 3 ? '#10b981' : 'rgba(255, 255, 255, 0.1)',
-                              boxShadow: scriptStrength >= 3 ? '0 0 6px rgba(16, 185, 129, 0.4)' : 'none',
-                              transition: 'all 0.3s'
-                            }} />
-                          </div>
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.25rem 0.5rem',
+                              background: 'rgba(251, 191, 36, 0.1)',
+                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              borderRadius: '6px',
+                              flexShrink: 0
+                            }}>
+                              <GiTwoCoins style={{ color: '#fbbf24', fontSize: '0.85rem' }} />
+                              <span style={{
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                color: '#fbbf24'
+                              }}>
+                                {scriptStrength}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Active Data Label */}
