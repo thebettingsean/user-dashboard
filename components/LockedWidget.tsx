@@ -21,8 +21,14 @@ export default function LockedWidget({ isLoggedIn, hasSubscription, children }: 
   
   const handleClick = () => {
     if (isSignedIn) {
-      // Signed in but no subscription → go to upgrade page
-      window.location.href = '/upgrade'
+      // Signed in but no subscription → show unlock modal
+      console.log('🔒 Locked widget clicked - triggering modal')
+      if ((window as any).showUnlockModal) {
+        ;(window as any).showUnlockModal()
+      } else {
+        // Fallback to /upgrade redirect if modal not available
+        window.location.href = '/upgrade'
+      }
     }
     // If not signed in, do nothing (SignInButton will handle it)
   }
