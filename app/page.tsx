@@ -270,14 +270,6 @@ export default function Home() {
 
   const row1Widgets = [
     { 
-      id: 'picks', 
-      title: 'Picks Dashboard', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7becb3f2815198790_1.svg',
-      borderColor: 'rgba(255, 202, 16, 0.6)',
-      background: 'linear-gradient(135deg, rgba(255, 202, 16, 0.15) 0%, rgba(255, 202, 16, 0.08) 100%)',
-      component: <TopInsiderPicks isCollapsible={false} defaultExpanded={true} /> 
-    },
-    { 
       id: 'stats', 
       title: 'Public Betting', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
@@ -686,6 +678,11 @@ export default function Home() {
           )}
         </div>
 
+        {/* TOP INSIDER PICKS SECTION - MOBILE */}
+        <div className="mobile-view" style={{ marginBottom: '2.5rem' }}>
+          <TopInsiderPicks isCollapsible={true} defaultExpanded={true} />
+        </div>
+
         {/* AI GAME INTELLIGENCE SECTION - DESKTOP */}
         <div className="desktop-view" style={{ marginBottom: '2.5rem', position: 'relative' }}>
           <h3 
@@ -974,6 +971,11 @@ export default function Home() {
             </>
           )}
         </div>
+
+        {/* TOP INSIDER PICKS SECTION - DESKTOP */}
+        <div className="desktop-view" style={{ marginBottom: '2.5rem' }}>
+          <TopInsiderPicks isCollapsible={true} defaultExpanded={true} />
+        </div>
         
         {/* MOBILE VIEW - Accordion */}
         <div className="mobile-view">
@@ -1111,11 +1113,6 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
-                <TopInsiderPicks isCollapsible={true} defaultExpanded={true} />
-              </LockedWidget>
-            </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
                 <StatsWidget />
