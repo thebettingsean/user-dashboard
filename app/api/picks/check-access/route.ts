@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Check for "all day" unlock (not expired)
-    const { data: allDayUnlock } = await supabase
+    // Check for "all day" unlock (not expired) - from USERS Supabase project
+    const { data: allDayUnlock } = await supabaseUsers
       .from('unlocked_picks')
       .select('*')
       .eq('clerk_user_id', user.id)
@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Check individual pick unlocks
-    const { data: unlockedPicks } = await supabase
+    // Check individual pick unlocks - from USERS Supabase project
+    const { data: unlockedPicks } = await supabaseUsers
       .from('unlocked_picks')
       .select('pick_id')
       .eq('clerk_user_id', user.id)

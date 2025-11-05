@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Check if already unlocked
-    const { data: existingUnlock } = await supabase
+    // Check if already unlocked (from USERS Supabase project)
+    const { data: existingUnlock } = await supabaseUsers
       .from('unlocked_picks')
       .select('*')
       .eq('clerk_user_id', user.id)
@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Unlock the pick
-    const { error: unlockError } = await supabase
+    // Unlock the pick (in USERS Supabase project)
+    const { error: unlockError } = await supabaseUsers
       .from('unlocked_picks')
       .insert({
         clerk_user_id: user.id,

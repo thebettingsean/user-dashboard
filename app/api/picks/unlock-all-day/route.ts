@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Check if user already has an active all-day unlock
-    const { data: existingUnlock } = await supabase
+    // Check if user already has an active all-day unlock (from USERS Supabase project)
+    const { data: existingUnlock } = await supabaseUsers
       .from('unlocked_picks')
       .select('*')
       .eq('clerk_user_id', user.id)
@@ -99,10 +99,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create 24-hour unlock
+    // Create 24-hour unlock (in USERS Supabase project)
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     
-    const { error: unlockError } = await supabase
+    const { error: unlockError } = await supabaseUsers
       .from('unlocked_picks')
       .insert({
         clerk_user_id: user.id,

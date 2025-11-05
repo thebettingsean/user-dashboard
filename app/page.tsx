@@ -59,8 +59,8 @@ export default function Home() {
   const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
   const { isLoading, isSubscribed, firstName: subFirstName } = useSubscription()
   
-  // Get firstName from Clerk user (works for ALL signed-in users, not just premium)
-  const firstName = user?.firstName || subFirstName || null
+  // For signed-in users without subscription, show "friend" instead of their name
+  const firstName = (isSignedIn && !isSubscribed) ? 'friend' : (user?.firstName || subFirstName || null)
 
   useEffect(() => {
     // Set welcome message immediately, update when firstName or user changes
