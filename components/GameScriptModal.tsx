@@ -324,19 +324,10 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
     )
   }
 
-  // Show upgrade prompt (no credits) - show UnlockModal
+  // Show upgrade prompt (no credits) - redirect to pricing
   if (showUpgradePrompt) {
-    return (
-      <>
-        <UnlockModal 
-          isOpen={showUpgradePrompt} 
-          onClose={() => {
-            setShowUpgradePrompt(false)
-            onClose()
-          }} 
-        />
-      </>
-    )
+    window.location.href = '/pricing'
+    return null
   }
 
   return (

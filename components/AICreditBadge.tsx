@@ -174,16 +174,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <button
           onClick={() => {
-            console.log('🔘 Get More Credits (0 balance) clicked!')
-            if (onShowModal) {
-              console.log('✅ Calling onShowModal prop')
-              onShowModal()
-            } else {
-              console.log('⚠️ No onShowModal prop, trying window.showUnlockModal')
-              if ((window as any).showUnlockModal) {
-                ;(window as any).showUnlockModal()
-              }
-            }
+            window.location.href = '/pricing'
           }}
           style={{
             fontSize: '0.8rem',
@@ -231,16 +222,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
       <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
       <button
         onClick={() => {
-          console.log('🔘 Get More Credits (with balance) clicked!')
-          if (onShowModal) {
-            console.log('✅ Calling onShowModal prop')
-            onShowModal()
-          } else {
-            console.log('⚠️ No onShowModal prop, trying window.showUnlockModal')
-            if ((window as any).showUnlockModal) {
-              ;(window as any).showUnlockModal()
-            }
-          }
+          window.location.href = '/pricing'
         }}
         style={{
           fontSize: '0.8rem',
