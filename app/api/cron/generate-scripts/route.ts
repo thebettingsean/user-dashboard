@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     console.log('🤖 [CRON] Starting script generation job...')
 
     // Get all upcoming games from API
-    const gamesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/games/today`)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'https://dashboard.thebettinginsider.com'
+    console.log(`📍 Using base URL: ${baseUrl}`)
+    const gamesResponse = await fetch(`${baseUrl}/api/games/today`)
     
     if (!gamesResponse.ok) {
       throw new Error('Failed to fetch games')
@@ -81,7 +83,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Generate script via API
-        const generateResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/game-intelligence/generate`, {
+        const generateResponse = await fetch(`${baseUrl}/api/game-intelligence/generate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
