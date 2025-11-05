@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseMain } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+// Use main Supabase project (same as game_scripts table)
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co',
+  process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
+)
 
 /**
  * Cron job to pre-generate AI scripts for all games
