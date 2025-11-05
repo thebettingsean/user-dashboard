@@ -23,11 +23,14 @@ export default function AICreditBadge() {
 
   const fetchCredits = async () => {
     try {
+      console.log('🔍 AICreditBadge: Fetching credit status...')
       const response = await fetch('/api/ai-credits/check')
+      console.log('📡 AICreditBadge: Response status:', response.status)
       const data = await response.json()
+      console.log('📊 AICreditBadge: Received data:', JSON.stringify(data, null, 2))
       setCreditStatus(data)
     } catch (error) {
-      console.error('Error fetching credits:', error)
+      console.error('❌ AICreditBadge: Error fetching credits:', error)
     } finally {
       setLoading(false)
     }
