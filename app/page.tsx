@@ -20,6 +20,7 @@ import GameScriptModal from '../components/GameScriptModal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import AICreditBadge from '../components/AICreditBadge'
 import UnlockModal from '../components/UnlockModal'
+import CreditConfirmModal from '../components/CreditConfirmModal'
 import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 import { GoPlusCircle } from 'react-icons/go'
 import { TiMinusOutline } from 'react-icons/ti'
@@ -50,15 +51,44 @@ export default function Home() {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   const [selectedGameSport, setSelectedGameSport] = useState<string>('NFL')
   const [scriptModalOpen, setScriptModalOpen] = useState(false)
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [pendingGame, setPendingGame] = useState<{ id: string, sport: string, dataStrength: 1 | 2 | 3, matchup: string } | null>(null)
   const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'MLB'>('NFL')
   const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
+  const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
   const { isLoading, isSubscribed, firstName} = useSubscription()
 
   useEffect(() => {
     // Set welcome message immediately, update when firstName changes
       setWelcomeMessage(getWelcomeMessage(firstName))
   }, [firstName])
+  
+  // Fetch credit status
+  useEffect(() => {
+    async function fetchCredits() {
+      if (!isSignedIn) {
+        setCreditsRemaining(0)
+        return
+      }
+      
+      try {
+        const response = await fetch('/api/ai-credits/check')
+        const data = await response.json()
+        
+        if (data.isPremium || data.creditsRemaining === 'unlimited') {
+          setCreditsRemaining('unlimited')
+        } else {
+          setCreditsRemaining(data.creditsRemaining || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching credits:', error)
+        setCreditsRemaining(0)
+      }
+    }
+    
+    fetchCredits()
+  }, [isSignedIn, scriptModalOpen]) // Refetch when modal closes
   
   // Set a default message on mount
   useEffect(() => {
@@ -155,7 +185,7 @@ export default function Home() {
     }
   }
 
-  async function handleAnalyzeGame(gameId: string, sport: string) {
+  async function handleAnalyzeGame(gameId: string, sport: string, dataStrength?: 1 | 2 | 3, matchup?: string) {
     console.log('🎮 GAME CLICKED:', gameId, sport)
     console.log('👤 User signed in?', isSignedIn, 'Type:', typeof isSignedIn)
     
@@ -166,15 +196,35 @@ export default function Home() {
       return
     }
     
-    console.log('✅ Opening script modal for', gameId)
-    setGeneratingGameId(gameId)
-    setSelectedGameId(gameId)
-    setSelectedGameSport(sport)
+    // Find the game to get its data strength and matchup
+    const game = games.find(g => g.gameId === gameId)
+    const strength = dataStrength || game?.dataStrength || 1
+    const gameMatchup = matchup || (game ? `${game.awayTeam} @ ${game.homeTeam}` : '')
+    
+    // Store pending game info and show confirmation modal
+    setPendingGame({ id: gameId, sport, dataStrength: strength, matchup: gameMatchup })
+    setConfirmModalOpen(true)
+  }
+  
+  function handleConfirmGeneration() {
+    if (!pendingGame) return
+    
+    console.log('✅ Confirmed - Opening script modal for', pendingGame.id)
+    setConfirmModalOpen(false)
+    setGeneratingGameId(pendingGame.id)
+    setSelectedGameId(pendingGame.id)
+    setSelectedGameSport(pendingGame.sport)
     
     // Small delay to show "generating" state
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    setScriptModalOpen(true)
+    setTimeout(() => {
+      setScriptModalOpen(true)
+      setPendingGame(null)
+    }, 300)
+  }
+  
+  function handleCancelGeneration() {
+    setConfirmModalOpen(false)
+    setPendingGame(null)
   }
 
   function closeScriptModal() {
@@ -1285,6 +1335,19 @@ export default function Home() {
         setShowUnlockModal(false)
       }}
     />
+    
+    {/* Credit Confirmation Modal */}
+    {pendingGame && (
+      <CreditConfirmModal 
+        isOpen={confirmModalOpen}
+        onClose={handleCancelGeneration}
+        onConfirm={handleConfirmGeneration}
+        creditCost={pendingGame.dataStrength}
+        dataStrength={pendingGame.dataStrength === 1 ? 'Minimal' : pendingGame.dataStrength === 2 ? 'Above Avg' : 'Strong'}
+        gameMatchup={pendingGame.matchup}
+        creditsRemaining={creditsRemaining}
+      />
+    )}
 
     {/* Hidden SignInButton for triggering Clerk modal */}
     <SignInButton mode="modal">
