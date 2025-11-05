@@ -344,25 +344,14 @@ export async function GET(request: NextRequest) {
       console.log('⚠️ TeamRankings error:', error)
     }
 
-    // Calculate data strength based on user's requirements:
-    // Count actual data types (not weighted):
-    // - Team Rankings (always available)
-    // - Public Money
-    // - Referee Stats
-    // - Team Stats
-    // - Player Props
-    // - Prop Parlay Tool
-    // - Anytime TD Tool
-    // - Fantasy Tool
+    // Calculate data strength based on PREMIUM features only:
+    // What matters: TOP PROPS and ANALYST PICKS
+    // Everything else (public money, team rankings, etc.) are refinement data
     
-    const hasTeamRankings = homeTeamRankings && awayTeamRankings
-    const otherDataCount = (publicMoney ? 1 : 0) + 
-                          (refereeStats ? 1 : 0) + 
-                          (teamStats ? 1 : 0) + 
-                          (playerProps && playerProps.length > 0 ? 1 : 0) + 
-                          (propParlayRecs.length > 0 ? 1 : 0) + 
-                          (anytimeTDRecs.length > 0 ? 1 : 0) + 
-                          (fantasyProjections.length > 0 ? 1 : 0)
+    // Check for TOP PROPS (player props OR prop parlay tool OR anytime TD tool)
+    const hasTopProps = (playerProps && playerProps.length > 0) || 
+                        propParlayRecs.length > 0 || 
+                        anytimeTDRecs.length > 0
     
     // Check for analyst picks tied to this game
     let hasAnalystPicks = false
@@ -382,26 +371,23 @@ export async function GET(request: NextRequest) {
     
     let dataStrength: 1 | 2 | 3
     
-    // Updated logic to make 2 credits more valuable and 3 credits premium:
-    // 1 credit: Team Rankings + 2 or fewer other sources
-    // 2 credits: Team Rankings + 3+ other sources (no analyst picks)
-    // 3 credits: Team Rankings + Analyst Picks (analyst picks = instant premium)
+    // NEW LOGIC - Only Top Props & Analyst Picks determine strength:
+    // 1 credit: NO top props found in script
+    // 2 credits: Top props found BUT no analyst picks
+    // 3 credits: Analyst picks found (with or without top props)
     
-    if (hasAnalystPicks && hasTeamRankings) {
-      // Analyst picks + team rankings = ALWAYS Strong (3 credits)
+    if (hasAnalystPicks) {
+      // Analyst picks = ALWAYS 3 credits (instant premium)
       dataStrength = 3
-    } else if (hasTeamRankings && otherDataCount >= 3) {
-      // Team rankings + 3+ sources (no analyst picks) = Above Average (2 credits)
+    } else if (hasTopProps) {
+      // Top props but no analyst picks = 2 credits
       dataStrength = 2
-    } else if (hasTeamRankings) {
-      // Team rankings + 0-2 sources = Minimal (1 credit)
-      dataStrength = 1
     } else {
-      // No team rankings = Minimal (1 credit)
+      // No top props, no analyst picks = 1 credit (basic script)
       dataStrength = 1
     }
 
-    console.log(`💎 Data Strength: ${dataStrength} credits (Team Rankings: ${hasTeamRankings ? 'YES' : 'NO'}, Other Data: ${otherDataCount}, Analyst Picks: ${hasAnalystPicks ? 'YES' : 'NO'})`)
+    console.log(`💎 Data Strength: ${dataStrength} credits (Top Props: ${hasTopProps ? 'YES' : 'NO'}, Analyst Picks: ${hasAnalystPicks ? 'YES' : 'NO'})`)
     console.log(`Available sources: ${availableDataSources.join(', ')}`)
     console.log('=== DATA AGGREGATION COMPLETE ===\n')
 
