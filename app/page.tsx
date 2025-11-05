@@ -39,7 +39,7 @@ interface GameSummary {
 }
 
 export default function Home() {
-  const { isSignedIn } = useUser()
+  const { isSignedIn, user } = useUser()
   const [triggerSignIn, setTriggerSignIn] = useState(false)
   
   // Track which SECTIONS are open (not individual widgets)
@@ -57,12 +57,15 @@ export default function Home() {
   const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
   const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
-  const { isLoading, isSubscribed, firstName} = useSubscription()
+  const { isLoading, isSubscribed, firstName: subFirstName } = useSubscription()
+  
+  // Get firstName from Clerk user (works for ALL signed-in users, not just premium)
+  const firstName = user?.firstName || subFirstName || null
 
   useEffect(() => {
-    // Set welcome message immediately, update when firstName changes
-      setWelcomeMessage(getWelcomeMessage(firstName))
-  }, [firstName])
+    // Set welcome message immediately, update when firstName or user changes
+    setWelcomeMessage(getWelcomeMessage(firstName))
+  }, [firstName, user])
   
   // Fetch credit status
   useEffect(() => {

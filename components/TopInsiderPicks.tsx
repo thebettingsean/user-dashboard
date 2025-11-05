@@ -549,7 +549,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
               >
                 <GiTwoCoins style={{ fontSize: '0.85rem' }} />
                 <span style={{ fontWeight: '700' }}>5</span>
-                <span>Day Pass</span>
+                <span>- Day Pass</span>
               </button>
             )}
 
