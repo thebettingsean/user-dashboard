@@ -11,6 +11,86 @@ import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import PickUnlockModal from './PickUnlockModal'
 
+// Inject CSS for rich text analysis
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    .top-picks-analysis-text p {
+      margin: 0 0 0.5rem 0;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.5;
+    }
+    
+    .top-picks-analysis-text p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .top-picks-analysis-text strong,
+    .top-picks-analysis-text b,
+    .top-picks-analysis-text span[style*="font-weight: 700"],
+    .top-picks-analysis-text span[style*="font-weight: bold"] {
+      font-weight: 700;
+      color: #ffffff;
+    }
+    
+    .top-picks-analysis-text a {
+      color: #60a5fa !important;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+    
+    .top-picks-analysis-text a:hover {
+      color: #93c5fd !important;
+    }
+    
+    .top-picks-analysis-text br {
+      display: block;
+      content: "";
+      margin: 0.25rem 0;
+    }
+    
+    .top-picks-analysis-text span {
+      color: inherit;
+    }
+  `
+  document.head.appendChild(style)
+}
+
+// Clean rich text HTML (same as analyst-picks page)
+function cleanRichTextHTML(html: string): string {
+  if (!html) return ''
+  
+  // Remove Google Docs wrapper spans and IDs
+  let cleaned = html.replace(/<span[^>]*id="docs-internal-guid[^>]*>/gi, '')
+  cleaned = cleaned.replace(/<\/span>$/gi, '')
+  
+  // Remove inline styles we don't want (keep font-weight for bold, text-decoration for links)
+  cleaned = cleaned.replace(/style="[^"]*"/gi, (match) => {
+    // Keep only font-weight (bold) and text-decoration (underline)
+    const fontWeight = match.match(/font-weight:\s*(\d+|bold|bolder)/i)
+    const textDecoration = match.match(/text-decoration[^;]*/i)
+    
+    let keepStyles = []
+    if (fontWeight) keepStyles.push(fontWeight[0])
+    if (textDecoration) keepStyles.push(textDecoration[0])
+    
+    return keepStyles.length > 0 ? `style="${keepStyles.join('; ')}"` : ''
+  })
+  
+  // Convert <p> tags to have proper spacing
+  cleaned = cleaned.replace(/<p[^>]*>/gi, '<p>')
+  cleaned = cleaned.replace(/<\/p>/gi, '</p>')
+  
+  // Clean up links - remove text-decoration: none
+  cleaned = cleaned.replace(/<a([^>]*)style="[^"]*text-decoration:\s*none[^"]*"([^>]*)>/gi, '<a$1$2>')
+  
+  // Remove empty attributes
+  cleaned = cleaned.replace(/\s+style=""\s*/gi, ' ')
+  cleaned = cleaned.replace(/<([a-z]+)\s+>/gi, '<$1>')
+  
+  return cleaned
+}
+
 interface Pick {
   id: string
   sport: string
@@ -424,16 +504,21 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       {/* Sport, Game Time & Odds */}
                       <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
                         {pick.sport}, {(() => {
+                          // Format game time in EST (same as analyst-picks page)
                           const gameDate = new Date(pick.game_time)
                           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                          const month = monthNames[gameDate.getUTCMonth()]
-                          const day = gameDate.getUTCDate()
-                          const hours = gameDate.getUTCHours()
-                          const minutes = gameDate.getUTCMinutes()
-                          const ampm = hours >= 12 ? 'PM' : 'AM'
-                          const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
-                          const displayMinutes = minutes.toString().padStart(2, '0')
-                          return `${month} ${day} ${displayHour}:${displayMinutes}${ampm} EST`
+                          const month = monthNames[gameDate.getMonth()]
+                          const day = gameDate.getDate()
+                          
+                          // Get time in EST
+                          const timeStr = gameDate.toLocaleString('en-US', {
+                            timeZone: 'America/New_York',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })
+                          
+                          return `${month} ${day} ${timeStr} EST`
                         })()} | {pick.odds}
                       </div>
                     </div>
@@ -496,17 +581,19 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
                 {/* Write-up expansion */}
                 {unlocked && writeupExpanded && pick.analysis && (
-                  <div style={{
-                    marginTop: '0.75rem',
-                    padding: '0.75rem',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    lineHeight: '1.5'
-                  }}>
-                    {pick.analysis}
-                  </div>
+                  <div 
+                    style={{
+                      marginTop: '0.75rem',
+                      padding: '0.75rem',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      lineHeight: '1.5'
+                    }}
+                    className="top-picks-analysis-text"
+                    dangerouslySetInnerHTML={{ __html: cleanRichTextHTML(pick.analysis) }}
+                  />
                 )}
               </div>
             )
