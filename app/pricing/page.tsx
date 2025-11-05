@@ -81,68 +81,36 @@ export default function PricingPage() {
       <div className="orb-4"></div>
       <div className="orb-5"></div>
 
+      {/* Single glassmorphic container */}
       <div style={{
-        maxWidth: '900px',
+        maxWidth: '650px',
         margin: '0 auto',
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(40px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px',
+        padding: '2.5rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       }}>
-        {/* Back button */}
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            marginBottom: '2rem',
-            padding: '0.5rem 1rem',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            color: 'rgba(255, 255, 255, 0.6)',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'
-          }}
-        >
-          ← Back to Dashboard
-        </button>
-
         {/* Header */}
         <div style={{
           textAlign: 'center',
-          marginBottom: '3rem'
+          marginBottom: '2rem'
         }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            marginBottom: '1.5rem',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)'
-          }}>
-            <Sparkles size={32} style={{ color: '#fff' }} />
-          </div>
           <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: '800',
+            fontSize: '1.75rem',
+            fontWeight: '700',
             color: '#fff',
-            marginBottom: '1rem',
+            marginBottom: '0.5rem',
             lineHeight: '1.2'
           }}>
             Unlock Premium Access
           </h1>
           <p style={{
-            fontSize: '1.1rem',
-            color: 'rgba(255, 255, 255, 0.6)',
-            maxWidth: '600px',
+            fontSize: '0.9rem',
+            color: 'rgba(255, 255, 255, 0.5)',
             margin: '0 auto'
           }}>
             Get instant access to AI scripts, expert picks, and advanced analytics
@@ -150,17 +118,14 @@ export default function PricingPage() {
         </div>
 
         {/* Plans */}
-        <div style={{
-          maxWidth: '700px',
-          margin: '0 auto'
-        }}>
-          <div style={{ marginBottom: '1.5rem' }}>
+        <div>
+          <div style={{ marginBottom: '1rem' }}>
             {/* One-time purchase card */}
             <button
               onClick={() => setSelectedPlan('credits')}
               style={{
                 width: '100%',
-                padding: '1.5rem',
+                padding: '1rem',
                 background: selectedPlan === 'credits' 
                   ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1))'
                   : 'rgba(255, 255, 255, 0.03)',
@@ -168,7 +133,7 @@ export default function PricingPage() {
                 border: selectedPlan === 'credits'
                   ? '2px solid rgba(59, 130, 246, 0.5)'
                   : '2px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '16px',
+                borderRadius: '12px',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 textAlign: 'left',
@@ -187,27 +152,28 @@ export default function PricingPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
                     15 AI Credits - One Time Purchase
                   </div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: '800', color: '#fff', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#fff', marginBottom: '0.25rem' }}>
                     $10
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.4)' }}>
                     Spend credits on AI scripts & more
                   </div>
                 </div>
                 {selectedPlan === 'credits' && (
                   <div style={{
-                    width: '28px',
-                    height: '28px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '50%',
                     background: '#3b82f6',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    flexShrink: 0
                   }}>
-                    <Check size={18} style={{ color: '#fff' }} />
+                    <Check size={14} style={{ color: '#fff' }} />
                   </div>
                 )}
               </div>
@@ -217,7 +183,7 @@ export default function PricingPage() {
           {/* Subscription card */}
           <div
             style={{
-              padding: '1.5rem',
+              padding: '1rem',
               background: isSubscriptionSelected
                 ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1))'
                 : 'rgba(255, 255, 255, 0.03)',
@@ -225,8 +191,8 @@ export default function PricingPage() {
               border: isSubscriptionSelected
                 ? '2px solid rgba(59, 130, 246, 0.5)'
                 : '2px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '16px',
-              marginBottom: '1.5rem',
+              borderRadius: '12px',
+              marginBottom: '1rem',
               boxShadow: isSubscriptionSelected ? '0 8px 32px rgba(59, 130, 246, 0.2)' : 'none',
               transition: 'all 0.2s'
             }}
@@ -235,42 +201,44 @@ export default function PricingPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '1rem'
+              marginBottom: '0.75rem'
             }}>
-              <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#fff' }}>
+              <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#fff' }}>
                 Unlimited Credits & Full Access
               </div>
               {isSubscriptionSelected && (
                 <div style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
                   background: '#3b82f6',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}>
-                  <Check size={18} style={{ color: '#fff' }} />
+                  <Check size={14} style={{ color: '#fff' }} />
                 </div>
               )}
             </div>
 
             {/* Subscription options */}
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '0.75rem' }}>
               {subscriptionPlans.map((plan) => (
                 <button
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.id)}
                   style={{
                     width: '100%',
-                    padding: '1rem',
+                    padding: '0.75rem',
                     background: selectedPlan === plan.id ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
                     border: 'none',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                     textAlign: 'left',
-                    marginBottom: '0.5rem'
+                    marginBottom: '0.4rem',
+                    position: 'relative'
                   }}
                   onMouseEnter={(e) => {
                     if (selectedPlan !== plan.id) {
@@ -284,11 +252,26 @@ export default function PricingPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1.5rem', fontWeight: '800', color: '#fff' }}>{plan.price}</span>
-                      <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.5)' }}>{plan.period}</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                      <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff' }}>{plan.price}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>{plan.period}</span>
+                      {plan.id === 'monthly' && (
+                        <span style={{
+                          marginLeft: '0.5rem',
+                          padding: '0.15rem 0.5rem',
+                          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                          borderRadius: '4px',
+                          fontSize: '0.65rem',
+                          fontWeight: '700',
+                          color: '#fff',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          Popular
+                        </span>
+                      )}
                     </div>
-                    <span style={{ fontSize: '1.2rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
+                    <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
                   </div>
                 </button>
               ))}
@@ -297,30 +280,31 @@ export default function PricingPage() {
             {/* Features - only shown when subscription selected */}
             {isSubscriptionSelected && (
               <div style={{
-                paddingTop: '1rem',
+                paddingTop: '0.75rem',
                 borderTop: '1px solid rgba(255, 255, 255, 0.1)',
                 display: 'grid',
-                gap: '0.75rem'
+                gap: '0.5rem'
               }}>
-                {['Unlimited AI Scripts', 'Daily Insider Picks', 'All Premium Data', 'Public Betting Splits', 'Historical Trends'].map((feature) => (
-                  <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {['Unlimited Credits', 'Daily Best Bets', 'All Premium Data'].map((feature) => (
+                  <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <div style={{
-                      width: '20px',
-                      height: '20px',
+                      width: '16px',
+                      height: '16px',
                       borderRadius: '50%',
                       background: 'rgba(59, 130, 246, 0.2)',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      flexShrink: 0
                     }}>
                       <div style={{
-                        width: '8px',
-                        height: '8px',
+                        width: '6px',
+                        height: '6px',
                         borderRadius: '50%',
                         background: '#3b82f6'
                       }} />
                     </div>
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.8)' }}>{feature}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)' }}>{feature}</span>
                   </div>
                 ))}
               </div>
@@ -333,13 +317,13 @@ export default function PricingPage() {
             onClick={handleContinue}
             style={{
               width: '100%',
-              padding: '1.25rem',
+              padding: '1rem',
               background: selectedPlan
                 ? 'linear-gradient(135deg, #3b82f6, #8b5cf6)'
                 : 'rgba(255, 255, 255, 0.1)',
               border: 'none',
-              borderRadius: '12px',
-              fontSize: '1.1rem',
+              borderRadius: '10px',
+              fontSize: '0.95rem',
               fontWeight: '700',
               color: '#fff',
               cursor: selectedPlan && !loading ? 'pointer' : 'not-allowed',
@@ -370,10 +354,10 @@ export default function PricingPage() {
 
           {/* Footer note */}
           <div style={{
-            marginTop: '1.5rem',
+            marginTop: '1rem',
             textAlign: 'center',
-            fontSize: '0.85rem',
-            color: 'rgba(255, 255, 255, 0.4)'
+            fontSize: '0.7rem',
+            color: 'rgba(255, 255, 255, 0.35)'
           }}>
             Secure payment • Cancel anytime • Instant access
           </div>
