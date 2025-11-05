@@ -335,7 +335,7 @@ export default function Home() {
             {welcomeMessage}
           </p>
           {/* Credits Badge - directly under personalized headline */}
-          <AICreditBadge />
+          <AICreditBadge onShowModal={() => setShowUnlockModal(true)} />
         </div>
 
         {/* Divider line above AI section */}

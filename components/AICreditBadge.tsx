@@ -16,7 +16,11 @@ interface CreditStatus {
   isPremium: boolean
 }
 
-export default function AICreditBadge() {
+interface AICreditBadgeProps {
+  onShowModal?: () => void
+}
+
+export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) {
   const { isSignedIn } = useUser()
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -170,14 +174,15 @@ export default function AICreditBadge() {
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <button
           onClick={() => {
-            console.log('🔘 Get More Credits clicked!')
-            console.log('🔍 window.showUnlockModal exists?', typeof (window as any).showUnlockModal)
-            // Trigger the UnlockModal globally
-            if ((window as any).showUnlockModal) {
-              console.log('✅ Calling showUnlockModal()')
-              ;(window as any).showUnlockModal()
+            console.log('🔘 Get More Credits (0 balance) clicked!')
+            if (onShowModal) {
+              console.log('✅ Calling onShowModal prop')
+              onShowModal()
             } else {
-              console.error('❌ window.showUnlockModal not found!')
+              console.log('⚠️ No onShowModal prop, trying window.showUnlockModal')
+              if ((window as any).showUnlockModal) {
+                ;(window as any).showUnlockModal()
+              }
             }
           }}
           style={{
@@ -227,13 +232,14 @@ export default function AICreditBadge() {
       <button
         onClick={() => {
           console.log('🔘 Get More Credits (with balance) clicked!')
-          console.log('🔍 window.showUnlockModal exists?', typeof (window as any).showUnlockModal)
-          // Trigger the UnlockModal globally
-          if ((window as any).showUnlockModal) {
-            console.log('✅ Calling showUnlockModal()')
-            ;(window as any).showUnlockModal()
+          if (onShowModal) {
+            console.log('✅ Calling onShowModal prop')
+            onShowModal()
           } else {
-            console.error('❌ window.showUnlockModal not found!')
+            console.log('⚠️ No onShowModal prop, trying window.showUnlockModal')
+            if ((window as any).showUnlockModal) {
+              ;(window as any).showUnlockModal()
+            }
           }
         }}
         style={{
