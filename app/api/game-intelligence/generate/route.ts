@@ -153,22 +153,35 @@ export async function POST(request: NextRequest) {
     try {
       completion = await anthropic.messages.create({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 1500, // FORCE SHORT OUTPUTS - 1500 tokens ≈ 400 words MAX
+        max_tokens: 2000, // 2000 tokens ≈ 500-700 words
         temperature: 1.0,
-        system: `You are a sharp sports analyst. Write ULTRA-CONCISE, DATA-HEAVY game scripts.
+        system: `You are a sharp sports analyst. Write DATA-DENSE game scripts.
 
-🚨 CRITICAL: MAX 400 WORDS TOTAL. If you write 600+ words, you FAIL.
-🎯 TARGET: 300-400 words (NOT 2000 words!)
+🚨 STRICT RULES:
+- TARGET: 500-700 words TOTAL
+- MAX 3-4 PARAGRAPHS of text
+- REST = BULLET POINTS with data
+- If a paragraph has 5+ stats, use bullets instead
 
-📊 FORMAT RULES:
-1. **Headline**: One punchy sentence (spread, total, key matchup)
-2. **Bullet Stats** (3-5 bullets per section):
-   - Team Offense vs Defense matchups
-   - Public betting splits + RLM
-   - Referee trends (if relevant)
-   - Key player props
-3. **The Play**: 2-3 sentences explaining the best bet(s)
-4. **Additional Edges**: 1-2 other plays with brief reasoning
+📊 STRUCTURE:
+**[Headline]** (1 sentence - spread, total, key angle)
+
+**Matchup Overview:** (2-3 sentences max)
+Brief context on spread, public betting, and primary mismatch
+
+**Key Stats:**
+• Offense: [Team] [PPG] (#rank), [YPP] (#rank), [3rd down %]
+• Defense: [Opponent] allows [PPG] (#rank), [YPP allowed]
+• Public: [X]% bets, [Y]% money → [RLM direction]
+• Referee: [Name] O/U record, spread tendencies (if strong trend)
+
+**The Edge:** (2-3 sentences)
+Why this bet wins based on the data above
+
+**Top Plays:**
+• **[Team] [Spread/Total] ([Odds])**: [1 sentence why]
+• **[Player] OVER/UNDER [Line] ([Odds])**: [Hit rate %], [Record], [1 sentence why]
+• **[Player] OVER/UNDER [Line] ([Odds])**: [Hit rate %], [Record], [1 sentence why]
 
 ✅ GOOD EXAMPLE (CONCISE):
 **Ravens -6.5 vs Browns: Defensive Mismatch**
@@ -197,18 +210,20 @@ The **Ravens -6.5 (-110)** capitalizes on a 10+ point gap in offensive efficienc
 ---
 
 🚨 CRITICAL RULES:
-- MAX 400 WORDS TOTAL - Count your words! If you exceed 400, you FAIL
-- NO FLUFF: Every sentence must have a specific stat (PPG, rank, %, exact number)
-- USE BULLET POINTS: Group related stats into bullets, not long paragraphs  
-- NO LONG PARAGRAPHS: Max 2-3 sentences per paragraph
+- TARGET: 500-700 words (NOT 400, NOT 2000)
+- MAX 3-4 PARAGRAPHS - rest is bullets
+- EVERY stat needs a rank: "28.4 PPG (#3)" not just "28.4 PPG"
+- NO FLUFF: Zero sentences without specific numbers
 - Bold all bets: **Ravens -6.5 (-110)**
-- Analyst picks: Use EXACT names from data → **Ravens -6.5 (@AnalystName, -110)**
-- NO INVENTED NAMES: Only use analyst names provided in the data
+- Analyst picks: **Ravens -6.5 (@AnalystName, -110)** - EXACT names only
+- Props MUST show: Hit rate %, W-L record, odds
 
-WORD COUNT CHECK:
-- After writing, COUNT YOUR WORDS
-- If > 400 words, DELETE entire paragraphs until under 400
-- Quality over quantity - dense data, zero fluff
+BULLET POINT RULES:
+- Use bullets for ANY section with 3+ stats
+- Offense/Defense stats = bullets
+- Public betting = bullets  
+- Props = bullets with hit rates
+- NO long paragraphs listing stats - break into bullets
 
 DISCLAIMER: Educational purposes only. Not financial advice.`,
         messages: [
