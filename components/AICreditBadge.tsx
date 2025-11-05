@@ -90,7 +90,7 @@ export default function AICreditBadge() {
         color: 'rgba(255, 255, 255, 0.6)'
       }}>
         <GiTwoCoins size={16} style={{ color: '#8b5cf6', opacity: 0.6 }} />
-        Sign up to get scripts
+        Sign up to get credits
       </div>
     )
   }
@@ -111,8 +111,9 @@ export default function AICreditBadge() {
         fontWeight: '600',
         color: '#a78bfa'
       }}>
-        <Infinity size={16} style={{ color: '#8b5cf6' }} />
-        Unlimited Scripts
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          Credit Balance: <Infinity size={16} style={{ color: '#8b5cf6' }} />
+        </span>
       </div>
     )
   }
@@ -129,17 +130,17 @@ export default function AICreditBadge() {
         alignItems: 'center',
         gap: '0.75rem',
         padding: '0.5rem 1rem',
-        background: 'rgba(239, 68, 68, 0.1)',
+        background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(239, 68, 68, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '8px',
         fontSize: '0.85rem',
         fontWeight: '600'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444' }}>
-          <GiTwoCoins size={16} style={{ color: '#ef4444' }} />
-          0 credits remaining
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+          Credit Balance: 0
         </div>
+        <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <a
           href="/upgrade"
           style={{
@@ -153,7 +154,7 @@ export default function AICreditBadge() {
           onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
           onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
         >
-          buy more credits →
+          Get More Credits →
         </a>
       </div>
     )
@@ -180,25 +181,27 @@ export default function AICreditBadge() {
       fontWeight: '600'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)' }}>
-        <GiTwoCoins size={16} style={{ color: isLow ? '#ef4444' : '#8b5cf6' }} />
-        {remaining} {remaining === 1 ? 'credit' : 'credits'} left
+        Credit Balance: {remaining}
       </div>
       {creditStatus.accessLevel === 'ai_only' && (
-        <a
-          href="/upgrade"
-          style={{
-            fontSize: '0.8rem',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textDecoration: 'none',
-            transition: 'color 0.2s',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
-        >
-          upgrade for unlimited →
-        </a>
+        <>
+          <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
+          <a
+            href="/upgrade"
+            style={{
+              fontSize: '0.8rem',
+              color: 'rgba(255, 255, 255, 0.5)',
+              textDecoration: 'none',
+              transition: 'color 0.2s',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#8b5cf6'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
+          >
+            Get More Credits →
+          </a>
+        </>
       )}
     </div>
   )

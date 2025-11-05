@@ -11,20 +11,26 @@ export async function GET(request: NextRequest) {
     console.log(`\n=== FETCHING GAMES ${requestedSport ? `FOR ${requestedSport.toUpperCase()}` : 'FOR ALL SPORTS'} ===`)
 
     // Calculate date range for fetching games
-    const today = new Date()
-    const todayEST = new Date(today.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+    const now = new Date()
+    const nowEST = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
     
-    // Check if it's after 10pm EST - if so, look at tomorrow's games
-    const currentHour = todayEST.getHours()
-    const startDate = currentHour >= 22 ? new Date(todayEST.getTime() + 24 * 60 * 60 * 1000) : todayEST
+    // Get today's date in EST (YYYY-MM-DD format)
+    const year = nowEST.getFullYear()
+    const month = String(nowEST.getMonth() + 1).padStart(2, '0')
+    const day = String(nowEST.getDate()).padStart(2, '0')
+    const startDateStr = `${year}-${month}-${day}`
     
-    // Fetch games for the next 3 days to ensure we get enough
-    const endDate = new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000)
-
-    const startDateStr = startDate.toISOString().split('T')[0]
-    const endDateStr = endDate.toISOString().split('T')[0]
+    // Calculate end date (7 days from now to catch next week's NFL games)
+    const endDateEST = new Date(nowEST)
+    endDateEST.setDate(endDateEST.getDate() + 7)
+    const endYear = endDateEST.getFullYear()
+    const endMonth = String(endDateEST.getMonth() + 1).padStart(2, '0')
+    const endDay = String(endDateEST.getDate()).padStart(2, '0')
+    const endDateStr = `${endYear}-${endMonth}-${endDay}`
 
     console.log(`Fetching games from ${startDateStr} to ${endDateStr}`)
+    console.log(`Current EST time: ${nowEST.toLocaleString('en-US')}`)
+    console.log(`Current EST hour: ${nowEST.getHours()}:${nowEST.getMinutes().toString().padStart(2, '0')}`)
 
     // If sport is specified, fetch for that sport only
     // Otherwise, fetch for all major sports (for dashboard)
@@ -48,14 +54,29 @@ export async function GET(request: NextRequest) {
           const data = await response.json()
           const games = data.games || []
           
-          // Transform and add sport label
-          const formattedGames = games.map((game: any) => ({
-            game_id: game.game_id, // Keep game_id to match other endpoints
-            away_team: game.away_team,
-            home_team: game.home_team,
-            game_date: game.game_date,
-            sport: sport.toUpperCase()
-          }))
+          // Get current time in UTC (for comparison)
+          const now = new Date()
+          
+          // Transform and add sport label, filter out games that have already started
+          const formattedGames = games
+            .map((game: any) => ({
+              game_id: game.game_id,
+              away_team: game.away_team,
+              home_team: game.home_team,
+              game_date: game.game_date,
+              sport: sport.toUpperCase()
+            }))
+            .filter((game: any) => {
+              // Compare game time (UTC) with current time (UTC)
+              const gameTime = new Date(game.game_date)
+              const isFuture = gameTime > now
+              
+              if (!isFuture) {
+                console.log(`⏭️  Filtering out past game: ${game.game_id} (${gameTime.toISOString()})`)
+              }
+              
+              return isFuture
+            })
           
           allGames.push(...formattedGames)
           console.log(`✓ Found ${formattedGames.length} ${sport.toUpperCase()} games`)

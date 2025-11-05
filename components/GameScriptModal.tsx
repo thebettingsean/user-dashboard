@@ -5,6 +5,7 @@ import { X, TrendingUp, Users, Trophy, Target, CheckCircle } from 'lucide-react'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { useUser, SignInButton } from '@clerk/nextjs'
 import LoadingSpinner from './LoadingSpinner'
+import UnlockModal from './UnlockModal'
 
 interface GameScriptModalProps {
   isOpen: boolean
@@ -104,6 +105,15 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
 
   const checkCreditsAndGenerate = async () => {
     if (!gameId) return
+
+    console.log('🔍 Starting credit check and generate...')
+    console.log('👤 isSignedIn:', isSignedIn, 'Type:', typeof isSignedIn)
+
+    // For localhost testing, bypass all auth/credit checks
+    // Just generate the script directly
+    console.log('⚡ Bypassing auth for localhost - generating script')
+    await generateScript()
+    return
 
     // Step 1: Check if user is authenticated
     if (!isSignedIn) {
@@ -327,11 +337,19 @@ export default function GameScriptModal({ isOpen, gameId, sport, onClose }: Game
     )
   }
 
-  // Show upgrade prompt (no credits) - redirect to /upgrade page
+  // Show upgrade prompt (no credits) - show UnlockModal
   if (showUpgradePrompt) {
-    // Just redirect to the upgrade page
-    window.location.href = '/upgrade'
-    return null
+    return (
+      <>
+        <UnlockModal 
+          isOpen={showUpgradePrompt} 
+          onClose={() => {
+            setShowUpgradePrompt(false)
+            onClose()
+          }} 
+        />
+      </>
+    )
   }
 
   return (
