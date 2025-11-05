@@ -43,10 +43,47 @@ export async function POST(request: NextRequest) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
 
-      // Only process credit pack purchases
-      if (session.metadata?.product_type === 'credit_pack') {
-        const clerkUserId = session.metadata.clerk_user_id
-        const creditsToAdd = parseInt(session.metadata.credits_to_add || '15')
+      console.log(`💳 Checkout session completed:`, {
+        customer_email: session.customer_details?.email,
+        customer_id: session.customer,
+        metadata: session.metadata,
+        mode: session.mode
+      })
+
+      // For Payment Links: identify user by email
+      // For API-created sessions: use metadata clerk_user_id
+      let clerkUserId = session.metadata?.clerk_user_id
+      const customerEmail = session.customer_details?.email
+
+      // If no clerk_user_id in metadata, try to find user by email
+      if (!clerkUserId && customerEmail) {
+        console.log(`🔍 Looking up user by email: ${customerEmail}`)
+        const { data: userByEmail } = await supabaseUsers
+          .from('users')
+          .select('clerk_user_id')
+          .eq('email', customerEmail)
+          .single()
+
+        if (userByEmail) {
+          clerkUserId = userByEmail.clerk_user_id
+          console.log(`✅ Found user by email: ${clerkUserId}`)
+        }
+      }
+
+      if (!clerkUserId) {
+        console.error('❌ Could not identify user from session')
+        return NextResponse.json(
+          { error: 'User not found' },
+          { status: 404 }
+        )
+      }
+
+      // Determine if this is a credit pack purchase
+      const isOneTimePayment = session.mode === 'payment'
+      const isCreditPack = session.metadata?.product_type === 'credit_pack' || isOneTimePayment
+
+      if (isCreditPack) {
+        const creditsToAdd = parseInt(session.metadata?.credits_to_add || '15')
 
         console.log(`💳 Credit pack purchased by user ${clerkUserId}`)
 
