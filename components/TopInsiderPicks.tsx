@@ -211,42 +211,13 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
             No picks available today
           </div>
         ) : (
+          <>
           <div style={{
-          background: 'rgba(255, 255, 255, 0.02)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '12px',
-          padding: '1rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.75rem'
+          gap: '0.75rem',
+          marginBottom: '1rem'
         }}>
-            {/* "All Picks" button for non-premium users */}
-            {!isPremium && !hasAllDayAccess && isSignedIn && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                <button
-                  onClick={handleUnlockAll}
-                  style={{
-                    padding: '0.35rem 0.75rem',
-                    background: 'rgba(251, 191, 36, 0.1)',
-                    border: '1px solid rgba(251, 191, 36, 0.3)',
-                    borderRadius: '6px',
-                    color: '#fbbf24',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <GiTwoCoins style={{ fontSize: '0.85rem' }} />
-                  <span style={{ color: '#fbbf24', fontWeight: '700' }}>5</span>
-                  <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>All Picks</span>
-                </button>
-              </div>
-            )}
           {picks.map((pick) => {
             const unlocked = isPickUnlocked(pick.id)
             const writeupExpanded = expandedWriteups.has(pick.id)
@@ -257,9 +228,10 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 key={pick.id}
                 style={{
                   padding: '1rem',
-                  background: 'rgba(255, 255, 255, 0.03)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   position: 'relative'
                 }}
               >
@@ -419,6 +391,77 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
             )
           })}
           </div>
+
+          {/* Bottom Action Buttons */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '0.75rem',
+            marginTop: '0.5rem'
+          }}>
+            {/* 5 Day Pass Button - only show for non-premium users */}
+            {!isPremium && !hasAllDayAccess && isSignedIn && (
+              <button
+                onClick={handleUnlockAll}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(251, 191, 36, 0.1)',
+                  border: '1px solid rgba(251, 191, 36, 0.3)',
+                  borderRadius: '8px',
+                  color: '#fbbf24',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  flex: 1,
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(251, 191, 36, 0.15)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(251, 191, 36, 0.1)'
+                }}
+              >
+                <GiTwoCoins style={{ fontSize: '0.85rem' }} />
+                <span style={{ fontWeight: '700' }}>5</span>
+                <span>Day Pass</span>
+              </button>
+            )}
+
+            {/* View All Button */}
+            <button
+              onClick={() => router.push('/analyst-picks')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '8px',
+                color: '#3b82f6',
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s',
+                flex: 1,
+                justifyContent: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'
+              }}
+            >
+              View All →
+            </button>
+          </div>
+          </>
         )
       )}
     </div>
