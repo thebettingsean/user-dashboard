@@ -11,6 +11,8 @@ interface UnlockModalProps {
 export default function UnlockModal({ isOpen, onClose }: UnlockModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
+  console.log('🎯 UnlockModal render - isOpen:', isOpen)
+
   if (!isOpen) return null
 
   const subscriptionPlans = [

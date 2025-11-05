@@ -72,7 +72,11 @@ export default function Home() {
 
   // Expose showUnlockModal globally so AICreditBadge can trigger it
   useEffect(() => {
-    ;(window as any).showUnlockModal = () => setShowUnlockModal(true)
+    ;(window as any).showUnlockModal = () => {
+      console.log('🚀 showUnlockModal called! Setting state to true')
+      setShowUnlockModal(true)
+    }
+    console.log('✅ window.showUnlockModal exposed')
     return () => {
       delete (window as any).showUnlockModal
     }
@@ -1224,9 +1228,13 @@ export default function Home() {
     />
 
     {/* Unlock/Purchase Modal */}
+    {console.log('📦 Page render - showUnlockModal state:', showUnlockModal)}
     <UnlockModal 
       isOpen={showUnlockModal}
-      onClose={() => setShowUnlockModal(false)}
+      onClose={() => {
+        console.log('❌ Closing UnlockModal')
+        setShowUnlockModal(false)
+      }}
     />
 
     {/* Hidden SignInButton for triggering Clerk modal */}
