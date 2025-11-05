@@ -9,6 +9,7 @@ import { TiMinusOutline } from 'react-icons/ti'
 import { GoPlusCircle } from 'react-icons/go'
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import PickUnlockModal from './PickUnlockModal'
 
 interface Pick {
   id: string
@@ -39,16 +40,48 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
   const [hasAllDayAccess, setHasAllDayAccess] = useState(false)
   const [isPremium, setIsPremium] = useState(false)
   const [unlocking, setUnlocking] = useState<string | null>(null)
+  const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
+  
+  // Confirmation modal state
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [pendingUnlock, setPendingUnlock] = useState<{
+    type: 'single' | 'all_day',
+    pickId?: string,
+    pickTitle?: string
+  } | null>(null)
 
   useEffect(() => {
     fetchPicks()
   }, [])
 
   useEffect(() => {
+    if (isSignedIn) {
+      fetchCredits()
+    }
+  }, [isSignedIn])
+
+  useEffect(() => {
     if (isSignedIn && picks.length > 0) {
       checkAccess()
     }
   }, [isSignedIn, picks])
+
+  async function fetchCredits() {
+    try {
+      const response = await fetch('/api/ai-credits/check')
+      const data = await response.json()
+      
+      if (data.isPremium) {
+        setCreditsRemaining('unlimited')
+        setIsPremium(true)
+      } else {
+        const remaining = (data.purchasedCredits || 0) - (data.scriptsUsed || 0)
+        setCreditsRemaining(Math.max(0, remaining))
+      }
+    } catch (error) {
+      console.error('Error fetching credits:', error)
+    }
+  }
 
   async function fetchPicks() {
     try {
@@ -132,43 +165,80 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
     }
   }
 
-  async function handleUnlockSingle(pickId: string) {
-    if (unlocking) return
-    
-    setUnlocking(pickId)
-    
-    try {
-      const response = await fetch('/api/picks/unlock-single', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickId })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setUnlockedPicks([...unlockedPicks, pickId])
-        // Refresh credit display
-        if ((window as any).refreshAICredits) {
-          (window as any).refreshAICredits()
-        }
-      } else if (response.status === 403) {
-        // Insufficient credits - redirect to pricing
-        router.push('/pricing')
-      } else {
-        alert(data.error || 'Failed to unlock pick')
-      }
-    } catch (error) {
-      console.error('Error unlocking pick:', error)
-      alert('Failed to unlock pick')
-    } finally {
-      setUnlocking(null)
-    }
+  function handleUnlockSingle(pickId: string, pickTitle: string) {
+    setPendingUnlock({ type: 'single', pickId, pickTitle })
+    setConfirmModalOpen(true)
   }
 
   function handleUnlockAll() {
-    // Redirect to pricing page for now - will add confirmation modal later
-    router.push('/pricing?unlock=all-picks')
+    setPendingUnlock({ type: 'all_day' })
+    setConfirmModalOpen(true)
+  }
+
+  async function confirmUnlock() {
+    if (!pendingUnlock) return
+
+    setConfirmModalOpen(false)
+    
+    if (pendingUnlock.type === 'single' && pendingUnlock.pickId) {
+      setUnlocking(pendingUnlock.pickId)
+      try {
+        const response = await fetch('/api/picks/unlock-single', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pickId: pendingUnlock.pickId })
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setUnlockedPicks([...unlockedPicks, pendingUnlock.pickId!])
+          await fetchCredits() // Refresh credits
+          alert('✅ Pick unlocked successfully!')
+        } else {
+          if (response.status === 403) {
+            window.location.href = '/pricing'
+          } else {
+            alert(data.error || 'Failed to unlock pick')
+          }
+        }
+      } catch (error) {
+        console.error('Error unlocking pick:', error)
+        alert('Error unlocking pick. Please try again.')
+      } finally {
+        setUnlocking(null)
+        setPendingUnlock(null)
+      }
+    } else if (pendingUnlock.type === 'all_day') {
+      setUnlocking('all')
+      try {
+        const response = await fetch('/api/picks/unlock-all-day', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setHasAllDayAccess(true)
+          setUnlockedPicks(picks.map(p => p.id))
+          await fetchCredits() // Refresh credits
+          alert('✅ All picks unlocked for 24 hours!')
+        } else {
+          if (response.status === 403) {
+            window.location.href = '/pricing'
+          } else {
+            alert(data.error || 'Failed to unlock all picks')
+          }
+        }
+      } catch (error) {
+        console.error('Error unlocking all picks:', error)
+        alert('Error unlocking picks. Please try again.')
+      } finally {
+        setUnlocking(null)
+        setPendingUnlock(null)
+      }
+    }
   }
 
   function toggleWriteup(pickId: string) {
@@ -186,9 +256,22 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
   }
 
   return (
-    <div style={{ marginBottom: '2.5rem' }}>
-      {/* Header */}
-      <h3 
+    <>
+      <PickUnlockModal
+        isOpen={confirmModalOpen}
+        onClose={() => {
+          setConfirmModalOpen(false)
+          setPendingUnlock(null)
+        }}
+        onConfirm={confirmUnlock}
+        unlockType={pendingUnlock?.type || 'single'}
+        pickTitle={pendingUnlock?.pickTitle}
+        creditsRemaining={creditsRemaining}
+      />
+
+      <div style={{ marginBottom: '2.5rem' }}>
+        {/* Header */}
+        <h3 
         onClick={() => isCollapsible && setExpanded(!expanded)}
         style={{ 
           fontSize: '1.2rem', 
@@ -341,9 +424,9 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   </div>
 
                   {/* Unlock button for signed-in non-premium users */}
-                  {isSignedIn && !unlocked && (
+                  {isSignedIn && !unlocked && !isPremium && (
                     <button
-                      onClick={() => handleUnlockSingle(pick.id)}
+                      onClick={() => handleUnlockSingle(pick.id, pick.bet_title)}
                       disabled={isUnlocking}
                       style={{
                         padding: '0.4rem 0.75rem',
@@ -486,7 +569,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
           </>
         )
       )}
-    </div>
+      </div>
+    </>
   )
 }
 
