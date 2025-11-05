@@ -5,7 +5,9 @@ import { useUser } from '@clerk/nextjs'
 import { createClient } from '@supabase/supabase-js'
 import { HiOutlineTrophy } from "react-icons/hi2"
 import { GiTwoCoins } from "react-icons/gi"
-import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
+import { TiMinusOutline } from 'react-icons/ti'
+import { GoPlusCircle } from 'react-icons/go'
+import { Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const supabase = createClient(
@@ -53,34 +55,45 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
   async function fetchPicks() {
     try {
-      // Get today's picks (EST timezone)
       const now = new Date()
       const estOffset = -5 * 60 // EST is UTC-5
       const estNow = new Date(now.getTime() + estOffset * 60 * 1000)
-      const startOfDay = new Date(estNow)
-      startOfDay.setHours(0, 0, 0, 0)
-      const endOfDay = new Date(estNow)
-      endOfDay.setHours(23, 59, 59, 999)
+      
+      let formattedPicks: Pick[] = []
+      
+      // Try to get picks for today first, then next 2 days if none available
+      for (let daysAhead = 0; daysAhead <= 2; daysAhead++) {
+        const targetDate = new Date(estNow)
+        targetDate.setDate(targetDate.getDate() + daysAhead)
+        const startOfDay = new Date(targetDate)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(targetDate)
+        endOfDay.setHours(23, 59, 59, 999)
 
-      const { data, error } = await supabase
-        .from('picks')
-        .select('*, bettors(name)')
-        .gte('game_time', startOfDay.toISOString())
-        .lte('game_time', endOfDay.toISOString())
-        .order('units_at_risk', { ascending: false }) // Highest units first
+        const { data, error } = await supabase
+          .from('picks')
+          .select('*, bettors(name)')
+          .gte('game_time', startOfDay.toISOString())
+          .lte('game_time', endOfDay.toISOString())
+          .is('recap', null) // Only get active/un-recapped picks
+          .order('units_at_risk', { ascending: false })
 
-      if (error) throw error
+        if (error) throw error
 
-      const formattedPicks = (data || []).map(p => ({
-        id: p.id,
-        sport: p.sport || 'N/A',
-        pick_title: p.pick_title || '',
-        units_at_risk: p.units_at_risk || 0,
-        odds: p.odds || '',
-        bettor_name: p.bettors?.name || 'Unknown',
-        write_up: p.write_up || '',
-        game_time: p.game_time
-      }))
+        if (data && data.length > 0) {
+          formattedPicks = data.map(p => ({
+            id: p.id,
+            sport: p.sport || 'N/A',
+            pick_title: p.pick_title || '',
+            units_at_risk: p.units_at_risk || 0,
+            odds: p.odds || '',
+            bettor_name: p.bettors?.name || 'Unknown',
+            write_up: p.write_up || '',
+            game_time: p.game_time
+          }))
+          break // Found picks, stop searching
+        }
+      }
 
       setPicks(formattedPicks)
     } catch (error) {
@@ -160,68 +173,39 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
   return (
     <div style={{ marginBottom: '2.5rem' }}>
       {/* Header */}
-      <div 
+      <h3 
         onClick={() => isCollapsible && setExpanded(!expanded)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: expanded ? '1rem' : 0,
+        style={{ 
+          fontSize: '1.2rem', 
+          marginBottom: '0.5rem', 
+          opacity: 0.9, 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          color: '#fff',
           cursor: isCollapsible ? 'pointer' : 'default'
         }}
       >
-        <h3 style={{
-          fontSize: '1.2rem',
-          color: '#fff',
-          opacity: 0.9,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
+        <HiOutlineTrophy size={16} style={{ color: '#ffffff' }} />
+        Top Insider Picks
+        <span style={{
+          fontSize: '0.6rem',
+          fontWeight: '600',
+          color: '#f97316',
+          background: 'rgba(249, 115, 22, 0.1)',
+          border: '1px solid rgba(249, 115, 22, 0.3)',
+          borderRadius: '4px',
+          padding: '2px 6px',
+          marginLeft: '0.25rem'
         }}>
-          <HiOutlineTrophy size={20} style={{ color: '#fbbf24' }} />
-          Top Insider Picks
-          {isCollapsible && (
-            <span style={{ marginLeft: 'auto', fontSize: '1.5rem' }}>
-              {expanded ? '−' : '+'}
-            </span>
-          )}
-        </h3>
-        
-        {/* "All Picks" button for non-premium users */}
-        {expanded && !isPremium && !hasAllDayAccess && isSignedIn && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleUnlockAll()
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              border: 'none',
-              borderRadius: '8px',
-              color: '#fff',
-              fontSize: '0.85rem',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.4)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = 'none'
-            }}
-          >
-            <GiTwoCoins style={{ fontSize: '1rem' }} />
-            All Picks - 5 Credits
-          </button>
+          HOT
+        </span>
+        {isCollapsible && (
+          <span style={{ marginLeft: 'auto' }}>
+            {expanded ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
+          </span>
         )}
-      </div>
+      </h3>
 
       {/* Picks List */}
       {expanded && (
@@ -244,6 +228,32 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
           flexDirection: 'column',
           gap: '0.75rem'
         }}>
+            {/* "All Picks" button for non-premium users */}
+            {!isPremium && !hasAllDayAccess && isSignedIn && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+                <button
+                  onClick={handleUnlockAll}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    background: 'rgba(251, 191, 36, 0.1)',
+                    border: '1px solid rgba(251, 191, 36, 0.3)',
+                    borderRadius: '6px',
+                    color: '#fbbf24',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <GiTwoCoins style={{ fontSize: '0.85rem' }} />
+                  <span style={{ color: '#fbbf24', fontWeight: '700' }}>5</span>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>All Picks</span>
+                </button>
+              </div>
+            )}
           {picks.map((pick) => {
             const unlocked = isPickUnlocked(pick.id)
             const writeupExpanded = expandedWriteups.has(pick.id)
