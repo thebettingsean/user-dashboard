@@ -1,57 +1,78 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { Loader2, GiTwoCoins } from 'lucide-react'
+import { loadStripe } from '@stripe/stripe-js'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export default function CheckoutPage() {
-  const params = useParams()
   const router = useRouter()
-  const { user, isLoaded, isSignedIn } = useUser()
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams()
+  const { isSignedIn, user, isLoaded } = useUser()
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const priceId = params.priceId as string
 
   useEffect(() => {
     if (!isLoaded) return
 
-    // Redirect to sign in if not authenticated
     if (!isSignedIn) {
-      router.push('/sign-in?redirect_url=' + encodeURIComponent(window.location.pathname))
+      // Redirect to sign-in
+      router.push('/sign-in')
       return
     }
 
     // Create checkout session
-    const createCheckoutSession = async () => {
-      try {
-        const priceId = params.priceId as string
-        
-        console.log('🔵 Creating checkout session for:', priceId)
-
-        const response = await fetch('/api/checkout/create-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ priceId })
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data.url) {
-          console.log('✅ Redirecting to Stripe Checkout')
-          window.location.href = data.url
-        } else {
-          console.error('❌ Failed to create session:', data.error)
-          setError(data.error || 'Failed to create checkout session')
-          setLoading(false)
-        }
-      } catch (err) {
-        console.error('❌ Error:', err)
-        setError('An unexpected error occurred')
-        setLoading(false)
-      }
-    }
-
     createCheckoutSession()
-  }, [isLoaded, isSignedIn, params.priceId, router])
+  }, [isSignedIn, isLoaded, user])
+
+  const createCheckoutSession = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch('/api/checkout/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          clerkUserId: user?.id,
+          email: user?.primaryEmailAddress?.emailAddress,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create checkout session')
+      }
+
+      const { sessionId } = await response.json()
+
+      // Redirect to Stripe Checkout
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error('Stripe failed to load')
+      }
+
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        sessionId,
+      })
+
+      if (stripeError) {
+        throw new Error(stripeError.message)
+      }
+    } catch (err: any) {
+      console.error('Checkout error:', err)
+      setError(err.message || 'Something went wrong')
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={{
@@ -62,26 +83,32 @@ export default function CheckoutPage() {
       justifyContent: 'center',
       padding: '2rem'
     }}>
+      {/* Background orbs */}
+      <div className="orb-3"></div>
+      <div className="orb-4"></div>
+      <div className="orb-5"></div>
+
       <div style={{
+        maxWidth: '500px',
+        width: '100%',
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(40px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
         padding: '3rem',
-        maxWidth: '500px',
-        width: '100%',
-        textAlign: 'center'
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 1
       }}>
-        {loading ? (
+        {loading && (
           <>
-            <div style={{
-              width: '50px',
-              height: '50px',
-              border: '3px solid rgba(59, 130, 246, 0.2)',
-              borderTop: '3px solid #3b82f6',
-              borderRadius: '50%',
-              margin: '0 auto 1.5rem',
-              animation: 'spin 1s linear infinite'
+            <Loader2 style={{
+              width: '48px',
+              height: '48px',
+              color: '#8b5cf6',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1.5rem'
             }} />
             <h2 style={{
               fontSize: '1.5rem',
@@ -89,30 +116,34 @@ export default function CheckoutPage() {
               color: '#fff',
               marginBottom: '0.5rem'
             }}>
-              Preparing your checkout...
+              Redirecting to checkout...
             </h2>
             <p style={{
-              fontSize: '0.9rem',
-              color: 'rgba(255, 255, 255, 0.5)'
+              fontSize: '0.95rem',
+              color: 'rgba(255, 255, 255, 0.6)'
             }}>
-              You'll be redirected to Stripe in a moment
+              Please wait while we set up your secure payment.
             </p>
           </>
-        ) : error ? (
+        )}
+
+        {error && (
           <>
             <div style={{
-              width: '50px',
-              height: '50px',
-              background: 'rgba(239, 68, 68, 0.2)',
+              width: '48px',
+              height: '48px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid rgba(239, 68, 68, 0.3)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem',
+              color: '#ef4444',
               fontSize: '1.5rem',
-              color: '#ef4444'
+              fontWeight: '700'
             }}>
-              ✕
+              !
             </div>
             <h2 style={{
               fontSize: '1.5rem',
@@ -123,8 +154,8 @@ export default function CheckoutPage() {
               Something went wrong
             </h2>
             <p style={{
-              fontSize: '0.9rem',
-              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '0.95rem',
+              color: 'rgba(255, 255, 255, 0.6)',
               marginBottom: '1.5rem'
             }}>
               {error}
@@ -132,28 +163,34 @@ export default function CheckoutPage() {
             <button
               onClick={() => router.push('/pricing')}
               style={{
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '0.95rem',
-                fontWeight: '600',
+                width: '100%',
+                padding: '0.875rem 1.5rem',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                 color: '#fff',
-                cursor: 'pointer'
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s'
               }}
             >
               Back to Pricing
             </button>
           </>
-        ) : null}
+        )}
       </div>
+
       <style jsx>{`
         @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
   )
 }
-

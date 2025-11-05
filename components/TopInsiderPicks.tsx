@@ -109,7 +109,7 @@ interface TopInsiderPicksProps {
   defaultExpanded?: boolean
 }
 
-export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded = true }: TopInsiderPicksProps) {
+export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded = false }: TopInsiderPicksProps) {
   const { isSignedIn, isLoaded } = useUser()
   const router = useRouter()
   const [picks, setPicks] = useState<Pick[]>([])

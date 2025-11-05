@@ -605,22 +605,41 @@ export default function Home() {
                               }} />
                             </div>
                           ) : (
-                            /* Credit Cost Badge (Non-Premium Users) */
+                            /* Credit Cost Badge (Non-Premium Users) - Orange (1), Yellow (2), Green (3) */
                             <div style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '0.3rem',
                               padding: '0.25rem 0.5rem',
-                              background: 'rgba(251, 191, 36, 0.1)',
-                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              background: scriptStrength === 3 
+                                ? 'rgba(16, 185, 129, 0.1)' 
+                                : scriptStrength === 2 
+                                ? 'rgba(251, 191, 36, 0.1)' 
+                                : 'rgba(249, 115, 22, 0.1)',
+                              border: scriptStrength === 3 
+                                ? '1px solid rgba(16, 185, 129, 0.3)' 
+                                : scriptStrength === 2 
+                                ? '1px solid rgba(251, 191, 36, 0.3)' 
+                                : '1px solid rgba(249, 115, 22, 0.3)',
                               borderRadius: '6px',
                               flexShrink: 0
                             }}>
-                              <GiTwoCoins style={{ color: '#fbbf24', fontSize: '0.85rem' }} />
+                              <GiTwoCoins style={{ 
+                                color: scriptStrength === 3 
+                                  ? '#10b981' 
+                                  : scriptStrength === 2 
+                                  ? '#fbbf24' 
+                                  : '#f97316', 
+                                fontSize: '0.85rem' 
+                              }} />
                               <span style={{
                                 fontSize: '0.7rem',
                                 fontWeight: '700',
-                                color: '#fbbf24'
+                                color: scriptStrength === 3 
+                                  ? '#10b981' 
+                                  : scriptStrength === 2 
+                                  ? '#fbbf24' 
+                                  : '#f97316'
                               }}>
                                 {scriptStrength}
                               </span>
@@ -899,22 +918,41 @@ export default function Home() {
                               }} />
                             </div>
                           ) : (
-                            /* Credit Cost Badge (Non-Premium Users) */
+                            /* Credit Cost Badge (Non-Premium Users) - Orange (1), Yellow (2), Green (3) */
                             <div style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '0.3rem',
                               padding: '0.25rem 0.5rem',
-                              background: 'rgba(251, 191, 36, 0.1)',
-                              border: '1px solid rgba(251, 191, 36, 0.3)',
+                              background: scriptStrength === 3 
+                                ? 'rgba(16, 185, 129, 0.1)' 
+                                : scriptStrength === 2 
+                                ? 'rgba(251, 191, 36, 0.1)' 
+                                : 'rgba(249, 115, 22, 0.1)',
+                              border: scriptStrength === 3 
+                                ? '1px solid rgba(16, 185, 129, 0.3)' 
+                                : scriptStrength === 2 
+                                ? '1px solid rgba(251, 191, 36, 0.3)' 
+                                : '1px solid rgba(249, 115, 22, 0.3)',
                               borderRadius: '6px',
                               flexShrink: 0
                             }}>
-                              <GiTwoCoins style={{ color: '#fbbf24', fontSize: '0.85rem' }} />
+                              <GiTwoCoins style={{ 
+                                color: scriptStrength === 3 
+                                  ? '#10b981' 
+                                  : scriptStrength === 2 
+                                  ? '#fbbf24' 
+                                  : '#f97316', 
+                                fontSize: '0.85rem' 
+                              }} />
                               <span style={{
                                 fontSize: '0.7rem',
                                 fontWeight: '700',
-                                color: '#fbbf24'
+                                color: scriptStrength === 3 
+                                  ? '#10b981' 
+                                  : scriptStrength === 2 
+                                  ? '#fbbf24' 
+                                  : '#f97316'
                               }}>
                                 {scriptStrength}
                               </span>

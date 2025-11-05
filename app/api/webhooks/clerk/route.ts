@@ -86,7 +86,7 @@ export async function POST(req: Request) {
           ai_scripts_used: 0,
           ai_scripts_limit: 3,
           ai_scripts_reset_at: getNextMonday(),
-          purchased_credits: 0
+          purchased_credits: 1 // 🎁 1 free credit on sign-up!
         })
 
       if (supabaseError) {
