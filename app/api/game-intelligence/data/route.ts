@@ -382,22 +382,22 @@ export async function GET(request: NextRequest) {
     
     let dataStrength: 1 | 2 | 3
     
-    // New logic based on credit cost:
-    // Minimal (1 credit): Team Rankings + 1 data source
-    // Above Average (2 credits): Team Rankings + 2+ data sources (no analyst picks)
-    // Strong (3 credits): Team Rankings + 2+ data sources + analyst picks
+    // Updated logic to make 2 credits more valuable and 3 credits premium:
+    // 1 credit: Team Rankings + 2 or fewer other sources
+    // 2 credits: Team Rankings + 3+ other sources (no analyst picks)
+    // 3 credits: Team Rankings + Analyst Picks (analyst picks = instant premium)
     
-    if (hasTeamRankings && otherDataCount >= 2 && hasAnalystPicks) {
-      // Team rankings + 2+ sources + analyst picks = Strong (3 credits)
+    if (hasAnalystPicks && hasTeamRankings) {
+      // Analyst picks + team rankings = ALWAYS Strong (3 credits)
       dataStrength = 3
-    } else if (hasTeamRankings && otherDataCount >= 2) {
-      // Team rankings + 2+ sources (no analyst picks) = Above Average (2 credits)
+    } else if (hasTeamRankings && otherDataCount >= 3) {
+      // Team rankings + 3+ sources (no analyst picks) = Above Average (2 credits)
       dataStrength = 2
-    } else if (hasTeamRankings && otherDataCount >= 1) {
-      // Team rankings + 1 source = Minimal (1 credit)
+    } else if (hasTeamRankings) {
+      // Team rankings + 0-2 sources = Minimal (1 credit)
       dataStrength = 1
     } else {
-      // No team rankings or insufficient data = Minimal (1 credit)
+      // No team rankings = Minimal (1 credit)
       dataStrength = 1
     }
 
