@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Sparkles, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { GiTwoCoins } from "react-icons/gi"
 
 export default function PricingPage() {
   const router = useRouter()
@@ -72,9 +73,12 @@ export default function PricingPage() {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #000000 0%, #0a1628 60%, #1a2642 100%)',
-      padding: '2rem 1rem',
+      padding: '8rem 1rem 2rem',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
       {/* Background orbs */}
       <div className="orb-3"></div>
@@ -106,7 +110,7 @@ export default function PricingPage() {
             marginBottom: '0.5rem',
             lineHeight: '1.2'
           }}>
-            Unlock Premium Access
+            Add Credits or Upgrade
           </h1>
           <p style={{
             fontSize: '0.9rem',
@@ -153,13 +157,17 @@ export default function PricingPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
-                    15 AI Credits - One Time Purchase
+                    One Time Purchase
                   </div>
-                  <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#fff', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '800', color: '#fff', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     $10
+                    <span style={{ fontSize: '0.9rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.7)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      / 15 Credits
+                      <GiTwoCoins style={{ fontSize: '1rem', color: '#fbbf24' }} />
+                    </span>
                   </div>
                   <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.4)' }}>
-                    Spend credits on AI scripts & more
+                    Spend credits on scripts, picks & more!
                   </div>
                 </div>
                 {selectedPlan === 'credits' && (
