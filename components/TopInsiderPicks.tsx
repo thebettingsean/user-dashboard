@@ -13,12 +13,14 @@ import { useRouter } from 'next/navigation'
 interface Pick {
   id: string
   sport: string
-  pick_title: string
-  units_at_risk: number
+  bet_title: string
+  units: number
   odds: string
-  bettor_name: string
-  write_up: string
+  bettor_id: string
+  bettor_name?: string
+  analysis: string
   game_time: string
+  result: string
 }
 
 interface TopInsiderPicksProps {
@@ -52,52 +54,38 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
     try {
       console.log('🎯 [TopInsiderPicks] Fetching picks...')
       const now = new Date()
-      const estOffset = -5 * 60 // EST is UTC-5
-      const estNow = new Date(now.getTime() + estOffset * 60 * 1000)
       
-      let formattedPicks: Pick[] = []
-      
-      // Try to get picks for today first, then next 2 days if none available
-      for (let daysAhead = 0; daysAhead <= 2; daysAhead++) {
-        const targetDate = new Date(estNow)
-        targetDate.setDate(targetDate.getDate() + daysAhead)
-        const startOfDay = new Date(targetDate)
-        startOfDay.setHours(0, 0, 0, 0)
-        const endOfDay = new Date(targetDate)
-        endOfDay.setHours(23, 59, 59, 999)
+      // Get all active picks (result = 'pending')
+      const { data, error } = await supabase
+        .from('picks')
+        .select('*, bettors(name)')
+        .eq('result', 'pending')
+        .gte('game_time', now.toISOString()) // Only future games
+        .order('game_time', { ascending: true }) // Soonest first
+        .limit(7) // Max 7 picks
 
-        console.log(`📅 Searching picks for day +${daysAhead}: ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`)
-
-        const { data, error } = await supabase
-          .from('picks')
-          .select('*, bettors(name)')
-          .gte('game_time', startOfDay.toISOString())
-          .lte('game_time', endOfDay.toISOString())
-          .is('recap', null) // Only get active/un-recapped picks
-          .order('units_at_risk', { ascending: false })
-
-        if (error) {
-          console.error(`❌ Error fetching picks for day +${daysAhead}:`, error)
-          throw error
-        }
-
-        console.log(`📊 Found ${data?.length || 0} picks for day +${daysAhead}`)
-
-        if (data && data.length > 0) {
-          formattedPicks = data.map(p => ({
-            id: p.id,
-            sport: p.sport || 'N/A',
-            pick_title: p.pick_title || '',
-            units_at_risk: p.units_at_risk || 0,
-            odds: p.odds || '',
-            bettor_name: p.bettors?.name || 'Unknown',
-            write_up: p.write_up || '',
-            game_time: p.game_time
-          }))
-          console.log(`✅ Using ${formattedPicks.length} picks from day +${daysAhead}`)
-          break // Found picks, stop searching
-        }
+      if (error) {
+        console.error(`❌ Error fetching picks:`, error)
+        throw error
       }
+
+      console.log(`📊 Found ${data?.length || 0} pending picks`)
+
+      const formattedPicks = (data || []).map(p => ({
+        id: p.id,
+        sport: p.sport || 'N/A',
+        bet_title: p.bet_title || '',
+        units: parseFloat(p.units) || 0,
+        odds: p.odds || '',
+        bettor_id: p.bettor_id || '',
+        bettor_name: p.bettors?.name || 'Unknown',
+        analysis: p.analysis || '',
+        game_time: p.game_time,
+        result: p.result
+      }))
+
+      // Sort by units (highest first)
+      formattedPicks.sort((a, b) => b.units - a.units)
 
       console.log(`🏁 Final pick count: ${formattedPicks.length}`)
       setPicks(formattedPicks)
@@ -309,7 +297,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       color: '#fbbf24',
                       minWidth: '3rem'
                     }}>
-                      [{pick.units_at_risk.toFixed(1)}u]
+                      [{pick.units.toFixed(1)}u]
                     </span>
 
                     {/* Pick Title - blur if signed in but not unlocked */}
@@ -322,7 +310,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                           color: '#fff',
                           fontWeight: '600'
                         }}>
-                          {pick.pick_title}
+                          {pick.bet_title}
                         </span>
                       ) : (
                         <span style={{
@@ -330,7 +318,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                           color: '#fff',
                           fontWeight: '600'
                         }}>
-                          {pick.pick_title}
+                          {pick.bet_title}
                         </span>
                       )}
                       
@@ -375,7 +363,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   </div>
 
                   {/* Show write-up dropdown only if unlocked */}
-                  {unlocked && pick.write_up && (
+                  {unlocked && pick.analysis && (
                     <button
                       onClick={() => toggleWriteup(pick.id)}
                       style={{
@@ -397,7 +385,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 </div>
 
                 {/* Write-up expansion */}
-                {unlocked && writeupExpanded && pick.write_up && (
+                {unlocked && writeupExpanded && pick.analysis && (
                   <div style={{
                     marginTop: '0.75rem',
                     padding: '0.75rem',
@@ -407,7 +395,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                     color: 'rgba(255, 255, 255, 0.8)',
                     lineHeight: '1.5'
                   }}>
-                    {pick.write_up}
+                    {pick.analysis}
                   </div>
                 )}
               </div>
