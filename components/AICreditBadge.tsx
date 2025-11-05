@@ -170,9 +170,14 @@ export default function AICreditBadge() {
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <button
           onClick={() => {
+            console.log('🔘 Get More Credits clicked!')
+            console.log('🔍 window.showUnlockModal exists?', typeof (window as any).showUnlockModal)
             // Trigger the UnlockModal globally
             if ((window as any).showUnlockModal) {
-              (window as any).showUnlockModal()
+              console.log('✅ Calling showUnlockModal()')
+              ;(window as any).showUnlockModal()
+            } else {
+              console.error('❌ window.showUnlockModal not found!')
             }
           }}
           style={{
@@ -221,9 +226,14 @@ export default function AICreditBadge() {
       <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
       <button
         onClick={() => {
+          console.log('🔘 Get More Credits (with balance) clicked!')
+          console.log('🔍 window.showUnlockModal exists?', typeof (window as any).showUnlockModal)
           // Trigger the UnlockModal globally
           if ((window as any).showUnlockModal) {
-            (window as any).showUnlockModal()
+            console.log('✅ Calling showUnlockModal()')
+            ;(window as any).showUnlockModal()
+          } else {
+            console.error('❌ window.showUnlockModal not found!')
           }
         }}
         style={{
