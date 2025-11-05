@@ -19,6 +19,7 @@ import GameCard from '../components/GameCard'
 import GameScriptModal from '../components/GameScriptModal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import AICreditBadge from '../components/AICreditBadge'
+import UnlockModal from '../components/UnlockModal'
 import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 import { GoPlusCircle } from 'react-icons/go'
 import { TiMinusOutline } from 'react-icons/ti'
@@ -50,6 +51,7 @@ export default function Home() {
   const [scriptModalOpen, setScriptModalOpen] = useState(false)
   const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'MLB'>('NFL')
   const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
+  const [showUnlockModal, setShowUnlockModal] = useState(false)
   const { isLoading, isSubscribed, firstName} = useSubscription()
 
   useEffect(() => {
@@ -66,6 +68,14 @@ export default function Home() {
 
   useEffect(() => {
     fetchTodaysGames()
+  }, [])
+
+  // Expose showUnlockModal globally so AICreditBadge can trigger it
+  useEffect(() => {
+    ;(window as any).showUnlockModal = () => setShowUnlockModal(true)
+    return () => {
+      delete (window as any).showUnlockModal
+    }
   }, [])
 
   async function fetchTodaysGames() {
@@ -144,8 +154,13 @@ export default function Home() {
     console.log('🎮 GAME CLICKED:', gameId, sport)
     console.log('👤 User signed in?', isSignedIn, 'Type:', typeof isSignedIn)
     
-    // For localhost testing, bypass auth check
-    // In production, the maintenance blocker will handle this
+    // Check if user is signed in - if not, trigger Clerk sign-in
+    if (!isSignedIn) {
+      console.log('❌ User not signed in - triggering sign-in modal')
+      setTriggerSignIn(true)
+      return
+    }
+    
     console.log('✅ Opening script modal for', gameId)
     setGeneratingGameId(gameId)
     setSelectedGameId(gameId)
@@ -1208,20 +1223,25 @@ export default function Home() {
       onClose={closeScriptModal}
     />
 
+    {/* Unlock/Purchase Modal */}
+    <UnlockModal 
+      isOpen={showUnlockModal}
+      onClose={() => setShowUnlockModal(false)}
+    />
+
     {/* Hidden SignInButton for triggering Clerk modal */}
-    {triggerSignIn && (
-      <SignInButton mode="modal">
-        <button 
-          ref={(el) => {
-            if (el && triggerSignIn) {
-              el.click()
-              setTriggerSignIn(false)
-            }
-          }}
-          style={{ display: 'none' }}
-        />
-      </SignInButton>
-    )}
+    <SignInButton mode="modal">
+      <button 
+        data-clerk-trigger
+        ref={(el) => {
+          if (el && triggerSignIn) {
+            el.click()
+            setTriggerSignIn(false)
+          }
+        }}
+        style={{ display: 'none' }}
+      />
+    </SignInButton>
     </>
   )
 }

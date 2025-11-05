@@ -74,24 +74,48 @@ export default function AICreditBadge() {
 
   if (!creditStatus) return null
 
-  // Not logged in - prompt to sign up
+  // Not logged in - prompt to sign up (clickable, triggers Clerk modal)
   if (!creditStatus.authenticated) {
     return (
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 1rem',
-        background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '8px',
-        fontSize: '0.85rem',
-        color: 'rgba(255, 255, 255, 0.6)'
-      }}>
+      <button
+        onClick={() => {
+          // Trigger Clerk sign-in modal
+          const signInBtn = document.querySelector('[data-clerk-trigger]') as HTMLElement
+          if (signInBtn) {
+            signInBtn.click()
+          } else {
+            // Fallback: use window location to redirect to sign-in
+            window.location.href = '/sign-in'
+          }
+        }}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.5rem 1rem',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+          color: 'rgba(255, 255, 255, 0.6)',
+          cursor: 'pointer',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)'
+          e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)'
+          e.currentTarget.style.color = '#8b5cf6'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
+          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
+          e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'
+        }}
+      >
         <GiTwoCoins size={16} style={{ color: '#8b5cf6', opacity: 0.6 }} />
-        Sign up to get credits
-      </div>
+        Sign up to get credits →
+      </button>
     )
   }
 
