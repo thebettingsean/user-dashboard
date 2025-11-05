@@ -1,99 +1,135 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseMain } from '@/lib/supabase'
 
 /**
  * Cron job to pre-generate AI scripts for all games
- * Runs every 4 hours to refresh scripts
+ * Runs every 1.5 hours between 9am-7pm EST
  * 
- * Vercel Cron: 0 */4 * * * (every 4 hours)
+ * Vercel Cron Schedule (in UTC):
+ * - 9:00 AM EST = 2:00 PM UTC  -> 0 14 * * *
+ * - 10:30 AM EST = 3:30 PM UTC -> 30 15 * * *
+ * - 12:00 PM EST = 5:00 PM UTC -> 0 17 * * *
+ * - 1:30 PM EST = 6:30 PM UTC  -> 30 18 * * *
+ * - 3:00 PM EST = 8:00 PM UTC  -> 0 20 * * *
+ * - 4:30 PM EST = 9:30 PM UTC  -> 30 21 * * *
+ * - 6:00 PM EST = 11:00 PM UTC -> 0 23 * * *
+ * - 7:00 PM EST = 12:00 AM UTC -> 0 0 * * * (next day)
+ * 
+ * Add all these to vercel.json cron config
  */
+
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify cron secret to prevent unauthorized access
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('🤖 CRON: Starting script pre-generation...')
-    const startTime = Date.now()
+    console.log('🤖 [CRON] Starting script generation job...')
 
-    // Get today's games
-    const baseUrl = request.nextUrl.origin
-    const gamesResponse = await fetch(`${baseUrl}/api/games/today`)
+    // Get all upcoming games from API
+    const gamesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/games/today`)
     
     if (!gamesResponse.ok) {
       throw new Error('Failed to fetch games')
     }
 
-    const { games } = await gamesResponse.json()
-    console.log(`📊 Found ${games.length} games to process`)
+    const gamesData = await gamesResponse.json()
+    const allGames = [
+      ...(gamesData.nfl || []),
+      ...(gamesData.nba || []),
+      ...(gamesData.cfb || [])
+    ]
 
-    // Pre-generate scripts for each game
-    const results = await Promise.allSettled(
-      games.map(async (game: any) => {
-        try {
-          console.log(`🎮 Generating script for ${game.game_id}...`)
-          
-          // Fetch game data
-          const dataResponse = await fetch(
-            `${baseUrl}/api/game-intelligence/data?gameId=${game.game_id}&league=${game.sport.toLowerCase()}`
-          )
-          
-          if (!dataResponse.ok) {
-            throw new Error(`Failed to fetch data for ${game.game_id}`)
-          }
+    console.log(`📊 Found ${allGames.length} games to process`)
 
-          const gameData = await dataResponse.json()
+    let successCount = 0
+    let errorCount = 0
+    const errors: string[] = []
 
-          // Generate script
-          const scriptResponse = await fetch(
-            `${baseUrl}/api/game-intelligence/generate`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                gameId: game.game_id,
-                league: game.sport.toLowerCase(),
-                data: gameData
-              })
-            }
-          )
+    // Process each game
+    for (const game of allGames) {
+      const sport = game.sport || 'nfl'
+      const gameId = game.gameId
 
-          if (!scriptResponse.ok) {
-            throw new Error(`Failed to generate script for ${game.game_id}`)
-          }
+      try {
+        console.log(`🎯 Generating script for ${sport.toUpperCase()} game: ${gameId}`)
 
-          const script = await scriptResponse.json()
-          console.log(`✅ Generated script for ${game.game_id} (${script.script.length} chars)`)
-          
-          return { gameId: game.game_id, success: true, length: script.script.length }
-        } catch (error) {
-          console.error(`❌ Failed to generate script for ${game.game_id}:`, error)
-          return { gameId: game.game_id, success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+        // Check if script already exists and was generated recently (within 1 hour)
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+        
+        const { data: existingScript } = await supabaseMain
+          .from('game_scripts')
+          .select('generated_at')
+          .eq('game_id', gameId)
+          .eq('sport', sport)
+          .gte('generated_at', oneHourAgo)
+          .single()
+
+        if (existingScript) {
+          console.log(`⏭️  Script already fresh for ${gameId}, skipping`)
+          successCount++
+          continue
         }
-      })
-    )
 
-    // Count successes and failures
-    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success)).length
-    const duration = Date.now() - startTime
+        // Generate script via API
+        const generateResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/game-intelligence/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-cron-job': 'true' // Flag to identify cron requests
+          },
+          body: JSON.stringify({
+            gameId,
+            sport,
+            fromCron: true
+          })
+        })
 
-    console.log(`🎯 CRON COMPLETE: ${successful} successful, ${failed} failed in ${duration}ms`)
+        if (generateResponse.ok) {
+          console.log(`✅ Successfully generated script for ${gameId}`)
+          successCount++
+        } else {
+          const errorText = await generateResponse.text()
+          console.error(`❌ Failed to generate script for ${gameId}: ${errorText}`)
+          errors.push(`${gameId}: ${errorText}`)
+          errorCount++
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+      } catch (error: any) {
+        console.error(`❌ Error processing ${gameId}:`, error)
+        errors.push(`${gameId}: ${error.message}`)
+        errorCount++
+      }
+    }
+
+    const summary = {
+      timestamp: new Date().toISOString(),
+      totalGames: allGames.length,
+      successCount,
+      errorCount,
+      errors: errors.slice(0, 5) // Only return first 5 errors to avoid huge response
+    }
+
+    console.log('🏁 [CRON] Job completed:', summary)
 
     return NextResponse.json({
       success: true,
-      processed: games.length,
-      successful,
-      failed,
-      duration,
-      results: results.map(r => r.status === 'fulfilled' ? r.value : { error: 'rejected' })
+      message: 'Cron job completed',
+      ...summary
     })
 
-  } catch (error) {
-    console.error('❌ Cron job failed:', error)
+  } catch (error: any) {
+    console.error('❌ [CRON] Fatal error:', error)
     return NextResponse.json(
-      { error: 'Cron job failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Cron job failed', 
+        message: error.message 
+      },
       { status: 500 }
     )
   }
