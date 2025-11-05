@@ -33,7 +33,15 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const pickIdsParam = searchParams.get('pickIds')
-    const pickIds = pickIdsParam ? pickIdsParam.split(',') : []
+    const pickIdParam = searchParams.get('pickId') // Single pick check
+    
+    // Support both pickIds (multiple) and pickId (single)
+    let pickIds: string[] = []
+    if (pickIdsParam) {
+      pickIds = pickIdsParam.split(',')
+    } else if (pickIdParam) {
+      pickIds = [pickIdParam]
+    }
 
     // Check if user is premium
     const { data: dbUser } = await supabaseUsers
@@ -49,6 +57,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         authenticated: true,
         isPremium: true,
+        hasAccess: true,
+        reason: 'premium',
         unlockedPicks: pickIds, // All picks
         hasAllDayAccess: true
       })
@@ -71,6 +81,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         authenticated: true,
         isPremium: false,
+        hasAccess: true,
+        reason: 'all_day_unlocked',
         unlockedPicks: pickIds, // All picks for 24 hours
         hasAllDayAccess: true,
         allDayExpiresAt: allDayUnlock.expires_at
@@ -78,18 +90,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Check individual pick unlocks - from USERS Supabase project
-    const { data: unlockedPicks } = await supabaseUsers
-      .from('unlocked_picks')
-      .select('pick_id')
-      .eq('clerk_user_id', user.id)
-      .eq('unlock_type', 'single')
-      .in('pick_id', pickIds)
+    let unlockedPickIds: string[] = []
+    
+    if (pickIds.length > 0) {
+      const { data: unlockedPicks } = await supabaseUsers
+        .from('unlocked_picks')
+        .select('pick_id')
+        .eq('clerk_user_id', user.id)
+        .eq('unlock_type', 'single')
+        .in('pick_id', pickIds)
 
-    const unlockedPickIds = unlockedPicks?.map(p => p.pick_id) || []
+      unlockedPickIds = unlockedPicks?.map(p => p.pick_id) || []
+    }
+
+    // If checking a single pick, also return hasAccess boolean
+    const checkingSinglePick = pickIdParam !== null
+    const hasAccess = checkingSinglePick ? unlockedPickIds.includes(pickIdParam!) : false
 
     return NextResponse.json({
       authenticated: true,
       isPremium: false,
+      hasAccess,
+      reason: hasAccess ? 'single_unlocked' : 'no_unlock',
       unlockedPicks: unlockedPickIds,
       hasAllDayAccess: false
     })
