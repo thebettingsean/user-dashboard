@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 import MonthCalendarModal from '../../components/MonthCalendarModal'
 import AICreditBadge from '../../components/AICreditBadge'
+import PickUnlockModal from '../../components/PickUnlockModal'
 import { GiTwoCoins } from 'react-icons/gi'
 
 // Add global styles for rich text content
@@ -174,6 +175,15 @@ export default function AnalystPicksPage() {
   const [unlockedPicks, setUnlockedPicks] = useState<Set<string>>(new Set())
   const [hasAllDayAccess, setHasAllDayAccess] = useState(false)
   const [unlocking, setUnlocking] = useState<string | null>(null)
+  const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
+  
+  // Confirmation modal state
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [pendingUnlock, setPendingUnlock] = useState<{
+    type: 'single' | 'all_day',
+    pickId?: string,
+    pickTitle?: string
+  } | null>(null)
 
   const hasAccess = typeof userHasAccess === 'function' ? userHasAccess() : userHasAccess
   const isPremium = hasAccess
@@ -280,6 +290,29 @@ export default function AnalystPicksPage() {
     }
   }
 
+  // Fetch credits on mount
+  useEffect(() => {
+    if (isSignedIn) {
+      fetchCredits()
+    }
+  }, [isSignedIn])
+
+  const fetchCredits = async () => {
+    try {
+      const response = await fetch('/api/ai-credits/check')
+      const data = await response.json()
+      
+      if (data.isPremium) {
+        setCreditsRemaining('unlimited')
+      } else {
+        const remaining = (data.purchasedCredits || 0) - (data.scriptsUsed || 0)
+        setCreditsRemaining(Math.max(0, remaining))
+      }
+    } catch (error) {
+      console.error('Error fetching credits:', error)
+    }
+  }
+
   // Check unlock access on mount and when signed in
   useEffect(() => {
     if (isSignedIn && allPicks.length > 0) {
@@ -313,61 +346,79 @@ export default function AnalystPicksPage() {
     }
   }
 
-  const handleUnlockSingle = async (pickId: string) => {
-    setUnlocking(pickId)
-    try {
-      const response = await fetch('/api/picks/unlock-single', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pickId })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setUnlockedPicks(prev => new Set([...prev, pickId]))
-        alert('✅ Pick unlocked successfully!')
-      } else {
-        if (response.status === 403) {
-          window.location.href = '/pricing'
-        } else {
-          alert(data.error || 'Failed to unlock pick')
-        }
-      }
-    } catch (error) {
-      console.error('Error unlocking pick:', error)
-      alert('Error unlocking pick. Please try again.')
-    } finally {
-      setUnlocking(null)
-    }
+  const handleUnlockSingle = (pickId: string, pickTitle: string) => {
+    setPendingUnlock({ type: 'single', pickId, pickTitle })
+    setConfirmModalOpen(true)
   }
 
-  const handleUnlockAll = async () => {
-    setUnlocking('all')
-    try {
-      const response = await fetch('/api/picks/unlock-all-day', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
+  const handleUnlockAll = () => {
+    setPendingUnlock({ type: 'all_day' })
+    setConfirmModalOpen(true)
+  }
 
-      const data = await response.json()
+  const confirmUnlock = async () => {
+    if (!pendingUnlock) return
 
-      if (response.ok) {
-        setHasAllDayAccess(true)
-        setUnlockedPicks(new Set(allPicks.map(p => p.id)))
-        alert('✅ All picks unlocked for 24 hours!')
-      } else {
-        if (response.status === 403) {
-          window.location.href = '/pricing'
+    setConfirmModalOpen(false)
+    
+    if (pendingUnlock.type === 'single' && pendingUnlock.pickId) {
+      setUnlocking(pendingUnlock.pickId)
+      try {
+        const response = await fetch('/api/picks/unlock-single', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pickId: pendingUnlock.pickId })
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setUnlockedPicks(prev => new Set([...prev, pendingUnlock.pickId!]))
+          await fetchCredits() // Refresh credits
+          alert('✅ Pick unlocked successfully!')
         } else {
-          alert(data.error || 'Failed to unlock all picks')
+          if (response.status === 403) {
+            window.location.href = '/pricing'
+          } else {
+            alert(data.error || 'Failed to unlock pick')
+          }
         }
+      } catch (error) {
+        console.error('Error unlocking pick:', error)
+        alert('Error unlocking pick. Please try again.')
+      } finally {
+        setUnlocking(null)
+        setPendingUnlock(null)
       }
-    } catch (error) {
-      console.error('Error unlocking all picks:', error)
-      alert('Error unlocking picks. Please try again.')
-    } finally {
-      setUnlocking(null)
+    } else if (pendingUnlock.type === 'all_day') {
+      setUnlocking('all')
+      try {
+        const response = await fetch('/api/picks/unlock-all-day', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setHasAllDayAccess(true)
+          setUnlockedPicks(new Set(allPicks.map(p => p.id)))
+          await fetchCredits() // Refresh credits
+          alert('✅ All picks unlocked for 24 hours!')
+        } else {
+          if (response.status === 403) {
+            window.location.href = '/pricing'
+          } else {
+            alert(data.error || 'Failed to unlock all picks')
+          }
+        }
+      } catch (error) {
+        console.error('Error unlocking all picks:', error)
+        alert('Error unlocking picks. Please try again.')
+      } finally {
+        setUnlocking(null)
+        setPendingUnlock(null)
+      }
     }
   }
 
@@ -707,6 +758,7 @@ export default function AnalystPicksPage() {
                         ...styles.unlockButton,
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '0.5rem',
                         cursor: isUnlocking ? 'wait' : 'pointer',
                         opacity: isUnlocking ? 0.6 : 1
@@ -714,12 +766,12 @@ export default function AnalystPicksPage() {
                       className="analyst-picks-unlock-button" 
                       onClick={(e) => { 
                         e.stopPropagation(); 
-                        handleUnlockSingle(pick.id)
+                        handleUnlockSingle(pick.id, pick.bet_title)
                       }}
                       disabled={isUnlocking}
                     >
                       <GiTwoCoins style={{ fontSize: '1rem' }} />
-                      {isUnlocking ? 'Unlocking...' : 'Unlock for 1 Credit'}
+                      {isUnlocking ? 'Unlocking...' : '1 Credit or Upgrade'}
                     </button>
                   ) : (
                     <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { e.stopPropagation(); window.location.href = '/pricing' }}>
@@ -893,11 +945,27 @@ export default function AnalystPicksPage() {
               </div>
             )}
 
-            {bettor.hasPremium && !hasAccess && (
+            {bettor.hasPremium && !isPremium && isSignedIn && (
+              <button 
+                onClick={() => handleUnlockAll()}
+                style={{
+                  ...styles.unlockWidgetButton,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(251, 191, 36, 0.3)',
+                  textDecoration: 'none'
+                }}
+              >
+                <GiTwoCoins style={{ fontSize: '0.85rem' }} />
+                <span style={{ fontWeight: '700' }}>5</span>
+                <span>- Day Pass</span>
+              </button>
+            )}
+            {bettor.hasPremium && !isSignedIn && (
               <a 
-                href="https://thebettinginsider.com/pricing" 
-                target="_blank" 
-                rel="noopener noreferrer"
+                href="/pricing" 
                 style={styles.unlockWidgetButton}
               >
                 🔒 Unlock
@@ -1067,6 +1135,18 @@ export default function AnalystPicksPage() {
         currentMonth={currentDate.getMonth()}
         currentYear={currentDate.getFullYear()}
         onDateSelect={handleDateSelect}
+      />
+
+      <PickUnlockModal
+        isOpen={confirmModalOpen}
+        onClose={() => {
+          setConfirmModalOpen(false)
+          setPendingUnlock(null)
+        }}
+        onConfirm={confirmUnlock}
+        unlockType={pendingUnlock?.type || 'single'}
+        pickTitle={pendingUnlock?.pickTitle}
+        creditsRemaining={creditsRemaining}
       />
       
       <style jsx>{`
@@ -1243,14 +1323,14 @@ export default function AnalystPicksPage() {
       <div style={styles.page} className="analyst-picks-page">
         <div style={styles.container} className="analyst-picks-container">
         <header style={styles.header}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ flex: 1 }}>
-              <h1 style={styles.title} className="analyst-picks-title">Today's Best Bets</h1>
-              <p style={styles.subtitle} className="analyst-picks-subtitle">Updated live throughout the day</p>
-            </div>
-            <AICreditBadge onShowModal={() => window.location.href = '/pricing'} />
-          </div>
+          <h1 style={styles.title} className="analyst-picks-title">Today's Best Bets</h1>
+          <p style={styles.subtitle} className="analyst-picks-subtitle">Updated live throughout the day</p>
         </header>
+
+        {/* Credit Badge - positioned on left */}
+        <div style={{ marginBottom: '1rem' }}>
+          <AICreditBadge onShowModal={() => window.location.href = '/pricing'} />
+        </div>
 
         {/* Filters */}
         <section style={styles.filters} className="analyst-picks-filters">
