@@ -293,8 +293,9 @@ Summarize the key angles and list 3-5 plays that capitalize on these edges.
 **For Spreads/Totals/ML:**
 - **76ers -2.5 (-110)**: Brief explanation with 2-3 supporting stats
 
-**For Player Props (ONLY if in provided data):**
-- **Joel Embiid OVER 29.5 points (-125)**: 68% hit rate (18-8), Cavaliers allow 32.4 PPG to opposing centers (#27)
+**For Player Props (ONLY if in provided data, use EXACT prop type):**
+- **Joel Embiid Points OVER 29.5 (-125)**: 68% hit rate (18-8), Cavaliers allow 32.4 PPG to opposing centers (#27)
+- **Alvin Kamara Longest Rush OVER 10.5 (-105)**: 63.6% hit rate (14-8) [NOT "rushing yards" - use exact prop name!]
 
 **For Analyst Picks:**
 - **Bears -2.5 (@InvisibleInsider, -112)**: [Use their analysis and data]
@@ -872,6 +873,7 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     // Show skill position props first (QB, RB, WR, TE)
     if (skillPositionProps.length > 0) {
       prompt += `**🎯 TOP SKILL POSITION PROPS (QB/RB/WR/TE):**\n`
+      prompt += `⚠️ CRITICAL: Use the EXACT prop type shown below (e.g., "Longest Rush" NOT "rushing yards", "Reception Yards" NOT "receiving yards").\n\n`
       skillPositionProps.slice(0, 8).forEach(category => { // Show more categories
         const topPlayers = category.players.slice(0, 4) // Show more players per category
         if (topPlayers.length > 0) {
@@ -880,7 +882,9 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
             const hitRate = ((player.record.hit / player.record.total) * 100).toFixed(1)
             const odds = player.best_line?.opening_odds || 'N/A'
             const formattedOdds = odds !== 'N/A' ? (odds > 0 ? `+${odds}` : `${odds}`) : 'N/A'
-            prompt += `- ${player.player_name}: ${player.prop_type} ${player.opening_line} (${formattedOdds}) | Hit Rate: ${hitRate}% (${player.record.hit}-${player.record.miss})\n`
+            // Include the FULL prop type in the line for clarity
+            const propDescription = category.title.replace(' (Over/Under)', '').replace(' (Over only)', '')
+            prompt += `- ${player.player_name} ${propDescription}: ${player.prop_type} ${player.opening_line} (${formattedOdds}) | Hit Rate: ${hitRate}% (${player.record.hit}-${player.record.miss})\n`
           })
         }
       })
@@ -1048,7 +1052,8 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   prompt += `- Invent props that aren't in the data\n`
   prompt += `- Make up player names (if you don't know the QB, say "the quarterback")\n`
   prompt += `- Use section headers like "Matchup Analysis" or "Top Plays"\n`
-  prompt += `- Write generic fluff: "This should be a competitive game" or "Both teams are playing well"\n\n`
+  prompt += `- Write generic fluff: "This should be a competitive game" or "Both teams are playing well"\n`
+  prompt += `- Rename prop types: If it says "Longest Rush", DO NOT call it "rushing yards" - use the exact prop name!\n\n`
   
   prompt += `**TARGET: 600-700 words. Every paragraph should connect 3+ specific stats with context and causality.**\n\n`
   
