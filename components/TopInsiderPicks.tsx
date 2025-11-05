@@ -30,7 +30,7 @@ interface TopInsiderPicksProps {
 }
 
 export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded = true }: TopInsiderPicksProps) {
-  const { isSignedIn } = useUser()
+  const { isSignedIn, isLoaded } = useUser()
   const router = useRouter()
   const [picks, setPicks] = useState<Pick[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,10 +55,14 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
   }, [])
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (isLoaded && isSignedIn) {
+      console.log('🔍 [TopInsiderPicks] Fetching credits...')
       fetchCredits()
+    } else if (isLoaded && !isSignedIn) {
+      console.log('⚠️ [TopInsiderPicks] User not signed in, skipping credit fetch')
+      setCreditsRemaining(0)
     }
-  }, [isSignedIn])
+  }, [isLoaded, isSignedIn])
 
   useEffect(() => {
     if (isSignedIn && picks.length > 0) {
@@ -68,18 +72,28 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
   async function fetchCredits() {
     try {
+      console.log('💳 [TopInsiderPicks] Calling /api/ai-credits/check')
       const response = await fetch('/api/ai-credits/check')
+      
+      if (!response.ok) {
+        console.error('❌ [TopInsiderPicks] Credits API returned error:', response.status)
+        return
+      }
+      
       const data = await response.json()
+      console.log('💳 [TopInsiderPicks] Credits API response:', data)
       
       if (data.isPremium) {
+        console.log('✨ [TopInsiderPicks] User is premium, setting unlimited credits')
         setCreditsRemaining('unlimited')
         setIsPremium(true)
       } else {
         const remaining = (data.purchasedCredits || 0) - (data.scriptsUsed || 0)
+        console.log(`💰 [TopInsiderPicks] User has ${remaining} credits remaining (${data.purchasedCredits} purchased - ${data.scriptsUsed} used)`)
         setCreditsRemaining(Math.max(0, remaining))
       }
     } catch (error) {
-      console.error('Error fetching credits:', error)
+      console.error('❌ [TopInsiderPicks] Error fetching credits:', error)
     }
   }
 

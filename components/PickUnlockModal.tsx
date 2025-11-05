@@ -29,7 +29,7 @@ export default function PickUnlockModal({
 
   const modalContent = unlockType === 'single' ? {
     title: 'Unlock This Pick',
-    description: pickTitle || 'Premium Pick',
+    description: 'Premium Analyst Pick',
     details: 'Get instant access to this expert pick and analysis. Once unlocked, this pick remains available permanently until it\'s recapped or removed.',
     icon: <GiTwoCoins style={{ fontSize: '2rem', color: '#fbbf24' }} />
   } : {
