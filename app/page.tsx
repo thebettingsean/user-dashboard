@@ -21,6 +21,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import AICreditBadge from '../components/AICreditBadge'
 import UnlockModal from '../components/UnlockModal'
 import CreditConfirmModal from '../components/CreditConfirmModal'
+import BlueprintModal from '../components/BlueprintModal'
 import { ListTodo, UserRoundSearch, ScrollText } from 'lucide-react'
 import { GoPlusCircle } from 'react-icons/go'
 import { TiMinusOutline } from 'react-icons/ti'
@@ -53,12 +54,20 @@ export default function Home() {
   const [scriptModalOpen, setScriptModalOpen] = useState(false)
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [pendingGame, setPendingGame] = useState<{ id: string, sport: string, dataStrength: 1 | 2 | 3, matchup: string } | null>(null)
-  const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'MLB'>('NFL')
-  const [viewType, setViewType] = useState<'games' | 'blueprints'>('games') // Toggle between game scripts and blueprints
+  const [selectedSport, setSelectedSport] = useState<'NFL' | 'NBA' | 'CFB' | 'NHL' | 'Blueprints'>('NFL')
   const [generatingGameId, setGeneratingGameId] = useState<string | null>(null)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
   const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
   const { isLoading, isSubscribed, firstName: subFirstName } = useSubscription()
+  
+  // Blueprint state
+  const [nflBlueprintExists, setNflBlueprintExists] = useState(true)
+  const [nbaBlueprintExists, setNbaBlueprintExists] = useState(true)
+  const [nbaGameCount, setNbaGameCount] = useState(0)
+  const [blueprintModalOpen, setBlueprintModalOpen] = useState(false)
+  const [currentBlueprint, setCurrentBlueprint] = useState<any>(null)
+  const [blueprintConfirmOpen, setBlueprintConfirmOpen] = useState(false)
+  const [pendingBlueprint, setPendingBlueprint] = useState<{ sport: 'nfl' | 'nba', periodId: string, title: string } | null>(null)
   
   // For signed-in users without subscription, show "friend" instead of their name
   const firstName = (isSignedIn && !isSubscribed) ? 'friend' : (user?.firstName || subFirstName || null)
@@ -103,6 +112,28 @@ export default function Home() {
 
   useEffect(() => {
     fetchTodaysGames()
+  }, [])
+
+  // Check if blueprints exist on page load
+  useEffect(() => {
+    async function checkBlueprints() {
+      try {
+        // Check NBA blueprint
+        const nbaRes = await fetch('/api/blueprints/check-existence?sport=nba')
+        const nbaData = await nbaRes.json()
+        setNbaBlueprintExists(nbaData.exists)
+        setNbaGameCount(nbaData.gameCount || 0)
+
+        // Check NFL blueprint
+        const nflRes = await fetch('/api/blueprints/check-existence?sport=nfl')
+        const nflData = await nflRes.json()
+        setNflBlueprintExists(nflData.exists)
+      } catch (error) {
+        console.error('Error checking blueprint existence:', error)
+      }
+    }
+    
+    checkBlueprints()
   }, [])
 
   // Expose showUnlockModal globally so AICreditBadge can trigger it
@@ -235,6 +266,88 @@ export default function Home() {
     setScriptModalOpen(false)
     setSelectedGameId(null)
     setGeneratingGameId(null)
+  }
+
+  // Blueprint handlers
+  async function handleBlueprintClick(sport: 'nfl' | 'nba', periodId: string, title: string) {
+    console.log('📘 Blueprint clicked:', sport, periodId)
+    
+    // Check if user is signed in - if not, trigger Clerk sign-in
+    if (!isSignedIn) {
+      console.log('❌ User not signed in - triggering sign-in modal')
+      setTriggerSignIn(true)
+      return
+    }
+
+    // Check if already unlocked or has subscription
+    try {
+      const response = await fetch('/api/blueprints/check-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sport, periodId })
+      })
+      const data = await response.json()
+
+      if (data.hasAccess) {
+        // Already unlocked - show directly
+        console.log('✅ Already has access - opening blueprint')
+        setCurrentBlueprint(data.blueprint)
+        setBlueprintModalOpen(true)
+        return
+      }
+
+      // Not unlocked - show confirmation modal
+      console.log('🔒 No access - showing confirmation modal')
+      setPendingBlueprint({ sport, periodId, title })
+      setBlueprintConfirmOpen(true)
+    } catch (error) {
+      console.error('Error checking blueprint access:', error)
+    }
+  }
+
+  async function handleConfirmBlueprintUnlock() {
+    if (!pendingBlueprint) return
+
+    console.log('✅ Confirmed - Unlocking blueprint:', pendingBlueprint)
+    setBlueprintConfirmOpen(false)
+
+    try {
+      const response = await fetch('/api/blueprints/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sport: pendingBlueprint.sport,
+          periodId: pendingBlueprint.periodId
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        console.log('✅ Blueprint unlocked successfully')
+        setCreditsRemaining(data.newBalance)
+        setCurrentBlueprint(data.blueprint)
+        setBlueprintModalOpen(true)
+        setPendingBlueprint(null)
+      } else {
+        console.error('❌ Failed to unlock blueprint:', data.error)
+        // Show error to user (could add error state/modal)
+        alert(data.error || 'Failed to unlock blueprint')
+      }
+    } catch (error) {
+      console.error('Error unlocking blueprint:', error)
+      alert('An error occurred. Please try again.')
+    }
+  }
+
+  function handleCancelBlueprintUnlock() {
+    setBlueprintConfirmOpen(false)
+    setPendingBlueprint(null)
+  }
+
+  function closeBlueprintModal() {
+    setBlueprintModalOpen(false)
+    setCurrentBlueprint(null)
   }
 
   // Filter and sort games by selected sport
@@ -445,31 +558,9 @@ export default function Home() {
                 justifyContent: 'flex-start', // Left-aligned
                 flexWrap: 'wrap' // Allow wrapping if needed
               }}>
-                {/* View Type Toggle - Blueprints */}
-                <button
-                  onClick={() => setViewType('blueprints')}
-                  style={{
-                    padding: '0.4rem 0.8rem',
-                    borderRadius: '6px',
-                    border: viewType === 'blueprints' 
-                      ? '1px solid rgba(139, 92, 246, 0.4)' 
-                      : '1px solid rgba(255, 255, 255, 0.08)',
-                    background: viewType === 'blueprints'
-                      ? 'rgba(139, 92, 246, 0.15)'
-                      : 'rgba(255, 255, 255, 0.02)',
-                    color: viewType === 'blueprints' ? '#a78bfa' : 'rgba(255, 255, 255, 0.65)',
-                    fontSize: '0.75rem',
-                    fontWeight: viewType === 'blueprints' ? '600' : '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Blueprints
-                </button>
-
-                {/* Sport Filters - Only show when viewType is 'games' */}
-                {viewType === 'games' && [
+                {/* Sport/Blueprint Filters */}
+                {[
+                  { id: 'Blueprints', label: 'Blueprints', active: true },
                   { id: 'NFL', label: 'NFL', active: true },
                   { id: 'NBA', label: 'NBA', active: true },
                   { id: 'CFB', label: 'CFB', active: false },
@@ -506,7 +597,7 @@ export default function Home() {
         </div>
         
               {/* Conditional Rendering: Blueprints vs Game Cards */}
-              {viewType === 'blueprints' ? (
+              {selectedSport === 'Blueprints' ? (
                 /* Blueprint Cards */
                 <div style={{ 
                   display: 'flex',
@@ -517,93 +608,213 @@ export default function Home() {
                   scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
                 }}>
                   {/* NFL Blueprint Card */}
-                  <div style={{
-                    minWidth: '280px',
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    backdropFilter: 'blur(20px)',
-                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '10px',
-                    padding: '1rem',
-                    display: 'flex',
-                    flexDirection: 'column' as const,
-                    gap: '0.75rem'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#fff' }}>
-                        🏈 NFL Week 10
+                  <div 
+                    onClick={() => nflBlueprintExists && handleBlueprintClick('nfl', 'Week 10', 'NFL Week 10')}
+                    style={{
+                      minWidth: '220px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      backdropFilter: 'blur(20px)',
+                      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '10px',
+                      padding: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column' as const,
+                      gap: '0.5rem',
+                      transition: 'all 0.3s',
+                      cursor: nflBlueprintExists ? 'pointer' : 'not-allowed',
+                      opacity: nflBlueprintExists ? 1 : 0.5
+                    }}>
+                    {/* Top Row: NFL + Week Badge + Credit Cost */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <div style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: '#fff',
+                          lineHeight: '1.2'
+                        }}>
+                          NFL
+                        </div>
+                        <span style={{
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          backdropFilter: 'blur(8px)',
+                          color: '#ffffff',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '6px',
+                          fontSize: '0.65rem',
+                          fontWeight: '700',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          boxShadow: '0 2px 8px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        }}>
+                          Week 10
+                        </span>
                       </div>
-                      {isSubscribed ? (
-                        <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '600' }}>∞</div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: '#fbbf24', fontWeight: '600' }}>
-                          <span>5</span> credits
+
+                      {/* Credit cost - green 3-credit style */}
+                      {!isSubscribed && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.25rem 0.5rem',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          borderRadius: '6px',
+                          flexShrink: 0
+                        }}>
+                          <GiTwoCoins style={{ 
+                            color: '#10b981',
+                            fontSize: '0.85rem' 
+                          }} />
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            5
+                          </span>
                         </div>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                      Nov 5 - Nov 11 • 16 games
+
+                    {/* Date Range */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.4)',
+                      lineHeight: '1.3'
+                    }}>
+                      Nov 5 - Nov 11
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
+
+                    {/* Description */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3',
+                      flex: 1
+                    }}>
                       Top plays from all games this week
                     </div>
-                    <button style={{
-                      padding: '0.6rem',
-                      background: 'rgba(139, 92, 246, 0.15)',
-                      border: '1px solid rgba(139, 92, 246, 0.4)',
-                      borderRadius: '6px',
-                      color: '#a78bfa',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
+
+                    {/* Generate Button - Bottom Right */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      gap: '0.3rem'
                     }}>
-                      Generate
-                    </button>
+                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                      <span style={{
+                        color: '#a78bfa',
+                        fontSize: '0.7rem',
+                        fontWeight: '500'
+                      }}>
+                        Generate...
+                      </span>
+                    </div>
                   </div>
 
                   {/* NBA Blueprint Card */}
                   <div style={{
-                    minWidth: '280px',
+                    minWidth: '220px',
                     background: 'rgba(255, 255, 255, 0.04)',
                     backdropFilter: 'blur(20px)',
                     border: '0.5px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '10px',
-                    padding: '1rem',
+                    padding: '0.75rem',
                     display: 'flex',
                     flexDirection: 'column' as const,
-                    gap: '0.75rem'
+                    gap: '0.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#fff' }}>
-                        🏀 NBA - Nov 6
+                    {/* Top Row: NBA + Date + Credit Cost */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: '600', 
+                        color: '#fff',
+                        lineHeight: '1.2'
+                      }}>
+                        NBA
                       </div>
-                      {isSubscribed ? (
-                        <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '600' }}>∞</div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: '#fbbf24', fontWeight: '600' }}>
-                          <span>5</span> credits
+
+                      {/* Credit cost - green 3-credit style */}
+                      {!isSubscribed && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.25rem 0.5rem',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          borderRadius: '6px',
+                          flexShrink: 0
+                        }}>
+                          <GiTwoCoins style={{ 
+                            color: '#10b981',
+                            fontSize: '0.85rem' 
+                          }} />
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            5
+                          </span>
                         </div>
                       )}
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                      Today • 12 games
+
+                    {/* Date */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.4)',
+                      lineHeight: '1.3'
+                    }}>
+                      Nov 6, 2025
                     </div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
+
+                    {/* Description */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3',
+                      flex: 1
+                    }}>
                       Top plays from today's slate
                     </div>
-                    <button style={{
-                      padding: '0.6rem',
-                      background: 'rgba(139, 92, 246, 0.15)',
-                      border: '1px solid rgba(139, 92, 246, 0.4)',
-                      borderRadius: '6px',
-                      color: '#a78bfa',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
+
+                    {/* Generate Button - Bottom Right */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      gap: '0.3rem'
                     }}>
-                      Generate
-                    </button>
+                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                      <span style={{
+                        color: '#a78bfa',
+                        fontSize: '0.7rem',
+                        fontWeight: '500'
+                      }}>
+                        Generate...
+                      </span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -885,11 +1096,11 @@ export default function Home() {
                 flexWrap: 'wrap' // Allow wrapping if needed
               }}>
                 {[
+                  { id: 'Blueprints', label: 'Blueprints', active: true },
                   { id: 'NFL', label: 'NFL', active: true },
                   { id: 'NBA', label: 'NBA', active: true },
                   { id: 'CFB', label: 'CFB', active: false },
-                  { id: 'NHL', label: 'NHL', active: false },
-                  { id: 'MLB', label: 'MLB', active: false }
+                  { id: 'NHL', label: 'NHL', active: false }
                 ].map(sport => (
                   <button
                     key={sport.id}
@@ -921,23 +1132,242 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Game Cards - Horizontal Scroll */}
-              {loadingGames ? (
+              {/* Conditional: Blueprints vs Game Cards - Desktop */}
+              {selectedSport === 'Blueprints' ? (
+                /* Blueprint Cards - Desktop */
                 <div style={{ 
-                  textAlign: 'center', 
-                  padding: '3rem'
+                  display: 'flex',
+                  gap: '0.75rem',
+                  overflowX: 'auto',
+                  paddingBottom: '0.75rem',
+                  scrollbarWidth: 'thin' as const,
+                  scrollbarColor: 'rgba(139, 92, 246, 0.5) rgba(255, 255, 255, 0.1)'
                 }}>
-                  <LoadingSpinner size="large" text="Loading games..." />
-                </div>
-              ) : filteredGames.length === 0 ? (
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: '3rem',
-                  color: 'rgba(255, 255, 255, 0.5)'
-                }}>
-                  No {selectedSport} games today
+                  {/* NFL Blueprint Card */}
+                  <div style={{
+                    minWidth: '220px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    backdropFilter: 'blur(20px)',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '10px',
+                    padding: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    gap: '0.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer'
+                  }}>
+                    {/* Top Row: NFL + Week Badge + Credit Cost */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <div style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: '#fff',
+                          lineHeight: '1.2'
+                        }}>
+                          NFL
+                        </div>
+                        <span style={{
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          backdropFilter: 'blur(8px)',
+                          color: '#ffffff',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '6px',
+                          fontSize: '0.65rem',
+                          fontWeight: '700',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          boxShadow: '0 2px 8px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        }}>
+                          Week 10
+                        </span>
+                      </div>
+
+                      {/* Credit cost - green 3-credit style */}
+                      {!isSubscribed && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.25rem 0.5rem',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          borderRadius: '6px',
+                          flexShrink: 0
+                        }}>
+                          <GiTwoCoins style={{ 
+                            color: '#10b981',
+                            fontSize: '0.85rem' 
+                          }} />
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            5
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Date Range */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.4)',
+                      lineHeight: '1.3'
+                    }}>
+                      Nov 5 - Nov 11
+                    </div>
+
+                    {/* Description */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3',
+                      flex: 1
+                    }}>
+                      Top plays from all games this week
+                    </div>
+
+                    {/* Generate Button - Bottom Right */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}>
+                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                      <span style={{
+                        color: '#a78bfa',
+                        fontSize: '0.7rem',
+                        fontWeight: '500'
+                      }}>
+                        Generate...
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* NBA Blueprint Card */}
+                  <div style={{
+                    minWidth: '220px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    backdropFilter: 'blur(20px)',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '10px',
+                    padding: '0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    gap: '0.5rem',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer'
+                  }}>
+                    {/* Top Row: NBA + Date + Credit Cost */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: '600', 
+                        color: '#fff',
+                        lineHeight: '1.2'
+                      }}>
+                        NBA
+                      </div>
+
+                      {/* Credit cost - green 3-credit style */}
+                      {!isSubscribed && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.25rem 0.5rem',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          borderRadius: '6px',
+                          flexShrink: 0
+                        }}>
+                          <GiTwoCoins style={{ 
+                            color: '#10b981',
+                            fontSize: '0.85rem' 
+                          }} />
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: '700',
+                            color: '#10b981'
+                          }}>
+                            5
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Date */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.4)',
+                      lineHeight: '1.3'
+                    }}>
+                      Nov 6, 2025
+                    </div>
+
+                    {/* Description */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3',
+                      flex: 1
+                    }}>
+                      Top plays from today's slate
+                    </div>
+
+                    {/* Generate Button - Bottom Right */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}>
+                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                      <span style={{
+                        color: '#a78bfa',
+                        fontSize: '0.7rem',
+                        fontWeight: '500'
+                      }}>
+                        Generate...
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ) : (
+                /* Game Cards - Horizontal Scroll */
+                loadingGames ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '3rem'
+                  }}>
+                    <LoadingSpinner size="large" text="Loading games..." />
+                  </div>
+                ) : filteredGames.length === 0 ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '3rem',
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  }}>
+                    No {selectedSport} games today
+                  </div>
+                ) : (
                 <div style={{ 
                   display: 'flex',
                   gap: '0.75rem',
@@ -1135,6 +1565,7 @@ export default function Home() {
                     )
                   })}
                 </div>
+                )
               )}
             </>
           )}
@@ -1510,6 +1941,26 @@ export default function Home() {
         creditCost={pendingGame.dataStrength}
         dataStrength={pendingGame.dataStrength === 1 ? 'Minimal' : pendingGame.dataStrength === 2 ? 'Above Avg' : 'Strong'}
         gameMatchup={pendingGame.matchup}
+        creditsRemaining={creditsRemaining}
+      />
+    )}
+
+    {/* Blueprint Modal */}
+    <BlueprintModal
+      isOpen={blueprintModalOpen}
+      onClose={closeBlueprintModal}
+      blueprint={currentBlueprint}
+    />
+
+    {/* Blueprint Confirmation Modal */}
+    {pendingBlueprint && (
+      <CreditConfirmModal
+        isOpen={blueprintConfirmOpen}
+        onClose={handleCancelBlueprintUnlock}
+        onConfirm={handleConfirmBlueprintUnlock}
+        creditCost={3 as 1 | 2 | 3} // Display as 5 credits (shown in modal description)
+        dataStrength={'Strong' as 'Minimal' | 'Above Avg' | 'Strong'} // Blueprints are premium content
+        gameMatchup={`${pendingBlueprint.title} (5 Credits)`}
         creditsRemaining={creditsRemaining}
       />
     )}

@@ -134,17 +134,17 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
         alignItems: 'center',
         gap: '0.5rem',
         padding: '0.5rem 1rem',
-        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(167, 139, 250, 0.08))',
+        background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(139, 92, 246, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '8px',
         fontSize: '0.85rem',
         fontWeight: '600',
-        color: '#a78bfa'
+        color: 'rgba(255, 255, 255, 0.8)'
       }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-          Credit Balance: <Infinity size={16} style={{ color: '#8b5cf6' }} />
+          Your Credits: <Infinity size={16} style={{ color: '#8b5cf6' }} />
         </span>
       </div>
     )
@@ -169,10 +169,10 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
         fontSize: '0.85rem',
         fontWeight: '600'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-          <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-          Credit Balance: 0
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+        <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
+        Your Credits: 0
+      </div>
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <button
           onClick={() => {
@@ -220,7 +220,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)' }}>
         <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-        Credit Balance: {remaining}
+        Your Credits: {remaining}
       </div>
       <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
       <button
