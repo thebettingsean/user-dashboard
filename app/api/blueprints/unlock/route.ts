@@ -4,14 +4,14 @@ import { createClient } from '@supabase/supabase-js'
 
 // Main Supabase (for blueprints)
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
+  process.env.SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co',
+  process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
 )
 
 // Users Supabase (for credits)
 const supabaseUsers = createClient(
-  process.env.SUPABASE_USERS_URL!,
-  process.env.SUPABASE_USERS_SERVICE_KEY!
+  process.env.SUPABASE_USERS_URL || 'https://pkmqhozyorpmteytizut.supabase.co',
+  process.env.SUPABASE_USERS_SERVICE_KEY || ''
 )
 
 const BLUEPRINT_COST = 5 // 5 credits per blueprint
