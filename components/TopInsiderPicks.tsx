@@ -541,6 +541,33 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       {writeupExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     </button>
                   )}
+
+                  {/* Sign up button for non-signed-in users */}
+                  {!isSignedIn && (
+                    <button
+                      onClick={() => router.push('/sign-in')}
+                      style={{
+                        padding: '0.35rem 0.65rem',
+                        background: 'rgba(139, 92, 246, 0.15)',
+                        border: '1px solid rgba(139, 92, 246, 0.4)',
+                        borderRadius: '6px',
+                        color: '#a78bfa',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.25)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.15)'
+                      }}
+                    >
+                      Sign up to view
+                    </button>
+                  )}
                 </div>
 
                 {/* Write-up expansion */}
