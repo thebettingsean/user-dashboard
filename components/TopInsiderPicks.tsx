@@ -578,14 +578,14 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 )}
                     </div>
 
-                    {/* Blur overlay - EXACT same as LockedWidget */}
+                    {/* Blur overlay - STRONG blur to hide content */}
                     <div 
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        background: 'rgba(0, 0, 0, 0.3)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        background: 'rgba(15, 23, 42, 0.85)',
                         borderRadius: '12px',
                         display: 'flex',
                         flexDirection: 'column',
