@@ -10,6 +10,7 @@ import { GoPlusCircle } from 'react-icons/go'
 import { ChevronDown, ChevronRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import PickUnlockModal from './PickUnlockModal'
+import LockedWidget from './LockedWidget'
 
 // Inject CSS for rich text analysis
 if (typeof document !== 'undefined') {
@@ -424,30 +425,11 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
             const writeupExpanded = expandedWriteups.has(pick.id)
             const isUnlocking = unlocking === pick.id
 
-            return (
-              <div
-                key={pick.id}
-                style={{
-                  padding: '1rem',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  position: 'relative'
-                }}
-              >
-                {/* Not signed in - Apply filter blur directly to content */}
-                {!isSignedIn ? (
-                  <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => router.push('/sign-in')}>
-                    {/* Show full content but BLUR IT with CSS filter + make non-interactive */}
-                    <div style={{ 
-                      pointerEvents: 'none', 
-                      userSelect: 'none',
-                      filter: 'blur(8px)',
-                      opacity: 0.3
-                    }}>
-                      {/* Pick content */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            // Pick content JSX
+            const pickContent = (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Pick content */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
                     {/* Units Badge */}
                     <span style={{
@@ -490,20 +472,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       {/* Sport, Game Time & Odds */}
                       <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
                         {pick.sport}, {(() => {
-                          // Format game time in EST (same as analyst-picks page)
                           const gameDate = new Date(pick.game_time)
                           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                           const month = monthNames[gameDate.getMonth()]
                           const day = gameDate.getDate()
-                          
-                          // Get time in EST
                           const timeStr = gameDate.toLocaleString('en-US', {
                             timeZone: 'America/New_York',
                             hour: 'numeric',
                             minute: '2-digit',
                             hour12: true
                           })
-                          
                           return `${month} ${day} ${timeStr} EST`
                         })()} | {pick.odds}
                       </div>
@@ -581,169 +559,29 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                     dangerouslySetInnerHTML={{ __html: cleanRichTextHTML(pick.analysis) }}
                   />
                 )}
-                    </div>
+              </div>
+            )
 
-                    {/* Lock icon overlay (content is already blurred via CSS filter) */}
-                    <div 
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        borderRadius: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '1rem',
-                        zIndex: 10
-                      }}
-                    >
-                      <Lock size={48} style={{ opacity: 0.9 }} />
-                      <p style={{ 
-                        color: 'white', 
-                        fontSize: '0.95rem', 
-                        fontWeight: '600',
-                        textAlign: 'center',
-                        margin: 0
-                      }}>
-                        Sign in to view
-                      </p>
-                    </div>
-                  </div>
+            return (
+              <div
+                key={pick.id}
+                style={{
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  position: 'relative'
+                }}
+              >
+                {/* Use LockedWidget for non-signed-in users */}
+                {!isSignedIn ? (
+                  <LockedWidget isLoggedIn={false} hasSubscription={false}>
+                    {pickContent}
+                  </LockedWidget>
                 ) : (
-                  // Signed in - show normal content (same structure, no blur)
-                  <>
-                    {/* Pick content */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                        {/* Units Badge */}
-                        <span style={{
-                          fontSize: '0.6rem',
-                          fontWeight: '600',
-                          color: '#fbbf24',
-                          background: 'rgba(251, 191, 36, 0.1)',
-                          border: '1px solid rgba(251, 191, 36, 0.3)',
-                          borderRadius: '4px',
-                          padding: '2px 6px',
-                          flexShrink: 0
-                        }}>
-                          {pick.units.toFixed(1)}u
-                        </span>
-
-                        {/* Pick Title - blur if signed in but not unlocked */}
-                        <div style={{ flex: 1 }}>
-                          {!unlocked ? (
-                            <span style={{
-                              filter: 'blur(6px)',
-                              userSelect: 'none',
-                              fontSize: '0.75rem',
-                              color: '#fff',
-                              fontWeight: '600',
-                              lineHeight: '1.2'
-                            }}>
-                              {pick.bet_title}
-                            </span>
-                          ) : (
-                            <span style={{
-                              fontSize: '0.75rem',
-                              color: '#fff',
-                              fontWeight: '600',
-                              lineHeight: '1.2'
-                            }}>
-                              {pick.bet_title}
-                            </span>
-                          )}
-                          
-                          {/* Sport, Game Time & Odds */}
-                          <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-                            {pick.sport}, {(() => {
-                              const gameDate = new Date(pick.game_time)
-                              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                              const month = monthNames[gameDate.getMonth()]
-                              const day = gameDate.getDate()
-                              const timeStr = gameDate.toLocaleString('en-US', {
-                                timeZone: 'America/New_York',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true
-                              })
-                              return `${month} ${day} ${timeStr} EST`
-                            })()} | {pick.odds}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Unlock button for signed-in non-premium users */}
-                      {!unlocked && !isPremium && (
-                        <button
-                          onClick={() => handleUnlockSingle(pick.id, pick.bet_title)}
-                          disabled={isUnlocking}
-                          style={{
-                            padding: '0.4rem 0.75rem',
-                            background: isUnlocking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.1)',
-                            border: '1px solid rgba(251, 191, 36, 0.4)',
-                            borderRadius: '6px',
-                            color: '#fbbf24',
-                            fontSize: '0.75rem',
-                            fontWeight: '700',
-                            cursor: isUnlocking ? 'wait' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            transition: 'all 0.2s',
-                            flexShrink: 0
-                          }}
-                        >
-                          <GiTwoCoins style={{ fontSize: '0.9rem' }} />
-                          {isUnlocking ? '...' : '1'}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Bettor name with dropdown for write-up */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                        Bettor: {pick.bettor_name}
-                      </div>
-
-                      {/* Show write-up dropdown only if unlocked */}
-                      {unlocked && pick.analysis && (
-                        <button
-                          onClick={() => toggleWriteup(pick.id)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            padding: '0.25rem'
-                          }}
-                        >
-                          {writeupExpanded ? 'Hide Write-up' : 'Show Write-up'}
-                          {writeupExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Write-up expansion */}
-                    {unlocked && writeupExpanded && pick.analysis && (
-                      <div 
-                        style={{
-                          marginTop: '0.75rem',
-                          padding: '0.75rem',
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: '8px',
-                          fontSize: '0.85rem',
-                          color: 'rgba(255, 255, 255, 0.8)',
-                          lineHeight: '1.5'
-                        }}
-                        className="top-picks-analysis-text"
-                        dangerouslySetInnerHTML={{ __html: cleanRichTextHTML(pick.analysis) }}
-                      />
-                    )}
-                  </>
+                  // Signed in - just show pickContent directly
+                  pickContent
                 )}
               </div>
             )
