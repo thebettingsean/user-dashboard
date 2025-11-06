@@ -23,7 +23,7 @@ const BLUEPRINT_COST = 5 // 5 credits per blueprint
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth()
+    const { userId } = await auth()
     
     if (!userId) {
       return NextResponse.json(
