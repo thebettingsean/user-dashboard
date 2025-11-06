@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import { kv } from '@vercel/kv'
 import { createClient } from '@supabase/supabase-js'
 import type { GameIntelligenceData } from '../data/route'
 import { currentUser, auth } from '@clerk/nextjs/server'
 import { supabaseUsers } from '@/lib/supabase-users'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY
 })
 
 // Supabase client for game scripts cache (using main Supabase project)
@@ -230,19 +230,16 @@ export async function POST(request: NextRequest) {
     const origin = request.nextUrl.origin
     const prompt = await buildGameScriptPrompt(data, league, origin)
 
-    console.log('Sending request to GPT-4o-mini...')
+    console.log('Sending request to Claude Sonnet 4.5...')
     console.log('Prompt length:', prompt.length, 'characters (~', Math.round(prompt.length / 4), 'tokens)')
     
     let completion
     try {
-      completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        max_tokens: 1200, // 1200 tokens ≈ 800-900 words (allows full 500-700 word scripts with buffer)
+      completion = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
         temperature: 0.7,
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert sports analyst here to connect the dots between all available data for this matchup.
+        system: `You are an expert sports analyst here to connect the dots between all available data for this matchup.
 
 YOUR JOB:
 Write a well-thought-out, well-connected article (600-700 words) that creates a cohesive narrative for this game. 
@@ -320,22 +317,23 @@ Summarize the key angles and list 3-5 plays that capitalize on these edges.
 ✅ WHAT TO DO:
 - Write: "The 76ers' league-leading 125.7 PPG (#1) and 48.2 FG% (#2) creates a 10+ point scoring advantage over Cleveland's 114.1 PPG (#23), especially when you factor in the Cavaliers' poor 3PT defense (34.1%, #25) against Philly's 37.5% shooting (#5). This efficiency gap points to **76ers -2.5 (-110)** covering easily."
 
-Educational purposes only. Not financial advice.`
-          },
+Educational purposes only. Not financial advice.`,
+        messages: [
           {
             role: 'user',
             content: prompt
           }
         ]
       })
-    } catch (openaiError: any) {
-      console.error('❌ OpenAI API error:', openaiError)
-      console.error('Error status:', openaiError?.status)
-      console.error('Error message:', openaiError?.message)
-      throw new Error(`OpenAI generation failed: ${openaiError?.message || 'Unknown error'}`)
+    } catch (anthropicError: any) {
+      console.error('❌ Anthropic API error:', anthropicError)
+      console.error('Error status:', anthropicError?.status)
+      console.error('Error message:', anthropicError?.message)
+      throw new Error(`Claude generation failed: ${anthropicError?.message || 'Unknown error'}`)
     }
 
-    const script = completion.choices[0]?.message?.content || 'Unable to generate script'
+    // Extract text from Claude's response structure
+    const script = completion.content[0]?.text || 'Unable to generate script'
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
