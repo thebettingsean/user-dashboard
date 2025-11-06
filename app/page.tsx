@@ -619,7 +619,7 @@ export default function Home() {
                       cursor: nflBlueprintExists ? 'pointer' : 'not-allowed',
                       opacity: nflBlueprintExists ? 1 : 0.5
                     }}>
-                    {/* Top Row: NFL + Week Badge + Credit Cost */}
+                    {/* Row 1: NFL (week tag) ............. 5 credits OR 3 bars */}
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center',
@@ -654,8 +654,28 @@ export default function Home() {
                         </span>
                       </div>
 
-                      {/* Credit cost - green 3-credit style */}
-                      {!isSubscribed && (
+                      {/* Credit cost or data strength bars */}
+                      {isSubscribed ? (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          flexShrink: 0
+                        }}>
+                          {[1, 2, 3].map((bar) => (
+                            <div
+                              key={bar}
+                              style={{
+                                width: '4px',
+                                height: '10px',
+                                borderRadius: '2px',
+                                background: '#10b981',
+                                opacity: 1
+                              }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -681,47 +701,52 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Date Range */}
-                    <div style={{ 
-                      fontSize: '0.65rem', 
-                      color: 'rgba(255, 255, 255, 0.4)',
-                      lineHeight: '1.3'
-                    }}>
-                      Nov 5 - Nov 11
-                    </div>
-
-                    {/* Description */}
+                    {/* Row 2: Tagline */}
                     <div style={{ 
                       fontSize: '0.65rem', 
                       color: 'rgba(255, 255, 255, 0.5)',
-                      lineHeight: '1.3',
-                      flex: 1
+                      lineHeight: '1.3'
                     }}>
                       Top plays from all games this week
                     </div>
 
-                    {/* Generate Button - Bottom Right */}
+                    {/* Row 3: Date ................. (wand) Generate... */}
                     <div style={{
                       display: 'flex',
-                      justifyContent: 'flex-end',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '0.3rem'
+                      gap: '0.5rem'
                     }}>
-                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
-                      <span style={{
-                        color: '#a78bfa',
-                        fontSize: '0.7rem',
-                        fontWeight: '500'
+                      <div style={{ 
+                        fontSize: '0.65rem', 
+                        color: 'rgba(255, 255, 255, 0.4)',
+                        lineHeight: '1.3'
                       }}>
-                        Generate...
-                      </span>
+                        Nov 5 - Nov 11
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}>
+                        <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                        <span style={{
+                          color: '#a78bfa',
+                          fontSize: '0.7rem',
+                          fontWeight: '500'
+                        }}>
+                          Generate...
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* NBA Blueprint Card */}
-                  <div style={{
-                    minWidth: '220px',
-                    background: 'rgba(255, 255, 255, 0.04)',
+                  <div 
+                    onClick={() => nbaBlueprintExists && handleBlueprintClick('nba', '2025-11-06', 'NBA - Nov 6')}
+                    style={{
+                      minWidth: '220px',
+                      background: 'rgba(255, 255, 255, 0.04)',
                     backdropFilter: 'blur(20px)',
                     border: '0.5px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '10px',
@@ -730,9 +755,10 @@ export default function Home() {
                     flexDirection: 'column' as const,
                     gap: '0.5rem',
                     transition: 'all 0.3s',
-                    cursor: 'pointer'
+                      cursor: nbaBlueprintExists ? 'pointer' : 'not-allowed',
+                      opacity: nbaBlueprintExists ? 1 : 0.5
                   }}>
-                    {/* Top Row: NBA + Date + Credit Cost */}
+                    {/* Row 1: NBA ............. 5 credits OR 3 bars */}
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center',
@@ -748,8 +774,28 @@ export default function Home() {
                         NBA
                       </div>
 
-                      {/* Credit cost - green 3-credit style */}
-                      {!isSubscribed && (
+                      {/* Credit cost or data strength bars */}
+                      {isSubscribed ? (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          flexShrink: 0
+                        }}>
+                          {[1, 2, 3].map((bar) => (
+                            <div
+                              key={bar}
+                              style={{
+                                width: '4px',
+                                height: '10px',
+                                borderRadius: '2px',
+                                background: '#10b981',
+                                opacity: 1
+                              }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -775,40 +821,43 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Date */}
-                    <div style={{ 
-                      fontSize: '0.65rem', 
-                      color: 'rgba(255, 255, 255, 0.4)',
-                      lineHeight: '1.3'
-                    }}>
-                      Nov 6, 2025
-                    </div>
-
-                    {/* Description */}
+                    {/* Row 2: Tagline */}
                     <div style={{ 
                       fontSize: '0.65rem', 
                       color: 'rgba(255, 255, 255, 0.5)',
-                      lineHeight: '1.3',
-                      flex: 1
+                      lineHeight: '1.3'
                     }}>
                       Top plays from today's slate
                     </div>
 
-                    {/* Generate Button - Bottom Right */}
+                    {/* Row 3: Date ................. (wand) Generate... */}
                     <div style={{
                       display: 'flex',
-                      justifyContent: 'flex-end',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '0.3rem'
+                      gap: '0.5rem'
                     }}>
-                      <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
-                      <span style={{
-                        color: '#a78bfa',
-                        fontSize: '0.7rem',
-                        fontWeight: '500'
+                      <div style={{ 
+                        fontSize: '0.65rem', 
+                        color: 'rgba(255, 255, 255, 0.4)',
+                        lineHeight: '1.3'
                       }}>
-                        Generate...
-                      </span>
+                        Nov 6, 2025
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}>
+                        <FaWandMagicSparkles size={12} style={{ color: '#a78bfa' }} />
+                        <span style={{
+                          color: '#a78bfa',
+                          fontSize: '0.7rem',
+                          fontWeight: '500'
+                        }}>
+                          Generate...
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
