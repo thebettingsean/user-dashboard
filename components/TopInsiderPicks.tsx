@@ -102,6 +102,8 @@ interface Pick {
   bettor_name?: string
   analysis: string
   game_time: string
+  game_id: string
+  game_matchup?: string
   result: string
 }
 
@@ -211,11 +213,15 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
         bettor_name: p.bettors?.name || 'Unknown',
         analysis: p.analysis || '',
         game_time: p.game_time,
+        game_id: p.game_id || '',
         result: p.result
       }))
 
       // Sort by units (highest first)
       formattedPicks.sort((a, b) => b.units - a.units)
+
+      // Fetch game matchups for each pick
+      await fetchGameMatchups(formattedPicks)
 
       console.log(`🏁 Final pick count: ${formattedPicks.length}`)
       setPicks(formattedPicks)
@@ -223,6 +229,45 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
       console.error('❌ [TopInsiderPicks] Error fetching picks:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchGameMatchups(picks: Pick[]) {
+    try {
+      // Fetch game matchups from Trendline API for each unique game_id
+      const uniqueGameIds = [...new Set(picks.map(p => p.game_id).filter(Boolean))]
+      
+      for (const gameId of uniqueGameIds) {
+        try {
+          // Extract sport from game_id (format: SPORT-DATE-AWAY-HOME)
+          const sport = gameId.split('-')[0]?.toLowerCase()
+          
+          if (!sport) continue
+          
+          // Fetch game data from Trendline
+          const response = await fetch(`https://api.trendline.pro/api/${sport}/games/${gameId}`, {
+            headers: {
+              'X-API-KEY': 'fc82ea76-3cb5-4eae-a01f-c876ec59e5ae'
+            }
+          })
+          
+          if (response.ok) {
+            const gameData = await response.json()
+            const matchup = `${gameData.away_team} @ ${gameData.home_team}`
+            
+            // Update picks with this game_id
+            picks.forEach(pick => {
+              if (pick.game_id === gameId) {
+                pick.game_matchup = matchup
+              }
+            })
+          }
+        } catch (err) {
+          console.error(`Error fetching matchup for ${gameId}:`, err)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching game matchups:', error)
     }
   }
 
@@ -474,9 +519,9 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                         </span>
                       )}
                       
-                      {/* Game Time & Odds */}
+                      {/* Game | Game Time | Odds */}
                       <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-                        {(() => {
+                        {pick.game_matchup || 'Game TBD'} | {(() => {
                           const gameDate = new Date(pick.game_time)
                           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                           const month = monthNames[gameDate.getMonth()]
@@ -488,7 +533,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                             hour12: true
                           })
                           return `${month} ${day} ${timeStr} EST`
-                        })()} | {pick.odds}
+                        })()} | <strong>{pick.odds}</strong>
                       </div>
                     </div>
                   </div>

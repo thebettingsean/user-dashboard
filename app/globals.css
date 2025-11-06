@@ -356,8 +356,7 @@ button[aria-label*="manage account"],
 .navbar {
   background: rgba(255, 255, 255, 0.08) !important;
   border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
-  position: sticky !important;
-  top: 0 !important;
+  position: relative !important;
   z-index: 1000 !important;
   backdrop-filter: blur(40px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
