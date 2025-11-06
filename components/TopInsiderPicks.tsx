@@ -445,9 +445,9 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       {pick.units.toFixed(1)}u
                     </span>
 
-                    {/* Pick Title - blur if signed in but not unlocked */}
+                    {/* Pick Title - blur if NOT unlocked (signed in OR not signed in) */}
                     <div style={{ flex: 1 }}>
-                      {isSignedIn && !unlocked ? (
+                      {!unlocked || !isSignedIn ? (
                         <span style={{
                           filter: 'blur(6px)',
                           userSelect: 'none',
@@ -574,15 +574,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   position: 'relative'
                 }}
               >
-                {/* Use LockedWidget for non-signed-in users */}
-                {!isSignedIn ? (
-                  <LockedWidget isLoggedIn={false} hasSubscription={false}>
-                    {pickContent}
-                  </LockedWidget>
-                ) : (
-                  // Signed in - just show pickContent directly
-                  pickContent
-                )}
+                {/* Just show pickContent - bet title blur is handled inside */}
+                {pickContent}
               </div>
             )
           })}
