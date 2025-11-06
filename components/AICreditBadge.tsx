@@ -144,7 +144,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
       }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-          Your Credits: <Infinity size={16} style={{ color: '#8b5cf6' }} />
+          Credits: <Infinity size={16} style={{ color: '#8b5cf6' }} />
         </span>
       </div>
     )
@@ -171,7 +171,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
       }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255, 255, 255, 0.8)' }}>
         <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-        Your Credits: 0
+        Credits: 0
       </div>
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
         <button
@@ -220,7 +220,7 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: isLow ? '#ef4444' : 'rgba(255, 255, 255, 0.8)' }}>
         <GiTwoCoins style={{ fontSize: '1.1rem', color: '#fbbf24' }} />
-        Your Credits: {remaining}
+        Credits: {remaining}
       </div>
       <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>|</span>
       <button
