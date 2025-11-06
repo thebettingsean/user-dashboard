@@ -54,18 +54,15 @@
     },
     {
       "path": "/api/cron/generate-nfl-blueprint",
-      "schedule": "40 23 * * 3,4,5,6,0",
-      "comment": "NFL Blueprint: Wed-Sun at 11:40 PM EST"
+      "schedule": "40 23 * * 3,4,5,6,0"
     },
     {
       "path": "/api/cron/generate-nba-blueprint",
-      "schedule": "20 14 * * *",
-      "comment": "NBA Blueprint: Daily at 2:20 PM EST"
+      "schedule": "20 14 * * *"
     },
     {
       "path": "/api/cron/generate-nba-blueprint",
-      "schedule": "20 18 * * *",
-      "comment": "NBA Blueprint: Daily at 6:20 PM EST"
+      "schedule": "20 18 * * *"
     }
   ]
 }
