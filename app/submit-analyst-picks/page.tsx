@@ -266,6 +266,7 @@ export default function SubmitAnalystPicks() {
   // NEW: Game selection state
   const [availableGames, setAvailableGames] = useState<Record<number, Game[]>>({})
   const [loadingGames, setLoadingGames] = useState<Record<number, boolean>>({})
+  const [gameSearchQuery, setGameSearchQuery] = useState<Record<number, string>>({})
 
   // Load bettors on mount
   useEffect(() => {
@@ -487,8 +488,8 @@ export default function SubmitAnalystPicks() {
       }
     }))
 
-    // NEW: When sport changes to NFL or NBA, load games
-    if (field === 'sport' && (value === 'NFL' || value === 'NBA')) {
+    // NEW: When sport changes to NFL, NBA, or NCAAF, load games
+    if (field === 'sport' && (value === 'NFL' || value === 'NBA' || value === 'NCAAF')) {
       loadGamesForSport(pickId, value)
     }
   }
@@ -957,9 +958,15 @@ export default function SubmitAnalystPicks() {
               
               {Object.entries(picks).map(([pickIdStr, pickData]) => {
                 const pickId = parseInt(pickIdStr)
-                const isNFLorNBA = pickData.sport === 'NFL' || pickData.sport === 'NBA'
+                const isNFLorNBAorCFB = pickData.sport === 'NFL' || pickData.sport === 'NBA' || pickData.sport === 'NCAAF'
                 const games = availableGames[pickId] || []
                 const isLoadingGames = loadingGames[pickId]
+                const searchQuery = gameSearchQuery[pickId] || ''
+                const filteredGames = searchQuery
+                  ? games.filter(game => 
+                      `${game.away_team} @ ${game.home_team}`.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                  : games
                 
                 return (
                   <div key={pickId} style={styles.pickCard}>
@@ -1022,35 +1029,55 @@ export default function SubmitAnalystPicks() {
                           </div>
                         </div>
                         
-                        {/* NEW: Game Selection Dropdown (NFL/NBA only) */}
-                        {isNFLorNBA && (
-                          <div style={styles.formGroup}>
-                            <label style={styles.label}>
-                              Select Game {isLoadingGames && '(Loading...)'}
-                            </label>
-                            <select
-                              style={styles.select}
-                              value={pickData.gameId}
-                              onChange={(e) => updatePick(pickId, 'gameId', e.target.value)}
-                              disabled={isLoadingGames}
-                            >
-                              <option value="">-- Select Game (Optional) --</option>
-                              {games.map((game: Game) => {
-                                const gameTime = new Date(game.game_date).toLocaleString('en-US', {
-                                  timeZone: 'America/New_York',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: 'numeric',
-                                  minute: '2-digit'
-                                })
-                                return (
-                                  <option key={game.game_id} value={game.game_id}>
-                                    {game.away_team} @ {game.home_team} ({gameTime})
-                                  </option>
-                                )
-                              })}
-                            </select>
-                          </div>
+                        {/* NEW: Game Selection Dropdown (NFL/NBA/NCAAF only) */}
+                        {isNFLorNBAorCFB && (
+                          <>
+                            <div style={styles.formGroup}>
+                              <label style={styles.label}>
+                                Select Game {isLoadingGames && '(Loading...)'}
+                              </label>
+                              
+                              {/* Search input for filtering games (especially useful for CFB) */}
+                              {games.length > 5 && (
+                                <input
+                                  type="text"
+                                  style={{ ...styles.input, marginBottom: '0.5rem' }}
+                                  placeholder="Search teams..."
+                                  value={searchQuery}
+                                  onChange={(e) => setGameSearchQuery(prev => ({ ...prev, [pickId]: e.target.value }))}
+                                />
+                              )}
+                              
+                              <select
+                                style={styles.select}
+                                value={pickData.gameId}
+                                onChange={(e) => updatePick(pickId, 'gameId', e.target.value)}
+                                disabled={isLoadingGames}
+                              >
+                                <option value="">-- Select Game (Optional) --</option>
+                                {filteredGames.map((game: Game) => {
+                                  const gameTime = new Date(game.game_date).toLocaleString('en-US', {
+                                    timeZone: 'America/New_York',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit'
+                                  })
+                                  return (
+                                    <option key={game.game_id} value={game.game_id}>
+                                      {game.away_team} @ {game.home_team} ({gameTime})
+                                    </option>
+                                  )
+                                })}
+                              </select>
+                              
+                              {searchQuery && filteredGames.length === 0 && (
+                                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
+                                  No games found matching "{searchQuery}"
+                                </div>
+                              )}
+                            </div>
+                          </>
                         )}
                         
                         <div style={styles.formRow} className="form-row">
