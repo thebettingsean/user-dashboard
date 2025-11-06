@@ -655,7 +655,7 @@ export default function Home() {
                       </div>
 
                       {/* Credit cost or data strength bars */}
-                      {isSubscribed ? (
+                      {creditsRemaining === 'unlimited' ? (
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -775,7 +775,7 @@ export default function Home() {
                       </div>
 
                       {/* Credit cost or data strength bars */}
-                      {isSubscribed ? (
+                      {creditsRemaining === 'unlimited' ? (
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
