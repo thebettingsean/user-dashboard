@@ -16,8 +16,8 @@ const supabaseMain = createClient(
   process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
 )
 
-// Cache TTL: 4 hours (14,400 seconds) - DEPRECATED, now using Supabase
-const CACHE_TTL = 4 * 60 * 60 // 4 hours in seconds
+// Cache TTL: 2 hours - Scripts regenerate every cron run (every 2 hours)
+const CACHE_TTL = 2 * 60 * 60 // 2 hours in seconds
 
 interface GeneratedScript {
   gameId: string
@@ -144,9 +144,9 @@ export async function POST(request: NextRequest) {
     const clerkUserId = userId // Already set from auth check at line 38
     
     // ✅ CHECK SUPABASE FOR EXISTING SCRIPT FIRST
-    // Check if a script for this game was generated within the last 4 hours (cache expiry)
-    const fourHoursAgo = new Date()
-    fourHoursAgo.setHours(fourHoursAgo.getHours() - 4)
+    // Check if a script for this game was generated within the last 2 hours (cache expiry)
+    const twoHoursAgo = new Date()
+    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2)
     
     try {
       const { data: existingScripts, error: fetchError } = await supabaseMain
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
         .select('*')
         .eq('game_id', gameId)
         .eq('sport', league.toUpperCase())
-        .gte('generated_at', fourHoursAgo.toISOString()) // Only fetch scripts generated in last 4 hours
+        .gte('generated_at', twoHoursAgo.toISOString()) // Only fetch scripts generated in last 2 hours
         .order('generated_at', { ascending: false })
         .limit(1)
       
@@ -355,7 +355,7 @@ Educational purposes only. Not financial advice.`,
       console.log('Supabase Key exists:', !!process.env.SUPABASE_KEY)
       
       const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + 4) // Expires in 4 hours
+      expiresAt.setHours(expiresAt.getHours() + 2) // Expires in 2 hours
       
       const now = new Date().toISOString()
       
