@@ -333,7 +333,8 @@ Educational purposes only. Not financial advice.`,
     }
 
     // Extract text from Claude's response structure
-    const script = completion.content[0]?.text || 'Unable to generate script'
+    const firstContent = completion.content[0]
+    const script = firstContent && 'text' in firstContent ? firstContent.text : 'Unable to generate script'
     console.log('✅ Script generated successfully')
     console.log('Script length:', script.length, 'characters')
 
