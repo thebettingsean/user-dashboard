@@ -431,8 +431,8 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 {/* Pick content */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                    {/* Units Badge */}
-                    <span style={{
+                    {/* Units Badge with Sport */}
+                    <div style={{
                       fontSize: '0.6rem',
                       fontWeight: '600',
                       color: '#fbbf24',
@@ -440,10 +440,15 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       border: '1px solid rgba(251, 191, 36, 0.3)',
                       borderRadius: '4px',
                       padding: '2px 6px',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      lineHeight: '1.2'
                     }}>
-                      {pick.units.toFixed(1)}u
-                    </span>
+                      <div>{pick.sport}</div>
+                      <div>{pick.units.toFixed(1)}u</div>
+                    </div>
 
                     {/* Pick Title - blur if NOT unlocked (signed in OR not signed in) */}
                     <div style={{ flex: 1 }}>
@@ -469,9 +474,9 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                         </span>
                       )}
                       
-                      {/* Sport, Game Time & Odds */}
+                      {/* Game Time & Odds */}
                       <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-                        {pick.sport}, {(() => {
+                        {(() => {
                           const gameDate = new Date(pick.game_time)
                           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                           const month = monthNames[gameDate.getMonth()]
