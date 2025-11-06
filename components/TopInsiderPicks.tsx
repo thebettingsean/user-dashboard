@@ -436,11 +436,16 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                   position: 'relative'
                 }}
               >
-                {/* Not signed in - EXACT same structure as LockedWidget */}
+                {/* Not signed in - Apply filter blur directly to content */}
                 {!isSignedIn ? (
                   <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => router.push('/sign-in')}>
-                    {/* Show full content but make it non-interactive */}
-                    <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
+                    {/* Show full content but BLUR IT with CSS filter + make non-interactive */}
+                    <div style={{ 
+                      pointerEvents: 'none', 
+                      userSelect: 'none',
+                      filter: 'blur(8px)',
+                      opacity: 0.3
+                    }}>
                       {/* Pick content */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
@@ -578,14 +583,11 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 )}
                     </div>
 
-                    {/* Blur overlay - STRONG blur to hide content */}
+                    {/* Lock icon overlay (content is already blurred via CSS filter) */}
                     <div 
                       style={{
                         position: 'absolute',
                         inset: 0,
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        background: 'rgba(15, 23, 42, 0.85)',
                         borderRadius: '12px',
                         display: 'flex',
                         flexDirection: 'column',
