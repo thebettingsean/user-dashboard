@@ -268,7 +268,12 @@ Write a well-thought-out, well-connected article (600-700 words) that creates a 
    - Connect their reasoning to the broader game context
    - Feature ALL analyst picks, but make them feel organic to the story you're telling
 
-5. **SUGGEST SPREADS/TOTALS/ML WHEN PROPS ARE WEAK**: If player props lack strong hit rates or sample size, focus on game-level bets (spread, total, moneyline) instead.
+5. **YOU CAN SUGGEST ADDITIONAL PLAYS**:
+   - **ALWAYS allowed**: Spreads, Totals, Moneylines based on matchup data, trends, and sharp money
+   - **Player props**: ONLY suggest if they appear in the "Top Props" section with hit rates - reference the EXACT prop and odds provided
+   - **NEVER invent player props** - if a player/prop isn't in the provided data, don't suggest it
+   - Mix in ALL available data (team stats, public money, trends, referee stats, team rankings) to build your case
+   - Aim for 4-6 total plays: analyst picks + your suggested game-level bets + top props from the data
 
 📝 STRUCTURE (600-700 WORDS):
 
