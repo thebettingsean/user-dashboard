@@ -593,7 +593,7 @@ export default function Home() {
         
               {/* Conditional Rendering: Blueprints vs Game Cards */}
               {selectedSport === 'Blueprints' ? (
-                /* Blueprint Cards */
+                /* Blueprint Cards - Updated styling with correct row order */
                 <div style={{ 
                   display: 'flex',
                   gap: '0.75rem',
