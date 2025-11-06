@@ -701,16 +701,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Row 2: Tagline */}
-                    <div style={{ 
-                      fontSize: '0.65rem', 
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      lineHeight: '1.3'
-                    }}>
-                      Top plays from all games this week
-                    </div>
-
-                    {/* Row 3: Date ................. (wand) Generate... */}
+                    {/* Row 2: Date ................. (wand) Generate... */}
                     <div style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -738,6 +729,15 @@ export default function Home() {
                           Generate...
                         </span>
                       </div>
+                    </div>
+
+                    {/* Row 3: Tagline */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3'
+                    }}>
+                      Top plays from all games this week
                     </div>
                   </div>
 
@@ -821,16 +821,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Row 2: Tagline */}
-                    <div style={{ 
-                      fontSize: '0.65rem', 
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      lineHeight: '1.3'
-                    }}>
-                      Top plays from today's slate
-                    </div>
-
-                    {/* Row 3: Date ................. (wand) Generate... */}
+                    {/* Row 2: Date ................. (wand) Generate... */}
                     <div style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -858,6 +849,15 @@ export default function Home() {
                           Generate...
                         </span>
                       </div>
+                    </div>
+
+                    {/* Row 3: Tagline */}
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.3'
+                    }}>
+                      Top plays from today's slate
                     </div>
                   </div>
                 </div>
