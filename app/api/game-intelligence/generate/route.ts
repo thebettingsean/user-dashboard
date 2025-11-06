@@ -260,32 +260,32 @@ Write a well-thought-out, well-connected article (600-700 words) that creates a 
      Example: "Browns have 35% of bets but 48% of money → +13% sharp money indicator"
    - **High Public %**: When public heavily backs one side (70%+) → potential overvalue → fade opportunity if data doesn't support it
 
-4. **🚨 ANALYST PICKS ARE MANDATORY 🚨**: When in-house analysts provide picks:
-   - **START YOUR ENTIRE SCRIPT WITH THEIR PICKS FIRST**
-   - Use their EXACT analysis word-for-word, then expand with supporting data
-   - Reference them by name: **Michael Porter Jr. OVER 7.5 rebounds (+112, @InsiderMike)**
-   - **NEVER suggest different props** - if analyst says MPJ rebounds, you MUST feature MPJ rebounds
-   - Their picks are THE FOUNDATION - everything else is secondary support
+4. **🚨 ANALYST PICKS ARE THE FOUNDATION 🚨**: When in-house analysts provide picks:
+   - **WEAVE THEM INTO YOUR NARRATIVE** - don't just list them in sequence
+   - Start with the most compelling angle (could be an analyst pick, could be a spread trend)
+   - Use their analysis as supporting evidence within your flow
+   - Reference them: **Michael Porter Jr. OVER 7.5 rebounds (+112, @InsiderMike)**
+   - Connect their reasoning to the broader game context
+   - Feature ALL analyst picks, but make them feel organic to the story you're telling
 
 5. **SUGGEST SPREADS/TOTALS/ML WHEN PROPS ARE WEAK**: If player props lack strong hit rates or sample size, focus on game-level bets (spread, total, moneyline) instead.
 
 📝 STRUCTURE (600-700 WORDS):
 
 **Opening Paragraph** (100-150 words):
-Set the scene - spread, total, key matchup angles, what immediately stands out from the data. Connect public betting splits with the actual statistical matchup.
+Lead with the most compelling angle - often this is your strongest analyst pick with immediate context. Set the scene for why this game matters and what edges exist. If you have analyst picks, introduce the first one here with its core thesis.
 
 **Body Paragraphs** (400-500 words):
-Build your narrative by connecting multiple data layers:
-- Team offense (#PPG, #YPP, situational stats) vs opponent defense (#PPG allowed, #yards allowed)
-- How this creates game script → how game script affects player props
-- Public vs sharp money → what the line movement tells us
-- Referee trends (if available) → how this impacts total/pace
-- Recent ATS performance → situational patterns
-- Team Rankings stats → specific matchup advantages
-- **Weave in plays naturally as you explain WHY they make sense**
+Create a flowing narrative that CONNECTS everything:
+- Start a paragraph with an angle (could be analyst reasoning, could be matchup data)
+- Layer in supporting evidence from multiple sources
+- Explain cause → effect → betting opportunity
+- Example: "Sutton's bounce-back makes sense when..." (analyst pick) → "facing Vegas's 5th-worst WR defense" (team rankings) → "which historically correlates with 60+ yard performances" (prop data)
+- INTEGRATE analyst picks within relevant matchup contexts - don't dump them all at once
+- Use team stats, public money, referee trends as GLUE between the picks
 
 **Closing Paragraph** (100 words):
-Summarize the key angles and list 3-5 plays that capitalize on these edges.
+Tie it together - what's the overall game script? How do all the angles align? Recap 2-3 best bets (always include analyst picks here).
 
 🎯 FORMATTING:
 
@@ -313,6 +313,8 @@ Summarize the key angles and list 3-5 plays that capitalize on these edges.
 - Don't write: "The 76ers have been impressive this season with strong offensive numbers"
 - Don't list disconnected stats: "76ers: 125.7 PPG, Cavaliers: 114.1 PPG, 76ers: 48.2 FG%"
 - Don't suggest props that aren't in the provided data
+- **DON'T structure as Pick-Paragraph-Pick-Paragraph-Pick-Paragraph** (this is lazy and disconnected)
+- Don't just restate analyst analysis without adding layers of supporting context
 
 ✅ WHAT TO DO:
 - Write: "The 76ers' league-leading 125.7 PPG (#1) and 48.2 FG% (#2) creates a 10+ point scoring advantage over Cleveland's 114.1 PPG (#23), especially when you factor in the Cavaliers' poor 3PT defense (34.1%, #25) against Philly's 37.5% shooting (#5). This efficiency gap points to **76ers -2.5 (-110)** covering easily."
