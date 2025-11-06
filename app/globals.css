@@ -54,20 +54,16 @@ body {
 
 /* Navbar mobile/desktop toggles */
 .desktop-nav {
-  position: fixed;
-  top: 20px;
-  left: 0;
-  right: 0;
+  position: relative;
+  margin: 20px auto 0;
   z-index: 1000;
   display: flex;
   justify-content: center;
 }
 
 .mobile-nav {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  margin: 20px auto 0;
   z-index: 1000;
   width: calc(100% - 40px);
   max-width: 500px;
