@@ -263,10 +263,12 @@ Write a well-thought-out, well-connected article (600-700 words) that creates a 
      Example: "Browns have 35% of bets but 48% of money → +13% sharp money indicator"
    - **High Public %**: When public heavily backs one side (70%+) → potential overvalue → fade opportunity if data doesn't support it
 
-4. **FAVOR ANALYST PICKS**: When in-house analysts provide picks with detailed analysis:
-   - Use their EXACT narrative and data points
-   - Reference them by name: **Bears -2.5 (@AnalystName, -110)**
-   - Their write-ups should be woven throughout your analysis, not just mentioned
+4. **🚨 ANALYST PICKS ARE MANDATORY 🚨**: When in-house analysts provide picks:
+   - **START YOUR ENTIRE SCRIPT WITH THEIR PICKS FIRST**
+   - Use their EXACT analysis word-for-word, then expand with supporting data
+   - Reference them by name: **Michael Porter Jr. OVER 7.5 rebounds (+112, @InsiderMike)**
+   - **NEVER suggest different props** - if analyst says MPJ rebounds, you MUST feature MPJ rebounds
+   - Their picks are THE FOUNDATION - everything else is secondary support
 
 5. **SUGGEST SPREADS/TOTALS/ML WHEN PROPS ARE WEAK**: If player props lack strong hit rates or sample size, focus on game-level bets (spread, total, moneyline) instead.
 
@@ -502,8 +504,12 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
       prompt += `${'-'.repeat(60)}\n\n`
     })
     
-    prompt += `🎯 **HOW TO WRITE THIS:**\n\n`
-    prompt += `Write one data-dense narrative (1000+ words) where EVERY paragraph has 5-10 specific stats.\n\n`
+    prompt += `🚨 **CRITICAL INSTRUCTIONS - ANALYST PICKS MUST BE YOUR PRIMARY FOCUS:**\n\n`
+    prompt += `1. **START YOUR SCRIPT WITH ANALYST PICKS** - Don't bury them at the end!\n`
+    prompt += `2. **USE THEIR EXACT PLAYER NAMES & PROPS** - If they say "Michael Porter Jr. o7.5 rebounds", that MUST be in your script\n`
+    prompt += `3. **NEVER SUGGEST DIFFERENT PROPS** - If analyst picked MPJ rebounds, DO NOT suggest Jarace Walker assists\n`
+    prompt += `4. **BUILD AROUND THEIR ANALYSIS** - Use team rankings/public money/trends to SUPPORT their picks\n\n`
+    prompt += `Write one data-dense narrative (600-700 words) where EVERY paragraph has 5-10 specific stats.\n\n`
     
     prompt += `❌ **BAD (FLUFFY) PARAGRAPH:**\n`
     prompt += `"The Bears have a slight edge in this matchup. Their offense has shown the ability to move the ball, while the Bengals' defense has struggled throughout the season. This creates an interesting dynamic that could favor Chicago."\n`
@@ -1057,7 +1063,13 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   
   prompt += `**TARGET: 600-700 words. Every paragraph should connect 3+ specific stats with context and causality.**\n\n`
   
-  prompt += `⚠️ ANALYST PICKS: If in-house analysts provided picks above, their analysis should be the FOUNDATION of your write-up. Use their exact data points and reasoning.\n\n`
+  prompt += `🚨🚨🚨 CRITICAL - ANALYST PICKS 🚨🚨🚨\n`
+  prompt += `If analyst picks exist above, YOU MUST:\n`
+  prompt += `1. START your script by discussing their picks in the opening paragraph\n`
+  prompt += `2. Use their EXACT player names, props, and analysis\n`
+  prompt += `3. NEVER suggest different props - their picks are the PRIMARY plays\n`
+  prompt += `4. Support their analysis with team rankings, public money, and other data\n`
+  prompt += `5. DO NOT invent other props if analyst picks exist - focus on supporting their plays\n\n`
 
   return prompt
 }
