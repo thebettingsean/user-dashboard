@@ -234,15 +234,24 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
 
   async function fetchGameMatchups(picks: Pick[]) {
     try {
-      // Fetch game matchups from Trendline API for each unique game_id
-      const uniqueGameIds = [...new Set(picks.map(p => p.game_id).filter(Boolean))]
+      // Filter out picks with no game_id (leave those blank)
+      const uniqueGameIds = [...new Set(picks.map(p => p.game_id).filter(id => id && id.trim() !== ''))]
+      
+      if (uniqueGameIds.length === 0) {
+        console.log('No game IDs to fetch')
+        return
+      }
       
       for (const gameId of uniqueGameIds) {
         try {
           // Extract sport from game_id (format: SPORT-DATE-AWAY-HOME)
-          const sport = gameId.split('-')[0]?.toLowerCase()
+          const parts = gameId.split('-')
+          const sport = parts[0]?.toLowerCase()
           
-          if (!sport) continue
+          if (!sport || parts.length < 4) {
+            console.warn(`Invalid game_id format: ${gameId}`)
+            continue
+          }
           
           // Fetch game data from Trendline
           const response = await fetch(`https://api.trendline.pro/api/${sport}/games/${gameId}`, {
@@ -261,6 +270,9 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                 pick.game_matchup = matchup
               }
             })
+            console.log(`✅ Fetched matchup for ${gameId}: ${matchup}`)
+          } else {
+            console.warn(`Failed to fetch game ${gameId}: ${response.status}`)
           }
         } catch (err) {
           console.error(`Error fetching matchup for ${gameId}:`, err)
@@ -521,7 +533,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
                       
                       {/* Game | Game Time | Odds */}
                       <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-                        {pick.game_matchup || 'Game TBD'} | {(() => {
+                        {pick.game_matchup ? `${pick.game_matchup} | ` : ''}{(() => {
                           const gameDate = new Date(pick.game_time)
                           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                           const month = monthNames[gameDate.getMonth()]
