@@ -180,38 +180,33 @@ export default function Home() {
         }
       })
       
+      // Show games immediately with default strength
       setGames(transformedGames)
+      setLoadingGames(false) // SHOW GAMES NOW!
       
-      // Fetch data strength for each game in parallel
-      console.log('📊 Fetching data strength for all games...')
-      const strengthPromises = transformedGames.map(async (game) => {
+      // Fetch data strength for each game in parallel (in the background)
+      console.log('📊 Fetching data strength for all games in background...')
+      transformedGames.forEach(async (game) => {
         try {
           const strengthRes = await fetch(
             `/api/game-intelligence/strength?gameId=${game.gameId}&league=${game.sport.toLowerCase()}`
           )
           if (strengthRes.ok) {
             const strengthData = await strengthRes.json()
-            return { gameId: game.gameId, strength: strengthData.strength }
+            // Update this specific game's strength immediately when it returns
+            setGames(prevGames => 
+              prevGames.map(g => 
+                g.gameId === game.gameId 
+                  ? { ...g, dataStrength: strengthData.strength as 1 | 2 | 3 }
+                  : g
+              )
+            )
+            console.log(`✅ Updated strength for ${game.gameId}: ${strengthData.strength}`)
           }
         } catch (error) {
           console.error(`Error fetching strength for ${game.gameId}:`, error)
         }
-        return { gameId: game.gameId, strength: 1 }
       })
-      
-      const strengthResults = await Promise.all(strengthPromises)
-      
-      // Update games with their actual strength
-      const gamesWithStrength = transformedGames.map(game => {
-        const strengthResult = strengthResults.find(s => s.gameId === game.gameId)
-        return {
-          ...game,
-          dataStrength: (strengthResult?.strength || 1) as 1 | 2 | 3
-        }
-      })
-      
-      console.log('✅ Games with strength:', gamesWithStrength.map(g => `${g.gameId}: ${g.dataStrength}`))
-      setGames(gamesWithStrength)
       
     } catch (error) {
       console.error('❌ Error fetching games:', error)
