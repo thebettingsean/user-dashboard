@@ -666,8 +666,8 @@ export default function Home() {
                             <div
                               key={bar}
                               style={{
-                                width: '4px',
-                                height: '10px',
+                                width: '5px',
+                                height: '14px',
                                 borderRadius: '2px',
                                 background: '#10b981',
                                 opacity: 1
@@ -786,8 +786,8 @@ export default function Home() {
                             <div
                               key={bar}
                               style={{
-                                width: '4px',
-                                height: '10px',
+                                width: '5px',
+                                height: '14px',
                                 borderRadius: '2px',
                                 background: '#10b981',
                                 opacity: 1
