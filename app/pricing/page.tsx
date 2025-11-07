@@ -44,12 +44,15 @@ export default function PricingPage() {
 
     setLoading(true)
 
+    // Use Checkout Sessions for BOTH credits and subscriptions
+    // This ensures metadata is passed and external webhook can process properly
     if (selectedPlan === 'credits') {
-      // Use Checkout Session for credits (custom success page)
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
-      // Route to redirect page that adds user email to Payment Link
-      router.push(`/checkout/subscription/${selectedPlan}`)
+      const plan = subscriptionPlans.find(p => p.id === selectedPlan)
+      if (plan) {
+        router.push(`/checkout/${plan.priceId}`)
+      }
     }
   }
 
