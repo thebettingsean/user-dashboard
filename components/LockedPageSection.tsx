@@ -15,7 +15,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
   }
 
   const handleUpgradeClick = () => {
-    window.location.href = '/upgrade'
+    window.location.href = '/pricing'
   }
 
   const handleBackClick = (e: React.MouseEvent) => {
@@ -109,7 +109,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
             margin: 0,
             lineHeight: 1.2
           }}>
-            This tool is for Insiders only
+            {isSignedIn ? 'This tool is for Subscribers only' : 'This tool is for Insiders only'}
           </p>
           <p style={{ 
             color: 'rgba(255, 255, 255, 0.8)', 
@@ -117,7 +117,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
             fontWeight: '500',
             margin: 0
           }}>
-            {isSignedIn ? 'Please upgrade to access' : 'Please sign in to access'}
+            {isSignedIn ? 'Please sub for access' : 'Please sign in to access'}
           </p>
         </div>
         <button 
@@ -134,7 +134,7 @@ export default function LockedPageSection({ isLocked, children }: LockedPageSect
             marginTop: '0.5rem'
           }}
         >
-          {isSignedIn ? 'Upgrade Now' : 'Sign In'}
+          {isSignedIn ? 'Join Now' : 'Sign In'}
         </button>
       </div>
     </>
