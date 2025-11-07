@@ -360,11 +360,23 @@ export default function AnalystPicksPage() {
   }
 
   const handleUnlockSingle = (pickId: string, pickTitle: string) => {
+    // If not signed in, trigger Clerk sign-up modal
+    if (!isSignedIn) {
+      window.location.href = '/sign-in'
+      return
+    }
+    
     setPendingUnlock({ type: 'single', pickId, pickTitle })
     setConfirmModalOpen(true)
   }
 
   const handleUnlockAll = () => {
+    // If not signed in, trigger Clerk sign-up modal
+    if (!isSignedIn) {
+      window.location.href = '/sign-in'
+      return
+    }
+    
     setPendingUnlock({ type: 'all_day' })
     setConfirmModalOpen(true)
   }
