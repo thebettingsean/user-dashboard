@@ -517,7 +517,7 @@ export default function Home() {
             }}
           >
             <FaWandMagicSparkles size={18} style={{ color: '#ffffff', opacity: 1 }} />
-            AI Game Scripts
+            Game Scripts
             <span style={{
               fontSize: '0.6rem',
               fontWeight: '600',
@@ -528,7 +528,7 @@ export default function Home() {
               padding: '2px 6px',
               marginLeft: '0.25rem'
             }}>
-              BETA
+              NEW
             </span>
             <span style={{ marginLeft: 'auto' }}>
               {expandedSections.has('ai-intelligence') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
@@ -1103,7 +1103,7 @@ export default function Home() {
             }}
           >
             <FaWandMagicSparkles size={18} style={{ color: '#ffffff', opacity: 1 }} />
-            AI Game Scripts
+            Game Scripts
             <span style={{
               fontSize: '0.6rem',
               fontWeight: '600',
@@ -1114,7 +1114,7 @@ export default function Home() {
               padding: '2px 6px',
               marginLeft: '0.25rem'
             }}>
-              BETA
+              NEW
             </span>
             <span style={{ marginLeft: 'auto' }}>
               {expandedSections.has('ai-intelligence-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
