@@ -5,7 +5,7 @@ import { useSubscription } from '../lib/hooks/useSubscription'
 import { useUser, SignInButton } from '@clerk/nextjs'
 import LockedWidget from '../components/LockedWidget'
 import TopInsiderPicks from '../components/TopInsiderPicks'
-import QuickDataWidget from '../components/QuickDataWidget'
+import PublicBettingSection from '../components/PublicBettingSection'
 import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
@@ -379,16 +379,7 @@ export default function Home() {
     )
   }
 
-  const row1Widgets = [
-    { 
-      id: 'quickdata', 
-      title: 'Quick Data', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
-      borderColor: 'rgba(24, 118, 53, 0.6)',
-      background: 'linear-gradient(135deg, rgba(24, 118, 53, 0.15) 0%, rgba(24, 118, 53, 0.08) 100%)',
-      component: <QuickDataWidget /> 
-    }
-  ]
+  // Removed row1Widgets - now using PublicBettingSection as standalone component
 
   const row2Widgets = [
     { 
@@ -1648,42 +1639,12 @@ export default function Home() {
         <div className="desktop-view" style={{ marginBottom: '2.5rem' }}>
           <TopInsiderPicks isCollapsible={true} defaultExpanded={true} />
         </div>
+
+        {/* PUBLIC BETTING SECTION - BOTH MOBILE & DESKTOP */}
+        <PublicBettingSection />
         
         {/* MOBILE VIEW - Accordion */}
         <div className="mobile-view">
-          {/* Quick Data Section - COLLAPSIBLE */}
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 
-              onClick={() => toggleSection('quickdata')}
-                  style={{ 
-                fontSize: '1.2rem', 
-                marginBottom: '1rem', 
-                opacity: 0.9, 
-                    display: 'flex',
-                    alignItems: 'center',
-                gap: '0.5rem',
-                    cursor: 'pointer',
-                color: '#fff'
-              }}
-            >
-              <ListTodo size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
-              Quick Data
-              <span style={{ marginLeft: 'auto' }}>
-                {expandedSections.has('quickdata') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
-              </span>
-            </h3>
-            {expandedSections.has('quickdata') && (
-              <div>
-                {row1Widgets.map(widget => (
-                  <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                    <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
-                      {widget.component}
-                    </LockedWidget>
-                </div>
-            ))}
-              </div>
-            )}
-          </div>
 
           {/* Prop Tools Section - COLLAPSIBLE */}
           <div style={{ marginBottom: '2rem' }}>
@@ -1755,44 +1716,6 @@ export default function Home() {
         {/* DESKTOP VIEW - Collapsible Sections */}
         <div className="desktop-view">
           {/* Quick Data Section - COLLAPSIBLE */}
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 
-              onClick={() => toggleSection('quickdata-desktop')}
-              style={{ 
-                fontSize: '1.2rem', 
-                marginBottom: '2rem', 
-                opacity: 0.9, 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                cursor: 'pointer',
-                color: '#fff'
-              }}
-            >
-              <ListTodo size={18} strokeWidth={2} style={{ color: '#ffffff', opacity: 1 }} />
-              Quick Data
-              <span style={{ marginLeft: 'auto' }}>
-                {expandedSections.has('quickdata-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
-              </span>
-          </h3>
-            {expandedSections.has('quickdata-desktop') && (
-          <div style={{ 
-            display: 'flex', 
-            gap: '1.5rem', 
-            overflowX: 'auto', 
-            paddingBottom: '1rem',
-            marginBottom: '1.5rem',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-          }}>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
-                <QuickDataWidget />
-              </LockedWidget>
-            </div>
-            </div>
-            )}
-          </div>
 
           {/* Prop Tools Section - COLLAPSIBLE */}
           <div style={{ marginBottom: '2rem' }}>
@@ -1827,8 +1750,8 @@ export default function Home() {
             <div style={{ minWidth: '380px' }}>
                   <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
                     <TopPropsWidget />
-                  </LockedWidget>
-                </div>
+              </LockedWidget>
+            </div>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
                 <PropParlayWidget />
@@ -1868,26 +1791,26 @@ export default function Home() {
               <span style={{ marginLeft: 'auto' }}>
                 {expandedSections.has('resources-desktop') ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
               </span>
-            </h3>
+          </h3>
             {expandedSections.has('resources-desktop') && (
-              <div style={{ 
-                display: 'flex', 
-                gap: '1.5rem', 
-                overflowX: 'auto', 
-                paddingBottom: '1rem',
+          <div style={{ 
+            display: 'flex', 
+            gap: '1.5rem', 
+            overflowX: 'auto', 
+            paddingBottom: '1rem',
                 marginBottom: '1.5rem',
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-              }}>
-                <div style={{ minWidth: '380px' }}>
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+          }}>
+            <div style={{ minWidth: '380px' }}>
                   <MaximizeProfitWidget />
-                </div>
-                <div style={{ minWidth: '380px' }}>
+            </div>
+            <div style={{ minWidth: '380px' }}>
                   <DiscordWidget />
-                </div>
-                <div style={{ minWidth: '380px' }}>
+            </div>
+            <div style={{ minWidth: '380px' }}>
                   <AffiliateWidget />
-                </div>
+            </div>
               </div>
             )}
           </div>
