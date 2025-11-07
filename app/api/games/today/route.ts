@@ -6,7 +6,12 @@ const INSIDER_API_KEY = process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const requestedSport = searchParams.get('sport')?.toLowerCase()
+    let requestedSport = searchParams.get('sport')?.toLowerCase()
+
+    // Map NCAAF to cfb for Trendline API
+    if (requestedSport === 'ncaaf') {
+      requestedSport = 'cfb'
+    }
 
     console.log(`\n=== FETCHING GAMES ${requestedSport ? `FOR ${requestedSport.toUpperCase()}` : 'FOR ALL SPORTS'} ===`)
 
@@ -20,7 +25,7 @@ export async function GET(request: NextRequest) {
     const day = String(nowEST.getDate()).padStart(2, '0')
     const startDateStr = `${year}-${month}-${day}`
     
-    // Calculate end date (7 days from now to catch next week's NFL games)
+    // Calculate end date (7 days from now to catch next week's games)
     const endDateEST = new Date(nowEST)
     endDateEST.setDate(endDateEST.getDate() + 7)
     const endYear = endDateEST.getFullYear()
@@ -65,7 +70,7 @@ export async function GET(request: NextRequest) {
               away_team: game.away_team,
               home_team: game.home_team,
               game_date: game.game_date,
-              sport: sport.toUpperCase()
+              sport: sport === 'cfb' ? 'NCAAF' : sport.toUpperCase()
             }))
             .filter((game: any) => {
               // API returns game times in EST, so compare EST to EST
