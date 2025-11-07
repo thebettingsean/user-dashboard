@@ -18,19 +18,22 @@ export default function PricingPage() {
       id: 'weekly', 
       price: '$29', 
       period: 'Weekly Sub',
-      priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU'
+      priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU',
+      paymentLink: 'https://buy.stripe.com/cNi14fbn1ghhbnR6zoenS0i'
     },
     { 
       id: 'monthly', 
       price: '$99', 
       period: 'Monthly Sub',
-      priceId: 'price_1SIZoN07WIhZOuSIm8hTDjy4'
+      priceId: 'price_1SIZoN07WIhZOuSIm8hTDjy4',
+      paymentLink: 'https://buy.stripe.com/bJeeV562H0ij1Nh5vkenS0h'
     },
     { 
       id: '6month', 
       price: '$299', 
       period: '6-Month Sub',
-      priceId: 'price_1SIZp507WIhZOuSIFMzU7Kkm'
+      priceId: 'price_1SIZp507WIhZOuSIFMzU7Kkm',
+      paymentLink: 'https://buy.stripe.com/9B66oz76Le999fJ3ncenS0j'
     }
   ]
 
@@ -41,14 +44,15 @@ export default function PricingPage() {
 
     setLoading(true)
 
-    // Use /checkout/[priceId] for BOTH credits and subscriptions
-    // This creates a Checkout Session with proper redirect URLs
     if (selectedPlan === 'credits') {
+      // Use Checkout Session for credits (custom success page)
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
+      // Use Payment Links for subscriptions (external webhook works perfectly)
       const plan = subscriptionPlans.find(p => p.id === selectedPlan)
       if (plan) {
-        router.push(`/checkout/${plan.priceId}`)
+        // Payment Links will redirect to /success/subscription (configured in Stripe)
+        window.location.href = plan.paymentLink
       }
     }
   }

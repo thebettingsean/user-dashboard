@@ -67,6 +67,11 @@ export async function POST(request: NextRequest) {
       metadata.credits_to_add = config.credits?.toString() || '15'
     }
 
+    // Determine success URL based on product type
+    const successUrl = config.type === 'credit_pack' 
+      ? `${origin}/success/credit-purchase`
+      : `${origin}/success/subscription`
+
     // Create checkout session
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       mode: config.type === 'credit_pack' ? 'payment' : 'subscription',
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}?purchase=success`,
+      success_url: successUrl,
       cancel_url: `${origin}/pricing?cancelled=true`,
       customer_email: userEmail,
       metadata,
