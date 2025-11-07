@@ -18,23 +18,19 @@ export default function PricingPage() {
       id: 'weekly', 
       price: '$29', 
       period: 'Weekly Sub',
-      priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU',
-      // Keep old checkout URL as fallback for now
-      checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoo07WIhZOuSIJB8OGgVU'
+      priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU'
     },
     { 
       id: 'monthly', 
       price: '$99', 
       period: 'Monthly Sub',
-      priceId: 'price_1SIZoN07WIhZOuSIm8hTDjy4',
-      checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoN07WIhZOuSIm8hTDjy4'
+      priceId: 'price_1SIZoN07WIhZOuSIm8hTDjy4'
     },
     { 
       id: '6month', 
       price: '$299', 
       period: '6-Month Sub',
-      priceId: 'price_1SIZp507WIhZOuSIFMzU7Kkm',
-      checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZp507WIhZOuSIFMzU7Kkm'
+      priceId: 'price_1SIZp507WIhZOuSIFMzU7Kkm'
     }
   ]
 
@@ -49,10 +45,10 @@ export default function PricingPage() {
       // Redirect to our custom checkout handler for credit pack
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
-      // For subscriptions, still use old checkout URL (will migrate later)
+      // For subscriptions, use custom redirect page (keeps external webhook)
       const plan = subscriptionPlans.find(p => p.id === selectedPlan)
       if (plan) {
-        window.location.href = plan.checkoutUrl
+        router.push(`/checkout/subscription/${plan.priceId}`)
       }
     }
   }
