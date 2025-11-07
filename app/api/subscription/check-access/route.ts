@@ -47,21 +47,30 @@ export async function GET(request: NextRequest) {
     const privateMeta = user.privateMetadata || {}
     const plan = (privateMeta.plan as string) || null
     const subscriptionStatus = (privateMeta.subscriptionStatus as string) || null
+    const cancelAtPeriodEnd = (privateMeta.cancelAtPeriodEnd as boolean) || false
 
     // User has access if:
-    // 1. They have an active subscription status
-    // 2. Their plan is in our valid price IDs list (includes legacy)
-    const hasActiveSub = subscriptionStatus === 'active'
+    // 1. They have a valid plan in our price IDs list (includes legacy)
+    // 2. AND one of these conditions:
+    //    a) subscriptionStatus is 'active' (new webhook system)
+    //    b) subscriptionStatus is null/undefined (legacy users who never had status tracked)
+    //       BUT they must have a plan set (old system only set 'plan')
     const hasValidPlan = plan && VALID_SUBSCRIPTION_PRICE_IDS.includes(plan)
-    const hasAccess = hasActiveSub && hasValidPlan
+    const hasActiveSub = subscriptionStatus === 'active'
+    const isLegacyWithPlan = !subscriptionStatus && !!plan // Legacy user with plan but no status
+    
+    // Grant access if they have a valid plan AND (active status OR legacy user)
+    const hasAccess = hasValidPlan && (hasActiveSub || isLegacyWithPlan)
 
     console.log(`🔍 Subscription check for ${user.id}:`, {
       plan,
       subscriptionStatus,
+      cancelAtPeriodEnd,
       hasValidPlan,
       hasActiveSub,
+      isLegacyWithPlan,
       hasAccess,
-      isLegacy: plan && !['price_1SIZoo07WIhZOuSIJB8OGgVU', 'price_1SIZoN07WIhZOuSIm8hTDjy4', 'price_1SIZp507WIhZOuSIFMzU7Kkm'].includes(plan)
+      isLegacyPriceId: plan && !['price_1SIZoo07WIhZOuSIJB8OGgVU', 'price_1SIZoN07WIhZOuSIm8hTDjy4', 'price_1SIZp507WIhZOuSIFMzU7Kkm'].includes(plan)
     })
 
     return NextResponse.json({
