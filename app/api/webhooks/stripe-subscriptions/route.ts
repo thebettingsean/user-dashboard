@@ -265,8 +265,8 @@ export async function POST(request: NextRequest) {
       const invoice = event.data.object as Stripe.Invoice
       
       // Only process subscription invoices
-      if (invoice.subscription) {
-        console.log(`💰 Invoice paid for subscription ${invoice.subscription}`)
+      if ((invoice as any).subscription) {
+        console.log(`💰 Invoice paid for subscription ${(invoice as any).subscription}`)
         
         // Subscription renewal was successful - metadata should already be updated
         // by customer.subscription.updated event, but we can log it
