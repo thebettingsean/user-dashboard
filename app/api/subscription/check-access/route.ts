@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { currentUser } from '@clerk/nextjs/server'
+import { currentUser, clerkClient } from '@clerk/nextjs/server'
 
 // All valid subscription price IDs (new + legacy grandfathered)
 const VALID_SUBSCRIPTION_PRICE_IDS = [
@@ -43,8 +43,12 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Fetch user FRESH from Clerk API to avoid caching issues
+    const clerk = await clerkClient()
+    const freshUser = await clerk.users.getUser(user.id)
+
     // Check privateMetadata for subscription info (set by webhook or legacy system)
-    const privateMeta = user.privateMetadata || {}
+    const privateMeta = freshUser.privateMetadata || {}
     
     console.log(`📋 Raw privateMetadata for ${user.id}:`, JSON.stringify(privateMeta, null, 2))
     
@@ -80,7 +84,7 @@ export async function GET(request: NextRequest) {
       hasAccess,
       plan,
       subscriptionStatus,
-      firstName: user.firstName
+      firstName: freshUser.firstName
     })
 
   } catch (error) {
