@@ -5,8 +5,7 @@ import { useSubscription } from '../lib/hooks/useSubscription'
 import { useUser, SignInButton } from '@clerk/nextjs'
 import LockedWidget from '../components/LockedWidget'
 import TopInsiderPicks from '../components/TopInsiderPicks'
-import StatsWidget from '../components/StatsWidget'
-import MatchupWidget from '../components/MatchupWidget'
+import QuickDataWidget from '../components/QuickDataWidget'
 import FantasyWidget from '../components/FantasyWidget'
 import TDWidget from '../components/TDWidget'
 import NewsWidget from '../components/NewsWidget'
@@ -382,20 +381,12 @@ export default function Home() {
 
   const row1Widgets = [
     { 
-      id: 'stats', 
-      title: 'Public Betting', 
+      id: 'quickdata', 
+      title: 'Quick Data', 
       icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de02c7e090d456d83b06c6_2.svg',
       borderColor: 'rgba(24, 118, 53, 0.6)',
       background: 'linear-gradient(135deg, rgba(24, 118, 53, 0.15) 0%, rgba(24, 118, 53, 0.08) 100%)',
-      component: <StatsWidget /> 
-    },
-    { 
-      id: 'matchup', 
-      title: 'Matchup Data', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68ee51165777fa2c334aa52b_NEW%20WIDGET%20SVG%27S-4.svg',
-      borderColor: 'rgba(217, 217, 217, 0.6)',
-      background: 'linear-gradient(135deg, rgba(217, 217, 217, 0.15) 0%, rgba(217, 217, 217, 0.08) 100%)',
-      component: <MatchupWidget /> 
+      component: <QuickDataWidget /> 
     }
   ]
 
@@ -1796,15 +1787,10 @@ export default function Home() {
           }}>
             <div style={{ minWidth: '380px' }}>
               <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
-                <StatsWidget />
+                <QuickDataWidget />
               </LockedWidget>
             </div>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
-                <MatchupWidget />
-              </LockedWidget>
             </div>
-              </div>
             )}
           </div>
 
