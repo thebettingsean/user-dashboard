@@ -49,10 +49,10 @@ export default function PricingPage() {
       // Redirect to our custom checkout handler for credit pack
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
-      // For subscriptions, use our custom checkout handler
+      // For subscriptions, still use old checkout URL (will migrate later)
       const plan = subscriptionPlans.find(p => p.id === selectedPlan)
       if (plan) {
-        router.push(`/checkout/${plan.priceId}`)
+        window.location.href = plan.checkoutUrl
       }
     }
   }

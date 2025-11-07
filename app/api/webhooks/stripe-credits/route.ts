@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseUsers } from '@/lib/supabase-users'
 import Stripe from 'stripe'
-import { clerkClient } from '@clerk/nextjs/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover'
@@ -11,7 +10,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_CREDITS!
 
 /**
  * POST /api/webhooks/stripe-credits
- * Handles Stripe webhooks for credit pack purchases AND subscriptions
+ * Handles Stripe webhooks for credit pack purchases
  */
 export async function POST(request: NextRequest) {
   try {
@@ -124,167 +123,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`✅ Added ${creditsToAdd} credits to user ${clerkUserId} (Total: ${newCreditTotal})`)
-      }
-
-      // Handle subscription checkout
-      if (session.mode === 'subscription' && session.subscription) {
-        console.log(`🔔 Subscription checkout completed for user ${clerkUserId}`)
-        
-        // Fetch the subscription details
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-        
-        // Update Clerk metadata
-        const clerk = await clerkClient()
-        await clerk.users.updateUserMetadata(clerkUserId, {
-          privateMetadata: {
-            stripeCustomerId: session.customer as string,
-            plan: subscription.items.data[0].price.id,
-            subscriptionId: subscription.id,
-            subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
-          }
-        })
-
-        // Update Supabase for tracking
-        await supabaseUsers
-          .from('users')
-          .update({
-            stripe_customer_id: session.customer as string,
-            access_level: 'full',
-            subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
-            is_premium: true
-          })
-          .eq('clerk_user_id', clerkUserId)
-
-        console.log(`✅ Subscription activated for user ${clerkUserId}`)
-      }
-    }
-
-    // Handle subscription created
-    if (event.type === 'customer.subscription.created') {
-      const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
-      
-      console.log(`🔔 Subscription created: ${subscription.id}`)
-
-      // Find user by Stripe customer ID
-      const { data: user } = await supabaseUsers
-        .from('users')
-        .select('clerk_user_id')
-        .eq('stripe_customer_id', customerId)
-        .single()
-
-      if (user?.clerk_user_id) {
-        const clerk = await clerkClient()
-        await clerk.users.updateUserMetadata(user.clerk_user_id, {
-          privateMetadata: {
-            stripeCustomerId: customerId,
-            plan: subscription.items.data[0].price.id,
-            subscriptionId: subscription.id,
-            subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
-          }
-        })
-
-        await supabaseUsers
-          .from('users')
-          .update({
-            subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
-            is_premium: true,
-            access_level: 'full'
-          })
-          .eq('clerk_user_id', user.clerk_user_id)
-
-        console.log(`✅ Subscription created and user updated: ${user.clerk_user_id}`)
-      }
-    }
-
-    // Handle subscription updated (cancellations, plan changes)
-    if (event.type === 'customer.subscription.updated') {
-      const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
-      
-      console.log(`🔄 Subscription updated: ${subscription.id}`, {
-        status: subscription.status,
-        cancel_at_period_end: subscription.cancel_at_period_end
-      })
-
-      // Find user by Stripe customer ID
-      const { data: user } = await supabaseUsers
-        .from('users')
-        .select('clerk_user_id')
-        .eq('stripe_customer_id', customerId)
-        .single()
-
-      if (user?.clerk_user_id) {
-        const clerk = await clerkClient()
-        await clerk.users.updateUserMetadata(user.clerk_user_id, {
-          privateMetadata: {
-            stripeCustomerId: customerId,
-            plan: subscription.items.data[0].price.id,
-            subscriptionId: subscription.id,
-            subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
-          }
-        })
-
-        await supabaseUsers
-          .from('users')
-          .update({
-            subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
-            is_premium: subscription.status === 'active',
-            access_level: subscription.status === 'active' ? 'full' : 'none'
-          })
-          .eq('clerk_user_id', user.clerk_user_id)
-
-        console.log(`✅ Subscription updated for user: ${user.clerk_user_id}`)
-      }
-    }
-
-    // Handle subscription deleted (immediate cancellation or end of period)
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
-      
-      console.log(`🗑️ Subscription deleted: ${subscription.id}`)
-
-      // Find user by Stripe customer ID
-      const { data: user } = await supabaseUsers
-        .from('users')
-        .select('clerk_user_id')
-        .eq('stripe_customer_id', customerId)
-        .single()
-
-      if (user?.clerk_user_id) {
-        const clerk = await clerkClient()
-        await clerk.users.updateUserMetadata(user.clerk_user_id, {
-          privateMetadata: {
-            stripeCustomerId: customerId,
-            plan: null,
-            subscriptionId: null,
-            subscriptionStatus: 'canceled',
-            currentPeriodEnd: null,
-            cancelAtPeriodEnd: false
-          }
-        })
-
-        await supabaseUsers
-          .from('users')
-          .update({
-            subscription_status: 'canceled',
-            subscription_end_date: null,
-            is_premium: false,
-            access_level: 'none'
-          })
-          .eq('clerk_user_id', user.clerk_user_id)
-
-        console.log(`✅ Subscription deleted and access revoked for user: ${user.clerk_user_id}`)
       }
     }
 
