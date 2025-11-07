@@ -1704,7 +1704,7 @@ export default function Home() {
               <div>
                 {row1Widgets.map(widget => (
                   <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                    <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
               </div>
@@ -1738,7 +1738,7 @@ export default function Home() {
               <div>
                 {row2Widgets.map(widget => (
                   <div key={widget.id} style={{ marginBottom: '0.75rem' }}>
-                    <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                    <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
                   </div>
@@ -1814,17 +1814,17 @@ export default function Home() {
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <StatsWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <MatchupWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <NewsWidget />
               </LockedWidget>
             </div>
@@ -1863,22 +1863,22 @@ export default function Home() {
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
                 <div style={{ minWidth: '380px' }}>
-                  <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+                  <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                     <TopPropsWidget />
                   </LockedWidget>
                 </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <PropParlayWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <FantasyWidget />
               </LockedWidget>
             </div>
             <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!firstName} hasSubscription={isSubscribed}>
+              <LockedWidget isLoggedIn={isSignedIn} hasSubscription={isSubscribed}>
                 <TDWidget />
               </LockedWidget>
             </div>
