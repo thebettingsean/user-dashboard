@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
           .from('users')
           .update({
             subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
             is_premium: true,
             access_level: 'full'
           })
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
 
       console.log(`🔄 Subscription updated: ${subscription.id}`, {
         status: subscription.status,
-        cancel_at_period_end: subscription.cancel_at_period_end
+        cancel_at_period_end: (subscription as any).cancel_at_period_end
       })
 
       // Find user by Stripe customer ID
@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
             plan: priceId,
             subscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
+            currentPeriodEnd: (subscription as any).current_period_end,
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end
           }
         })
 
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
           .from('users')
           .update({
             subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
             is_premium: isActive,
             access_level: isActive ? 'full' : (subscription.status === 'canceled' ? 'none' : 'full')
           })
