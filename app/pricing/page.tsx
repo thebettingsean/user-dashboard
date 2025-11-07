@@ -41,14 +41,14 @@ export default function PricingPage() {
 
     setLoading(true)
 
+    // Use /checkout/[priceId] for BOTH credits and subscriptions
+    // This creates a Checkout Session with proper redirect URLs
     if (selectedPlan === 'credits') {
-      // Redirect to our custom checkout handler for credit pack
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
-      // For subscriptions, use custom redirect page (keeps external webhook)
       const plan = subscriptionPlans.find(p => p.id === selectedPlan)
       if (plan) {
-        router.push(`/checkout/subscription/${plan.priceId}`)
+        router.push(`/checkout/${plan.priceId}`)
       }
     }
   }
