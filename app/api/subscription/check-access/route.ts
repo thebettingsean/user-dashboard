@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
 
     // Check privateMetadata for subscription info (set by webhook or legacy system)
     const privateMeta = user.privateMetadata || {}
+    
+    console.log(`📋 Raw privateMetadata for ${user.id}:`, JSON.stringify(privateMeta, null, 2))
+    
     const plan = (privateMeta.plan as string) || null
     const subscriptionStatus = (privateMeta.subscriptionStatus as string) || null
     const cancelAtPeriodEnd = (privateMeta.cancelAtPeriodEnd as boolean) || false
