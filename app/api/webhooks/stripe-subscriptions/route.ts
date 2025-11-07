@@ -79,10 +79,14 @@ export async function POST(request: NextRequest) {
         status: subscription.status
       })
 
-      // Update Clerk metadata
+      // Update Clerk metadata (fetch current user first to preserve other fields)
       const clerk = await clerkClient()
+      const currentClerkUser = await clerk.users.getUser(clerkUserId)
+      const existingPrivateMeta = currentClerkUser.privateMetadata || {}
+      
       await clerk.users.updateUserMetadata(clerkUserId, {
         privateMetadata: {
+          ...existingPrivateMeta, // Preserve existing fields
           stripeCustomerId: session.customer as string,
           plan: priceId,
           subscriptionId: subscription.id,
@@ -136,8 +140,12 @@ export async function POST(request: NextRequest) {
 
       if (user?.clerk_user_id) {
         const clerk = await clerkClient()
+        const currentClerkUser = await clerk.users.getUser(user.clerk_user_id)
+        const existingPrivateMeta = currentClerkUser.privateMetadata || {}
+        
         await clerk.users.updateUserMetadata(user.clerk_user_id, {
           privateMetadata: {
+            ...existingPrivateMeta,
             stripeCustomerId: customerId,
             plan: priceId,
             subscriptionId: subscription.id,
@@ -183,10 +191,13 @@ export async function POST(request: NextRequest) {
 
       if (user?.clerk_user_id) {
         const clerk = await clerkClient()
+        const currentClerkUser = await clerk.users.getUser(user.clerk_user_id)
+        const existingPrivateMeta = currentClerkUser.privateMetadata || {}
         
         // Update Clerk metadata
         await clerk.users.updateUserMetadata(user.clerk_user_id, {
           privateMetadata: {
+            ...existingPrivateMeta,
             stripeCustomerId: customerId,
             plan: priceId,
             subscriptionId: subscription.id,
@@ -230,10 +241,13 @@ export async function POST(request: NextRequest) {
 
       if (user?.clerk_user_id) {
         const clerk = await clerkClient()
+        const currentClerkUser = await clerk.users.getUser(user.clerk_user_id)
+        const existingPrivateMeta = currentClerkUser.privateMetadata || {}
         
         // Clear subscription from Clerk metadata
         await clerk.users.updateUserMetadata(user.clerk_user_id, {
           privateMetadata: {
+            ...existingPrivateMeta,
             stripeCustomerId: customerId,
             plan: null,
             subscriptionId: null,
