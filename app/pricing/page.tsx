@@ -48,12 +48,8 @@ export default function PricingPage() {
       // Use Checkout Session for credits (custom success page)
       router.push(`/checkout/${CREDIT_PACK_PRICE}`)
     } else {
-      // Use Payment Links for subscriptions (external webhook works perfectly)
-      const plan = subscriptionPlans.find(p => p.id === selectedPlan)
-      if (plan) {
-        // Payment Links will redirect to /success/subscription (configured in Stripe)
-        window.location.href = plan.paymentLink
-      }
+      // Route to redirect page that adds user email to Payment Link
+      router.push(`/checkout/subscription/${selectedPlan}`)
     }
   }
 
