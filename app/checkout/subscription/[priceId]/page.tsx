@@ -18,7 +18,7 @@ const PAYMENT_LINKS: Record<string, string> = {
 export default function SubscriptionCheckoutPage() {
   const params = useParams()
   const router = useRouter()
-  const { isSignedIn, isLoaded } = useUser()
+  const { user, isSignedIn, isLoaded } = useUser()
   const priceId = params.priceId as string
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function SubscriptionCheckoutPage() {
     if (!isLoaded) return
 
     // Redirect to sign-in if not authenticated
-    if (!isSignedIn) {
+    if (!isSignedIn || !user) {
       router.push('/sign-in?redirect_url=' + encodeURIComponent(window.location.pathname))
       return
     }
@@ -40,11 +40,23 @@ export default function SubscriptionCheckoutPage() {
       return
     }
 
-    // Redirect to Stripe Payment Link
-    console.log('Redirecting to Stripe checkout:', paymentLink)
-    window.location.href = paymentLink
+    // Get user's email from Clerk
+    const userEmail = user.emailAddresses[0]?.emailAddress
 
-  }, [isLoaded, isSignedIn, priceId, router])
+    if (!userEmail) {
+      console.error('No email found for user')
+      router.push('/pricing?error=no_email')
+      return
+    }
+
+    // Add prefilled_email parameter to Payment Link
+    const checkoutUrl = `${paymentLink}?prefilled_email=${encodeURIComponent(userEmail)}&client_reference_id=${user.id}`
+
+    // Redirect to Stripe Payment Link with user's email
+    console.log('Redirecting to Stripe checkout:', checkoutUrl)
+    window.location.href = checkoutUrl
+
+  }, [isLoaded, isSignedIn, user, priceId, router])
 
   return (
     <div style={{
