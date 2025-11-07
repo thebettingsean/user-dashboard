@@ -396,14 +396,6 @@ export default function Home() {
       borderColor: 'rgba(217, 217, 217, 0.6)',
       background: 'linear-gradient(135deg, rgba(217, 217, 217, 0.15) 0%, rgba(217, 217, 217, 0.08) 100%)',
       component: <MatchupWidget /> 
-    },
-    { 
-      id: 'news', 
-      title: 'The Weekly Report', 
-      icon: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68de0a1f1cd5677fd1b26751_NEW%20WIDGET%20SVG%27S-2.svg',
-      borderColor: 'rgba(56, 182, 255, 0.6)',
-      background: 'linear-gradient(135deg, rgba(56, 182, 255, 0.15) 0%, rgba(56, 182, 255, 0.08) 100%)',
-      component: <NewsWidget /> 
     }
   ]
 
@@ -492,7 +484,7 @@ export default function Home() {
           {/* Credits Badge - directly under personalized headline */}
           <AICreditBadge onShowModal={() => setShowUnlockModal(true)} />
         </div>
-
+        
         {/* Divider line above AI section */}
         <div style={{ 
           width: '100%', 
@@ -605,14 +597,14 @@ export default function Home() {
                   {/* NFL Blueprint Card */}
                   <div 
                     onClick={() => nflBlueprintExists && handleBlueprintClick('nfl', 'Week 10', 'NFL Week 10')}
-                    style={{
+                  style={{ 
                       minWidth: '220px',
                       background: 'rgba(255, 255, 255, 0.04)',
                       backdropFilter: 'blur(20px)',
                       border: '0.5px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '10px',
                       padding: '0.75rem',
-                      display: 'flex',
+                    display: 'flex',
                       flexDirection: 'column' as const,
                       gap: '0.5rem',
                       transition: 'all 0.3s',
@@ -623,12 +615,12 @@ export default function Home() {
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                    justifyContent: 'space-between',
                       gap: '0.5rem'
                     }}>
                       <div style={{ 
                         display: 'flex',
-                        alignItems: 'center',
+                    alignItems: 'center',
                         gap: '0.5rem'
                       }}>
                         <div style={{ 
@@ -674,7 +666,7 @@ export default function Home() {
                               }}
                             />
                           ))}
-                        </div>
+                </div>
                       ) : (
                         <div style={{
                           display: 'flex',
@@ -697,9 +689,9 @@ export default function Home() {
                           }}>
                             5
                           </span>
-                        </div>
-                      )}
-                    </div>
+                  </div>
+                )}
+              </div>
 
                     {/* Row 2: Tagline */}
                     <div style={{ 
@@ -819,7 +811,7 @@ export default function Home() {
                           </span>
                         </div>
                       )}
-                    </div>
+          </div>
 
                     {/* Row 2: Tagline */}
                     <div style={{ 
@@ -1247,7 +1239,7 @@ export default function Home() {
                           {[1, 2, 3].map((bar) => (
                             <div
                               key={bar}
-                              style={{
+                  style={{ 
                                 width: '5px',
                                 height: '14px',
                                 borderRadius: '2px',
@@ -1294,9 +1286,9 @@ export default function Home() {
 
                     {/* Row 3: Date ................. (wand) Generate... */}
                     <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                       gap: '0.5rem'
                     }}>
                       <div style={{ 
@@ -1696,7 +1688,7 @@ export default function Home() {
                     <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
                       {widget.component}
                     </LockedWidget>
-              </div>
+                </div>
             ))}
               </div>
             )}
@@ -1812,11 +1804,6 @@ export default function Home() {
                 <MatchupWidget />
               </LockedWidget>
             </div>
-            <div style={{ minWidth: '380px' }}>
-              <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
-                <NewsWidget />
-              </LockedWidget>
-            </div>
               </div>
             )}
           </div>
@@ -1851,7 +1838,7 @@ export default function Home() {
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(255,255,255,0.2) transparent'
           }}>
-                <div style={{ minWidth: '380px' }}>
+            <div style={{ minWidth: '380px' }}>
                   <LockedWidget isLoggedIn={!!isSignedIn} hasSubscription={isSubscribed}>
                     <TopPropsWidget />
                   </LockedWidget>

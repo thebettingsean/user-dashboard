@@ -477,7 +477,7 @@ export default function TopInsiderPicks({ isCollapsible = true, defaultExpanded 
           gap: '0.75rem',
           marginBottom: '1rem'
         }}>
-          {picks.map((pick) => {
+          {picks.slice(0, 3).map((pick) => {
             const unlocked = isPickUnlocked(pick.id)
             const writeupExpanded = expandedWriteups.has(pick.id)
             const isUnlocking = unlocking === pick.id
