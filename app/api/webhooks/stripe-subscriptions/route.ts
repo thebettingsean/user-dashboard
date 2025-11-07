@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
           plan: priceId,
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
-          currentPeriodEnd: subscription.current_period_end,
-          cancelAtPeriodEnd: subscription.cancel_at_period_end
+          currentPeriodEnd: (subscription as any).current_period_end,
+          cancelAtPeriodEnd: (subscription as any).cancel_at_period_end
         }
       })
 
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
             stripe_customer_id: session.customer as string,
             access_level: 'full',
             subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
             is_premium: true
           })
           .eq('clerk_user_id', clerkUserId)
@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
             plan: priceId,
             subscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.current_period_end,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end
+            currentPeriodEnd: (subscription as any).current_period_end,
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end
           }
         })
 
