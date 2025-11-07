@@ -60,17 +60,6 @@ export default function Home() {
   const [creditsRemaining, setCreditsRemaining] = useState<number | 'unlimited'>(0)
   const { isLoading, isSubscribed, firstName: subFirstName } = useSubscription()
   
-  // DEBUG: Log subscription state
-  useEffect(() => {
-    console.log('🎯 PAGE.TSX - Subscription State:', {
-      isLoading,
-      isSubscribed,
-      subFirstName,
-      isSignedIn,
-      userId: user?.id
-    })
-  }, [isLoading, isSubscribed, subFirstName, isSignedIn, user?.id])
-  
   // Blueprint state
   const [nflBlueprintExists, setNflBlueprintExists] = useState(true)
   const [nbaBlueprintExists, setNbaBlueprintExists] = useState(true)
