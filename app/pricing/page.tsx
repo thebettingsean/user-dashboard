@@ -17,7 +17,7 @@ export default function PricingPage() {
     { 
       id: 'weekly', 
       price: '$29', 
-      period: '/week',
+      period: 'Weekly Sub',
       priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU',
       // Keep old checkout URL as fallback for now
       checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoo07WIhZOuSIJB8OGgVU'
@@ -25,14 +25,14 @@ export default function PricingPage() {
     { 
       id: 'monthly', 
       price: '$99', 
-      period: '/month',
+      period: 'Monthly Sub',
       priceId: 'price_1SIZoN07WIhZOuSIm8hTDjy4',
       checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoN07WIhZOuSIm8hTDjy4'
     },
     { 
       id: '6month', 
       price: '$299', 
-      period: '/6 months',
+      period: '6-Month Sub',
       priceId: 'price_1SIZp507WIhZOuSIFMzU7Kkm',
       checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZp507WIhZOuSIFMzU7Kkm'
     }
@@ -98,7 +98,7 @@ export default function PricingPage() {
             marginBottom: '0.5rem',
             lineHeight: '1.2'
           }}>
-            Add Credits or Upgrade
+            Get Credits or Subscribe
           </h1>
           <p style={{
             fontSize: '0.9rem',
@@ -221,90 +221,93 @@ export default function PricingPage() {
             {/* Subscription options */}
             <div style={{ marginBottom: '0.75rem' }}>
               {subscriptionPlans.map((plan) => (
-                <button
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    background: selectedPlan === plan.id ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    textAlign: 'left',
-                    marginBottom: '0.4rem',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedPlan !== plan.id) {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedPlan !== plan.id) {
-                      e.currentTarget.style.background = 'transparent'
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                      <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff' }}>{plan.price}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>{plan.period}</span>
-                      {plan.id === 'monthly' && (
-                        <span style={{
-                          marginLeft: '0.5rem',
-                          padding: '0.15rem 0.5rem',
-                          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                          borderRadius: '4px',
-                          fontSize: '0.65rem',
-                          fontWeight: '700',
-                          color: '#fff',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
-                          Popular
+                <div key={plan.id} style={{ marginBottom: '0.4rem' }}>
+                  <button
+                    onClick={() => setSelectedPlan(plan.id)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      background: selectedPlan === plan.id ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'left',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedPlan !== plan.id) {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedPlan !== plan.id) {
+                        e.currentTarget.style.background = 'transparent'
+                      }
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                        <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff' }}>{plan.price}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          / Unlimited
+                          <GiTwoCoins style={{ fontSize: '0.9rem', color: '#fbbf24' }} />
                         </span>
-                      )}
+                        {plan.id === 'monthly' && (
+                          <span style={{
+                            marginLeft: '0.5rem',
+                            padding: '0.15rem 0.5rem',
+                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                            borderRadius: '4px',
+                            fontSize: '0.65rem',
+                            fontWeight: '700',
+                            color: '#fff',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}>
+                            Popular
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
                     </div>
-                    <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
-                  </div>
-                </button>
+                  </button>
+                  
+                  {/* Features - shown directly under selected plan */}
+                  {selectedPlan === plan.id && (
+                    <div style={{
+                      paddingLeft: '0.75rem',
+                      paddingTop: '0.5rem',
+                      display: 'grid',
+                      gap: '0.4rem'
+                    }}>
+                      {['Unlimited Credits', 'Daily Insider Picks', 'All Premium Data', plan.period].map((feature) => (
+                        <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            background: 'rgba(59, 130, 246, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <div style={{
+                              width: '5px',
+                              height: '5px',
+                              borderRadius: '50%',
+                              background: '#3b82f6'
+                            }} />
+                          </div>
+                          <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-
-            {/* Features - only shown when subscription selected */}
-            {isSubscriptionSelected && (
-              <div style={{
-                paddingTop: '0.75rem',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                display: 'grid',
-                gap: '0.5rem'
-              }}>
-                {['Unlimited Credits', 'Daily Best Bets', 'All Premium Data'].map((feature) => (
-                  <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      background: 'rgba(59, 130, 246, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <div style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: '#3b82f6'
-                      }} />
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)' }}>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* CTA Button */}
