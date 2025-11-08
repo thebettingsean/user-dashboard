@@ -183,17 +183,22 @@ const DotGrid = ({
     buildGrid()
 
     let ro: ResizeObserver | null = null
-    if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
-      ro = new ResizeObserver(buildGrid)
-      if (wrapperRef.current) ro.observe(wrapperRef.current)
-    } else if (typeof window !== 'undefined') {
-      window.addEventListener('resize', buildGrid)
+    let useWindowListener = false
+
+    if (typeof window !== 'undefined') {
+      if ('ResizeObserver' in window) {
+        ro = new ResizeObserver(buildGrid)
+        if (wrapperRef.current) ro.observe(wrapperRef.current)
+      } else {
+        useWindowListener = true
+        window.addEventListener('resize', buildGrid)
+      }
     }
 
     return () => {
       if (ro) {
         ro.disconnect()
-      } else if (typeof window !== 'undefined') {
+      } else if (useWindowListener && typeof window !== 'undefined') {
         window.removeEventListener('resize', buildGrid)
       }
     }
