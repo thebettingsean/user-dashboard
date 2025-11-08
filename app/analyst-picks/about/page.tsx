@@ -248,13 +248,22 @@ export default function HeroNewPage() {
 
         <div className={styles.heroContainer}>
           <div className={styles.centralMessage}>
-            <div className={styles.glassBackground} />
-            <h1 className={styles.heroTitle}>
+            <h1 className={styles.heroTitleNew}>
               <DecryptedText text="We ❤️ the Sportsbooks" delay={300} />
-              <span className={styles.heroSubtitle}>
-                <DecryptedText text="Because we have the picks that beat them" delay={1500} />
+              <span className={styles.heroSubtitleNew}>
+                <DecryptedText text="Because we have the " delay={1500} />
+                <span className={styles.underlinedWord}>
+                  <DecryptedText text="picks" delay={1800} />
+                </span>
+                <DecryptedText text=" that beat them" delay={2000} />
               </span>
             </h1>
+            
+            {/* Live indicator */}
+            <div className={styles.liveIndicator}>
+              <span className={styles.blinkingDot} />
+              <span className={styles.liveText}>Today's picks are live</span>
+            </div>
           </div>
 
           <div className={styles.scrollIndicator}>
@@ -263,43 +272,70 @@ export default function HeroNewPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className={styles.ctaSection}>
-        <div className={styles.dotGridWrapper}>
-          <DotGrid
-            dotSize={12}
-            gap={28}
-            baseColor="#5227FF"
-            activeColor="#8b5cf6"
-            proximity={140}
-            speedTrigger={80}
-            shockRadius={220}
-            shockStrength={4}
-          />
-        </div>
-
-        <div className={styles.ctaGradientLine} />
-
-        <div className={styles.ctaContainer}>
-          <div className={styles.ctaGlassCard}>
-            <h2 className={styles.ctaText}>
-              Ready to start winning?
-            </h2>
-            <div className={`${styles.ctaButtonWrapper} ${ctaButtonVisible ? styles.ctaButtonVisible : ''}`}>
-              <button
-                className={styles.ctaButton}
-                onClick={() => router.push('/pricing')}
-              >
-                Get Started
-              </button>
+      {/* Two Cards Section */}
+      <section className={styles.twoCardsSection}>
+        {/* Card 1 - Picks & Scripts (slides from left) */}
+        <div className={styles.cardSlideLeft}>
+          <div className={styles.featureCard}>
+            <div className={styles.cardHeader}>
+              <h3>Picks & Scripts</h3>
+              <img 
+                src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/690f85eb2a1078147a2baa4e_ALL%20logos.svg" 
+                alt="Sports badges" 
+                className={styles.sportBadge}
+              />
+            </div>
+            <div className={styles.featureList}>
+              <div className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <span>Daily 60%+ system picks</span>
+              </div>
+              <div className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <span>Full game scripts</span>
+              </div>
+              <div className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <span>Top Props, 80%+</span>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className={styles.ctaLearnMore}>
-            <span>Learn more about our tools</span>
-            <span className={styles.ctaArrow}>↓</span>
+        {/* Card 2 - Start Winning (slides from right) */}
+        <div className={styles.cardSlideRight}>
+          <div className={styles.featureCard}>
+            <h3 className={styles.cardTitle}>Start winning.</h3>
+            <p className={styles.cardDescription}>
+              Our members actually make money using our service.
+            </p>
+            <div className={styles.testimonial}>
+              <p className={styles.quote}>
+                "With the Insiders by your side, the possibilities are endless."
+              </p>
+              <a 
+                href="https://www.laweekly.com/the-insiders-are-beginning-to-takeover-the-world-of-sports-betting/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.source}
+              >
+                — LA Weekly
+              </a>
+            </div>
+            <button
+              className={styles.startButton}
+              onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/pricing'}
+            >
+              Start Now
+            </button>
           </div>
         </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className={styles.howItWorksSimple}>
+        <h2 className={styles.sectionTitle}>How it works</h2>
+        <p className={styles.comingSoon}>(We will fill this in later!)</p>
       </section>
 
       {/* ChromaGrid Section */}
