@@ -91,39 +91,15 @@ export default function PricingPage() {
           textAlign: 'center',
           marginBottom: '2rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-            <h1 style={{
-              fontSize: '1.75rem',
-              fontWeight: '700',
-              color: '#fff',
-              margin: 0,
-              lineHeight: '1.2'
-            }}>
-              Get Credits or Subscribe
-            </h1>
-            <button
-              onClick={() => setShowInfoModal(true)}
-              style={{
-                padding: '0.4rem 1rem',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-              }}
-            >
-              Learn More
-            </button>
-          </div>
+          <h1 style={{
+            fontSize: '1.75rem',
+            fontWeight: '700',
+            color: '#fff',
+            marginBottom: '0.5rem',
+            lineHeight: '1.2'
+          }}>
+            Get Credits or Subscribe
+          </h1>
           <p style={{
             fontSize: '0.9rem',
             color: 'rgba(255, 255, 255, 0.5)',
@@ -373,6 +349,34 @@ export default function PricingPage() {
              selectedPlan === 'monthly' ? 'Continue for $99' :
              selectedPlan === '6month' ? 'Continue for $299' :
              'Select a Plan'}
+          </button>
+
+          {/* Learn More Button */}
+          <button
+            onClick={() => setShowInfoModal(true)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              marginTop: '1rem',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: 'rgba(255, 255, 255, 0.7)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+            }}
+          >
+            Learn More
           </button>
 
           {/* Footer note */}
