@@ -274,30 +274,35 @@ export default function HeroNewPage() {
 
       {/* Two Cards Section */}
       <section className={styles.twoCardsSection}>
-        {/* Card 1 - Picks & Scripts (slides from left) */}
+        {/* Card 1 - Expert Picks & Scripts (slides from left) */}
         <div className={styles.cardSlideLeft}>
           <div className={styles.featureCard}>
             <div className={styles.cardHeader}>
-              <h3>Picks & Scripts</h3>
+              <h3>Expert Picks & Full Game Scripts</h3>
               <img 
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/690f85eb2a1078147a2baa4e_ALL%20logos.svg" 
                 alt="Sports badges" 
                 className={styles.sportBadge}
               />
             </div>
-            <div className={styles.featureList}>
-              <div className={styles.featureItem}>
-                <span className={styles.checkIcon}>✓</span>
-                <span>Daily 60%+ system picks</span>
+            <div className={styles.cardContentLeft}>
+              <div className={styles.featureList}>
+                <div className={styles.featureItem}>
+                  <span className={styles.checkIcon}>✓</span>
+                  <span>Daily 60%+ system picks</span>
+                </div>
+                <div className={styles.featureItem}>
+                  <span className={styles.checkIcon}>✓</span>
+                  <span>Full game scripts</span>
+                </div>
+                <div className={styles.featureItem}>
+                  <span className={styles.checkIcon}>✓</span>
+                  <span>Top Props, 80%+</span>
+                </div>
               </div>
-              <div className={styles.featureItem}>
-                <span className={styles.checkIcon}>✓</span>
-                <span>Full game scripts</span>
-              </div>
-              <div className={styles.featureItem}>
-                <span className={styles.checkIcon}>✓</span>
-                <span>Top Props, 80%+</span>
-              </div>
+            </div>
+            <div className={styles.cardFooterRight}>
+              <p className={styles.miniTagline}>All records are tracked for transparency</p>
             </div>
           </div>
         </div>
@@ -305,29 +310,35 @@ export default function HeroNewPage() {
         {/* Card 2 - Start Winning (slides from right) */}
         <div className={styles.cardSlideRight}>
           <div className={styles.featureCard}>
-            <h3 className={styles.cardTitle}>Start winning.</h3>
-            <p className={styles.cardDescription}>
-              Our members actually make money using our service.
-            </p>
-            <div className={styles.testimonial}>
+            <div className={styles.cardTopLeft}>
+              <h3 className={styles.cardTitle}>Start Winning Today</h3>
+              <p className={styles.cardDescription}>
+                Our members actually profit.
+              </p>
+            </div>
+            
+            <div className={styles.testimonialNew}>
               <p className={styles.quote}>
                 "With the Insiders by your side, the possibilities are endless."
               </p>
-              <a 
-                href="https://www.laweekly.com/the-insiders-are-beginning-to-takeover-the-world-of-sports-betting/" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.source}
-              >
-                — LA Weekly
-              </a>
+              <div className={styles.laWeeklyBadge}>
+                <img 
+                  src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/690fb40d2e63b8d4b1a2df83_LA%20WEEKLY.svg" 
+                  alt="LA Weekly" 
+                  className={styles.laWeeklyLogo}
+                />
+              </div>
             </div>
-            <button
-              className={styles.startButton}
-              onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/pricing'}
-            >
-              Start Now
-            </button>
+
+            <div className={styles.ctaHorizontal}>
+              <span className={styles.ctaText}>Your path to profit</span>
+              <button
+                className={styles.ctaButton}
+                onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/pricing'}
+              >
+                →
+              </button>
+            </div>
           </div>
         </div>
       </section>
