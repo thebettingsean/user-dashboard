@@ -65,20 +65,23 @@ export default function PublicBettingSection() {
     async function fetchData() {
       setLoading(true)
       try {
-        // Fetch sport-specific data by passing sport parameter
-        const response = await fetch(`/api/widget-data/stats?sport=${selectedSport}`)
-        const widgetData = await response.json()
+        // Fetch from dedicated sport-specific endpoint
+        const response = await fetch(`/api/public-betting/${selectedSport}`)
+        const sportData = await response.json()
         
-        // Transform data based on selected type
+        console.log(`📊 Fetched ${selectedSport.toUpperCase()} data:`, sportData)
+        
+        // Filter based on selected type
+        let filteredData = []
         if (selectedType === 'most-public') {
-          setData(widgetData.mostPublic?.slice(0, 5) || [])
-        } else {
-          // Filter topTrends by type
-          const filtered = widgetData.topTrends?.filter((t: any) => 
-            selectedType === 'sharp-money' ? t.type === 'sharp-money' : t.type === 'vegas-backed'
-          ).slice(0, 5) || []
-          setData(filtered)
+          filteredData = sportData.mostPublic?.slice(0, 5) || []
+        } else if (selectedType === 'sharp-money') {
+          filteredData = sportData.sharpMoney?.slice(0, 5) || []
+        } else if (selectedType === 'vegas-backed') {
+          filteredData = sportData.vegasBacked?.slice(0, 5) || []
         }
+        
+        setData(filteredData)
       } catch (error) {
         console.error('Error fetching public betting data:', error)
         setData([])
@@ -124,34 +127,30 @@ export default function PublicBettingSection() {
             marginBottom: '1.5rem',
             flexWrap: 'wrap'
           }}>
-            {/* Sport Filter */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Sport Dropdown */}
+            <select
+              value={selectedSport}
+              onChange={(e) => setSelectedSport(e.target.value as Sport)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: '#fff',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
               {(['nfl', 'nba', 'cfb', 'nhl'] as Sport[]).map((sport) => (
-                <button
-                  key={sport}
-                  onClick={() => setSelectedSport(sport)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: selectedSport === sport 
-                      ? '1px solid rgba(255, 255, 255, 0.3)' 
-                      : '1px solid rgba(255, 255, 255, 0.1)',
-                    background: selectedSport === sport 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'rgba(255, 255, 255, 0.03)',
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
+                <option key={sport} value={sport} style={{ background: '#1a1a2e', color: '#fff' }}>
                   {sport.toUpperCase()}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
 
-            {/* Type Filter */}
+            {/* Type Filter Buttons */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setSelectedType('most-public')}
@@ -307,7 +306,7 @@ export default function PublicBettingSection() {
                     )}
 
                     {/* Sharp Money or Vegas Backed */}
-                    {selectedType !== 'most-public' && 'type' in item && (
+                    {selectedType !== 'most-public' && (
                       <>
                         <div style={{
                           display: 'flex',
@@ -348,26 +347,29 @@ export default function PublicBettingSection() {
                 ))}
               </div>
 
-              {/* View All Button */}
-              <a
-                href={widgetLinks.publicBetting}
-                style={{
-                  display: 'inline-block',
-                  marginTop: '1.5rem',
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(96, 165, 250, 0.1)',
-                  border: '1px solid rgba(96, 165, 250, 0.3)',
-                  borderRadius: '8px',
-                  color: '#60a5fa',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
-                  cursor: 'pointer'
-                }}
-              >
-                View All →
-              </a>
+              {/* View All Button - matches Top Insider Picks style */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                <a
+                  href={widgetLinks.publicBetting}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '8px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  View All →
+                </a>
+              </div>
             </>
           )}
         </div>
