@@ -1,6 +1,35 @@
 // lib/utils/dataAnalyzer.ts
 import { Game } from '../api/sportsData'
 
+// Helper to format game time (EST)
+function formatGameTime(gameDate: string): string {
+  const date = new Date(gameDate)
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/New_York'
+  })
+}
+
+// Helper to get odds for a specific bet type
+function getOddsForBetType(betType: string, publicMoney: PublicMoneyData): string {
+  if (betType.includes('moneyline_away')) {
+    return publicMoney.away_team_ml > 0 ? `+${publicMoney.away_team_ml}` : `${publicMoney.away_team_ml}`
+  } else if (betType.includes('moneyline_home')) {
+    return publicMoney.home_team_ml > 0 ? `+${publicMoney.home_team_ml}` : `${publicMoney.home_team_ml}`
+  } else if (betType.includes('spread_away')) {
+    return `${publicMoney.away_team_point_spread > 0 ? '+' : ''}${publicMoney.away_team_point_spread}`
+  } else if (betType.includes('spread_home')) {
+    return `${publicMoney.home_team_point_spread > 0 ? '+' : ''}${publicMoney.home_team_point_spread}`
+  } else if (betType.includes('over') || betType.includes('under')) {
+    return `-110` // Default odds for totals
+  }
+  return '-110'
+}
+
 // API structures
 interface SharpMoneyIndicator {
   bet_type: string
@@ -64,12 +93,16 @@ export interface MostPublicBet {
   label: string
   betsPct: number
   dollarsPct: number
+  gameTime?: string
+  odds?: string
 }
 
 export interface TopTrend {
   type: 'vegas-backed' | 'sharp-money'
   label: string
   value: string
+  gameTime?: string
+  odds?: string
 }
 
 export interface RefereeTrend {
@@ -142,7 +175,9 @@ export function findMostPublicBets(
     .map(bet => ({
       label: formatBetLabel(game, bet.type, publicMoney),
       betsPct: Math.round(bet.bets),
-      dollarsPct: Math.round(bet.dollars)
+      dollarsPct: Math.round(bet.dollars),
+      gameTime: formatGameTime(game.game_date),
+      odds: getOddsForBetType(bet.type, publicMoney)
     }))
   
   return publicBets
@@ -179,7 +214,9 @@ export function findTopTrends(
     trends.push({
       type: 'sharp-money',
         label,
-        value
+        value,
+        gameTime: formatGameTime(game.game_date),
+        odds: getOddsForBetType(topSharp.bet_type, publicMoney)
       })
     }
   }
@@ -198,7 +235,9 @@ export function findTopTrends(
     trends.push({
       type: 'vegas-backed',
         label,
-        value
+        value,
+        gameTime: formatGameTime(game.game_date),
+        odds: getOddsForBetType(topRLM.bet_type, publicMoney)
       })
     }
   }

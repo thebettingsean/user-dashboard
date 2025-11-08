@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaMoneyBillTransfer, FaDollarSign } from "react-icons/fa6"
+import { FaDollarSign } from "react-icons/fa6"
+import { PiMoneyWavy } from "react-icons/pi"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiPerspectiveDiceSixFacesFour } from "react-icons/gi"
 import { PiKnifeFill } from "react-icons/pi"
@@ -37,7 +38,7 @@ interface VegasBet {
   sport: string
 }
 
-type Sport = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+type Sport = 'nfl' | 'nba' | 'nhl' | 'cfb'
 type DataType = 'most-public' | 'sharp-money' | 'vegas-backed'
 
 export default function PublicBettingSection() {
@@ -107,19 +108,8 @@ export default function PublicBettingSection() {
           color: '#fff'
         }}
       >
-        <FaMoneyBillTransfer size={18} style={{ color: '#ffffff', opacity: 1 }} />
+        <PiMoneyWavy size={18} style={{ color: '#ffffff', opacity: 1 }} />
         Public Betting
-        <span style={{
-          fontSize: '0.7rem',
-          fontWeight: '600',
-          color: 'rgba(255, 255, 255, 0.5)',
-          background: 'rgba(255, 255, 255, 0.08)',
-          padding: '0.15rem 0.5rem',
-          borderRadius: '4px',
-          marginLeft: '0.5rem'
-        }}>
-          {today}
-        </span>
         <span style={{ marginLeft: 'auto' }}>
           {isOpen ? <TiMinusOutline size={24} /> : <GoPlusCircle size={24} />}
         </span>
@@ -136,7 +126,7 @@ export default function PublicBettingSection() {
           }}>
             {/* Sport Filter */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {(['nfl', 'nba', 'cfb', 'mlb', 'nhl'] as Sport[]).map((sport) => (
+              {(['nfl', 'nba', 'cfb', 'nhl'] as Sport[]).map((sport) => (
                 <button
                   key={sport}
                   onClick={() => setSelectedSport(sport)}
@@ -275,26 +265,43 @@ export default function PublicBettingSection() {
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '1rem',
+                            gap: '0.5rem',
                             marginLeft: 'auto'
                           }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <IoTicketOutline size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                              <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                                {item.betsPct}%
-                              </span>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              fontSize: '0.7rem',
+                              fontWeight: '600',
+                              color: '#10b981',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              borderRadius: '4px',
+                              padding: '2px 6px'
+                            }}>
+                              <IoTicketOutline size={12} />
+                              {item.betsPct}%
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <FaDollarSign size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                              <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                                {item.dollarsPct}%
-                              </span>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              fontSize: '0.7rem',
+                              fontWeight: '600',
+                              color: '#10b981',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              borderRadius: '4px',
+                              padding: '2px 6px'
+                            }}>
+                              <FaDollarSign size={12} />
+                              {item.dollarsPct}%
                             </div>
                           </div>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                          {/* Game time and odds would go here if we had that data */}
-                          {selectedSport.toUpperCase()}
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
+                          {item.gameTime} | {item.odds}
                         </div>
                       </>
                     )}
@@ -315,20 +322,25 @@ export default function PublicBettingSection() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.3rem',
-                            marginLeft: 'auto'
+                            marginLeft: 'auto',
+                            fontSize: '0.7rem',
+                            fontWeight: '600',
+                            color: '#ef4444',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '4px',
+                            padding: '2px 6px'
                           }}>
                             {selectedType === 'sharp-money' ? (
-                              <PiKnifeFill size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                              <PiKnifeFill size={12} />
                             ) : (
-                              <GiPerspectiveDiceSixFacesFour size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                              <GiPerspectiveDiceSixFacesFour size={12} />
                             )}
-                            <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                              {item.value}
-                            </span>
+                            {item.value}
                           </div>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                          {selectedSport.toUpperCase()}
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
+                          {item.gameTime} | {item.odds}
                         </div>
                       </>
                     )}
