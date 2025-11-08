@@ -191,7 +191,7 @@ const DotGrid = ({
         if (wrapperRef.current) ro.observe(wrapperRef.current)
       } else {
         useWindowListener = true
-        window.addEventListener('resize', buildGrid)
+        ;(window as Window).addEventListener('resize', buildGrid)
       }
     }
 
@@ -199,7 +199,7 @@ const DotGrid = ({
       if (ro) {
         ro.disconnect()
       } else if (useWindowListener && typeof window !== 'undefined') {
-        window.removeEventListener('resize', buildGrid)
+        ;(window as Window).removeEventListener('resize', buildGrid)
       }
     }
   }, [buildGrid])
