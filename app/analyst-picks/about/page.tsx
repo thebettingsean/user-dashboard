@@ -37,32 +37,10 @@ export default function AboutPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
+      background: 'linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%)',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Animated Background */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `
-          radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-          radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-          radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)
-        `,
-        pointerEvents: 'none',
-        animation: 'pulse 8s ease-in-out infinite'
-      }} />
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         
