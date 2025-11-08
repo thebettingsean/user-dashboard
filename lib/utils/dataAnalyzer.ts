@@ -1,10 +1,13 @@
 // lib/utils/dataAnalyzer.ts
 import { Game } from '../api/sportsData'
 
-// Helper to format game time (EST)
+// Helper to format game time (EST) - matches AI script time conversion
 function formatGameTime(gameDate: string): string {
-  const date = new Date(gameDate)
-  return date.toLocaleString('en-US', {
+  // Parse the UTC datetime string
+  const utcDate = new Date(gameDate)
+  
+  // Format in EST timezone
+  const formatter = new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -12,6 +15,8 @@ function formatGameTime(gameDate: string): string {
     hour12: true,
     timeZone: 'America/New_York'
   })
+  
+  return formatter.format(utcDate)
 }
 
 // Helper to get odds for a specific bet type

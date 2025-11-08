@@ -7,21 +7,29 @@ let cachedData: any = null
 let cacheTimestamp: number = 0
 const CACHE_TTL = 30 * 60 * 1000 // 30 minutes in milliseconds
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const now = Date.now()
+    // Get sport from query params
+    const { searchParams } = new URL(request.url)
+    const sport = searchParams.get('sport') as 'nfl' | 'nba' | 'nhl' | 'cfb' | null
     
-    // Return cached data if it's still fresh
-    if (cachedData && (now - cacheTimestamp) < CACHE_TTL) {
-      console.log('📦 Returning cached stats widget data')
-      return NextResponse.json(cachedData)
+    const now = Date.now()
+    const cacheKey = sport || 'default'
+    
+    // Simple cache per sport
+    if (!cachedData) cachedData = {}
+    
+    // Return cached data if it's still fresh for this sport
+    if (cachedData[cacheKey] && (now - cacheTimestamp) < CACHE_TTL) {
+      console.log(`📦 Returning cached stats widget data for ${sport || 'default'}`)
+      return NextResponse.json(cachedData[cacheKey])
     }
     
-    console.log('🔄 Fetching fresh stats widget data...')
-    const data = await getStatsWidgetData()
+    console.log(`🔄 Fetching fresh stats widget data for ${sport || 'default'}...`)
+    const data = sport ? await getStatsWidgetData(sport) : await getStatsWidgetData()
     
     // Update cache
-    cachedData = data
+    cachedData[cacheKey] = data
     cacheTimestamp = now
     
     return NextResponse.json(data)

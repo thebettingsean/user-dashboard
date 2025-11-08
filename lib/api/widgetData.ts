@@ -44,17 +44,21 @@ async function fetchPublicMoneyParallel(league: League, games: any[]) {
 }
 
 // Get data for the Public Betting widget
-export async function getStatsWidgetData(): Promise<StatsWidgetData> {
+export async function getStatsWidgetData(forcedLeague?: League): Promise<StatsWidgetData> {
   const dayOfWeek = new Date().getDay()
   console.log('\n=== STATS WIDGET DEBUG START ===')
   console.log('Current time:', new Date().toISOString())
   console.log('Day of week:', dayOfWeek, '(0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)')
   
-  const { primary, fallbacks } = getSportPriority()
-  console.log('Primary sport:', primary)
-  console.log('Fallback sports:', fallbacks)
-  
-  const leagues = [primary, ...fallbacks]
+  // If a specific league is requested, use it; otherwise use priority
+  const leagues = forcedLeague 
+    ? [forcedLeague] 
+    : (() => {
+        const { primary, fallbacks } = getSportPriority()
+        console.log('Primary sport:', primary)
+        console.log('Fallback sports:', fallbacks)
+        return [primary, ...fallbacks]
+      })()
   console.log('Will try leagues in order:', leagues)
   
   // OPTIMIZATION: Cache games and public money data across both phases
@@ -86,8 +90,8 @@ export async function getStatsWidgetData(): Promise<StatsWidgetData> {
       return dateA - dateB
     })
     
-    // OPTIMIZATION: Only fetch 3 games instead of 5, and do it in parallel (chronologically)
-    const gamesWithData = await fetchPublicMoneyParallel(league, sortedGames.slice(0, 3))
+    // Fetch up to 10 games for more comprehensive data
+    const gamesWithData = await fetchPublicMoneyParallel(league, sortedGames.slice(0, 10))
     publicMoneyCache.set(league, gamesWithData)
     
     return gamesWithData

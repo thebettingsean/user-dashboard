@@ -65,13 +65,11 @@ export default function PublicBettingSection() {
     async function fetchData() {
       setLoading(true)
       try {
-        // Fetch from stats widget API (same data source)
-        const response = await fetch('/api/widget-data/stats')
+        // Fetch sport-specific data by passing sport parameter
+        const response = await fetch(`/api/widget-data/stats?sport=${selectedSport}`)
         const widgetData = await response.json()
         
-        // Transform data based on selected type and sport
-        // For now, we'll use the existing data structure
-        // You can expand this to filter by sport later
+        // Transform data based on selected type
         if (selectedType === 'most-public') {
           setData(widgetData.mostPublic?.slice(0, 5) || [])
         } else {
@@ -327,9 +325,9 @@ export default function PublicBettingSection() {
                             marginLeft: 'auto',
                             fontSize: '0.7rem',
                             fontWeight: '600',
-                            color: '#ef4444',
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#fbbf24',
+                            background: 'rgba(251, 191, 36, 0.1)',
+                            border: '1px solid rgba(251, 191, 36, 0.3)',
                             borderRadius: '4px',
                             padding: '2px 6px'
                           }}>
