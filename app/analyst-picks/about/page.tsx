@@ -6,6 +6,9 @@ import Link from 'next/link'
 import DotGrid from '../../../components/hero/DotGrid'
 import { ChromaGrid } from '../../../components/hero/ChromaGrid'
 import styles from '../../../components/hero/hero-new.module.css'
+import { PiMoneyWavyBold } from "react-icons/pi"
+import { LuScrollText } from "react-icons/lu"
+import { MdAutoGraph } from "react-icons/md"
 
 // Decrypted Text Animation Component
 function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -277,8 +280,8 @@ export default function HeroNewPage() {
         {/* Card 1 - Expert Picks & Scripts (slides from left) */}
         <div className={styles.cardSlideLeft}>
           <div className={styles.featureCard}>
-            <div className={styles.cardHeader}>
-              <h3>Expert Picks & Full Game Scripts</h3>
+            <div className={styles.cardHeaderRow}>
+              <h3 className={styles.cardHeaderTitle}>Expert Picks & Scripts</h3>
               <img 
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/690f85eb2a1078147a2baa4e_ALL%20logos.svg" 
                 alt="Sports badges" 
@@ -288,15 +291,15 @@ export default function HeroNewPage() {
             <div className={styles.cardContentLeft}>
               <div className={styles.featureList}>
                 <div className={styles.featureItem}>
-                  <span className={styles.checkIcon}>✓</span>
+                  <PiMoneyWavyBold className={styles.featureIcon} />
                   <span>Daily 60%+ system picks</span>
                 </div>
                 <div className={styles.featureItem}>
-                  <span className={styles.checkIcon}>✓</span>
+                  <LuScrollText className={styles.featureIcon} />
                   <span>Full game scripts</span>
                 </div>
                 <div className={styles.featureItem}>
-                  <span className={styles.checkIcon}>✓</span>
+                  <MdAutoGraph className={styles.featureIcon} />
                   <span>Top Props, 80%+</span>
                 </div>
               </div>
