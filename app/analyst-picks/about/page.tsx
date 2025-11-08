@@ -2,312 +2,314 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { HiOutlineTrophy } from 'react-icons/hi2'
-import { FaWandMagicSparkles } from 'react-icons/fa6'
-import { GiTwoCoins } from 'react-icons/gi'
+import Link from 'next/link'
+import DotGrid from '../../../components/hero/DotGrid'
+import { ChromaGrid } from '../../../components/hero/ChromaGrid'
+import styles from '../../../components/hero/hero-new.module.css'
 
-export default function AboutPage() {
-  const router = useRouter()
-  const [visibleCards, setVisibleCards] = useState<number[]>([])
-  const card1Ref = useRef<HTMLDivElement>(null)
-  const card2Ref = useRef<HTMLDivElement>(null)
-  const card3Ref = useRef<HTMLDivElement>(null)
+// Decrypted Text Animation Component
+function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const [chars, setChars] = useState<string[]>([])
+  const [decrypted, setDecrypted] = useState<boolean[]>([])
 
-  // Scroll observer for individual card animations
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const cardIndex = parseInt(entry.target.getAttribute('data-card-index') || '0')
-            setVisibleCards(prev => [...new Set([...prev, cardIndex])])
-          }
+    const letters = text.split('')
+    setChars(letters)
+    setDecrypted(new Array(letters.length).fill(false))
+
+    const totalDuration = 2000
+    const delayPerChar = totalDuration / letters.length
+
+    letters.forEach((_, i) => {
+      setTimeout(() => {
+        setDecrypted((prev) => {
+          const newState = [...prev]
+          newState[i] = true
+          return newState
         })
+      }, delay + i * delayPerChar)
+    })
+  }, [text, delay])
+
+  return (
+    <span className={styles.decryptedText}>
+      {chars.map((char, i) => {
+        if (char === ' ') {
+          return <span key={i} className={styles.space}> </span>
+        }
+        return (
+          <span
+            key={i}
+            className={decrypted[i] ? styles.decrypted : ''}
+            style={{
+              color: decrypted[i] ? '#ffffff' : 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            {decrypted[i] ? char : String.fromCharCode(33 + Math.floor(Math.random() * 94))}
+          </span>
+        )
+      })}
+    </span>
+  )
+}
+
+// ChromaGrid demo data
+const chromaGridDemo = [
+  {
+    image: '',
+    title: 'Expert Picks',
+    subtitle: 'AI-powered betting insights',
+    borderColor: '#F59E0B',
+    gradient: 'linear-gradient(145deg, rgba(245, 158, 11, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'View Expert Picks',
+    buttonUrl: '/analyst-picks',
+    buttonImage: '',
+    expertPicks: [
+      {
+        pickText: 'Chiefs ML',
+        logo: 'https://a.espncdn.com/guid/f68f2343-8ceb-7a02-740d-af6338be21d2/logos/primary_logo_on_primary_color.png',
+        odds: '-125',
+        bookmaker: 'DraftKings',
+        unit: '1u'
       },
-      { threshold: 0.3 }
-    )
+      {
+        pickText: 'Lakers +5',
+        logo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/lal.png',
+        odds: '+105',
+        bookmaker: 'FanDuel',
+        unit: '2u'
+      },
+      {
+        pickText: 'Anytime TD',
+        logo: 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4241389.png',
+        odds: '-110',
+        bookmaker: 'BetMGM',
+        unit: '1u'
+      }
+    ]
+  },
+  {
+    image: '',
+    title: 'Public Betting',
+    subtitle: 'Real-time line movements',
+    borderColor: '#10B981',
+    gradient: 'linear-gradient(210deg, rgba(16, 185, 129, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'Track Public Betting',
+    buttonUrl: '/',
+    buttonImage: '',
+    bettingSplits: {
+      bets: {
+        away: 24,
+        home: 76
+      },
+      money: {
+        away: 48,
+        home: 52
+      },
+      awayTeamLogo: 'https://a.espncdn.com/i/teamlogos/nba/500/bos.png',
+      homeTeamLogo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/bkn.png'
+    }
+  },
+  {
+    image: '',
+    title: 'Matchup Data',
+    subtitle: 'Deep team analytics',
+    borderColor: '#06B6D4',
+    gradient: 'linear-gradient(165deg, rgba(6, 182, 212, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'Explore Matchups',
+    buttonUrl: '/',
+    buttonImage: '',
+    matchupData: {
+      homeTeam: 'Ravens',
+      awayTeam: 'Chargers',
+      homeTeamLogo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/bal.png',
+      awayTeamLogo: 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/lac.png',
+      stats: [
+        { label: 'Total Points', home: 21.9, away: 22.7, homeBarPercent: 40, awayBarPercent: 60 },
+        { label: 'Rushing Yds', home: 119.8, away: 102.8, homeBarPercent: 54, awayBarPercent: 46 }
+      ],
+      homeColor: '#8B5CF6',
+      awayColor: '#06B6D4'
+    }
+  },
+  {
+    image: '',
+    title: 'Referee Trends',
+    subtitle: 'Statistical insights',
+    borderColor: '#666666',
+    gradient: 'linear-gradient(195deg, rgba(102, 102, 102, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'See Referee Stats',
+    buttonUrl: '/',
+    buttonImage: '',
+    refereeTrends: {
+      refereeName: 'John Hussey',
+      refereeImage: 'https://i.ibb.co/cKGdzSXf/Untitled-1.png',
+      timePeriod: 'Last 5 Years',
+      trends: [
+        { label: 'Home Teams ATS', wins: 41, losses: 22, percentage: 65.1 },
+        { label: 'Home Dogs ATS', wins: 12, losses: 4, percentage: 75.0 },
+        { label: 'Div Home Teams ATS', wins: 15, losses: 8, percentage: 65.2 },
+        { label: 'Conf Home Teams ATS', wins: 29, losses: 13, percentage: 69.0 }
+      ]
+    }
+  },
+  {
+    image: '',
+    title: 'Prop Tools',
+    subtitle: 'Player & team analysis',
+    borderColor: '#8B5CF6',
+    gradient: 'linear-gradient(225deg, rgba(139, 92, 246, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'Use Prop Tools',
+    buttonUrl: '/prop-parlay-tool',
+    buttonImage: '',
+    propTools: {
+      playerProps: [
+        {
+          playerImage: 'https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png',
+          playerName: 'Josh Allen',
+          teamAbbreviation: 'BUF',
+          propBet: 'Rush Yds o24.5',
+          odds: '-188'
+        },
+        {
+          playerImage: 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4241416.png',
+          playerName: 'Chuba Hubbard',
+          teamAbbreviation: 'CAR',
+          propBet: 'Rush Atts o9.5',
+          odds: '-203'
+        },
+        {
+          playerImage: 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4569987.png',
+          playerName: 'Jalen Warren',
+          teamAbbreviation: 'PIT',
+          propBet: 'Rec Yds o9.5',
+          odds: '-280'
+        }
+      ],
+      overallOdds: '+210',
+      hitRate: 100
+    }
+  },
+  {
+    image: '',
+    title: 'Fantasy Football',
+    subtitle: 'Lineup optimization',
+    borderColor: '#EF4444',
+    gradient: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(0, 0, 0, 0.3))',
+    buttonText: 'Optimize Lineups',
+    buttonUrl: '/fantasy',
+    buttonImage: '',
+    fantasyData: {
+      players: [
+        {
+          playerImage: 'https://a.espncdn.com/i/headshots/nfl/players/full/4262921.png',
+          playerName: 'J. Jefferson',
+          fantasyPoints: 18.8,
+          borderColor: '#666666'
+        },
+        {
+          playerImage: 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4430878.png',
+          playerName: 'J. Njigba',
+          fantasyPoints: 19.8,
+          borderColor: '#6EE7B7'
+        }
+      ]
+    }
+  }
+]
 
-    if (card1Ref.current) observer.observe(card1Ref.current)
-    if (card2Ref.current) observer.observe(card2Ref.current)
-    if (card3Ref.current) observer.observe(card3Ref.current)
+export default function HeroNewPage() {
+  const router = useRouter()
+  const [ctaButtonVisible, setCtaButtonVisible] = useState(false)
 
-    return () => observer.disconnect()
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCtaButtonVisible(true)
+    }, 1500)
+    return () => clearTimeout(timer)
   }, [])
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        
-        {/* Hero Section - Full Screen */}
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '2rem'
-        }}>
-          <div>
-            <h1 style={{
-              fontSize: 'clamp(2.5rem, 10vw, 5rem)',
-              fontWeight: '900',
-              lineHeight: 1.1,
-              marginBottom: '1rem',
-              background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.9) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.03em'
-            }}>
-              We ❤️ the Sportsbooks
-            </h1>
-            
-            <h2 style={{
-              fontSize: 'clamp(1.75rem, 6vw, 3.5rem)',
-              fontWeight: '800',
-              lineHeight: 1.2,
-              color: 'rgba(255, 255, 255, 0.95)',
-              letterSpacing: '-0.02em'
-            }}>
-              Because we have the picks<br />that beat them
-            </h2>
-          </div>
-        </div>
-
-        {/* Cards Section - Vertical Stack */}
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem 1rem',
-          gap: '2rem',
-          maxWidth: '900px',
-          margin: '0 auto'
-        }}>
-          
-          {/* Card 1 - Daily Insider Picks (Slide from LEFT) */}
-          <div
-            ref={card1Ref}
-            data-card-index="1"
-            style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              padding: '2rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.5rem',
-              opacity: visibleCards.includes(1) ? 1 : 0,
-              transform: visibleCards.includes(1) ? 'translateX(0)' : 'translateX(-100px)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              flexWrap: 'wrap'
-            }}
-          >
-            <div style={{
-              width: '70px',
-              height: '70px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 8px 30px rgba(251, 191, 36, 0.3)'
-            }}>
-              <HiOutlineTrophy size={36} style={{ color: '#fff' }} />
-            </div>
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                <h3 style={{
-                  fontSize: '1.75rem',
-                  fontWeight: '800',
-                  color: '#fff',
-                  margin: 0
-                }}>
-                  Daily Insider Picks
-                </h3>
-                <span style={{
-                  padding: '0.3rem 0.75rem',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  fontWeight: '700',
-                  color: '#10b981'
-                }}>
-                  60%+
-                </span>
-              </div>
-              <p style={{
-                fontSize: '1rem',
-                color: 'rgba(255, 255, 255, 0.7)',
-                lineHeight: 1.5,
-                margin: 0
-              }}>
-                Curated plays from professional analysts with detailed reasoning
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2 - Game Scripts (Slide from RIGHT) */}
-          <div
-            ref={card2Ref}
-            data-card-index="2"
-            style={{
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              padding: '2rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.5rem',
-              opacity: visibleCards.includes(2) ? 1 : 0,
-              transform: visibleCards.includes(2) ? 'translateX(0)' : 'translateX(100px)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: '0.2s',
-              flexWrap: 'wrap'
-            }}
-          >
-            <div style={{
-              width: '70px',
-              height: '70px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 8px 30px rgba(167, 139, 250, 0.3)'
-            }}>
-              <FaWandMagicSparkles size={32} style={{ color: '#fff' }} />
-            </div>
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                <h3 style={{
-                  fontSize: '1.75rem',
-                  fontWeight: '800',
-                  color: '#fff',
-                  margin: 0
-                }}>
-                  Game Scripts
-                </h3>
-                <span style={{
-                  padding: '0.3rem 0.75rem',
-                  background: 'rgba(167, 139, 250, 0.15)',
-                  border: '1px solid rgba(167, 139, 250, 0.3)',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  fontWeight: '700',
-                  color: '#a78bfa'
-                }}>
-                  30+ data points
-                </span>
-              </div>
-              <p style={{
-                fontSize: '1rem',
-                color: 'rgba(255, 255, 255, 0.7)',
-                lineHeight: 1.5,
-                margin: 0
-              }}>
-                Everything you need to know about any game you're interested in
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3 - Sign Up CTA (Slide from BOTTOM) */}
-          <div
-            ref={card3Ref}
-            data-card-index="3"
-            style={{
-              width: '100%',
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '20px',
-              padding: '2.5rem 2rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1.5rem',
-              opacity: visibleCards.includes(3) ? 1 : 0,
-              transform: visibleCards.includes(3) ? 'translateY(0)' : 'translateY(100px)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: '0.4s',
-              textAlign: 'center'
-            }}
-          >
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 30px rgba(16, 185, 129, 0.4)'
-            }}>
-              <GiTwoCoins size={42} style={{ color: '#fff' }} />
-            </div>
-            <div>
-              <h3 style={{
-                fontSize: '2rem',
-                fontWeight: '900',
-                marginBottom: '0.75rem',
-                color: '#fff'
-              }}>
-                Start Earning ASAP
-              </h3>
-              <p style={{
-                fontSize: '1.1rem',
-                fontWeight: '600',
-                color: 'rgba(255, 255, 255, 0.9)',
-                margin: 0
-              }}>
-                Unlock picks, scripts & more
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/pricing')}
-              style={{
-                padding: '1.1rem 3rem',
-                fontSize: '1.2rem',
-                fontWeight: '700',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.4)',
-                transition: 'all 0.2s',
-                marginTop: '0.5rem'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 6px 30px rgba(16, 185, 129, 0.5)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(16, 185, 129, 0.4)'
-              }}
-            >
-              Sign Up Now
-            </button>
-          </div>
-
-        </div>
-
+    <div className={styles.heroNewPage}>
+      {/* Gradient Orbs */}
+      <div className={styles.gradientOrbs}>
+        <div className={styles.orb1} />
+        <div className={styles.orb2} />
+        <div className={styles.orb3} />
+        <div className={styles.orb4} />
       </div>
+
+      {/* Hero Section */}
+      <section className={styles.heroSection}>
+        {/* Gradient streaks */}
+        <div className={styles.heroGradientLine} data-direction="left" data-position="high" />
+        <div className={styles.heroGradientLine} data-direction="right" data-position="mid" />
+        <div className={styles.heroGradientLine} data-direction="left" data-position="low" />
+
+        <div className={styles.heroContainer}>
+          <div className={styles.centralMessage}>
+            <div className={styles.glassBackground} />
+            <h1 className={styles.heroTitle}>
+              <DecryptedText text="We ❤️ the Sportsbooks" delay={300} />
+              <span className={styles.heroSubtitle}>
+                <DecryptedText text="Because we have the picks that beat them" delay={1500} />
+              </span>
+            </h1>
+          </div>
+
+          <div className={styles.scrollIndicator}>
+            <div className={styles.scrollArrow}>↓</div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className={styles.ctaSection}>
+        <div className={styles.dotGridWrapper}>
+          <DotGrid
+            dotSize={12}
+            gap={28}
+            baseColor="#5227FF"
+            activeColor="#8b5cf6"
+            proximity={140}
+            speedTrigger={80}
+            shockRadius={220}
+            shockStrength={4}
+          />
+        </div>
+
+        <div className={styles.ctaGradientLine} />
+
+        <div className={styles.ctaContainer}>
+          <div className={styles.ctaGlassCard}>
+            <h2 className={styles.ctaText}>
+              Ready to start winning?
+            </h2>
+            <div className={`${styles.ctaButtonWrapper} ${ctaButtonVisible ? styles.ctaButtonVisible : ''}`}>
+              <button
+                className={styles.ctaButton}
+                onClick={() => router.push('/pricing')}
+              >
+                Get Started
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.ctaLearnMore}>
+            <span>Learn more about our tools</span>
+            <span className={styles.ctaArrow}>↓</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ChromaGrid Section */}
+      <section className={styles.chromaGridSection}>
+        <h2 className={styles.chromaGridHeader}>Everything You Need to Win</h2>
+        <p className={styles.chromaGridSubheader}>
+          Access expert picks, real-time data, and advanced analytics all in one place
+        </p>
+        <ChromaGrid items={chromaGridDemo} columns={3} />
+      </section>
     </div>
   )
 }
