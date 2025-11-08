@@ -53,7 +53,9 @@ export default function PublicBettingSection() {
   // Set default sport based on priority on mount
   useEffect(() => {
     const priority = getSportPriority()
-    setSelectedSport(priority.primary)
+    // Filter out MLB since we removed it from our sport list
+    const validSport = (priority.primary === 'mlb' ? 'nfl' : priority.primary) as Sport
+    setSelectedSport(validSport)
   }, [])
 
   // Fetch data when filters change
