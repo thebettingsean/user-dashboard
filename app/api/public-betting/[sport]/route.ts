@@ -12,10 +12,11 @@ const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
 
 export async function GET(
   request: Request,
-  { params }: { params: { sport: string } }
+  { params }: { params: Promise<{ sport: string }> }
 ) {
   try {
-    const sport = params.sport.toLowerCase() as League
+    const { sport: sportParam } = await params
+    const sport = sportParam.toLowerCase() as League
     
     // Validate sport
     if (!['nfl', 'nba', 'nhl', 'cfb'].includes(sport)) {
@@ -121,7 +122,7 @@ export async function GET(
 
     return NextResponse.json(responseData)
   } catch (error) {
-    console.error(`Error fetching ${params.sport} public betting data:`, error)
+    console.error(`Error fetching public betting data:`, error)
     return NextResponse.json(
       { error: 'Failed to fetch public betting data' },
       { status: 500 }
