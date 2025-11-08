@@ -249,7 +249,7 @@ export default function PricingPage() {
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
                         <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff' }}>{plan.price}</span>
                         <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                          / Unlimited
+                          / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'} - unlimited
                           <GiTwoCoins style={{ fontSize: '0.9rem', color: '#fbbf24' }} />
                         </span>
                         {plan.id === 'monthly' && (
@@ -280,7 +280,7 @@ export default function PricingPage() {
                       display: 'grid',
                       gap: '0.4rem'
                     }}>
-                      {['Unlimited Credits', 'Daily Insider Picks', 'All Premium Data', plan.period].map((feature) => (
+                      {['Unlimited Credits', 'Daily Insider Picks', 'All Premium Data'].map((feature) => (
                         <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <div style={{
                             width: '14px',
