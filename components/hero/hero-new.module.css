@@ -2628,10 +2628,10 @@
 
 /* Two Cards Section */
 .twoCardsSection {
-  padding: 6rem 2rem;
+  padding: 4rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -2664,12 +2664,12 @@
   -webkit-backdrop-filter: blur(30px) saturate(180%);
   border: 0.5px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  padding: 2.5rem;
+  padding: 2rem;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  min-height: 400px;
+  min-height: 380px;
 }
 
 .featureCard:hover {
@@ -2699,7 +2699,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   gap: 1rem;
 }
 
@@ -2722,14 +2724,15 @@
 .cardContentLeft {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-bottom: 1.5rem;
 }
 
 .featureList {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -2775,18 +2778,21 @@
 }
 
 .cardTopLeft {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cardTitle {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-style: italic;
   color: #ffffff;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .cardDescription {
-  font-size: 1.125rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   margin: 0;
   line-height: 1.6;
@@ -2795,17 +2801,17 @@
 .testimonialNew {
   background: rgba(255, 255, 255, 0.03);
   border-left: 4px solid #3b82f6;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 12px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex: 1;
 }
 
 .quote {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-style: italic;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
   line-height: 1.6;
 }
 
@@ -2913,10 +2919,17 @@
     flex-direction: row;
     align-items: center;
     gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
   }
 
   .cardHeaderTitle {
     font-size: 1.1rem;
+  }
+
+  .cardTopLeft {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
   }
 
   .sportBadge {
