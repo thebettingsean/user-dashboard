@@ -90,15 +90,6 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
           >
             Get Credits or Subscribe
           </h2>
-          <p
-            style={{
-              fontSize: '0.9rem',
-              color: 'rgba(255, 255, 255, 0.5)',
-              margin: '0 auto'
-            }}
-          >
-            Get instant access to AI scripts, expert picks, and advanced analytics
-          </p>
         </div>
 
         <div>
@@ -286,23 +277,6 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                           / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'} - unlimited
                           <GiTwoCoins style={{ fontSize: '0.9rem', color: '#fbbf24' }} />
                         </span>
-                        {plan.id === 'monthly' && (
-                          <span
-                            style={{
-                              marginLeft: '0.5rem',
-                              padding: '0.15rem 0.5rem',
-                              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                              borderRadius: '4px',
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                              color: '#fff',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px'
-                            }}
-                          >
-                            TOP
-                          </span>
-                        )}
                       </div>
                       <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
                     </div>
