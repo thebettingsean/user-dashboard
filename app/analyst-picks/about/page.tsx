@@ -9,6 +9,9 @@ import styles from '../../../components/hero/hero-new.module.css'
 import { PiMoneyWavyBold } from "react-icons/pi"
 import { LuScrollText } from "react-icons/lu"
 import { MdAutoGraph } from "react-icons/md"
+import { BsLightningCharge } from "react-icons/bs"
+import { IoLogoReact } from "react-icons/io5"
+import { GiReceiveMoney } from "react-icons/gi"
 
 // Decrypted Text Animation Component
 function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -346,38 +349,47 @@ export default function HeroNewPage() {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* What to Expect Section */}
       <section className={styles.howItWorksNew}>
-        <h2 className={styles.howItWorksTitle}>How it works</h2>
+        <h2 className={styles.howItWorksTitle}>What to Expect</h2>
         
         <div className={styles.howItWorksGrid}>
-          {/* Box 1 - Expert Picks */}
-          <div className={styles.howItWorksCard}>
-            <h3 className={styles.howItWorksCardTitle}>Expert Picks</h3>
+          {/* Box 1 - Expert Picks (Gold) */}
+          <div className={`${styles.howItWorksCard} ${styles.howItWorksCardGold}`}>
+            <div className={styles.howItWorksCardHeader}>
+              <h3 className={styles.howItWorksCardTitle}>Expert Picks</h3>
+              <BsLightningCharge className={styles.howItWorksCardIcon} style={{ color: '#fbbf24' }} />
+            </div>
             <p className={styles.howItWorksCardTagline}>From winning bettors</p>
-            <ul className={styles.howItWorksList}>
+            <ul className={`${styles.howItWorksList} ${styles.howItWorksListGold}`}>
               <li>Daily picks + analysis</li>
               <li>All sports covered</li>
               <li>Turn on/off notifications</li>
             </ul>
           </div>
 
-          {/* Box 2 - Game Scripts */}
-          <div className={styles.howItWorksCard}>
-            <h3 className={styles.howItWorksCardTitle}>Game Scripts</h3>
+          {/* Box 2 - Game Scripts (Blue) */}
+          <div className={`${styles.howItWorksCard} ${styles.howItWorksCardBlue}`}>
+            <div className={styles.howItWorksCardHeader}>
+              <h3 className={styles.howItWorksCardTitle}>Game Scripts</h3>
+              <IoLogoReact className={styles.howItWorksCardIcon} style={{ color: '#3b82f6' }} />
+            </div>
             <p className={styles.howItWorksCardTagline}>Everything about the game</p>
-            <ul className={styles.howItWorksList}>
+            <ul className={`${styles.howItWorksList} ${styles.howItWorksListBlue}`}>
               <li>Claude AI engine → our data.</li>
               <li>30+ data points each script.</li>
               <li>Analyst picks mixed in!</li>
             </ul>
           </div>
 
-          {/* Box 3 - The Results */}
-          <div className={styles.howItWorksCard}>
-            <h3 className={styles.howItWorksCardTitle}>The Results</h3>
+          {/* Box 3 - The Results (Green) */}
+          <div className={`${styles.howItWorksCard} ${styles.howItWorksCardGreen}`}>
+            <div className={styles.howItWorksCardHeader}>
+              <h3 className={styles.howItWorksCardTitle}>The Results</h3>
+              <GiReceiveMoney className={styles.howItWorksCardIcon} style={{ color: '#10b981' }} />
+            </div>
             <p className={styles.howItWorksCardTagline}>Consistent growth</p>
-            <ul className={styles.howItWorksList}>
+            <ul className={`${styles.howItWorksList} ${styles.howItWorksListGreen}`}>
               <li>Deep knowledge about all games.</li>
               <li>Daily wins, monthly growth.</li>
               <li>Constant profits, no questions.</li>
