@@ -12,6 +12,7 @@ import { MdAutoGraph } from "react-icons/md"
 import { BsLightningCharge } from "react-icons/bs"
 import { IoLogoReact } from "react-icons/io5"
 import { GiReceiveMoney } from "react-icons/gi"
+import { FaHeart } from "react-icons/fa"
 
 // Decrypted Text Animation Component
 function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -255,7 +256,14 @@ export default function HeroNewPage() {
         <div className={styles.heroContainer}>
           <div className={styles.centralMessage}>
             <h1 className={styles.heroTitleNew}>
-              <DecryptedText text="We ❤️ the Sportsbooks" delay={300} />
+              <span className={styles.heroTitleDesktop}>
+                <DecryptedText text="We ❤️ the Sportsbooks" delay={300} />
+              </span>
+              <span className={styles.heroTitleMobile}>
+                <DecryptedText text="We " delay={300} />
+                <FaHeart className={styles.heroHeart} />
+                <DecryptedText text=" the Sportsbooks" delay={600} />
+              </span>
               <span className={styles.heroSubtitleNew}>
                 <DecryptedText text="Because we have the " delay={1500} />
                 <span className={styles.underlinedWord}>

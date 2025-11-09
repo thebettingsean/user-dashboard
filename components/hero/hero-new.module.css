@@ -379,6 +379,21 @@
   text-align: center;
 }
 
+.heroTitleDesktop {
+  display: inline;
+}
+
+.heroTitleMobile {
+  display: none;
+}
+
+.heroHeart {
+  display: inline-block;
+  color: #ef4444;
+  vertical-align: middle;
+  margin: 0 0.25rem;
+}
+
 .heroSubtitleNew {
   display: block;
   margin-top: 1rem;
@@ -2971,9 +2986,10 @@
 
 .howItWorksCardHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 0.5rem;
+  gap: 1rem;
 }
 
 .howItWorksCardTitle {
@@ -2981,12 +2997,14 @@
   font-weight: 700;
   color: #ffffff;
   margin: 0;
+  flex: 1;
 }
 
 .howItWorksCardIcon {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+  margin-top: 0.25rem;
 }
 
 .howItWorksCardTagline {
@@ -3034,6 +3052,26 @@
 }
 
 @media (max-width: 768px) {
+  .heroTitleNew {
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+  }
+
+  .heroTitleDesktop {
+    display: none;
+  }
+
+  .heroTitleMobile {
+    display: inline;
+  }
+
+  .heroHeart {
+    font-size: 0.9em;
+  }
+
+  .heroSubtitleNew {
+    font-size: clamp(1.25rem, 4.5vw, 2rem);
+  }
+
   .twoCardsSection {
     padding: 4rem 1.5rem;
     gap: 1.5rem;
