@@ -12,7 +12,8 @@ import { MdAutoGraph } from "react-icons/md"
 import { BsLightningCharge } from "react-icons/bs"
 import { IoLogoReact } from "react-icons/io5"
 import { GiReceiveMoney } from "react-icons/gi"
-import { FaHeart } from "react-icons/fa"
+import { FaHeart, FaInstagram } from "react-icons/fa"
+import { FaXTwitter } from "react-icons/fa6"
 
 // Decrypted Text Animation Component
 function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -384,7 +385,7 @@ export default function HeroNewPage() {
             </div>
             <p className={styles.howItWorksCardTagline}>Everything about the game</p>
             <ul className={`${styles.howItWorksList} ${styles.howItWorksListBlue}`}>
-              <li>Claude AI engine → our data.</li>
+              <li>Our data → Claude Engine.</li>
               <li>30+ data points each script.</li>
               <li>Analyst picks mixed in!</li>
             </ul>
@@ -402,6 +403,137 @@ export default function HeroNewPage() {
               <li>Daily wins, monthly growth.</li>
               <li>Constant profits, no questions.</li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section className={styles.reviewsSection}>
+        <div className={styles.reviewsReel}>
+          <div className={styles.reviewsTrack}>
+            {/* Review 1 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"The picks have been ridiculously great"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Clayton W</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"Game scripts help a ton"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Chris K</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 3 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"I have genuinely grown so much as a bettor"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Ryan S</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 4 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"My entire perspective on betting changed when i joined"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Connor M</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 5 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"The Scripts go into so much detail, it's nuts"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Caden G</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 6 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"These guys are seriously sharp"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Harrison R</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 7 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"I will be subbed for life"</p>
+              <div className={styles.reviewAuthor}>
+                <span>John B</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 8 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"I'm genuinely impressed with the service these guys provide"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Hal W</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 9 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"Used the credits, loved it, got the unlimited"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Austin Q</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 10 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"The data is great, picks are better, and the scripts put it all together"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Trevan M</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Review 11 */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"NFL sunday's have been an absolute blessing"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Saurav B</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            {/* Duplicate for seamless loop */}
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"The picks have been ridiculously great"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Clayton W</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"Game scripts help a ton"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Chris K</span>
+                <FaXTwitter className={styles.reviewIcon} />
+              </div>
+            </div>
+
+            <div className={styles.reviewCard}>
+              <p className={styles.reviewText}>"I have genuinely grown so much as a bettor"</p>
+              <div className={styles.reviewAuthor}>
+                <span>Ryan S</span>
+                <FaInstagram className={styles.reviewIcon} />
+              </div>
+            </div>
           </div>
         </div>
       </section>

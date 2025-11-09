@@ -2993,18 +2993,19 @@
 }
 
 .howItWorksCardTitle {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
   flex: 1;
+  line-height: 1.2;
 }
 
 .howItWorksCardIcon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
-  margin-top: 0.25rem;
+  margin-top: 0;
 }
 
 .howItWorksCardTagline {
@@ -3179,6 +3180,97 @@
 
   .howItWorksCardTitle {
     font-size: 1.25rem;
+  }
+
+  .howItWorksCardIcon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Reviews Section */
+.reviewsSection {
+  padding: 4rem 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.reviewsReel {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.reviewsTrack {
+  display: flex;
+  gap: 1.5rem;
+  animation: scroll 40s linear infinite;
+  width: fit-content;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.reviewCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  min-width: 300px;
+  max-width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.reviewCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  transform: translateY(-4px);
+}
+
+.reviewText {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
+}
+
+.reviewAuthor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: auto;
+}
+
+.reviewIcon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .reviewCard {
+    min-width: 280px;
+    max-width: 280px;
+    padding: 1.25rem;
+  }
+
+  .reviewsTrack {
+    gap: 1rem;
   }
 }
 
