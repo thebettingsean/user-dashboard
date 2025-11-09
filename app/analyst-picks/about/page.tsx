@@ -339,7 +339,7 @@ export default function HeroNewPage() {
                 className={styles.ctaButton}
                 onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/pricing'}
               >
-                →
+                Get Started
               </button>
             </div>
           </div>

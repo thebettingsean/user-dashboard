@@ -2727,13 +2727,15 @@
   align-items: flex-start;
   justify-content: flex-start;
   margin-bottom: 1.5rem;
+  padding-left: 0;
 }
 
 .featureList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  width: 100%;
+  width: auto;
+  align-items: flex-start;
 }
 
 .featureItem {
@@ -2799,20 +2801,24 @@
 }
 
 .testimonialNew {
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 4px solid #3b82f6;
-  padding: 1.25rem;
-  border-radius: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
   margin-bottom: 1.5rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .quote {
-  font-size: 0.95rem;
-  font-style: italic;
+  font-size: 1rem;
+  font-style: normal;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 1rem 0;
   line-height: 1.6;
+  text-align: left;
 }
 
 .laWeeklyBadge {
@@ -2831,38 +2837,36 @@
 .ctaHorizontal {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 1.25rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 0;
   margin-top: auto;
 }
 
-.ctaHorizontal:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+.ctaText {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.ctaText {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #ffffff;
+.ctaText::after {
+  content: '→';
+  font-size: 1.25rem;
 }
 
 .ctaButton {
-  width: 48px;
-  height: 48px;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: #ffffff;
   border: none;
-  border-radius: 50%;
-  font-size: 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -2871,7 +2875,7 @@
 }
 
 .ctaButton:hover {
-  transform: translateX(4px);
+  transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 }
 
@@ -2954,17 +2958,21 @@
   }
 
   .ctaHorizontal {
-    padding: 1rem 1.25rem;
+    padding: 0;
+    gap: 0.5rem;
   }
 
   .ctaText {
-    font-size: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .ctaText::after {
+    font-size: 1.1rem;
   }
 
   .ctaButton {
-    width: 40px;
-    height: 40px;
-    font-size: 1.25rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
   }
 
   .laWeeklyBadge {
