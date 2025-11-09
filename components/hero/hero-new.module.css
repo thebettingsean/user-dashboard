@@ -3189,9 +3189,21 @@
 
 /* Reviews Section */
 .reviewsSection {
-  padding: 4rem 0;
+  padding: 4rem 1.5rem;
   overflow: hidden;
   background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.reviewsTitleNew {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
 }
 
 .reviewsReel {
@@ -3202,9 +3214,10 @@
 
 .reviewsTrack {
   display: flex;
-  gap: 1.5rem;
-  animation: scroll 40s linear infinite;
+  gap: 2.5rem;
+  animation: scroll 22s linear infinite;
   width: fit-content;
+  will-change: transform;
 }
 
 @keyframes scroll {
@@ -3216,64 +3229,83 @@
   }
 }
 
-.reviewCard {
-  min-width: 250px;
-  max-width: 250px;
+.reviewItem {
+  min-width: 280px;
+  max-width: 320px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  padding: 0 !important;
+  gap: 0.5rem;
+}
+
+.reviewHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.reviewName {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.reviewStars {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.reviewStar {
+  width: 14px;
+  height: 14px;
+  color: #fbbf24;
 }
 
 .reviewText {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.4;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
   margin: 0;
   font-style: italic;
 }
 
-.reviewAuthor {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
-}
-
 .reviewIcon {
-  width: 14px;
-  height: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 @media (max-width: 768px) {
-  .reviewCard {
-    min-width: 220px;
-    max-width: 220px;
-  }
-
-  .reviewText {
-    font-size: 0.8rem;
-  }
-
-  .reviewAuthor {
-    font-size: 0.7rem;
-  }
-
-  .reviewIcon {
-    width: 12px;
-    height: 12px;
+  .reviewsSection {
+    padding: 3rem 1rem;
+    gap: 1.5rem;
   }
 
   .reviewsTrack {
-    gap: 2rem;
+    gap: 1.75rem;
+    animation-duration: 18s;
+  }
+
+  .reviewItem {
+    min-width: 220px;
+    max-width: 240px;
+  }
+
+  .reviewText {
+    font-size: 0.85rem;
+  }
+
+  .reviewHeading {
+    font-size: 0.75rem;
+  }
+
+  .reviewStar {
+    width: 12px;
+    height: 12px;
   }
 }
 
