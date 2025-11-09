@@ -3217,18 +3217,18 @@
 }
 
 .reviewCard {
-  min-width: 280px;
-  max-width: 280px;
+  min-width: 250px;
+  max-width: 250px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .reviewText {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
   margin: 0;
   font-style: italic;
 }
@@ -3236,21 +3236,34 @@
 .reviewAuthor {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .reviewIcon {
-  width: 18px;
-  height: 18px;
-  color: rgba(255, 255, 255, 0.5);
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 @media (max-width: 768px) {
   .reviewCard {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 220px;
+    max-width: 220px;
+  }
+
+  .reviewText {
+    font-size: 0.8rem;
+  }
+
+  .reviewAuthor {
+    font-size: 0.7rem;
+  }
+
+  .reviewIcon {
+    width: 12px;
+    height: 12px;
   }
 
   .reviewsTrack {
