@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
-import type { ClerkAppearance } from '@clerk/types'
+import type { Appearance } from '@clerk/types'
 import type { LocalizationResource } from '@clerk/types'
 import { GoogleTagManager } from '@next/third-parties/google'
 import Script from 'next/script'
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   themeColor: "#0f172a",
 };
 
-const clerkAppearance: ClerkAppearance = {
+const clerkAppearance: Appearance = {
   baseTheme: 'dark',
   variables: {
     colorBackground: '#050e1f',
