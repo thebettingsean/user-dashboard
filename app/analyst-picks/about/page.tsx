@@ -347,18 +347,43 @@ export default function HeroNewPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className={styles.howItWorksSimple}>
-        <h2 className={styles.sectionTitle}>How it works</h2>
-        <p className={styles.comingSoon}>(We will fill this in later!)</p>
-      </section>
+      <section className={styles.howItWorksNew}>
+        <h2 className={styles.howItWorksTitle}>How it works</h2>
+        
+        <div className={styles.howItWorksGrid}>
+          {/* Box 1 - Expert Picks */}
+          <div className={styles.howItWorksCard}>
+            <h3 className={styles.howItWorksCardTitle}>Expert Picks</h3>
+            <p className={styles.howItWorksCardTagline}>From winning bettors</p>
+            <ul className={styles.howItWorksList}>
+              <li>Daily picks + analysis</li>
+              <li>All sports covered</li>
+              <li>Turn on/off notifications</li>
+            </ul>
+          </div>
 
-      {/* ChromaGrid Section */}
-      <section className={styles.chromaGridSection}>
-        <h2 className={styles.chromaGridHeader}>Everything You Need to Win</h2>
-        <p className={styles.chromaGridSubheader}>
-          Access expert picks, real-time data, and advanced analytics all in one place
-        </p>
-        <ChromaGrid items={chromaGridDemo} columns={3} />
+          {/* Box 2 - Game Scripts */}
+          <div className={styles.howItWorksCard}>
+            <h3 className={styles.howItWorksCardTitle}>Game Scripts</h3>
+            <p className={styles.howItWorksCardTagline}>Everything about the game</p>
+            <ul className={styles.howItWorksList}>
+              <li>Claude AI engine → our data.</li>
+              <li>30+ data points each script.</li>
+              <li>Analyst picks mixed in!</li>
+            </ul>
+          </div>
+
+          {/* Box 3 - The Results */}
+          <div className={styles.howItWorksCard}>
+            <h3 className={styles.howItWorksCardTitle}>The Results</h3>
+            <p className={styles.howItWorksCardTagline}>Consistent growth</p>
+            <ul className={styles.howItWorksList}>
+              <li>Deep knowledge about all games.</li>
+              <li>Daily wins, monthly growth.</li>
+              <li>Constant profits, no questions.</li>
+            </ul>
+          </div>
+        </div>
       </section>
     </div>
   )
