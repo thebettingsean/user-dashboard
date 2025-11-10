@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
 
     const { data: snapshotRows, error: snapshotError } = await snapshotsClient
       .from('game_snapshots')
-      .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee')
+      .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee, raw_payload')
       .eq('sport', sport.toUpperCase())
       .gte('start_time_utc', `${from}T00:00:00Z`)
       .lte('start_time_utc', `${to}T23:59:59Z`)
