@@ -2,6 +2,21 @@
 const API_BASE_URL = 'https://api.trendlinelabs.ai'
 const API_KEY = process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
 
+const FETCH_TIMEOUT_MS = 30000
+const FETCH_RETRIES = 2
+
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal })
+    return response
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
 
 export interface PlayerProp {
@@ -137,6 +152,16 @@ interface RefereeStats {
   total_games: number
 }
 
+export interface GameDetailsSummary {
+  name?: string
+  season?: number
+  head_to_head?: any
+  season_avg?: any
+  h2h?: any
+  h2h_3year?: any
+  team_form?: any
+}
+
 // Fetch games for a given league and date range
 export async function fetchGames(
   league: League,
@@ -176,64 +201,70 @@ export async function fetchPublicMoney(
   league: League,
   gameId: string
 ): Promise<PublicMoneyData | null> {
-  try {
-    const url = `${API_BASE_URL}/api/${league}/games/${gameId}/public-money`
-    console.log(`  → Fetching public money: ${url}`)
-    
-    const response = await fetch(url, {
-      headers: {
-        'insider-api-key': API_KEY,
-      },
-      // Don't use Next.js cache for this endpoint - response is too large (5MB+)
-      // We extract only the needed data (a few KB) from the response
-      cache: 'no-store',
-      signal: AbortSignal.timeout(10000) // 10 second timeout
-    })
+  const url = `${API_BASE_URL}/api/${league}/games/${gameId}/public-money`
 
-    if (!response.ok) {
-      console.error(`  ✗ HTTP ${response.status} for ${gameId}`)
-      return null
-    }
+  for (let attempt = 1; attempt <= FETCH_RETRIES; attempt++) {
+    try {
+      console.log(`  → Fetching public money (attempt ${attempt}/${FETCH_RETRIES}): ${url}`)
 
-    // The API returns a large object with current data at top level + historical pregame_odds array
-    // We ONLY extract the top-level current percentages to avoid processing 5MB+ of historical data
-    const fullResponse: PublicMoneyAPIResponse = await response.json()
-    
-    // Extract only the fields we need from the top level (current/latest data)
-    const currentData: PublicMoneyData = {
-      public_money_ml_away_bets_pct: fullResponse.public_money_ml_away_bets_pct,
-      public_money_ml_away_stake_pct: fullResponse.public_money_ml_away_stake_pct,
-      public_money_ml_home_bets_pct: fullResponse.public_money_ml_home_bets_pct,
-      public_money_ml_home_stake_pct: fullResponse.public_money_ml_home_stake_pct,
-      public_money_spread_away_bets_pct: fullResponse.public_money_spread_away_bets_pct,
-      public_money_spread_away_stake_pct: fullResponse.public_money_spread_away_stake_pct,
-      public_money_spread_home_bets_pct: fullResponse.public_money_spread_home_bets_pct,
-      public_money_spread_home_stake_pct: fullResponse.public_money_spread_home_stake_pct,
-      public_money_over_bets_pct: fullResponse.public_money_over_bets_pct,
-      public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
-      public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
-      public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
-      // Limit to top 3 sharp money and RLM stats to reduce token usage
-      sharp_money_stats: (fullResponse.sharp_money_stats || []).slice(0, 3),
-      rlm_stats: (fullResponse.rlm_stats || []).slice(0, 3),
-      // These aren't in the response, so we'll derive from the game's odds
-      away_team_ml: 0, // Will be set from game.odds
-      home_team_ml: 0,
-      away_team_point_spread: 0,
-      home_team_point_spread: 0
+      const response = await fetchWithTimeout(
+        url,
+        {
+          headers: {
+            'insider-api-key': API_KEY
+          },
+          cache: 'no-store'
+        },
+        FETCH_TIMEOUT_MS
+      )
+
+      if (!response.ok) {
+        console.error(`  ✗ HTTP ${response.status} for ${gameId}`)
+        if (attempt === FETCH_RETRIES) {
+          return null
+        }
+        continue
+      }
+
+      const fullResponse: PublicMoneyAPIResponse = await response.json()
+
+      const currentData: PublicMoneyData = {
+        public_money_ml_away_bets_pct: fullResponse.public_money_ml_away_bets_pct,
+        public_money_ml_away_stake_pct: fullResponse.public_money_ml_away_stake_pct,
+        public_money_ml_home_bets_pct: fullResponse.public_money_ml_home_bets_pct,
+        public_money_ml_home_stake_pct: fullResponse.public_money_ml_home_stake_pct,
+        public_money_spread_away_bets_pct: fullResponse.public_money_spread_away_bets_pct,
+        public_money_spread_away_stake_pct: fullResponse.public_money_spread_away_stake_pct,
+        public_money_spread_home_bets_pct: fullResponse.public_money_spread_home_bets_pct,
+        public_money_spread_home_stake_pct: fullResponse.public_money_spread_home_stake_pct,
+        public_money_over_bets_pct: fullResponse.public_money_over_bets_pct,
+        public_money_over_stake_pct: fullResponse.public_money_over_stake_pct,
+        public_money_under_bets_pct: fullResponse.public_money_under_bets_pct,
+        public_money_under_stake_pct: fullResponse.public_money_under_stake_pct,
+        sharp_money_stats: (fullResponse.sharp_money_stats || []).slice(0, 5),
+        rlm_stats: (fullResponse.rlm_stats || []).slice(0, 5),
+        away_team_ml: 0,
+        home_team_ml: 0,
+        away_team_point_spread: 0,
+        home_team_point_spread: 0
+      }
+
+      console.log(`  ✓ Extracted current public money data for ${gameId}`)
+      return currentData
+    } catch (error) {
+      if ((error as any)?.name === 'AbortError') {
+        console.error(`  ✗ Timeout fetching public money for ${gameId} (attempt ${attempt})`)
+      } else {
+        console.error(`  ✗ Error fetching public money for ${gameId} (attempt ${attempt}):`, error)
+      }
+
+      if (attempt === FETCH_RETRIES) {
+        return null
+      }
     }
-    
-    console.log(`  ✓ Extracted current public money data for ${gameId}`)
-    return currentData
-    
-  } catch (error) {
-    if (error instanceof Error && error.name === 'TimeoutError') {
-      console.error(`  ✗ Timeout fetching public money for ${gameId}`)
-    } else {
-      console.error(`  ✗ Error fetching public money for ${gameId}:`, error)
-    }
-    return null
   }
+
+  return null
 }
 
 // Fetch referee stats for a specific game
@@ -332,6 +363,63 @@ export async function fetchRefereeStats(
   }
 }
 
+// Fetch game details (team stats, season averages, trends)
+export async function fetchGameDetails(
+  league: League,
+  gameId: string
+): Promise<GameDetailsSummary | null> {
+  const url = `${API_BASE_URL}/api/${league}/games/${gameId}`
+
+  for (let attempt = 1; attempt <= FETCH_RETRIES; attempt++) {
+    try {
+      console.log(`  → Fetching game details (attempt ${attempt}/${FETCH_RETRIES}): ${url}`)
+
+      const response = await fetchWithTimeout(
+        url,
+        {
+          headers: {
+            'insider-api-key': API_KEY
+          },
+          cache: 'no-store'
+        },
+        FETCH_TIMEOUT_MS
+      )
+
+      if (!response.ok) {
+        console.error(`  ✗ HTTP ${response.status} for ${gameId} game details`)
+        if (attempt === FETCH_RETRIES) {
+          return null
+        }
+        continue
+      }
+
+      const data = await response.json()
+
+      return {
+        name: data.name,
+        season: data.season,
+        head_to_head: data.head_to_head ?? null,
+        season_avg: data.season_avg ?? null,
+        h2h: data.h2h ?? null,
+        h2h_3year: data.h2h_3year ?? null,
+        team_form: data.team_form ?? null
+      }
+    } catch (error) {
+      if ((error as any)?.name === 'AbortError') {
+        console.error(`  ✗ Timeout fetching game details for ${gameId} (attempt ${attempt})`)
+      } else {
+        console.error(`  ✗ Error fetching game details for ${gameId} (attempt ${attempt}):`, error)
+      }
+
+      if (attempt === FETCH_RETRIES) {
+        return null
+      }
+    }
+  }
+
+  return null
+}
+
 // Helper to get current week's date range
 export function getCurrentWeekDateRange(): { from: string; to: string } {
   const today = new Date()
@@ -374,8 +462,15 @@ export async function fetchPlayerProps(league: League, gameId: string): Promise<
       return null
     }
 
-    const data: PropCategory[] = await response.json()
-    console.log(`✓ Successfully fetched player props for ${gameId}: ${data.length} categories, ${data.reduce((sum, cat) => sum + cat.players.length, 0)} total players`)
+    const data: PropCategory[] | null = await response.json()
+
+    if (!Array.isArray(data)) {
+      console.log(`Props payload for ${gameId} was not an array. Returning empty list.`)
+      return []
+    }
+
+    const totalPlayers = data.reduce((sum, cat) => sum + (Array.isArray(cat.players) ? cat.players.length : 0), 0)
+    console.log(`✓ Successfully fetched player props for ${gameId}: ${data.length} categories, ${totalPlayers} total players`)
     
     return data
   } catch (error) {
