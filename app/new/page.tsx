@@ -446,10 +446,12 @@ export default function NewDashboardPage() {
 
   const upcomingGames = useMemo(() => {
     const now = Date.now()
-    return games.filter((game) => {
+    const upcoming = games.filter((game) => {
       const kickoffTime = new Date(game.kickoff).getTime()
       return Number.isFinite(kickoffTime) && kickoffTime >= now
     })
+    console.log(`Upcoming games: ${upcoming.length} out of ${games.length}`)
+    return upcoming
   }, [games])
 
   const sortedGames = useMemo(() => {
@@ -551,6 +553,7 @@ export default function NewDashboardPage() {
 
         const data = await response.json()
         const fetchedGames: GameSummary[] = data.games || []
+        console.log(`[${activeSport.toUpperCase()}] Fetched ${fetchedGames.length} games`)
         setGames(fetchedGames)
         setSpotlightGameId(data.spotlightGameId || null)
         setExpandedAnalysis(new Set())
@@ -676,42 +679,47 @@ export default function NewDashboardPage() {
       return renderPlaceholder('Unable to load games. Try again shortly.')
     }
 
-    if (!activeGame) {
+    if (sortedGames.length === 0) {
       return renderPlaceholder('No games found for this sport.')
     }
 
-    const topMarkets = getTopPublicMarkets(activeGame, 3)
-    const strongestDataCount = (activeGame.publicMoney ? 1 : 0) + (activeGame.referee ? 1 : 0) + (activeGame.teamTrends ? 1 : 0) + (activeGame.propsCount > 0 ? 1 : 0)
+    const displayGame = activeGame || sortedGames[0]
+    if (!displayGame) {
+      return renderPlaceholder('No games available.')
+    }
+
+    const topMarkets = getTopPublicMarkets(displayGame, 3)
+    const strongestDataCount = (displayGame.publicMoney ? 1 : 0) + (displayGame.referee ? 1 : 0) + (displayGame.teamTrends ? 1 : 0) + (displayGame.propsCount > 0 ? 1 : 0)
     const featuredStats = [
-      { label: 'Script Strength', value: activeGame.script.strengthLabel ?? 'Minimal' },
-      { label: 'Active Picks', value: `${activeGame.picks.total}` },
+      { label: 'Script Strength', value: displayGame.script.strengthLabel ?? 'Minimal' },
+      { label: 'Active Picks', value: `${displayGame.picks.total}` },
       {
         label: 'Most Public',
         value: (() => {
-          const tm = activeGame.publicMoney?.top_market
+          const tm = displayGame.publicMoney?.top_market
           if (!tm) return 'Waiting'
           if (tm.label === 'over' || tm.label === 'under') {
             return `${tm.label.charAt(0).toUpperCase()}${tm.label.slice(1)} · ${formatPercentage(tm.bets)}`
           }
-          const teamLabel = tm.label === 'home' ? activeGame.homeTeam : activeGame.awayTeam
+          const teamLabel = tm.label === 'home' ? displayGame.homeTeam : displayGame.awayTeam
           return `${teamLabel} · ${formatPercentage(tm.bets)}`
         })()
       },
       { label: 'Game Data', value: `${strongestDataCount}/4 retrieved` }
     ]
-    const refereeName = (activeGame.referee as any)?.referee_name || 'Ref TBD'
+    const refereeName = (displayGame.referee as any)?.referee_name || 'Ref TBD'
 
     return (
       <div className={styles.gameContent}>
-        <div className={`${styles.featuredWrapper} ${featuredGame && featuredGame.id === activeGame.id ? styles.featuredActive : ''}`}>
+        <div className={`${styles.featuredWrapper} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}>
           <div className={styles.featuredTitle}>Featured Game</div>
           <div className={styles.featuredSeparator} />
           <div className={styles.featuredMatchup}>
-            <span>{activeGame.awayTeam}</span>
+            <span>{displayGame.awayTeam}</span>
             <span className={styles.featuredAt}>@</span>
-            <span>{activeGame.homeTeam}</span>
+            <span>{displayGame.homeTeam}</span>
           </div>
-          <div className={styles.featuredDate}>{formatKickoffDate(activeGame.kickoff)} · {activeGame.kickoffLabel}</div>
+          <div className={styles.featuredDate}>{formatKickoffDate(displayGame.kickoff)} · {displayGame.kickoffLabel}</div>
           <div className={styles.featuredStatGrid}>
             {featuredStats.map((stat) => (
               <div key={stat.label} className={styles.featuredStat}>
@@ -773,9 +781,18 @@ export default function NewDashboardPage() {
         return renderPlaceholder('No props found for upcoming games.')
       }
 
+      const sortedPropGames = [...topPropsGames].sort((a, b) => {
+        // Games with props first
+        const aHasProps = a.props.length > 0 ? 1 : 0
+        const bHasProps = b.props.length > 0 ? 1 : 0
+        if (bHasProps !== aHasProps) return bHasProps - aHasProps
+        // Then by kickoff time
+        return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+      })
+
       return (
         <div className={styles.topPropsGrid}>
-          {topPropsGames.map((game) => (
+          {sortedPropGames.map((game) => (
             <div key={game.gameId} className={styles.topPropsCard}>
               <div className={styles.topPropsHeader}>
                 <span>{game.matchup}</span>
