@@ -432,8 +432,6 @@ export default function NewDashboardPage() {
   const [expandedAnalysis, setExpandedAnalysis] = useState<Set<string>>(new Set())
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
-  const [showAboutModal, setShowAboutModal] = useState(false)
-  const [aboutContent, setAboutContent] = useState<'scripts' | 'public' | null>(null)
 
   const getDefaultFilter = (tab: TabKey): SubFilterKey | undefined => subFilters[tab][0]
 
@@ -1025,6 +1023,45 @@ export default function NewDashboardPage() {
   }
 
   const renderScriptsView = () => {
+    if (activeFilter === 'scriptsAbout') {
+      return (
+        <div className={styles.aboutInline}>
+          <h2 className={styles.aboutInlineTitle}>AI Game Scripts</h2>
+          <div className={styles.aboutInlineBody}>
+            <p>
+              Our <strong>AI Game Scripts</strong> are powered by <strong>Claude 3.5 Sonnet</strong> and 
+              meticulously crafted using insider betting data to give you an edge.
+            </p>
+
+            <h3>What Goes Into Each Script:</h3>
+            <ul>
+              <li><strong>Live Betting Splits</strong> — See where the public and sharps are leaning</li>
+              <li><strong>Referee Trends</strong> — Historical data on how officials impact game outcomes</li>
+              <li><strong>Team H2H Stats</strong> — 3-year head-to-head matchup analysis</li>
+              <li><strong>Top Player Props</strong> — High-confidence plays based on historical hit rates</li>
+            </ul>
+
+            <div className={styles.aboutHighlight}>
+              <strong>Script Strength Levels:</strong>
+              <div className={styles.aboutSubtitle}>
+                Minimal (1 credit) · Above Avg (2 credits) · Strong (3 credits)
+              </div>
+            </div>
+
+            <p>
+              Each script is <strong>regenerated every 4 hours</strong> leading up to game time to ensure 
+              you have the most up-to-date analysis. The AI synthesizes all available data into a 
+              clear, actionable narrative.
+            </p>
+
+            <p>
+              <strong>Bold text</strong> in scripts highlights key insights and actionable angles.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
     if (isLoading) {
       return renderPlaceholder('Loading scripts...')
     }
@@ -1097,6 +1134,51 @@ export default function NewDashboardPage() {
 
   const renderPublicView = () => {
     try {
+      if (activeFilter === 'publicAbout') {
+        return (
+          <div className={styles.aboutInline}>
+            <h2 className={styles.aboutInlineTitle}>Public Betting Data</h2>
+            <div className={styles.aboutInlineBody}>
+              <p>
+                Our <strong>Public Betting Data</strong> aggregates live betting splits from <strong>30+ sportsbooks</strong> — 
+                including in-person, offshore, and classic retail books — to show you where the money is really flowing.
+              </p>
+
+              <h3>Understanding the Filters:</h3>
+
+              <div className={styles.aboutHighlight}>
+                <strong>Most Public</strong>
+                <p style={{ marginTop: '8px', marginBottom: 0 }}>
+                  Shows games where the public is most heavily backing one side, based on both bet count 
+                  and dollar volume. Useful for identifying potential fade opportunities.
+                </p>
+              </div>
+
+              <div className={styles.aboutHighlight}>
+                <strong>Vegas Backed</strong>
+                <p style={{ marginTop: '8px', marginBottom: 0 }}>
+                  Highlights games with <strong>Reverse Line Movement (RLM)</strong> and sharp money indicators. 
+                  Takes steam moves, non-public sides, and line movement into account to calculate a 
+                  weighted value percentage for each bet type.
+                </p>
+              </div>
+
+              <div className={styles.aboutHighlight}>
+                <strong>Big Money</strong>
+                <p style={{ marginTop: '8px', marginBottom: 0 }}>
+                  Tracks the <strong>difference between % of bets wagered and % of dollars wagered</strong>. 
+                  Large gaps indicate sharp money on one side, even if public bets favor the other.
+                </p>
+              </div>
+
+              <p>
+                Use these filters to spot market inefficiencies, sharp action, and public traps before placing your bets.
+              </p>
+            </div>
+          </div>
+        )
+      }
+
       console.log('[PublicView] render start', activeFilter, sortedGames.length)
 
       if (isLoading) {
@@ -1296,120 +1378,19 @@ export default function NewDashboardPage() {
 
       {availableFilters.length > 0 && (
         <div className={styles.subFilterRow}>
-          {availableFilters.map((filterKey) => {
-            const isAbout = filterKey === 'scriptsAbout' || filterKey === 'publicAbout'
-            return (
-              <button
-                key={filterKey}
-                className={`${styles.filterPill} ${activeFilter === filterKey ? styles.filterPillActive : ''}`}
-                onClick={() => {
-                  if (filterKey === 'scriptsAbout') {
-                    setShowAboutModal(true)
-                    setAboutContent('scripts')
-                  } else if (filterKey === 'publicAbout') {
-                    setShowAboutModal(true)
-                    setAboutContent('public')
-                  } else {
-                    setActiveFilter(filterKey)
-                  }
-                }}
-              >
-                {subFilterLabels[filterKey]}
-              </button>
-            )
-          })}
+          {availableFilters.map((filterKey) => (
+            <button
+              key={filterKey}
+              className={`${styles.filterPill} ${activeFilter === filterKey ? styles.filterPillActive : ''}`}
+              onClick={() => setActiveFilter(filterKey)}
+            >
+              {subFilterLabels[filterKey]}
+            </button>
+          ))}
         </div>
       )}
 
       <main className={styles.contentArea}>{renderContent()}</main>
-
-      {showAboutModal && (
-        <div className={styles.aboutModal} onClick={() => setShowAboutModal(false)}>
-          <div className={styles.aboutContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.aboutHeader}>
-              <h2 className={styles.aboutTitle}>
-                {aboutContent === 'scripts' ? 'AI Game Scripts' : 'Public Betting Data'}
-              </h2>
-              <button className={styles.aboutClose} onClick={() => setShowAboutModal(false)}>
-                ×
-              </button>
-            </div>
-            <div className={styles.aboutBody}>
-              {aboutContent === 'scripts' ? (
-                <>
-                  <p>
-                    Our <strong>AI Game Scripts</strong> are powered by <strong>Claude 3.5 Sonnet</strong> and 
-                    meticulously crafted using insider betting data to give you an edge.
-                  </p>
-
-                  <h3>What Goes Into Each Script:</h3>
-                  <ul>
-                    <li><strong>Live Betting Splits</strong> — See where the public and sharps are leaning</li>
-                    <li><strong>Referee Trends</strong> — Historical data on how officials impact game outcomes</li>
-                    <li><strong>Team H2H Stats</strong> — 3-year head-to-head matchup analysis</li>
-                    <li><strong>Top Player Props</strong> — High-confidence plays based on historical hit rates</li>
-                  </ul>
-
-                  <div className={styles.aboutHighlight}>
-                    <strong>Script Strength Levels:</strong>
-                    <div className={styles.aboutSubtitle}>
-                      Minimal (1 credit) · Above Avg (2 credits) · Strong (3 credits)
-                    </div>
-                  </div>
-
-                  <p>
-                    Each script is <strong>regenerated every 4 hours</strong> leading up to game time to ensure 
-                    you have the most up-to-date analysis. The AI synthesizes all available data into a 
-                    clear, actionable narrative.
-                  </p>
-
-                  <p>
-                    <strong>Bold text</strong> in scripts highlights key insights and actionable angles.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>
-                    Our <strong>Public Betting Data</strong> aggregates live betting splits from <strong>30+ sportsbooks</strong> — 
-                    including in-person, offshore, and classic retail books — to show you where the money is really flowing.
-                  </p>
-
-                  <h3>Understanding the Filters:</h3>
-
-                  <div className={styles.aboutHighlight}>
-                    <strong>Most Public</strong>
-                    <p style={{ marginTop: '8px', marginBottom: 0 }}>
-                      Shows games where the public is most heavily backing one side, based on both bet count 
-                      and dollar volume. Useful for identifying potential fade opportunities.
-                    </p>
-                  </div>
-
-                  <div className={styles.aboutHighlight}>
-                    <strong>Vegas Backed</strong>
-                    <p style={{ marginTop: '8px', marginBottom: 0 }}>
-                      Highlights games with <strong>Reverse Line Movement (RLM)</strong> and sharp money indicators. 
-                      Takes steam moves, non-public sides, and line movement into account to calculate a 
-                      weighted value percentage for each bet type.
-                    </p>
-                  </div>
-
-                  <div className={styles.aboutHighlight}>
-                    <strong>Big Money</strong>
-                    <p style={{ marginTop: '8px', marginBottom: 0 }}>
-                      Tracks the <strong>difference between % of bets wagered and % of dollars wagered</strong>. 
-                      Large gaps indicate sharp money on one side, even if public bets favor the other.
-                    </p>
-                  </div>
-
-                  <p>
-                    Use these filters to spot market inefficiencies, sharp action, and public traps before placing your bets.
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
