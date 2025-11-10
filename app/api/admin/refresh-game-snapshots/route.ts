@@ -239,10 +239,10 @@ export async function POST(request: NextRequest) {
         const spread = game.odds
           ? {
               current: game.odds.spread ?? null,
-              home_line: game.odds.home_team_odds?.current_point_spread ?? null,
-              home_odds: game.odds.home_team_odds?.spread_odds ?? null,
-              away_line: game.odds.away_team_odds?.current_point_spread ?? null,
-              away_odds: game.odds.away_team_odds?.spread_odds ?? null
+              home_line: (game.odds.home_team_odds as any)?.current_point_spread ?? null,
+              home_odds: (game.odds.home_team_odds as any)?.spread_odds ?? null,
+              away_line: (game.odds.away_team_odds as any)?.current_point_spread ?? null,
+              away_odds: (game.odds.away_team_odds as any)?.spread_odds ?? null
             }
           : null
 
@@ -256,8 +256,8 @@ export async function POST(request: NextRequest) {
 
         const moneyline = game.odds
           ? {
-              home: game.odds.home_team_odds?.moneyline ?? null,
-              away: game.odds.away_team_odds?.moneyline ?? null
+              home: (game.odds.home_team_odds as any)?.moneyline ?? null,
+              away: (game.odds.away_team_odds as any)?.moneyline ?? null
             }
           : null
 
