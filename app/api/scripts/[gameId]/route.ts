@@ -10,10 +10,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   try {
-    const { gameId } = params
+    const { gameId } = await params
     const searchParams = request.nextUrl.searchParams
     const sport = (searchParams.get('sport') || 'nfl').toUpperCase()
 
@@ -24,7 +24,7 @@ export async function GET(
     // Fetch the script from the game_scripts table
     const { data, error } = await supabase
       .from('game_scripts')
-      .select('game_id, sport, content, data_strength, generated_at')
+      .select('game_id, sport, script_content, data_strength, generated_at')
       .eq('game_id', gameId)
       .eq('sport', sport)
       .order('generated_at', { ascending: false })
@@ -47,7 +47,7 @@ export async function GET(
     }
 
     return NextResponse.json({
-      script: data.content || 'Script content not available',
+      script: data.script_content || 'Script content not available',
       strength: data.data_strength,
       generatedAt: data.generated_at
     })

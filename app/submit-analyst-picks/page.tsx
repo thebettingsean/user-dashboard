@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { updatePicksMetaForGames } from '@/lib/snapshots/updatePicksMeta'
 
 const supabaseClient = createClient(
   'https://cmulndosilihjhlurbth.supabase.co',
@@ -749,6 +750,15 @@ export default function SubmitAnalystPicks() {
         const bettor = bettors.find(b => b.id === currentBettorId)
         if (bettor) {
           await sendDiscordNotification(bettor, picksToInsert)
+        }
+        
+        // Update game_snapshots picks_meta for affected games
+        const gameIds = picksToInsert
+          .map(pick => pick.game_id)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0)
+        
+        if (gameIds.length > 0 && picksToInsert[0]?.sport) {
+          await updatePicksMetaForGames(gameIds, picksToInsert[0].sport)
         }
       }
       
