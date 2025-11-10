@@ -644,6 +644,103 @@
   font-size: 11px;
   font-weight: 600;
   box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scriptGenerate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(99, 102, 241, 0.45);
+}
+
+.scriptContent {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.scriptLoader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: rgba(99, 102, 241, 0.8);
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.scriptText {
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.scriptText p {
+  margin: 0 0 10px 0;
+}
+
+.scriptText p:last-child {
+  margin-bottom: 0;
+}
+
+.scriptText h1,
+.scriptText h2,
+.scriptText h3 {
+  color: #ffffff;
+  margin: 16px 0 10px 0;
+  font-weight: 600;
+}
+
+.scriptText h1 {
+  font-size: 18px;
+}
+
+.scriptText h2 {
+  font-size: 16px;
+}
+
+.scriptText h3 {
+  font-size: 14px;
+}
+
+.scriptText ul,
+.scriptText ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.scriptText li {
+  margin: 4px 0;
+}
+
+.scriptText strong {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .capperList {

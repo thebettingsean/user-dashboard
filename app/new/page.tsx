@@ -426,6 +426,9 @@ export default function NewDashboardPage() {
   const [topPropsGames, setTopPropsGames] = useState<DashboardPropGame[]>([])
   const [topPropsLoading, setTopPropsLoading] = useState(false)
   const [topPropsError, setTopPropsError] = useState(false)
+  const [expandedScripts, setExpandedScripts] = useState<Set<string>>(new Set())
+  const [loadingScripts, setLoadingScripts] = useState<Set<string>>(new Set())
+  const [scriptContent, setScriptContent] = useState<Map<string, string>>(new Map())
   const [expandedAnalysis, setExpandedAnalysis] = useState<Set<string>>(new Set())
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
@@ -669,6 +672,54 @@ export default function NewDashboardPage() {
   }, [activeTab, activeFilter, activeSport])
 
   const renderPlaceholder = (message: string) => <div className={styles.placeholder}>{message}</div>
+
+  const handleGenerateScript = async (gameId: string) => {
+    if (loadingScripts.has(gameId) || scriptContent.has(gameId)) {
+      // Toggle expand/collapse if already loaded
+      setExpandedScripts((prev) => {
+        const next = new Set(prev)
+        if (next.has(gameId)) {
+          next.delete(gameId)
+        } else {
+          next.add(gameId)
+        }
+        return next
+      })
+      return
+    }
+
+    // Start loading
+    setLoadingScripts((prev) => new Set(prev).add(gameId))
+    setExpandedScripts((prev) => new Set(prev).add(gameId))
+
+    try {
+      // Simulate 3-second loading
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Fetch the actual script
+      const response = await fetch(`/api/scripts/${gameId}?sport=${activeSport}`, {
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to load script')
+      }
+
+      const data = await response.json()
+      const content = data.script?.content || data.script || 'Script not available'
+
+      setScriptContent((prev) => new Map(prev).set(gameId, content))
+    } catch (error) {
+      console.error('Failed to load script:', error)
+      setScriptContent((prev) => new Map(prev).set(gameId, 'Unable to load script. Please try again.'))
+    } finally {
+      setLoadingScripts((prev) => {
+        const next = new Set(prev)
+        next.delete(gameId)
+        return next
+      })
+    }
+  }
 
   const renderGamesView = () => {
     if (isLoading) {
@@ -981,6 +1032,10 @@ export default function NewDashboardPage() {
         {sortedGames.map((game) => {
           const strengthLabel = game.script.strengthLabel || 'Minimal'
           const strength = game.script.creditsRequired || 1
+          const isExpanded = expandedScripts.has(game.id)
+          const isLoading = loadingScripts.has(game.id)
+          const content = scriptContent.get(game.id)
+          
           return (
             <div key={game.id} className={styles.scriptCard}>
               <div className={styles.scriptHeader}>
@@ -1002,10 +1057,27 @@ export default function NewDashboardPage() {
                   <span>{formatKickoffDate(game.kickoff)}</span>
                   <span>{game.kickoffLabel}</span>
                 </div>
-                <button className={styles.scriptGenerate} type="button">
-                  Generate Script
+                <button 
+                  className={styles.scriptGenerate} 
+                  type="button"
+                  onClick={() => handleGenerateScript(game.id)}
+                >
+                  {content ? (isExpanded ? 'Hide Script' : 'View Script') : 'Generate Script'}
                 </button>
               </div>
+              {isExpanded && (
+                <div className={styles.scriptContent}>
+                  {isLoading ? (
+                    <div className={styles.scriptLoader}>
+                      <span className={styles.dot}></span>
+                      <span className={styles.dot}></span>
+                      <span className={styles.dot}></span>
+                    </div>
+                  ) : (
+                    <div className={styles.scriptText} dangerouslySetInnerHTML={{ __html: content || '' }} />
+                  )}
+                </div>
+              )}
             </div>
           )
         })}
