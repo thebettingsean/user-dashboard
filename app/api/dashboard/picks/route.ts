@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
     }
 
     const picks: DashboardPick[] = (rows || []).map((row) => {
-      const rawStreak = row.bettors?.win_streak
+      const rawStreak = (row.bettors as any)?.win_streak
       const parsedStreak =
         typeof rawStreak === 'number'
           ? rawStreak
@@ -200,7 +200,7 @@ export async function GET(request: NextRequest) {
       return {
         id: row.id,
         sport: row.sport,
-        bettorName: row.bettors?.name || 'Insider',
+        bettorName: (row.bettors as any)?.name || 'Insider',
         betTitle: row.bet_title || 'Wager',
         units: typeof row.units === 'number' ? row.units : parseFloat(row.units) || 0,
         odds: row.odds || 'N/A',
@@ -213,7 +213,7 @@ export async function GET(request: NextRequest) {
         homeTeam,
         matchup,
         analysis: cleanRichTextHTML(row.analysis || ''),
-        bettorRecord: row.bettors?.record || null,
+        bettorRecord: (row.bettors as any)?.record || null,
         bettorWinStreak
       }
     })
