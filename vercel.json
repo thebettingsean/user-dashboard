@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/admin/refresh-game-snapshots",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/sync-free-users",
       "schedule": "0 10 * * *"
     },
