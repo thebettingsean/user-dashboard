@@ -444,14 +444,13 @@ export default function NewDashboardPage() {
     }
   }
 
-  const now = useMemo(() => new Date(), [])
-
   const upcomingGames = useMemo(() => {
+    const now = Date.now()
     return games.filter((game) => {
       const kickoffTime = new Date(game.kickoff).getTime()
-      return Number.isFinite(kickoffTime) && kickoffTime >= now.getTime()
+      return Number.isFinite(kickoffTime) && kickoffTime >= now
     })
-  }, [games, now])
+  }, [games])
 
   const sortedGames = useMemo(() => {
     return [...upcomingGames].sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
@@ -730,31 +729,31 @@ export default function NewDashboardPage() {
             .map((game) => {
             const dataCount = (game.publicMoney ? 1 : 0) + (game.referee ? 1 : 0) + (game.teamTrends ? 1 : 0) + (game.propsCount > 0 ? 1 : 0)
             return (
-              <button
+              <div
                 key={game.id}
-                className={`${styles.gameCard} ${game.id === activeGame.id ? styles.gameCardActive : ''}`}
-                onClick={() => setSelectedGameId(game.id)}
+                className={styles.gameCard}
               >
-                <div className={styles.gameCardHeader}>
+                <div className={styles.gameCardRow1}>
                   <span className={styles.compactMatchup}>
                     {game.awayTeam} @ {game.homeTeam}
                   </span>
-                  <div className={styles.gameCardTopRight}>
-                    {game.awayTeamLogo && game.homeTeamLogo && (
-                      <div className={styles.teamLogos}>
-                        <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.teamLogo} />
-                        <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.teamLogo} />
-                      </div>
-                    )}
-                    <span className={styles.compactTime}>{game.kickoffLabel}</span>
-                  </div>
+                  {game.awayTeamLogo && game.homeTeamLogo && (
+                    <div className={styles.teamLogos}>
+                      <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.teamLogo} />
+                      <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.teamLogo} />
+                    </div>
+                  )}
                 </div>
-                <div className={styles.compactMeta}>
+                <div className={styles.gameCardRow2}>
                   <span className={styles.compactPill}>Script {game.script.strengthLabel ?? 'Minimal'}</span>
                   <span className={styles.compactPill}>Picks {game.picks.total}</span>
                   <span className={styles.compactPill}>Data {dataCount}/4</span>
                 </div>
-              </button>
+                <div className={styles.gameCardRow3}>
+                  <span className={styles.viewDetails}>View details</span>
+                  <span className={styles.compactTime}>{game.kickoffLabel}</span>
+                </div>
+              </div>
             )
           })}
         </div>

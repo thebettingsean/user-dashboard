@@ -88,6 +88,11 @@ function isDefensiveProp(category: any, player: any): boolean {
   return keywords.some((keyword) => title.includes(keyword))
 }
 
+function isDoubleDoubleProp(category: any, player: any): boolean {
+  const title = (category?.title ?? player?.bet_name ?? '').toLowerCase()
+  return title.includes('double double') || title.includes('double-double')
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -116,7 +121,7 @@ export async function GET(request: NextRequest) {
       const players = categories.flatMap((category: any) => {
         if (!category || !Array.isArray(category.players)) return []
         return category.players
-          .filter((player: any) => !isDefensiveProp(category, player))
+          .filter((player: any) => !isDefensiveProp(category, player) && !isDoubleDoubleProp(category, player))
           .map((player: any) => ({ player, category }))
       })
 
