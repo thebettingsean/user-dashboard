@@ -61,6 +61,8 @@ type DashboardGameSummary = {
   sport: string
   awayTeam: string
   homeTeam: string
+  awayTeamLogo: string | null
+  homeTeamLogo: string | null
   kickoff: string
   kickoffLabel: string
   spread: SpreadSummary | null
@@ -242,11 +244,17 @@ export async function GET(request: NextRequest) {
           }, 0)
         : 0
 
+      const rawPayload = row.raw_payload as any
+      const awayTeamLogo = rawPayload?.away_team_logo ?? null
+      const homeTeamLogo = rawPayload?.home_team_logo ?? null
+
       return {
         id: row.game_id,
         sport: row.sport,
         awayTeam: row.away_team,
         homeTeam: row.home_team,
+        awayTeamLogo,
+        homeTeamLogo,
         kickoff: row.start_time_utc,
         kickoffLabel: row.start_time_label,
         spread: spreadSummary,
@@ -289,13 +297,21 @@ export async function GET(request: NextRequest) {
     })
 
     const upcomingSorted = [...summaries].sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
+    
+    // Featured game: soonest game with strong script. If tied on script strength, earliest kickoff wins.
     const spotlight = [...upcomingSorted].sort((a, b) => {
-      const strengthB = b.script.creditsRequired ?? 0
+      const timeA = new Date(a.kickoff).getTime()
+      const timeB = new Date(b.kickoff).getTime()
       const strengthA = a.script.creditsRequired ?? 0
-      if (strengthB !== strengthA) {
-        return strengthB - strengthA
+      const strengthB = b.script.creditsRequired ?? 0
+      
+      // First priority: soonest game
+      if (timeA !== timeB) {
+        return timeA - timeB
       }
-      return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+      
+      // Tiebreaker: strongest script
+      return strengthB - strengthA
     })[0]
 
     return NextResponse.json({

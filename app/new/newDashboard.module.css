@@ -358,6 +358,35 @@
   box-shadow: 0 12px 36px rgba(99, 102, 241, 0.25);
 }
 
+.gameCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gameCardTopRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.teamLogos {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.teamLogo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
 .cardRow,
 .cardRowSecondary {
   display: flex;
@@ -940,23 +969,16 @@
   font-size: 11px;
 }
 
-.compactRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .compactMatchup {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .compactTime {
-  margin-left: auto;
   color: rgba(226, 232, 240, 0.65);
-  font-size: 11px;
+  font-size: 9px;
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 .compactMeta {

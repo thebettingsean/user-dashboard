@@ -82,6 +82,8 @@ type GameSummary = {
   sport: string
   awayTeam: string
   homeTeam: string
+  awayTeamLogo: string | null
+  homeTeamLogo: string | null
   kickoff: string
   kickoffLabel: string
   spread: SpreadSummary | null
@@ -733,11 +735,19 @@ export default function NewDashboardPage() {
                 className={`${styles.gameCard} ${game.id === activeGame.id ? styles.gameCardActive : ''}`}
                 onClick={() => setSelectedGameId(game.id)}
               >
-                <div className={styles.compactRow}>
+                <div className={styles.gameCardHeader}>
                   <span className={styles.compactMatchup}>
                     {game.awayTeam} @ {game.homeTeam}
                   </span>
-                  <span className={styles.compactTime}>{game.kickoffLabel}</span>
+                  <div className={styles.gameCardTopRight}>
+                    {game.awayTeamLogo && game.homeTeamLogo && (
+                      <div className={styles.teamLogos}>
+                        <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.teamLogo} />
+                        <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.teamLogo} />
+                      </div>
+                    )}
+                    <span className={styles.compactTime}>{game.kickoffLabel}</span>
+                  </div>
                 </div>
                 <div className={styles.compactMeta}>
                   <span className={styles.compactPill}>Script {game.script.strengthLabel ?? 'Minimal'}</span>
