@@ -196,15 +196,18 @@ export async function GET(request: NextRequest) {
     }
 
     const sport = sportParam as SupportedSport
-    const range = sport === 'nfl' ? getNflRange() : getDateRangeForSport(sport)
-    const { from, to } = range
+    
+    // Get current time and a future cutoff (7 days for NFL, 2 days for NBA)
+    const now = new Date()
+    const futureDate = new Date(now)
+    futureDate.setDate(now.getDate() + (sport === 'nfl' ? 7 : 2))
 
-    const { data: snapshotRows, error: snapshotError } = await snapshotsClient
+    const { data: snapshotRows, error: snapshotError} = await snapshotsClient
       .from('game_snapshots')
       .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee, raw_payload')
       .eq('sport', sport.toUpperCase())
-      .gte('start_time_utc', `${from}T00:00:00Z`)
-      .lte('start_time_utc', `${to}T23:59:59Z`)
+      .gte('start_time_utc', now.toISOString())
+      .lte('start_time_utc', futureDate.toISOString())
       .order('start_time_utc', { ascending: true })
 
     if (snapshotError) {
