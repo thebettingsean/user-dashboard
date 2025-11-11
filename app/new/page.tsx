@@ -1342,62 +1342,64 @@ export default function NewDashboardPage() {
                 </div>
 
                 {/* Betting data - blur if no access */}
-                <div style={!hasAccess ? { filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', position: 'relative' } : {}}>
-                  {activeFilter === 'publicMost' && (
-                    <div className={styles.publicMetrics}>
-                      {mostMarkets.map((market) => (
-                        <div key={market.id} className={styles.publicMetric}>
-                          <div className={styles.publicMetricLabel}>{market.label}</div>
-                          <div className={styles.publicMetricValues}>
-                            <span>{formatPercentage(market.bets)} bets</span>
-                            {market.stake !== null && <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>}
+                <div style={{ position: 'relative' }}>
+                  <div style={!hasAccess ? { filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none' } : {}}>
+                    {activeFilter === 'publicMost' && (
+                      <div className={styles.publicMetrics}>
+                        {mostMarkets.map((market) => (
+                          <div key={market.id} className={styles.publicMetric}>
+                            <div className={styles.publicMetricLabel}>{market.label}</div>
+                            <div className={styles.publicMetricValues}>
+                              <span>{formatPercentage(market.bets)} bets</span>
+                              {market.stake !== null && <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>}
+                            </div>
+                            <div className={styles.publicMetricBar}>
+                              <div
+                                className={styles.publicMetricFill}
+                                style={{ width: `${Math.min(100, Math.max(0, market.bets ?? 0))}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className={styles.publicMetricBar}>
-                            <div
-                              className={styles.publicMetricFill}
-                              style={{ width: `${Math.min(100, Math.max(0, market.bets ?? 0))}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
 
-                  {activeFilter === 'publicVegas' && (
-                    <div className={styles.publicMetrics}>
-                      {rlmStats.map((stat, index) => (
-                        <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
-                          <div className={styles.publicMetricLabel}>{formatBetTypeLabel(stat.bet_type as string | undefined, game)}</div>
-                          <div className={styles.publicMetricValues}>
-                            <span>{formatPercentage(stat.percentage)} movement</span>
+                    {activeFilter === 'publicVegas' && (
+                      <div className={styles.publicMetrics}>
+                        {rlmStats.map((stat, index) => (
+                          <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
+                            <div className={styles.publicMetricLabel}>{formatBetTypeLabel(stat.bet_type as string | undefined, game)}</div>
+                            <div className={styles.publicMetricValues}>
+                              <span>{formatPercentage(stat.percentage)} movement</span>
+                            </div>
+                            <div className={styles.publicMetricBar}>
+                              <div
+                                className={styles.publicMetricFill}
+                                style={{ width: `${Math.min(100, Math.max(0, stat.percentage ?? 0))}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className={styles.publicMetricBar}>
-                            <div
-                              className={styles.publicMetricFill}
-                              style={{ width: `${Math.min(100, Math.max(0, stat.percentage ?? 0))}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
 
-                  {activeFilter === 'publicSharp' && (
-                    <div className={styles.publicMetrics}>
-                      {bigMoney.slice(0, 3).map((stat) => (
-                        <div key={`${game.id}-big-${stat.id}`} className={styles.publicMetric}>
-                          <div className={styles.publicMetricLabel}>{stat.label}</div>
-                          <div className={styles.publicMetricValues}>
-                            <span>{formatPercentage(stat.bets)} bets</span>
-                            <span className={styles.publicStake}>{formatPercentage(stat.stake)} money</span>
-                            <span className={styles.publicDiff}>+{Math.round((stat.diff ?? 0) * 10) / 10}% diff</span>
+                    {activeFilter === 'publicSharp' && (
+                      <div className={styles.publicMetrics}>
+                        {bigMoney.slice(0, 3).map((stat) => (
+                          <div key={`${game.id}-big-${stat.id}`} className={styles.publicMetric}>
+                            <div className={styles.publicMetricLabel}>{stat.label}</div>
+                            <div className={styles.publicMetricValues}>
+                              <span>{formatPercentage(stat.bets)} bets</span>
+                              <span className={styles.publicStake}>{formatPercentage(stat.stake)} money</span>
+                              <span className={styles.publicDiff}>+{Math.round((stat.diff ?? 0) * 10) / 10}% diff</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   
-                  {/* Lock overlay - only over betting data */}
+                  {/* Lock overlay - OUTSIDE blur, only over betting data */}
                   {!hasAccess && (
                     <div style={{
                       position: 'absolute',
@@ -1409,7 +1411,8 @@ export default function NewDashboardPage() {
                       gap: '0.5rem',
                       background: 'rgba(10, 15, 26, 0.5)',
                       backdropFilter: 'blur(2px)',
-                      cursor: !isSignedIn ? 'pointer' : 'default'
+                      cursor: !isSignedIn ? 'pointer' : 'default',
+                      zIndex: 1
                     }}
                     onClick={() => !isSignedIn && openSignUp()}
                     >
