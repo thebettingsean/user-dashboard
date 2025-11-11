@@ -5,7 +5,10 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 import styles from './newDashboard.module.css'
 import { FaFireAlt, FaLock } from 'react-icons/fa'
+import { FaDice } from 'react-icons/fa6'
 import { GiTwoCoins } from 'react-icons/gi'
+import { PiMoneyWavy } from 'react-icons/pi'
+import { LuArrowBigUpDash } from 'react-icons/lu'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 
@@ -1429,10 +1432,25 @@ export default function NewDashboardPage() {
                 {/* Game header - always visible */}
                 <div className={styles.publicHeader}>
                   <div>
-                    <div className={styles.publicMatchup}>{game.awayTeam} @ {game.homeTeam}</div>
-                    <div className={styles.publicTime}>{game.kickoffLabel}</div>
+                    {/* Logos in a row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      {game.awayTeamLogo && (
+                        <img src={game.awayTeamLogo} alt={game.awayTeam} style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                      )}
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'rgba(255, 255, 255, 0.6)' }}>@</span>
+                      {game.homeTeamLogo && (
+                        <img src={game.homeTeamLogo} alt={game.homeTeam} style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                      )}
+                    </div>
+                    {/* Timestamp below logos */}
+                    <div className={styles.publicTime}>{formatPublicCardDate(game.kickoff)}, {game.kickoffLabel}</div>
                   </div>
-                  <div className={styles.publicTag}>{formatPublicCardDate(game.kickoff)}</div>
+                  {/* Filter icon top right */}
+                  <div style={{ fontSize: '1.5rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                    {activeFilter === 'publicMost' && <PiMoneyWavy />}
+                    {activeFilter === 'publicVegas' && <FaDice />}
+                    {activeFilter === 'publicSharp' && <LuArrowBigUpDash />}
+                  </div>
                 </div>
 
                 {/* Betting data - blur if no access */}
