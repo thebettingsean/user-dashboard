@@ -1332,90 +1332,94 @@ export default function NewDashboardPage() {
 
             return (
               <div key={game.id} className={styles.publicCard} style={{ position: 'relative' }}>
-                <div style={!hasAccess ? { filter: 'blur(8px)', userSelect: 'none', pointerEvents: 'none' } : {}}>
-                  <div className={styles.publicHeader}>
-                    <div>
-                      <div className={styles.publicMatchup}>{game.awayTeam} @ {game.homeTeam}</div>
-                      <div className={styles.publicTime}>{game.kickoffLabel}</div>
-                    </div>
-                    <div className={styles.publicTag}>{formatPublicCardDate(game.kickoff)}</div>
+                {/* Game header - always visible */}
+                <div className={styles.publicHeader}>
+                  <div>
+                    <div className={styles.publicMatchup}>{game.awayTeam} @ {game.homeTeam}</div>
+                    <div className={styles.publicTime}>{game.kickoffLabel}</div>
                   </div>
-
-                {activeFilter === 'publicMost' && (
-                  <div className={styles.publicMetrics}>
-                    {mostMarkets.map((market) => (
-                      <div key={market.id} className={styles.publicMetric}>
-                        <div className={styles.publicMetricLabel}>{market.label}</div>
-                        <div className={styles.publicMetricValues}>
-                          <span>{formatPercentage(market.bets)} bets</span>
-                          {market.stake !== null && <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>}
-                        </div>
-                        <div className={styles.publicMetricBar}>
-                          <div
-                            className={styles.publicMetricFill}
-                            style={{ width: `${Math.min(100, Math.max(0, market.bets ?? 0))}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeFilter === 'publicVegas' && (
-                  <div className={styles.publicMetrics}>
-                    {rlmStats.map((stat, index) => (
-                      <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
-                        <div className={styles.publicMetricLabel}>{formatBetTypeLabel(stat.bet_type as string | undefined, game)}</div>
-                        <div className={styles.publicMetricValues}>
-                          <span>{formatPercentage(stat.percentage)} movement</span>
-                        </div>
-                        <div className={styles.publicMetricBar}>
-                          <div
-                            className={styles.publicMetricFill}
-                            style={{ width: `${Math.min(100, Math.max(0, stat.percentage ?? 0))}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeFilter === 'publicSharp' && (
-                  <div className={styles.publicMetrics}>
-                    {bigMoney.slice(0, 3).map((stat) => (
-                      <div key={`${game.id}-big-${stat.id}`} className={styles.publicMetric}>
-                        <div className={styles.publicMetricLabel}>{stat.label}</div>
-                        <div className={styles.publicMetricValues}>
-                          <span>{formatPercentage(stat.bets)} bets</span>
-                          <span className={styles.publicStake}>{formatPercentage(stat.stake)} money</span>
-                          <span className={styles.publicDiff}>+{Math.round((stat.diff ?? 0) * 10) / 10}% diff</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  <div className={styles.publicTag}>{formatPublicCardDate(game.kickoff)}</div>
                 </div>
-                {!hasAccess && (
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    background: 'rgba(10, 15, 26, 0.6)',
-                    backdropFilter: 'blur(4px)',
-                    cursor: !isSignedIn ? 'pointer' : 'default'
-                  }}
-                  onClick={() => !isSignedIn && openSignUp()}
-                  >
-                    <FaLock style={{ fontSize: '1.5rem', color: 'rgba(255, 255, 255, 0.6)' }} />
-                    <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                      {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
-                    </span>
-                  </div>
-                )}
+
+                {/* Betting data - blur if no access */}
+                <div style={!hasAccess ? { filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', position: 'relative' } : {}}>
+                  {activeFilter === 'publicMost' && (
+                    <div className={styles.publicMetrics}>
+                      {mostMarkets.map((market) => (
+                        <div key={market.id} className={styles.publicMetric}>
+                          <div className={styles.publicMetricLabel}>{market.label}</div>
+                          <div className={styles.publicMetricValues}>
+                            <span>{formatPercentage(market.bets)} bets</span>
+                            {market.stake !== null && <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>}
+                          </div>
+                          <div className={styles.publicMetricBar}>
+                            <div
+                              className={styles.publicMetricFill}
+                              style={{ width: `${Math.min(100, Math.max(0, market.bets ?? 0))}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {activeFilter === 'publicVegas' && (
+                    <div className={styles.publicMetrics}>
+                      {rlmStats.map((stat, index) => (
+                        <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
+                          <div className={styles.publicMetricLabel}>{formatBetTypeLabel(stat.bet_type as string | undefined, game)}</div>
+                          <div className={styles.publicMetricValues}>
+                            <span>{formatPercentage(stat.percentage)} movement</span>
+                          </div>
+                          <div className={styles.publicMetricBar}>
+                            <div
+                              className={styles.publicMetricFill}
+                              style={{ width: `${Math.min(100, Math.max(0, stat.percentage ?? 0))}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {activeFilter === 'publicSharp' && (
+                    <div className={styles.publicMetrics}>
+                      {bigMoney.slice(0, 3).map((stat) => (
+                        <div key={`${game.id}-big-${stat.id}`} className={styles.publicMetric}>
+                          <div className={styles.publicMetricLabel}>{stat.label}</div>
+                          <div className={styles.publicMetricValues}>
+                            <span>{formatPercentage(stat.bets)} bets</span>
+                            <span className={styles.publicStake}>{formatPercentage(stat.stake)} money</span>
+                            <span className={styles.publicDiff}>+{Math.round((stat.diff ?? 0) * 10) / 10}% diff</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Lock overlay - only over betting data */}
+                  {!hasAccess && (
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      background: 'rgba(10, 15, 26, 0.5)',
+                      backdropFilter: 'blur(2px)',
+                      cursor: !isSignedIn ? 'pointer' : 'default'
+                    }}
+                    onClick={() => !isSignedIn && openSignUp()}
+                    >
+                      <FaLock style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.7)' }} />
+                      <span style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}>
+                        {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )
           })}
