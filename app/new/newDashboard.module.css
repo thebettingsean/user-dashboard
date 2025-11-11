@@ -349,8 +349,68 @@
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
   color: inherit;
+}
+
+.sbRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.sbTeamRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.sbLogo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sbTeamName {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sbRight {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sbPill {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 7px;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sbTimeRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  margin-top: 4px;
+}
+
+.sbTime {
+  font-size: 10px;
+  color: rgba(226, 232, 240, 0.6);
+  font-weight: 500;
 }
 
 .gameCardRow1 {
@@ -952,7 +1012,7 @@
 
 .aboutInlineBody h3 {
   font-family: 'Courier New', 'Courier', monospace;
-  color: #6366f1;
+  color: rgba(226, 232, 240, 0.9);
   font-size: 14px;
   font-weight: 700;
   margin: 20px 0 10px 0;
@@ -974,8 +1034,8 @@
 }
 
 .aboutInlineBody strong {
-  color: #6366f1;
-  font-weight: 600;
+  color: rgba(226, 232, 240, 0.95);
+  font-weight: 700;
 }
 
 .aboutInlineBody p {
@@ -983,15 +1043,15 @@
 }
 
 .aboutHighlight {
-  background: rgba(99, 102, 241, 0.15);
-  border-left: 3px solid #6366f1;
+  background: rgba(148, 163, 184, 0.1);
+  border-left: 3px solid rgba(148, 163, 184, 0.4);
   padding: 12px 16px;
   border-radius: 8px;
   margin: 16px 0;
 }
 
 .aboutSubtitle {
-  color: #0ea5e9;
+  color: rgba(226, 232, 240, 0.8);
   font-weight: 600;
   margin-top: 4px;
 }

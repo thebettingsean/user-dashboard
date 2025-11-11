@@ -800,25 +800,27 @@ export default function NewDashboardPage() {
                 key={game.id}
                 className={styles.gameCard}
               >
-                <div className={styles.gameCardRow1}>
-                  <span className={styles.compactMatchup}>
-                    {game.awayTeam} @ {game.homeTeam}
-                  </span>
-                  {game.awayTeamLogo && game.homeTeamLogo && (
-                    <div className={styles.teamLogos}>
-                      <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.teamLogo} />
-                      <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.teamLogo} />
-                    </div>
-                  )}
+                <div className={styles.sbRow}>
+                  <div className={styles.sbTeamRow}>
+                    {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />}
+                    <span className={styles.sbTeamName}>{game.awayTeam}</span>
+                  </div>
+                  <div className={styles.sbRight}>
+                    <span className={styles.sbPill}>Picks {game.picks.total}</span>
+                    <span className={styles.sbPill}>Data {dataCount}/4</span>
+                  </div>
                 </div>
-                <div className={styles.gameCardRow2}>
-                  <span className={styles.compactPill}>Script {game.script.strengthLabel ?? 'Minimal'}</span>
-                  <span className={styles.compactPill}>Picks {game.picks.total}</span>
-                  <span className={styles.compactPill}>Data {dataCount}/4</span>
+                <div className={styles.sbRow}>
+                  <div className={styles.sbTeamRow}>
+                    {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />}
+                    <span className={styles.sbTeamName}>{game.homeTeam}</span>
+                  </div>
+                  <div className={styles.sbRight}>
+                    <span className={styles.sbPill}>Script {game.script.strengthLabel ?? 'Minimal'}</span>
+                  </div>
                 </div>
-                <div className={styles.gameCardRow3}>
-                  <span className={styles.viewDetails}>View details</span>
-                  <span className={styles.compactTime}>{game.kickoffLabel}</span>
+                <div className={styles.sbTimeRow}>
+                  <span className={styles.sbTime}>{game.kickoffLabel}</span>
                 </div>
               </div>
             )
@@ -1029,29 +1031,24 @@ export default function NewDashboardPage() {
           <h2 className={styles.aboutInlineTitle}>AI Game Scripts</h2>
           <div className={styles.aboutInlineBody}>
             <p>
-              Our <strong>AI Game Scripts</strong> are powered by <strong>Claude 3.5 Sonnet</strong> and 
-              meticulously crafted using insider betting data to give you an edge.
+              Our <strong>AI Game Scripts</strong> are powered by <strong>Claude</strong>, the most advanced reasoning model 
+              available, specifically chosen for its exceptional mathematical and analytical capabilities.
             </p>
 
             <h3>What Goes Into Each Script:</h3>
             <ul>
               <li><strong>Live Betting Splits</strong> — See where the public and sharps are leaning</li>
               <li><strong>Referee Trends</strong> — Historical data on how officials impact game outcomes</li>
-              <li><strong>Team H2H Stats</strong> — 3-year head-to-head matchup analysis</li>
+              <li><strong>Detailed Team Stats</strong> — Key offensive and defensive metrics</li>
+              <li><strong>Analyst Data</strong> — Professional narratives and picks from top cappers</li>
               <li><strong>Top Player Props</strong> — High-confidence plays based on historical hit rates</li>
             </ul>
 
-            <div className={styles.aboutHighlight}>
-              <strong>Script Strength Levels:</strong>
-              <div className={styles.aboutSubtitle}>
-                Minimal (1 credit) · Above Avg (2 credits) · Strong (3 credits)
-              </div>
-            </div>
-
+            <h3>Script Strength:</h3>
             <p>
-              Each script is <strong>regenerated every 4 hours</strong> leading up to game time to ensure 
-              you have the most up-to-date analysis. The AI synthesizes all available data into a 
-              clear, actionable narrative.
+              Each game is assigned a strength rating based on data availability and quality. Games with more complete 
+              data sets (referee history, team trends, public betting, props) receive higher ratings, giving you 
+              confidence in the depth of analysis behind each script.
             </p>
 
             <p>
