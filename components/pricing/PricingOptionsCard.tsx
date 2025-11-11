@@ -369,32 +369,58 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               : 'Select a Plan'}
           </button>
 
-          <button
-            onClick={() => setShowInfoModal(true)}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginTop: '1rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: 'rgba(255, 255, 255, 0.7)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
-            }}
-          >
-            Learn More
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+            <button
+              onClick={() => window.location.href = '/'}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+              }}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setShowInfoModal(true)}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+              }}
+            >
+              Learn More
+            </button>
+          </div>
 
           <div
             style={{

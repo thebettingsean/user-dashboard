@@ -360,9 +360,13 @@ export default function AnalystPicksPage() {
   }
 
   const handleUnlockSingle = (pickId: string, pickTitle: string) => {
-    // If not signed in, trigger Clerk sign-up modal
+    // If not signed in, save current page and redirect to sign-in
     if (!isSignedIn) {
-      window.location.href = '/sign-in'
+      // Save return URL to localStorage so we can redirect back after sign-up
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('return_url_after_signup', window.location.pathname)
+      }
+      window.location.href = '/sign-up'
       return
     }
     
@@ -371,9 +375,13 @@ export default function AnalystPicksPage() {
   }
 
   const handleUnlockAll = () => {
-    // If not signed in, trigger Clerk sign-up modal
+    // If not signed in, save current page and redirect to sign-in
     if (!isSignedIn) {
-      window.location.href = '/sign-in'
+      // Save return URL to localStorage so we can redirect back after sign-up
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('return_url_after_signup', window.location.pathname)
+      }
+      window.location.href = '/sign-up'
       return
     }
     

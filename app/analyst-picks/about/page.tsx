@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import DotGrid from '../../../components/hero/DotGrid'
 import { ChromaGrid } from '../../../components/hero/ChromaGrid'
@@ -244,6 +245,7 @@ const reviewEntries = [
 
 export default function HeroNewPage() {
   const router = useRouter()
+  const { isSignedIn } = useUser()
   const [ctaButtonVisible, setCtaButtonVisible] = useState(false)
 
   useEffect(() => {
@@ -252,6 +254,16 @@ export default function HeroNewPage() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [])
+
+  const handleGetStartedClick = () => {
+    if (!isSignedIn) {
+      // Not signed in - redirect to sign-up, then they'll auto-go to pricing
+      window.location.href = '/sign-up'
+    } else {
+      // Already signed in - go straight to pricing
+      window.location.href = '/pricing'
+    }
+  }
 
   return (
     <div className={styles.heroNewPage}>
@@ -365,7 +377,7 @@ export default function HeroNewPage() {
               <span className={styles.ctaText}>Your path to profit</span>
               <button
                 className={styles.ctaButton}
-                onClick={() => window.location.href = 'https://dashboard.thebettinginsider.com/pricing'}
+                onClick={handleGetStartedClick}
               >
                 Get Started
               </button>
