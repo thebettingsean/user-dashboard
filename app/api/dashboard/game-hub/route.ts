@@ -319,11 +319,17 @@ export async function GET(request: NextRequest) {
       return strengthB - strengthA
     })[0]
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       sport: sport.toUpperCase(),
       games: upcomingSorted,
       spotlightGameId: spotlight?.id ?? null
     })
+    
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (error) {
     console.error('Error aggregating dashboard game hub data:', error)
     return NextResponse.json({ error: 'Failed to load game hub data' }, { status: 500 })
@@ -331,3 +337,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0

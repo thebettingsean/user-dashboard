@@ -224,7 +224,13 @@ export async function GET(request: NextRequest) {
 
     picks.sort((a, b) => b.units - a.units)
 
-    return NextResponse.json({ sport: sport.toUpperCase(), filter, picks })
+    const response = NextResponse.json({ sport: sport.toUpperCase(), filter, picks })
+    
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (error) {
     console.error('Unexpected error fetching dashboard picks:', error)
     return NextResponse.json({ error: 'Unexpected error' }, { status: 500 })
@@ -232,3 +238,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0

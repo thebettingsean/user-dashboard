@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.SNAPSHOTS_SUPABASE_URL || process.env.SUPABASE_URL || 'https://cmulndosilihjhlurbth.supabase.co'
-const SUPABASE_SERVICE_KEY =
+const SNAPSHOTS_SUPABASE_URL = process.env.SNAPSHOTS_SUPABASE_URL || 'https://knccqavkxvezhdfoktay.supabase.co'
+const SNAPSHOTS_SUPABASE_SERVICE_KEY =
   process.env.SNAPSHOTS_SUPABASE_SERVICE_KEY ||
-  process.env.SUPABASE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2NxYXZreHZlemhkZm9rdGF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjM1ODkwNywiZXhwIjoyMDY3OTM0OTA3fQ.JjGpZGVnZsN7P2lldSrtByx8Y9cqJjzTj3mYm8fj29M'
 
-const snapshotsClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+const snapshotsClient = createClient(SNAPSHOTS_SUPABASE_URL, SNAPSHOTS_SUPABASE_SERVICE_KEY)
 
 const SUPPORTED_SPORTS = ['nfl', 'nba'] as const
 
@@ -150,7 +149,13 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ sport, props: response })
+    const jsonResponse = NextResponse.json({ sport, props: response })
+    
+    jsonResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    jsonResponse.headers.set('Pragma', 'no-cache')
+    jsonResponse.headers.set('Expires', '0')
+    
+    return jsonResponse
   } catch (error) {
     console.error('Unexpected error fetching props:', error)
     return NextResponse.json({ error: 'Unexpected error' }, { status: 500 })
@@ -158,3 +163,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
