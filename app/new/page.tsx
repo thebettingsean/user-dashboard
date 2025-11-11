@@ -1254,25 +1254,41 @@ export default function NewDashboardPage() {
           
           return (
             <div key={game.id} className={styles.scriptCard}>
-              <div className={styles.scriptHeader}>
-                <span className={styles.scriptMatchup}>
-                  {game.awayTeam} @ {game.homeTeam}
-                </span>
-                <div className={styles.scriptBars}>
-                  {[1, 2, 3].map((level) => (
-                    <span
-                      key={level}
-                      className={`${styles.scriptBar} ${strength >= level ? styles[`scriptBarActive${level}`] : ''}`}
-                    />
-                  ))}
+              {/* Row 1: Away team + Strength */}
+              <div className={styles.sbRow}>
+                <div className={styles.sbTeamRow}>
+                  {game.awayTeamLogo && (
+                    <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />
+                  )}
+                  <span className={styles.sbTeamName}>{game.awayTeam}</span>
+                </div>
+                <div className={styles.sbRight}>
+                  <div className={styles.scriptBars}>
+                    {[1, 2, 3].map((level) => (
+                      <span
+                        key={level}
+                        className={`${styles.scriptBar} ${strength >= level ? styles[`scriptBarActive${level}`] : ''}`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className={styles.scriptData}>Active Data: {strengthLabel}</div>
-              <div className={styles.scriptFooter}>
-                <div className={styles.scriptDate}>
-                  <span>{formatKickoffDate(game.kickoff)}</span>
-                  <span>{game.kickoffLabel}</span>
+
+              {/* Row 2: Home team */}
+              <div className={styles.sbRow}>
+                <div className={styles.sbTeamRow}>
+                  {game.homeTeamLogo && (
+                    <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />
+                  )}
+                  <span className={styles.sbTeamName}>{game.homeTeam}</span>
                 </div>
+              </div>
+
+              {/* Row 3: Date/Time + Generate button */}
+              <div className={styles.sbTimeRow}>
+                <span className={styles.sbTime}>
+                  {formatKickoffDate(game.kickoff)}, {game.kickoffLabel}
+                </span>
                 <button 
                   className={styles.scriptGenerate} 
                   type="button"
@@ -1290,6 +1306,8 @@ export default function NewDashboardPage() {
                   )}
                 </button>
               </div>
+
+              {/* Expanded Script Content */}
               {isExpanded && (
                 <div className={styles.scriptContent}>
                   {isLoading ? (
