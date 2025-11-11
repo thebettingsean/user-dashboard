@@ -1,0 +1,438 @@
+/* ========== CONTACT WRAPPER ========== */
+.contactWrapper {
+  background: #0a0f1a;
+  color: #ffffff;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Gradient Lines Background */
+.heroGradientLine {
+  position: fixed;
+  width: 100vw;
+  height: 60px;
+  pointer-events: none;
+  filter: blur(15px);
+  opacity: 0;
+  z-index: 0;
+  background-size: 300% 100%;
+}
+
+/* Left side streaks */
+.heroGradientLine[data-direction="left"] {
+  left: -100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.08) 15%,
+    rgba(139, 92, 246, 0.12) 30%,
+    rgba(59, 130, 246, 0.1) 45%,
+    rgba(139, 92, 246, 0.15) 60%,
+    rgba(59, 130, 246, 0.1) 75%,
+    rgba(139, 92, 246, 0.12) 85%,
+    rgba(59, 130, 246, 0.08) 95%,
+    transparent 100%
+  );
+  animation: gradientFlow 3s ease-in-out infinite, streakSlideLeft 4s ease-in-out infinite, streakFade 4s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+
+/* Right side streaks */
+.heroGradientLine[data-direction="right"] {
+  right: -100%;
+  background: linear-gradient(
+    270deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.08) 15%,
+    rgba(139, 92, 246, 0.12) 30%,
+    rgba(59, 130, 246, 0.1) 45%,
+    rgba(139, 92, 246, 0.15) 60%,
+    rgba(59, 130, 246, 0.1) 75%,
+    rgba(139, 92, 246, 0.12) 85%,
+    rgba(59, 130, 246, 0.08) 95%,
+    transparent 100%
+  );
+  animation: gradientFlow 3s ease-in-out infinite, streakSlideRight 4s ease-in-out infinite, streakFade 4s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+
+/* Height positions */
+.heroGradientLine[data-position="high"] {
+  top: 15%;
+}
+
+.heroGradientLine[data-position="mid"] {
+  top: 50%;
+}
+
+.heroGradientLine[data-position="low"] {
+  bottom: 20%;
+}
+
+/* Ensure mid position is centered vertically */
+.heroGradientLine[data-position="mid"][data-direction="left"] {
+  transform: translateY(-50%);
+}
+
+.heroGradientLine[data-position="mid"][data-direction="right"] {
+  transform: translateY(-50%);
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: -300% 0;
+  }
+  50% {
+    background-position: 300% 0;
+  }
+  100% {
+    background-position: -300% 0;
+  }
+}
+
+@keyframes streakSlideLeft {
+  0% {
+    left: -100%;
+  }
+  10% {
+    left: -100%;
+  }
+  40% {
+    left: 100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: -100%;
+  }
+}
+
+@keyframes streakSlideRight {
+  0% {
+    right: -100%;
+  }
+  10% {
+    right: -100%;
+  }
+  40% {
+    right: 100%;
+  }
+  50% {
+    right: 100%;
+  }
+  100% {
+    right: -100%;
+  }
+}
+
+@keyframes streakFade {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.6;
+  }
+  38% {
+    opacity: 0.6;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Section */
+.heroSection {
+  position: relative;
+  padding: 8rem 2rem 4rem;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.heroContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heroHeader {
+  text-align: center;
+}
+
+.heroLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.heroTitleHighlight {
+  color: #ffffff;
+  display: inline-block;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  color: #e5e7eb;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ========== CONTACT GRID ========== */
+.contactGrid {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ========== CONTACT CARD ========== */
+.contactCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.contactCard.animate {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.contactCard:hover {
+  transform: translateY(-5px);
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.contactCard.animate:hover {
+  transform: translateY(-5px);
+}
+
+.cardIcon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #1e3a8a, #60a5fa);
+  border-radius: 16px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.contactCard:hover .cardIcon {
+  transform: scale(1.1);
+}
+
+.partnersIcon {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+}
+
+.cardIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.emailAddress {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #60a5fa;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  word-break: break-word;
+}
+
+.emailAddress:hover {
+  color: #3b82f6;
+  transform: translateX(5px);
+}
+
+.partnersEmail {
+  color: #a855f7;
+}
+
+.partnersEmail:hover {
+  color: #9333ea;
+}
+
+.cardDescription {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* ========== SUPPORT SECTION ========== */
+.supportSection {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 2rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.supportCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.supportCard.animate {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.supportTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.responseTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.responseTimeLabel {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.responseTimeValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.supportText {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ========== RESPONSIVE STYLES ========== */
+@media (max-width: 1024px) {
+  .contactGrid {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .supportSection {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .contactCard,
+  .supportCard {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contactGrid {
+    padding: 2rem 1rem 4rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .supportSection {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .contactCard,
+  .supportCard {
+    padding: 2rem;
+    border-radius: 20px;
+  }
+
+  .heroSection {
+    padding: 4rem 1rem 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    padding: 4rem 1rem 2rem;
+  }
+
+  .contactCard,
+  .supportCard {
+    padding: 1.5rem;
+  }
+
+  .emailAddress {
+    font-size: 1rem;
+    word-break: break-all;
+  }
+}

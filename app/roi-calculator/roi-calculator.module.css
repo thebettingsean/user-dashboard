@@ -1,0 +1,675 @@
+/* ========== CALCULATOR WRAPPER ========== */
+.calculatorWrapper {
+  background: #0a0f1a;
+  color: #ffffff;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Gradient Lines Background */
+.heroGradientLine {
+  position: fixed;
+  width: 100vw;
+  height: 60px;
+  pointer-events: none;
+  filter: blur(15px);
+  opacity: 0;
+  z-index: 0;
+  background-size: 300% 100%;
+}
+
+/* Left side streaks */
+.heroGradientLine[data-direction="left"] {
+  left: -100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.08) 15%,
+    rgba(139, 92, 246, 0.12) 30%,
+    rgba(59, 130, 246, 0.1) 45%,
+    rgba(139, 92, 246, 0.15) 60%,
+    rgba(59, 130, 246, 0.1) 75%,
+    rgba(139, 92, 246, 0.12) 85%,
+    rgba(59, 130, 246, 0.08) 95%,
+    transparent 100%
+  );
+  animation: gradientFlow 3s ease-in-out infinite, streakSlideLeft 4s ease-in-out infinite, streakFade 4s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+
+/* Right side streaks */
+.heroGradientLine[data-direction="right"] {
+  right: -100%;
+  background: linear-gradient(
+    270deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.08) 15%,
+    rgba(139, 92, 246, 0.12) 30%,
+    rgba(59, 130, 246, 0.1) 45%,
+    rgba(139, 92, 246, 0.15) 60%,
+    rgba(59, 130, 246, 0.1) 75%,
+    rgba(139, 92, 246, 0.12) 85%,
+    rgba(59, 130, 246, 0.08) 95%,
+    transparent 100%
+  );
+  animation: gradientFlow 3s ease-in-out infinite, streakSlideRight 4s ease-in-out infinite, streakFade 4s ease-in-out infinite;
+  animation-fill-mode: both;
+}
+
+/* Height positions */
+.heroGradientLine[data-position="high"] {
+  top: 15%;
+}
+
+.heroGradientLine[data-position="mid"] {
+  top: 50%;
+}
+
+.heroGradientLine[data-position="low"] {
+  bottom: 20%;
+}
+
+/* Ensure mid position is centered vertically */
+.heroGradientLine[data-position="mid"][data-direction="left"] {
+  transform: translateY(-50%);
+}
+
+.heroGradientLine[data-position="mid"][data-direction="right"] {
+  transform: translateY(-50%);
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: -300% 0;
+  }
+  50% {
+    background-position: 300% 0;
+  }
+  100% {
+    background-position: -300% 0;
+  }
+}
+
+@keyframes streakSlideLeft {
+  0% {
+    left: -100%;
+  }
+  10% {
+    left: -100%;
+  }
+  40% {
+    left: 100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: -100%;
+  }
+}
+
+@keyframes streakSlideRight {
+  0% {
+    right: -100%;
+  }
+  10% {
+    right: -100%;
+  }
+  40% {
+    right: 100%;
+  }
+  50% {
+    right: 100%;
+  }
+  100% {
+    right: -100%;
+  }
+}
+
+@keyframes streakFade {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.6;
+  }
+  38% {
+    opacity: 0.6;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Section */
+.heroSection {
+  position: relative;
+  padding: 8rem 2rem 4rem;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.heroContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heroHeader {
+  text-align: center;
+}
+
+.heroLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+.heroTitleHighlight {
+  color: #ffffff;
+  display: inline-block;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  color: #e5e7eb;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.bankrollBuilderCta {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.ctaText {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.75rem;
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: inherit;
+}
+
+.ctaButton:hover {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+/* ========== CALCULATOR GRID ========== */
+.calculatorGrid {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== INPUT SECTION ========== */
+.inputSection {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.inputSection:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.chartSection .sectionTitle {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.inputGroup {
+  position: relative;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+/* Remove number input spinners */
+.inputField::-webkit-inner-spin-button,
+.inputField::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.inputField[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #60a5fa;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.inputSuffix {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+/* ========== RESULTS AND CHART GRID ========== */
+.resultsChartGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+/* ========== RESULTS GRID ========== */
+.resultsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
+}
+
+.metricCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.metricCard.animate {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.inputSection {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.progressSection,
+.chartSection {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.progressSection.animate,
+.chartSection.animate {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.metricCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.metricCard.animate:hover {
+  transform: translateY(-5px);
+}
+
+.metricLabel {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metricValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.metricChange {
+  font-size: 0.875rem;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ========== PROGRESS SECTION ========== */
+.progressSection {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.progressTable {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+  color: #60a5fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  font-size: 0.875rem;
+}
+
+.table tr:hover {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.summaryRiskGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.summaryColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summaryCard {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.1), rgba(96, 165, 250, 0.05));
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.summaryPeriod {
+  font-size: 0.875rem;
+  color: #60a5fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.summaryValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.summaryRoi {
+  font-size: 0.875rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.riskMetrics {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.riskTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 0.75rem;
+}
+
+.riskItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  font-size: 0.875rem;
+}
+
+.riskItem:last-child {
+  border-bottom: none;
+}
+
+.riskLabel {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.riskValue {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ========== CHART SECTION ========== */
+.chartSection {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  grid-row: 1 / 3;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.chartContainer {
+  position: relative;
+  height: 200px;
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ========== RESPONSIVE STYLES ========== */
+@media (max-width: 1024px) {
+  .calculatorGrid {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .inputSection,
+  .progressSection,
+  .chartSection {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .calculatorGrid {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .inputSection,
+  .progressSection,
+  .chartSection {
+    padding: 2rem;
+    border-radius: 20px;
+  }
+
+  .table {
+    font-size: 0.875rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .chartContainer {
+    height: 300px;
+  }
+
+  .inputGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .resultsChartGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .resultsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chartSection {
+    grid-row: auto;
+  }
+
+  .summaryRiskGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    padding: 4rem 1rem 2rem;
+  }
+
+  .inputSection,
+  .progressSection,
+  .chartSection {
+    padding: 1.5rem;
+  }
+
+  .chartContainer {
+    height: 250px;
+  }
+}

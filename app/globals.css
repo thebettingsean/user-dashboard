@@ -488,3 +488,19 @@ button[aria-label*="manage account"],
   flex-shrink: 0 !important;
   margin: 0 !important;
 }
+
+/* Navbar dropdown - guaranteed dark background that works everywhere */
+.navbar-dropdown {
+  position: absolute !important;
+  /* Solid, opaque dark background - works on ALL browsers */
+  background: rgba(15, 23, 42, 0.98) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  z-index: 1001 !important;
+  overflow: hidden !important;
+  /* Try backdrop-filter as enhancement, but solid background ensures it works */
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+}
