@@ -113,6 +113,8 @@ type DashboardPick = {
   id: string
   sport: string
   bettorName: string
+  bettorProfileImage: string | null
+  bettorProfileInitials: string | null
   betTitle: string
   units: number
   odds: string
@@ -684,6 +686,62 @@ export default function NewDashboardPage() {
 
   const renderPlaceholder = (message: string) => <div className={styles.placeholder}>{message}</div>
 
+  // Bettor Profile Image Component
+  const BettorProfileImage = ({ 
+    imageUrl, 
+    initials, 
+    size = 32 
+  }: { 
+    imageUrl: string | null; 
+    initials: string | null; 
+    size?: number 
+  }) => {
+    const [imgError, setImgError] = useState(false)
+    
+    const showInitials = !imageUrl || imgError
+    
+    return (
+      <div
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          borderRadius: '50%',
+          background: showInitials 
+            ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3))'
+            : 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          overflow: 'hidden',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}
+      >
+        {showInitials ? (
+          <span style={{ 
+            color: 'white', 
+            fontSize: `${size * 0.4}px`, 
+            fontWeight: 600,
+            textTransform: 'uppercase'
+          }}>
+            {initials || '?'}
+          </span>
+        ) : (
+          <img
+            src={imageUrl}
+            alt="Profile"
+            onError={() => setImgError(true)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
   const handleGenerateScript = async (gameId: string) => {
     // Check authentication first
     if (!isSignedIn) {
@@ -936,18 +994,28 @@ export default function NewDashboardPage() {
 
       return (
         <div className={styles.capperList}>
-          {picksByCapper.map((group) => (
-            <div key={group.name} className={styles.capperCard}>
-              <div className={styles.capperHeader}>
-                <span className={styles.capperName}>{group.name}</span>
-                {typeof group.winStreak === 'number' && group.winStreak > 0 && (
-                  <span className={styles.capperStreak}>
-                    <FaFireAlt className={styles.capperStreakIcon} />
-                    {group.winStreak}
-                  </span>
-                )}
-              </div>
-              {group.record && <div className={styles.capperRecord}>{group.record}</div>}
+          {picksByCapper.map((group) => {
+            // Get profile data from first pick in the group
+            const firstPick = group.picks[0]
+            return (
+              <div key={group.name} className={styles.capperCard}>
+                <div className={styles.capperHeader}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <BettorProfileImage 
+                      imageUrl={firstPick?.bettorProfileImage || null} 
+                      initials={firstPick?.bettorProfileInitials || null}
+                      size={36}
+                    />
+                    <span className={styles.capperName}>{group.name}</span>
+                  </div>
+                  {typeof group.winStreak === 'number' && group.winStreak > 0 && (
+                    <span className={styles.capperStreak}>
+                      <FaFireAlt className={styles.capperStreakIcon} />
+                      {group.winStreak}
+                    </span>
+                  )}
+                </div>
+                {group.record && <div className={styles.capperRecord}>{group.record}</div>}
               <div className={styles.capperPickList}>
                 {group.picks.map((pick) => {
                   const isExpanded = expandedAnalysis.has(pick.id)
@@ -1031,7 +1099,8 @@ export default function NewDashboardPage() {
                 })}
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )
     }
@@ -1043,7 +1112,14 @@ export default function NewDashboardPage() {
           return (
             <div key={pick.id} className={styles.pickCard}>
               <div className={styles.pickHeader}>
-                <span className={styles.pickBettor}>{pick.bettorName}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <BettorProfileImage 
+                    imageUrl={pick.bettorProfileImage} 
+                    initials={pick.bettorProfileInitials}
+                    size={32}
+                  />
+                  <span className={styles.pickBettor}>{pick.bettorName}</span>
+                </div>
                 <div className={styles.pickHeaderMeta}>{formatOddsUnits(pick.odds, pick.units)}</div>
               </div>
               <div className={styles.pickBody}>

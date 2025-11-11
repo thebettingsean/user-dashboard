@@ -23,6 +23,8 @@ type DashboardPick = {
   id: string
   sport: string
   bettorName: string
+  bettorProfileImage: string | null
+  bettorProfileInitials: string | null
   betTitle: string
   units: number
   odds: string
@@ -128,7 +130,7 @@ export async function GET(request: NextRequest) {
 
     const baseQuery = supabase
       .from('picks')
-      .select('id, sport, bet_title, units, odds, game_time, result, game_id, analysis, bettors(name, record, win_streak)')
+      .select('id, sport, bet_title, units, odds, game_time, result, game_id, analysis, bettors(name, record, win_streak, profile_image, profile_initials)')
       .eq('sport', sport.toUpperCase())
 
     if (filter === 'results') {
@@ -201,6 +203,8 @@ export async function GET(request: NextRequest) {
         id: row.id,
         sport: row.sport,
         bettorName: (row.bettors as any)?.name || 'Insider',
+        bettorProfileImage: (row.bettors as any)?.profile_image || null,
+        bettorProfileInitials: (row.bettors as any)?.profile_initials || null,
         betTitle: row.bet_title || 'Wager',
         units: typeof row.units === 'number' ? row.units : parseFloat(row.units) || 0,
         odds: row.odds || 'N/A',
