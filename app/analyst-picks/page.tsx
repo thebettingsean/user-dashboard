@@ -804,7 +804,14 @@ export default function AnalystPicksPage() {
                       {isUnlocking ? 'Unlocking...' : '1 Credit or Upgrade'}
                     </button>
                   ) : (
-                    <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { e.stopPropagation(); window.location.href = '/pricing' }}>
+                    <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (!isSignedIn) {
+                        openSignUp()
+                      } else {
+                        window.location.href = '/pricing'
+                      }
+                    }}>
                       {isSignedIn ? 'Get Credits' : 'Sign In to Unlock'}
                     </button>
                   )}
@@ -994,12 +1001,12 @@ export default function AnalystPicksPage() {
               </button>
             )}
             {bettor.hasPremium && !isSignedIn && (
-              <a 
-                href="/pricing" 
+              <button 
+                onClick={() => openSignUp()}
                 style={styles.unlockWidgetButton}
               >
                 🔒 Unlock
-              </a>
+              </button>
             )}
 
             <div style={styles.bettorHeader}>
@@ -1359,7 +1366,13 @@ export default function AnalystPicksPage() {
 
         {/* Credit Badge - positioned on left */}
         <div style={{ marginBottom: '1rem' }}>
-          <AICreditBadge onShowModal={() => window.location.href = '/pricing'} />
+          <AICreditBadge onShowModal={() => {
+            if (!isSignedIn) {
+              openSignUp()
+            } else {
+              window.location.href = '/pricing'
+            }
+          }} />
         </div>
 
         {/* Filters */}
