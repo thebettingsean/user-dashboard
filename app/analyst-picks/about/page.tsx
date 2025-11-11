@@ -16,7 +16,6 @@ import { GiReceiveMoney } from "react-icons/gi"
 import { FaHeart, FaInstagram } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
 import { FaStar } from "react-icons/fa"
-import PricingOptionsCard from '../../../components/pricing/PricingOptionsCard'
 
 // Decrypted Text Animation Component
 function DecryptedText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -462,14 +461,19 @@ export default function HeroNewPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* CTA Section */}
       <section className={styles.pricingEmbedSection}>
         <div className={styles.pricingEmbedContent}>
           <div className={styles.pricingEmbedHeader}>
             <h2>Ready to join the Insiders?</h2>
             <p>Unlock daily analyst picks, AI scripts, and premium data in minutes.</p>
           </div>
-          <PricingOptionsCard variant="compact" />
+          <button 
+            onClick={handleGetStartedClick}
+            className={styles.ctaButton}
+          >
+            Get Started Now →
+          </button>
         </div>
       </section>
     </div>
