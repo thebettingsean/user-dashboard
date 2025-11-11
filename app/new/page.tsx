@@ -1257,52 +1257,74 @@ export default function NewDashboardPage() {
           
           return (
             <div key={game.id} className={styles.scriptCard}>
-              {/* Row 1: Away team + Strength */}
-              <div className={styles.sbRow}>
-                <div className={styles.sbTeamRow}>
+              {/* Row 1: Logos + Strength bars */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                marginBottom: '0.75rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {game.awayTeamLogo && (
-                    <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />
+                    <img src={game.awayTeamLogo} alt={game.awayTeam} style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
                   )}
-                  <span className={styles.sbTeamName}>{game.awayTeam}</span>
-                </div>
-                <div className={styles.sbRight}>
-                  <div className={styles.scriptBars}>
-                    {[1, 2, 3].map((level) => (
-                      <span
-                        key={level}
-                        className={`${styles.scriptBar} ${strength >= level ? styles[`scriptBarActive${level}`] : ''}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Home team */}
-              <div className={styles.sbRow}>
-                <div className={styles.sbTeamRow}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'rgba(255, 255, 255, 0.6)' }}>@</span>
                   {game.homeTeamLogo && (
-                    <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />
+                    <img src={game.homeTeamLogo} alt={game.homeTeam} style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
                   )}
-                  <span className={styles.sbTeamName}>{game.homeTeam}</span>
+                </div>
+                <div className={styles.scriptBars}>
+                  {[1, 2, 3].map((level) => (
+                    <span
+                      key={level}
+                      className={`${styles.scriptBar} ${strength >= level ? styles[`scriptBarActive${level}`] : ''}`}
+                    />
+                  ))}
                 </div>
               </div>
 
-              {/* Row 3: Date/Time + Generate button */}
-              <div className={styles.sbTimeRow}>
-                <span className={styles.sbTime}>
-                  {formatKickoffDate(game.kickoff)}, {game.kickoffLabel}
+              {/* Row 2: Date/Time + Generate button */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between' 
+              }}>
+                <span style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                  {formatPublicCardDate(game.kickoff)}
                 </span>
                 <button 
                   className={styles.scriptGenerate} 
                   type="button"
                   onClick={() => handleGenerateScript(game.id)}
+                  style={{
+                    padding: '0.4rem 0.9rem',
+                    fontSize: '0.85rem',
+                    background: 'rgba(37, 99, 235, 0.15)',
+                    border: '1px solid rgba(59, 130, 246, 0.4)',
+                    borderRadius: '6px',
+                    color: 'rgba(96, 165, 250, 0.95)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.2)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.25)'
+                    e.currentTarget.style.boxShadow = '0 0 18px rgba(59, 130, 246, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)'
+                    e.currentTarget.style.boxShadow = '0 0 12px rgba(59, 130, 246, 0.2)'
+                  }}
                 >
                   {content ? (isExpanded ? 'Hide Script' : 'View Script') : (
                     <>
                       Generate
                       {isSignedIn && !hasAccess && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
-                          ({strength} <GiTwoCoins style={{ fontSize: '0.85rem' }} />)
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          ({strength} <GiTwoCoins style={{ fontSize: '0.8rem' }} />)
                         </span>
                       )}
                     </>
@@ -1443,10 +1465,20 @@ export default function NewDashboardPage() {
                       )}
                     </div>
                     {/* Timestamp below logos */}
-                    <div className={styles.publicTime}>{formatPublicCardDate(game.kickoff)}, {game.kickoffLabel}</div>
+                    <div className={styles.publicTime}>{formatPublicCardDate(game.kickoff)}</div>
                   </div>
                   {/* Filter icon top right */}
-                  <div style={{ fontSize: '1.5rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                  <div style={{ 
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    border: '2px solid rgba(59, 130, 246, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    color: 'rgba(37, 99, 235, 0.9)'
+                  }}>
                     {activeFilter === 'publicMost' && <PiMoneyWavy />}
                     {activeFilter === 'publicVegas' && <FaDice />}
                     {activeFilter === 'publicSharp' && <LuArrowBigUpDash />}
