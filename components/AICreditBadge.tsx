@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { Infinity } from 'lucide-react'
 import { GiTwoCoins } from 'react-icons/gi'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
@@ -22,6 +22,7 @@ interface AICreditBadgeProps {
 
 export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) {
   const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
   const [creditStatus, setCreditStatus] = useState<CreditStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -86,14 +87,8 @@ export default function AICreditBadge({ onShowModal }: AICreditBadgeProps = {}) 
     return (
       <button
         onClick={() => {
-          // Trigger Clerk sign-in modal
-          const signInBtn = document.querySelector('[data-clerk-trigger]') as HTMLElement
-          if (signInBtn) {
-            signInBtn.click()
-          } else {
-            // Fallback: use window location to redirect to sign-in
-            window.location.href = '/sign-in'
-          }
+          // Open Clerk sign-up modal
+          openSignUp()
         }}
         style={{
           display: 'inline-flex',
