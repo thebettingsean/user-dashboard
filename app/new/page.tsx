@@ -871,13 +871,13 @@ export default function NewDashboardPage() {
       return (
         <div className={styles.topPropsGrid}>
           {sortedPropGames.map((game) => (
-            <div key={game.gameId} className={styles.topPropsCard}>
+            <div key={game.gameId} className={styles.topPropsCard} style={{ position: 'relative' }}>
               <div className={styles.topPropsHeader}>
                 <span>{game.matchup}</span>
                 <span>{game.kickoffLabel}</span>
               </div>
               <div className={styles.topPropsDivider} />
-              <div className={styles.topPropsList}>
+              <div className={styles.topPropsList} style={!hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
                 {game.props.length === 0 && <div className={styles.topPropsEmpty}>Props syncing soon.</div>}
                 {game.props.map((prop) => (
                   <div key={prop.id} className={styles.topPropRow}>
@@ -896,6 +896,21 @@ export default function NewDashboardPage() {
                   </div>
                 ))}
               </div>
+              {!hasAccess && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    bottom: '0.75rem',
+                    right: '0.75rem',
+                    fontSize: '0.75rem',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    cursor: !isSignedIn ? 'pointer' : 'default'
+                  }}
+                  onClick={() => !isSignedIn && openSignUp()}
+                >
+                  {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -947,32 +962,64 @@ export default function NewDashboardPage() {
                             {pick.awayTeam ?? 'Away'} @ {pick.homeTeam ?? 'Home'}
                           </div>
                         )}
-                        <p className={styles.pickTitle}>{pick.betTitle}</p>
+                        <p 
+                          className={styles.pickTitle}
+                          style={!hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                        >
+                          {pick.betTitle}
+                        </p>
                         <div className={styles.pickFooter}>
-                          <button
-                            className={styles.pickAnalysisLink}
-                            type="button"
-                            onClick={() => {
-                              setExpandedAnalysis((prev) => {
-                                const next = new Set(prev)
-                                if (next.has(pick.id)) {
-                                  next.delete(pick.id)
-                                } else {
-                                  next.add(pick.id)
-                                }
-                                return next
-                              })
-                            }}
-                          >
-                            <span>Analysis</span>
-                            <span
-                              className={styles.pickAnalysisLinkIcon}
-                              style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
-                            />
-                          </button>
-                          <span>{pick.gameTimeLabel}</span>
+                          {hasAccess ? (
+                            <>
+                              <button
+                                className={styles.pickAnalysisLink}
+                                type="button"
+                                onClick={() => {
+                                  setExpandedAnalysis((prev) => {
+                                    const next = new Set(prev)
+                                    if (next.has(pick.id)) {
+                                      next.delete(pick.id)
+                                    } else {
+                                      next.add(pick.id)
+                                    }
+                                    return next
+                                  })
+                                }}
+                              >
+                                <span>Analysis</span>
+                                <span
+                                  className={styles.pickAnalysisLinkIcon}
+                                  style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
+                                />
+                              </button>
+                              <span>{pick.gameTimeLabel}</span>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.5rem',
+                                filter: 'blur(6px)',
+                                userSelect: 'none'
+                              }}>
+                                <FaLock style={{ fontSize: '0.75rem' }} />
+                                <span style={{ fontSize: '0.875rem' }}>Analysis</span>
+                              </div>
+                              <span 
+                                style={{ 
+                                  fontSize: '0.75rem', 
+                                  color: 'rgba(255, 255, 255, 0.5)',
+                                  cursor: !isSignedIn ? 'pointer' : 'default'
+                                }}
+                                onClick={() => !isSignedIn && openSignUp()}
+                              >
+                                {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                              </span>
+                            </>
+                          )}
                         </div>
-                        {isExpanded && pick.analysis && (
+                        {hasAccess && isExpanded && pick.analysis && (
                           <div
                             className={styles.pickAnalysisContent}
                             dangerouslySetInnerHTML={{ __html: pick.analysis }}
@@ -1005,32 +1052,64 @@ export default function NewDashboardPage() {
                     {pick.awayTeam ?? 'Away'} @ {pick.homeTeam ?? 'Home'}
                   </div>
                 )}
-                <p className={styles.pickTitle}>{pick.betTitle}</p>
+                <p 
+                  className={styles.pickTitle}
+                  style={!hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                >
+                  {pick.betTitle}
+                </p>
                 <div className={styles.pickFooter}>
-                  <button
-                    className={styles.pickAnalysisLink}
-                    type="button"
-                    onClick={() => {
-                      setExpandedAnalysis((prev) => {
-                        const next = new Set(prev)
-                        if (next.has(pick.id)) {
-                          next.delete(pick.id)
-                        } else {
-                          next.add(pick.id)
-                        }
-                        return next
-                      })
-                    }}
-                  >
-                    <span>Analysis</span>
-                    <span
-                      className={styles.pickAnalysisLinkIcon}
-                      style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
-                    />
-                  </button>
-                  <span>{pick.gameTimeLabel}</span>
+                  {hasAccess ? (
+                    <>
+                      <button
+                        className={styles.pickAnalysisLink}
+                        type="button"
+                        onClick={() => {
+                          setExpandedAnalysis((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(pick.id)) {
+                              next.delete(pick.id)
+                            } else {
+                              next.add(pick.id)
+                            }
+                            return next
+                          })
+                        }}
+                      >
+                        <span>Analysis</span>
+                        <span
+                          className={styles.pickAnalysisLinkIcon}
+                          style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
+                        />
+                      </button>
+                      <span>{pick.gameTimeLabel}</span>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        filter: 'blur(6px)',
+                        userSelect: 'none'
+                      }}>
+                        <FaLock style={{ fontSize: '0.75rem' }} />
+                        <span style={{ fontSize: '0.875rem' }}>Analysis</span>
+                      </div>
+                      <span 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          cursor: !isSignedIn ? 'pointer' : 'default'
+                        }}
+                        onClick={() => !isSignedIn && openSignUp()}
+                      >
+                        {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                      </span>
+                    </>
+                  )}
                 </div>
-                {isExpanded && pick.analysis && (
+                {hasAccess && isExpanded && pick.analysis && (
                   <div className={styles.pickAnalysisContent} dangerouslySetInnerHTML={{ __html: pick.analysis }} />
                 )}
               </div>
@@ -1252,14 +1331,15 @@ export default function NewDashboardPage() {
             const bigMoney = getBigMoneyStats(game)
 
             return (
-              <div key={game.id} className={styles.publicCard}>
-                <div className={styles.publicHeader}>
-                  <div>
-                    <div className={styles.publicMatchup}>{game.awayTeam} @ {game.homeTeam}</div>
-                    <div className={styles.publicTime}>{game.kickoffLabel}</div>
+              <div key={game.id} className={styles.publicCard} style={{ position: 'relative' }}>
+                <div style={!hasAccess ? { filter: 'blur(8px)', userSelect: 'none', pointerEvents: 'none' } : {}}>
+                  <div className={styles.publicHeader}>
+                    <div>
+                      <div className={styles.publicMatchup}>{game.awayTeam} @ {game.homeTeam}</div>
+                      <div className={styles.publicTime}>{game.kickoffLabel}</div>
+                    </div>
+                    <div className={styles.publicTag}>{formatPublicCardDate(game.kickoff)}</div>
                   </div>
-                  <div className={styles.publicTag}>{formatPublicCardDate(game.kickoff)}</div>
-                </div>
 
                 {activeFilter === 'publicMost' && (
                   <div className={styles.publicMetrics}>
@@ -1312,6 +1392,28 @@ export default function NewDashboardPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+                </div>
+                {!hasAccess && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    background: 'rgba(10, 15, 26, 0.6)',
+                    backdropFilter: 'blur(4px)',
+                    cursor: !isSignedIn ? 'pointer' : 'default'
+                  }}
+                  onClick={() => !isSignedIn && openSignUp()}
+                  >
+                    <FaLock style={{ fontSize: '1.5rem', color: 'rgba(255, 255, 255, 0.6)' }} />
+                    <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                      {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                    </span>
                   </div>
                 )}
               </div>
