@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { useSubscription } from '../../lib/hooks/useSubscription'
 import styles from './newDashboard.module.css'
-import { FaFireAlt } from 'react-icons/fa'
+import { FaFireAlt, FaLock } from 'react-icons/fa'
+import { GiTwoCoins } from 'react-icons/gi'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 
@@ -413,6 +416,11 @@ function getBigMoneyStats(game: GameSummary) {
 }
 
 export default function NewDashboardPage() {
+  // Auth hooks
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const { isSubscribed, isLoading: subLoading } = useSubscription()
+  
   const [activeTab, setActiveTab] = useState<TabKey>('games')
   const [activeSport, setActiveSport] = useState<SupportedSport>('nfl')
   const [games, setGames] = useState<GameSummary[]>([])
@@ -432,6 +440,9 @@ export default function NewDashboardPage() {
   const [expandedAnalysis, setExpandedAnalysis] = useState<Set<string>>(new Set())
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Determine if user has access
+  const hasAccess = isSubscribed
 
   const getDefaultFilter = (tab: TabKey): SubFilterKey | undefined => subFilters[tab][0]
 
@@ -674,6 +685,12 @@ export default function NewDashboardPage() {
   const renderPlaceholder = (message: string) => <div className={styles.placeholder}>{message}</div>
 
   const handleGenerateScript = async (gameId: string) => {
+    // Check authentication first
+    if (!isSignedIn) {
+      openSignUp()
+      return
+    }
+    
     if (loadingScripts.has(gameId) || scriptContent.has(gameId)) {
       // Toggle expand/collapse if already loaded
       setExpandedScripts((prev) => {
@@ -1106,7 +1123,16 @@ export default function NewDashboardPage() {
                   type="button"
                   onClick={() => handleGenerateScript(game.id)}
                 >
-                  {content ? (isExpanded ? 'Hide Script' : 'View Script') : 'Generate Script'}
+                  {content ? (isExpanded ? 'Hide Script' : 'View Script') : (
+                    <>
+                      Generate
+                      {isSignedIn && !hasAccess && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
+                          ({strength} <GiTwoCoins style={{ fontSize: '0.85rem' }} />)
+                        </span>
+                      )}
+                    </>
+                  )}
                 </button>
               </div>
               {isExpanded && (
