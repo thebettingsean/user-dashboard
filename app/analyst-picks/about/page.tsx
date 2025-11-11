@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import Link from 'next/link'
 import DotGrid from '../../../components/hero/DotGrid'
 import { ChromaGrid } from '../../../components/hero/ChromaGrid'
@@ -246,6 +246,7 @@ const reviewEntries = [
 export default function HeroNewPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
   const [ctaButtonVisible, setCtaButtonVisible] = useState(false)
 
   useEffect(() => {
@@ -257,12 +258,12 @@ export default function HeroNewPage() {
 
   const handleGetStartedClick = () => {
     if (!isSignedIn) {
-      // Not signed in - redirect to sign-up, then they'll auto-go to pricing
-      window.location.href = '/sign-up'
-    } else {
-      // Already signed in - go straight to pricing
-      window.location.href = '/pricing'
+      // Not signed in - open Clerk modal
+      openSignUp()
+      return
     }
+    // Already signed in - go straight to pricing
+    window.location.href = '/pricing'
   }
 
   return (

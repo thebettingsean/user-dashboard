@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 
 // Supabase configuration
@@ -50,6 +51,8 @@ export default function FantasyPage() {
   const [showPosDropdown, setShowPosDropdown] = useState(false)
   const [showSortDropdown, setShowSortDropdown] = useState(false)
 
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
   const { isLoading: subLoading, isSubscribed } = useSubscription()
   const userHasAccess = isSubscribed
 
@@ -466,7 +469,13 @@ export default function FantasyPage() {
           <div style={styles.unlockCta}>
             <button
               style={styles.unlockButton}
-              onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
+              onClick={() => {
+                if (!isSignedIn) {
+                  openSignUp()
+                } else {
+                  window.location.href = '/pricing'
+                }
+              }}
             >
               Unlock All Rankings
             </button>
@@ -487,7 +496,11 @@ export default function FantasyPage() {
                 onFocus={(e) => {
                   if (!userHasAccess) {
                     e.target.blur()
-                    window.location.href = 'https://thebettinginsider.com/pricing'
+                    if (!isSignedIn) {
+                      openSignUp()
+                    } else {
+                      window.location.href = '/pricing'
+                    }
                   }
                 }}
               />
@@ -699,7 +712,13 @@ export default function FantasyPage() {
                     ...styles.playerRowLocked,
                     borderLeft: `3px solid ${getPositionColor(player.position)}`
                   }}
-                  onClick={() => window.location.href = 'https://thebettinginsider.com/pricing'}
+                  onClick={() => {
+                    if (!isSignedIn) {
+                      openSignUp()
+                    } else {
+                      window.location.href = '/pricing'
+                    }
+                  }}
                 >
                   {/* Desktop View */}
                   <div className="desktop-player-layout" style={{ filter: 'blur(4px)' }}>

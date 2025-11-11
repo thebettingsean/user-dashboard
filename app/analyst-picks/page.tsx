@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '../../lib/supabase'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 import MonthCalendarModal from '../../components/MonthCalendarModal'
@@ -145,6 +145,7 @@ function cleanRichTextHTML(html: string): string {
 
 export default function AnalystPicksPage() {
   const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
   const { hasAccess: userHasAccess, isLoading: subLoading } = useSubscription()
 
   // State
@@ -360,13 +361,11 @@ export default function AnalystPicksPage() {
   }
 
   const handleUnlockSingle = (pickId: string, pickTitle: string) => {
-    // If not signed in, save current page and redirect to sign-in
+    // If not signed in, open Clerk sign-up modal
     if (!isSignedIn) {
-      // Save return URL to localStorage so we can redirect back after sign-up
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('return_url_after_signup', window.location.pathname)
-      }
-      window.location.href = '/sign-up'
+      openSignUp({
+        redirectUrl: window.location.pathname
+      })
       return
     }
     
@@ -375,13 +374,11 @@ export default function AnalystPicksPage() {
   }
 
   const handleUnlockAll = () => {
-    // If not signed in, save current page and redirect to sign-in
+    // If not signed in, open Clerk sign-up modal
     if (!isSignedIn) {
-      // Save return URL to localStorage so we can redirect back after sign-up
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('return_url_after_signup', window.location.pathname)
-      }
-      window.location.href = '/sign-up'
+      openSignUp({
+        redirectUrl: window.location.pathname
+      })
       return
     }
     
