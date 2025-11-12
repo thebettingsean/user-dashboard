@@ -1,68 +1,152 @@
 .picksContainer {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
+  padding: 16px;
 }
 
-.loading, .noPicks {
+.pickCard {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(17, 27, 45, 0.9);
+  border-radius: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+}
+
+.pickHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: rgba(203, 213, 225, 0.85);
+  gap: 8px;
+}
+
+.pickBettor {
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.pickHeaderMeta {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.9);
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-weight: 600;
 }
 
-.placeholder {
-  color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
-  text-align: center;
-  padding: 2rem;
+.pickBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.lockedContainer {
+.pickMatchup {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.75);
+  font-weight: 500;
+}
+
+.pickTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #f8fafc;
+}
+
+.pickFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: rgba(203, 213, 225, 0.7);
+}
+
+.pickAnalysisLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.pickAnalysisLink:hover {
+  color: #ffffff;
+}
+
+.pickAnalysisLinkIcon {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-bottom: 2px solid rgba(226, 232, 240, 0.85);
+  border-right: 2px solid rgba(226, 232, 240, 0.85);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.pickAnalysisContent {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pickAnalysisContent p {
+  margin: 0 0 6px 0;
+}
+
+.pickAnalysisContent p:last-child {
+  margin-bottom: 0;
+}
+
+.loading, .noPicks, .lockedContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
-  gap: 1rem;
-  padding: 2rem;
+  min-height: 50vh;
+  color: white;
   text-align: center;
+  padding: 2rem;
 }
 
 .lockIcon {
-  font-size: 3rem;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.lockedContainer h3 {
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.lockedContainer p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9375rem;
-  max-width: 400px;
-  margin: 0;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .unlockButton {
-  padding: 0.75rem 2rem;
-  background: rgb(59, 130, 246);
-  border: none;
-  border-radius: 8px;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  border-radius: 999px;
   color: white;
-  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .unlockButton:hover {
-  background: rgb(37, 99, 235);
+  background: rgba(99, 102, 241, 0.35);
+  transform: scale(1.02);
 }
-
