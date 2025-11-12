@@ -133,8 +133,8 @@ export default function GameLayout({ children }: GameLayoutProps) {
         <div className={styles.bettingLines}>
           <div className={styles.line}>
             <span className={styles.lineValue}>
-              {(gameData.spread as any)?.away_line != null 
-                ? `${(gameData.spread as any).away_line > 0 ? '+' : ''}${(gameData.spread as any).away_line}` 
+              {gameData.spread?.awayLine != null 
+                ? `${gameData.spread.awayLine > 0 ? '+' : ''}${gameData.spread.awayLine}` 
                 : '-'}
             </span>
           </div>
@@ -147,8 +147,8 @@ export default function GameLayout({ children }: GameLayoutProps) {
           
           <div className={styles.line}>
             <span className={styles.lineValue}>
-              {(gameData.spread as any)?.home_line != null 
-                ? `${(gameData.spread as any).home_line > 0 ? '+' : ''}${(gameData.spread as any).home_line}` 
+              {gameData.spread?.homeLine != null 
+                ? `${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}` 
                 : '-'}
             </span>
           </div>
