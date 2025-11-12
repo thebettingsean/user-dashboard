@@ -17,33 +17,63 @@ export async function GET(
     
     console.log('[Picks API] Fetching picks for gameId:', gameId)
 
+    // First try without the relationship to debug
     const { data, error } = await supabase
       .from('picks')
-      .select('id, bet_title, odds, units, game_time, analysis, away_team, home_team, bettors(name, profile_image, profile_initials)')
+      .select('id, bet_title, odds, units, game_time, analysis, away_team, home_team, bettor_id')
       .eq('game_id', gameId)
       .eq('result', 'pending')
       .order('units', { ascending: false })
 
     if (error) {
       console.error('[Picks API] Error fetching picks:', error)
-      return NextResponse.json({ error: 'Failed to fetch picks' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to fetch picks', details: error }, { status: 500 })
     }
 
     console.log('[Picks API] Found picks:', data?.length || 0)
+    
+    if (data && data.length > 0) {
+      console.log('[Picks API] First pick:', data[0])
+    }
 
-    const picks = (data || []).map((pick: any) => ({
-      id: pick.id,
-      bettorName: pick.bettors?.name || 'Unknown',
-      bettorProfileImage: pick.bettors?.profile_image || null,
-      bettorProfileInitials: pick.bettors?.profile_initials || null,
-      betTitle: pick.bet_title,
-      odds: pick.odds,
-      units: pick.units,
-      analysis: pick.analysis,
-      gameTimeLabel: pick.game_time || '',
-      awayTeam: pick.away_team,
-      homeTeam: pick.home_team
-    }))
+    // Now fetch bettor info separately
+    const bettorIds = Array.from(new Set(data?.map((p: any) => p.bettor_id).filter(Boolean) || []))
+    console.log('[Picks API] Fetching bettors for IDs:', bettorIds)
+    
+    let bettorsMap: Record<string, any> = {}
+    if (bettorIds.length > 0) {
+      const { data: bettorsData, error: bettorsError } = await supabase
+        .from('bettors')
+        .select('id, name, profile_image, profile_initials')
+        .in('id', bettorIds)
+      
+      if (bettorsError) {
+        console.error('[Picks API] Error fetching bettors:', bettorsError)
+      } else {
+        bettorsMap = (bettorsData || []).reduce((acc: any, b: any) => {
+          acc[b.id] = b
+          return acc
+        }, {})
+        console.log('[Picks API] Bettors map:', bettorsMap)
+      }
+    }
+
+    const picks = (data || []).map((pick: any) => {
+      const bettor = bettorsMap[pick.bettor_id]
+      return {
+        id: pick.id,
+        bettorName: bettor?.name || 'Unknown',
+        bettorProfileImage: bettor?.profile_image || null,
+        bettorProfileInitials: bettor?.profile_initials || null,
+        betTitle: pick.bet_title,
+        odds: pick.odds,
+        units: pick.units,
+        analysis: pick.analysis,
+        gameTimeLabel: pick.game_time || '',
+        awayTeam: pick.away_team,
+        homeTeam: pick.home_team
+      }
+    })
 
     return NextResponse.json({ picks })
   } catch (error) {
