@@ -386,7 +386,7 @@ function PricingSection() {
     const updateSlider = () => {
       if (!sliderRef.current || !toggleRef.current) return
       
-      const buttonRefs: Record<'weekly' | 'monthly' | 'season', React.RefObject<HTMLButtonElement>> = {
+      const buttonRefs: Record<'weekly' | 'monthly' | 'season', React.RefObject<HTMLButtonElement | null>> = {
         weekly: weeklyButtonRef,
         monthly: monthlyButtonRef,
         season: seasonButtonRef
