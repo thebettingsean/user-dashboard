@@ -96,20 +96,33 @@ export default function GameLayout({ children }: GameLayoutProps) {
     )
   }
   
+  // Format date
+  const formatDate = () => {
+    const date = new Date(gameData.kickoff)
+    const month = date.toLocaleDateString('en-US', { month: 'short' })
+    const day = date.getDate()
+    return `${month} ${day}, ${gameData.kickoffLabel}`
+  }
+
   return (
     <div className={styles.container}>
       {/* Back button */}
       <button onClick={handleBackClick} className={styles.backButton}>
-        <FaArrowLeft /> {gameData.awayTeam} @ {gameData.homeTeam}
+        <FaArrowLeft /> Back
       </button>
       
       {/* Game Header */}
       <div className={styles.gameHeader}>
+        <div className={styles.gameTitle}>
+          {gameData.awayTeam} @ {gameData.homeTeam}
+        </div>
+        
+        <div className={styles.divider} />
+        
         <div className={styles.teams}>
           {gameData.awayTeamLogo && (
             <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
           )}
-          <span className={styles.at}>@</span>
           {gameData.homeTeamLogo && (
             <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
           )}
@@ -117,7 +130,7 @@ export default function GameLayout({ children }: GameLayoutProps) {
         
         <div className={styles.bettingLines}>
           <div className={styles.line}>
-            <span className={styles.lineLabel}>Away spread</span>
+            <span className={styles.lineLabel}>Spread {gameData.awayTeam}</span>
             <span className={styles.lineValue}>
               {gameData.spread?.away_line ? `${gameData.spread.away_line > 0 ? '+' : ''}${gameData.spread.away_line}` : '-'}
             </span>
@@ -131,12 +144,16 @@ export default function GameLayout({ children }: GameLayoutProps) {
           </div>
           
           <div className={styles.line}>
-            <span className={styles.lineLabel}>Home spread</span>
+            <span className={styles.lineLabel}>Spread {gameData.homeTeam}</span>
             <span className={styles.lineValue}>
               {gameData.spread?.home_line ? `${gameData.spread.home_line > 0 ? '+' : ''}${gameData.spread.home_line}` : '-'}
             </span>
           </div>
         </div>
+        
+        <div className={styles.divider} />
+        
+        <div className={styles.gameTime}>{formatDate()}</div>
       </div>
       
       {/* Tab Navigation */}
