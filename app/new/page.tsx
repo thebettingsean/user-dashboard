@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { BsClipboard2Data } from "react-icons/bs"
+import { IoTicketOutline } from "react-icons/io5"
+import { GiSelect } from "react-icons/gi"
 import styles from './newDashboard.module.css'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
@@ -115,7 +118,7 @@ export default function NewDashboardLanding() {
     )
   }
 
-  const renderSelectSportMessage = (message: string) => {
+  const renderSelectSportMessage = (message: string, icon: React.ReactNode) => {
     return (
       <div style={{
         display: 'flex',
@@ -127,10 +130,11 @@ export default function NewDashboardLanding() {
         textAlign: 'center'
       }}>
         <div style={{
-          fontSize: '3rem',
-          marginBottom: '1rem'
+          fontSize: '4rem',
+          marginBottom: '1.5rem',
+          color: 'rgba(255, 255, 255, 0.3)'
         }}>
-          ⬆️
+          {icon}
         </div>
         <div style={{
           fontSize: '1.25rem',
@@ -165,7 +169,14 @@ export default function NewDashboardLanding() {
       public: 'Select a sport to get public betting data for today'
     }
 
-    return renderSelectSportMessage(messages[activeTab])
+    const icons: Record<TabKey, React.ReactNode> = {
+      games: <BsClipboard2Data />,
+      picks: <IoTicketOutline />,
+      scripts: <BsClipboard2Data />,
+      public: <BsClipboard2Data />
+    }
+
+    return renderSelectSportMessage(messages[activeTab], icons[activeTab])
   }
 
   const availableFilters = subFilters[activeTab] ?? []
@@ -183,9 +194,7 @@ export default function NewDashboardLanding() {
             className={styles.sportChip}
             onClick={() => setIsSportMenuOpen((prev) => !prev)}
           >
-            <span style={{ color: 'white', fontSize: '0.875rem', fontWeight: 600 }}>
-              Select Sport
-            </span>
+            <GiSelect style={{ color: 'white', fontSize: '1.25rem' }} />
           </button>
           {isSportMenuOpen && (
             <div className={styles.sportDropdown}>
