@@ -144,7 +144,7 @@ const TargetCursor = ({
     }
 
     const resetCorners = () => {
-      const { cornerSize } = { borderWidth: 3, cornerSize: 12 }
+      const cornerSize = 12
       corners.forEach((corner, index) => {
         const positions = [
           { x: -cornerSize * 1.5, y: -cornerSize * 1.5 },
