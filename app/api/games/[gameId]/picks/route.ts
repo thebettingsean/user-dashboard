@@ -12,24 +12,10 @@ export async function GET(
 
     const { data, error } = await supabase
       .from('picks')
-      .select(`
-        id,
-        bet_title,
-        odds,
-        unit_size,
-        game_time,
-        analysis,
-        away_team,
-        home_team,
-        bettors (
-          name,
-          profile_image,
-          profile_initials
-        )
-      `)
+      .select('id, bet_title, odds, units, game_time, analysis, away_team, home_team, bettors(name, profile_image, profile_initials)')
       .eq('game_id', gameId)
-      .eq('status', 'pending')
-      .order('unit_size', { ascending: false })
+      .eq('result', 'pending')
+      .order('units', { ascending: false })
 
     if (error) {
       console.error('[Picks API] Error fetching picks:', error)
@@ -45,7 +31,7 @@ export async function GET(
       bettorProfileInitials: pick.bettors?.profile_initials || null,
       betTitle: pick.bet_title,
       odds: pick.odds,
-      units: pick.unit_size,
+      units: pick.units,
       analysis: pick.analysis,
       gameTimeLabel: pick.game_time || '',
       awayTeam: pick.away_team,
