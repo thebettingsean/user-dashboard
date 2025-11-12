@@ -20,7 +20,7 @@ export async function GET(
     // First try without the relationship to debug
     const { data, error } = await supabase
       .from('picks')
-      .select('id, bet_title, odds, units, game_time, analysis, away_team, home_team, bettor_id')
+      .select('id, bet_title, odds, units, game_time, analysis, bettor_id')
       .eq('game_id', gameId)
       .eq('result', 'pending')
       .order('units', { ascending: false })
@@ -70,8 +70,8 @@ export async function GET(
         units: pick.units,
         analysis: pick.analysis,
         gameTimeLabel: pick.game_time || '',
-        awayTeam: pick.away_team,
-        homeTeam: pick.home_team
+        awayTeam: null,
+        homeTeam: null
       }
     })
 
