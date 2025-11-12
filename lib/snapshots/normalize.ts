@@ -13,41 +13,16 @@ export interface NormalizedGameSchedule {
   venue?: string
 }
 
-function getTimezoneOffsetInMinutes(date: Date, timeZone: string) {
-  const f = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  })
-
-  const parts = f.formatToParts(date)
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value || '0')
-  const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'))
-  return (asUtc - date.getTime()) / 60000
-}
-
-function toUtcFromTrendline(gameDate: string): string {
-  if (!gameDate) return new Date().toISOString()
-
-  // Trendline already sends proper UTC timestamps
-  // Just validate and return as-is
-  const date = new Date(gameDate)
-  
-  if (Number.isNaN(date.getTime())) {
-    return new Date().toISOString()
-  }
-  
-  return date.toISOString()
-}
-
 export function normalizeTrendlineDate(gameDate: string): { utc: string; label: string } {
-  const utc = toUtcFromTrendline(gameDate)
-  const kickoff = new Date(utc)
+  if (!gameDate) {
+    return {
+      utc: new Date().toISOString(),
+      label: 'TBD'
+    }
+  }
+
+  // Trendline sends UTC timestamps - parse and keep as UTC
+  const kickoff = new Date(gameDate)
 
   if (Number.isNaN(kickoff.getTime())) {
     return {
@@ -56,6 +31,7 @@ export function normalizeTrendlineDate(gameDate: string): { utc: string; label: 
     }
   }
 
+  // Format the label in EST timezone
   const estFormatter = new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -64,7 +40,7 @@ export function normalizeTrendlineDate(gameDate: string): { utc: string; label: 
   })
 
   return {
-    utc,
+    utc: kickoff.toISOString(),
     label: `${estFormatter.format(kickoff)} ET`
   }
 }
