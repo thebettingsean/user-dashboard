@@ -122,6 +122,14 @@
   position: relative;
   background: transparent;
   border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tabButton:active {
+  transform: scale(0.98);
 }
 
 .tabButtonActive {
@@ -156,6 +164,14 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(148, 163, 184, 0.28);
   color: rgba(226, 232, 240, 0.75);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.filterPill:active {
+  transform: scale(0.96);
 }
 
 .filterPillActive {
