@@ -36,6 +36,7 @@ export default function PicksTabPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [expandedAnalysis, setExpandedAnalysis] = useState<Set<string>>(new Set())
   const [gameId, setGameId] = useState<string | null>(null)
+  const [gameKickoffLabel, setGameKickoffLabel] = useState<string | null>(null)
   
   const hasAccess = isSubscribed
   
@@ -58,6 +59,7 @@ export default function PicksTabPage() {
         if (game) {
           console.log('[PicksTab] Found game:', game.id)
           setGameId(game.id)
+          setGameKickoffLabel(game.kickoffLabel || '')
         } else {
           console.error('[PicksTab] No matching game found for slug:', gameSlug)
         }
@@ -142,7 +144,7 @@ export default function PicksTabPage() {
   }
   
   const formatOddsUnits = (odds: string, units: number) => {
-    return `(${odds} | ${units}u)`
+    return `${odds} | ${units}u`
   }
   
   return (
@@ -161,7 +163,16 @@ export default function PicksTabPage() {
                   />
                   <span className={styles.pickBettor}>{pick.bettorName}</span>
                 </div>
-                <div className={styles.pickHeaderMeta}>{formatOddsUnits(pick.odds, pick.units)}</div>
+                <div 
+                  className={styles.pickHeaderMeta}
+                  style={pick.units > 1.5 ? { 
+                    background: 'rgba(234, 88, 12, 0.25)', 
+                    borderColor: 'rgba(251, 146, 60, 0.5)',
+                    color: 'rgba(251, 146, 60, 0.95)'
+                  } : {}}
+                >
+                  {formatOddsUnits(pick.odds, pick.units)}
+                </div>
               </div>
               <div className={styles.pickBody}>
                 {(pick.awayTeam || pick.homeTeam) && (
@@ -199,7 +210,7 @@ export default function PicksTabPage() {
                           style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
                         />
                       </button>
-                      <span>{pick.gameTimeLabel}</span>
+                      <span>{gameKickoffLabel || pick.gameTimeLabel}</span>
                     </>
                   ) : (
                     <>

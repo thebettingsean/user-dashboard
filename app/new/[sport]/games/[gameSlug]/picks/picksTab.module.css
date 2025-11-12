@@ -104,17 +104,23 @@
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid rgba(148, 163, 184, 0.2);
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 12px;
   line-height: 1.5;
 }
 
 .pickAnalysisContent p {
   margin: 0 0 6px 0;
+  color: #ffffff !important;
 }
 
 .pickAnalysisContent p:last-child {
   margin-bottom: 0;
+}
+
+.pickAnalysisContent div,
+.pickAnalysisContent span {
+  color: #ffffff !important;
 }
 
 .loading, .noPicks, .lockedContainer {

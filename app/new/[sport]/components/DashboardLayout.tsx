@@ -237,7 +237,7 @@ function formatKickoffDate(isoString: string) {
 
 function formatOddsUnits(oddsRaw: string, units: number) {
   const normalizedOdds = oddsRaw && oddsRaw.trim().length > 0 ? oddsRaw.trim() : 'EVEN'
-  return `(${normalizedOdds} | ${units.toFixed(1)}u)`
+  return `${normalizedOdds} | ${units.toFixed(1)}u`
 }
 
 function formatOdds(value: number | null | undefined) {
@@ -1051,7 +1051,16 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   return (
                     <div key={pick.id} className={styles.capperPickCard}>
                       <div className={styles.capperPickHeader}>
-                        <div className={styles.pickHeaderMeta}>{formatOddsUnits(pick.odds, pick.units)}</div>
+                        <div 
+                          className={styles.pickHeaderMeta}
+                          style={pick.units > 1.5 ? { 
+                            background: 'rgba(234, 88, 12, 0.25)', 
+                            borderColor: 'rgba(251, 146, 60, 0.5)',
+                            color: 'rgba(251, 146, 60, 0.95)'
+                          } : {}}
+                        >
+                          {formatOddsUnits(pick.odds, pick.units)}
+                        </div>
                       </div>
                       <div className={styles.pickBody}>
                         {(pick.awayTeam || pick.homeTeam) && (
@@ -1149,7 +1158,16 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   />
                   <span className={styles.pickBettor}>{pick.bettorName}</span>
                 </div>
-                <div className={styles.pickHeaderMeta}>{formatOddsUnits(pick.odds, pick.units)}</div>
+                <div 
+                  className={styles.pickHeaderMeta}
+                  style={pick.units > 1.5 ? { 
+                    background: 'rgba(234, 88, 12, 0.25)', 
+                    borderColor: 'rgba(251, 146, 60, 0.5)',
+                    color: 'rgba(251, 146, 60, 0.95)'
+                  } : {}}
+                >
+                  {formatOddsUnits(pick.odds, pick.units)}
+                </div>
               </div>
               <div className={styles.pickBody}>
                 {(pick.awayTeam || pick.homeTeam) && (
