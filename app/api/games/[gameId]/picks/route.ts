@@ -7,6 +7,8 @@ export async function GET(
 ) {
   try {
     const { gameId } = await context.params
+    
+    console.log('[Picks API] Fetching picks for gameId:', gameId)
 
     const { data, error } = await supabase
       .from('picks')
@@ -30,9 +32,11 @@ export async function GET(
       .order('unit_size', { ascending: false })
 
     if (error) {
-      console.error('Error fetching picks:', error)
+      console.error('[Picks API] Error fetching picks:', error)
       return NextResponse.json({ error: 'Failed to fetch picks' }, { status: 500 })
     }
+
+    console.log('[Picks API] Found picks:', data?.length || 0)
 
     const picks = (data || []).map((pick: any) => ({
       id: pick.id,

@@ -64,16 +64,25 @@ export default function PicksTabPage() {
   
   // Then fetch picks for that game
   useEffect(() => {
-    if (!gameId) return
+    if (!gameId) {
+      console.log('[PicksTab] No gameId yet')
+      return
+    }
     
     const fetchPicks = async () => {
       try {
         setIsLoading(true)
+        console.log('[PicksTab] Fetching picks for gameId:', gameId)
         const res = await fetch(`/api/games/${gameId}/picks`)
         const data = await res.json()
         
+        console.log('[PicksTab] Picks API response:', data)
+        
         if (data.picks) {
           setPicks(data.picks)
+          console.log('[PicksTab] Set picks:', data.picks.length)
+        } else if (data.error) {
+          console.error('[PicksTab] API returned error:', data.error)
         }
       } catch (error) {
         console.error('Failed to fetch picks:', error)
