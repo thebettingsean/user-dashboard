@@ -47,9 +47,9 @@ async function loadScriptMeta(gameIds: string[], sport: League) {
 
   if (gameIds.length === 0) return meta
 
-  const { data, error } = await primarySupabase
+  const { data, error} = await primarySupabase
     .from('game_scripts')
-    .select('game_id, sport, data_strength, generated_at')
+    .select('game_id, sport, generated_at')
     .in('game_id', gameIds)
     .eq('sport', sport.toUpperCase())
     .order('generated_at', { ascending: false })
@@ -62,26 +62,11 @@ async function loadScriptMeta(gameIds: string[], sport: League) {
   for (const row of data || []) {
     if (meta.has(row.game_id)) continue
 
-    const strength = row.data_strength ?? null
-    let strengthLabel: string | null = null
-    switch (strength) {
-      case 3:
-        strengthLabel = 'Strong'
-        break
-      case 2:
-        strengthLabel = 'Above Avg'
-        break
-      case 1:
-        strengthLabel = 'Minimal'
-        break
-      default:
-        strengthLabel = null
-    }
-
+    // Script exists, but strength will be calculated dynamically based on available data
     meta.set(row.game_id, {
-      strength_label: strengthLabel,
-      strength_value: strength,
-      credits_required: strength,
+      strength_label: null, // Will be calculated later based on props + picks
+      strength_value: null,
+      credits_required: null,
       generated_at: row.generated_at ?? null
     })
   }
@@ -113,6 +98,42 @@ async function loadPickMeta(gameIds: string[], sport: League) {
   }
 
   return meta
+}
+
+/**
+ * Calculate script strength based on available data
+ * Rules:
+ * - 1 bar (Minimal): No props AND no picks available
+ * - 2 bars (Above Avg): Props available BUT no picks
+ * - 3 bars (Strong): Both props AND picks available
+ */
+function calculateScriptStrength(hasProps: boolean, hasPicks: boolean): {
+  strength_label: string | null
+  strength_value: number | null
+  credits_required: number | null
+} {
+  if (!hasProps && !hasPicks) {
+    return {
+      strength_label: 'Minimal',
+      strength_value: 1,
+      credits_required: 1
+    }
+  }
+  
+  if (hasProps && !hasPicks) {
+    return {
+      strength_label: 'Above Avg',
+      strength_value: 2,
+      credits_required: 2
+    }
+  }
+  
+  // Both props and picks available
+  return {
+    strength_label: 'Strong',
+    strength_value: 3,
+    credits_required: 3
+  }
 }
 
 function sanitizePublicMoney(publicMoney: any, game: any) {
@@ -231,11 +252,25 @@ export async function POST(request: NextRequest) {
         const publicMoney = sanitizePublicMoney(publicMoneyRaw, game)
         const teamStats = sanitizeTeamStats(gameDetails)
 
+        // Calculate script strength based on available data
+        const hasProps = Array.isArray(playerProps) && playerProps.length > 0
+        const hasPicks = (pickMeta.get(game.game_id)?.pending_count || 0) > 0
+        const calculatedStrength = calculateScriptStrength(hasProps, hasPicks)
+        
+        // Only use calculated strength if script exists
+        const scriptMetaForGame = scriptMeta.get(game.game_id)
+        const finalScriptMeta = scriptMetaForGame ? {
+          ...scriptMetaForGame,
+          ...calculatedStrength
+        } : null
+
         console.log('[snapshot-refresh] payload summary', {
           gameId: game.game_id,
           publicMoneyPresent: !!publicMoney,
           teamStatsPresent: !!teamStats,
-          propsCount: Array.isArray(playerProps) ? playerProps.length : 0
+          propsCount: Array.isArray(playerProps) ? playerProps.length : 0,
+          picksCount: pickMeta.get(game.game_id)?.pending_count || 0,
+          strength: calculatedStrength.strength_label
         })
 
         const spread = game.odds
@@ -281,7 +316,7 @@ export async function POST(request: NextRequest) {
           referee: refereeStats,
           team_stats: teamStats,
           props: playerProps && playerProps.length > 0 ? playerProps : null,
-          script_meta: scriptMeta.get(game.game_id) ?? null,
+          script_meta: finalScriptMeta,
           picks_meta: pickMeta.get(game.game_id) ?? { pending_count: 0 },
           raw_payload: game,
           updated_at: new Date().toISOString()

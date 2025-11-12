@@ -34,18 +34,15 @@ function getTimezoneOffsetInMinutes(date: Date, timeZone: string) {
 function toUtcFromTrendline(gameDate: string): string {
   if (!gameDate) return new Date().toISOString()
 
-  // Trendline sends timestamps tagged as UTC but representing America/New_York local time.
-  // Strip any timezone designator and interpret the value as Eastern, then convert to true UTC.
-  const sanitized = gameDate.replace('Z', '')
-  const [datePart, timePartWithMs = '00:00:00'] = sanitized.split('T')
-  const [timePart] = timePartWithMs.split('.')
-  const [year, month, day] = datePart.split('-').map(Number)
-  const [hour = 0, minute = 0, second = 0] = timePart.split(':').map(Number)
-
-  const estInstant = new Date(Date.UTC(year, month - 1, day, hour, minute, second))
-  const offsetMinutes = getTimezoneOffsetInMinutes(estInstant, 'America/New_York')
-  const utcMillis = estInstant.getTime() - offsetMinutes * 60_000
-  return new Date(utcMillis).toISOString()
+  // Trendline already sends proper UTC timestamps
+  // Just validate and return as-is
+  const date = new Date(gameDate)
+  
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString()
+  }
+  
+  return date.toISOString()
 }
 
 export function normalizeTrendlineDate(gameDate: string): { utc: string; label: string } {
