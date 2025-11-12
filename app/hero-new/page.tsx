@@ -668,6 +668,33 @@ export default function HeroNewPage() {
   const floatingContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Add class to body and html to override background
+    document.body.classList.add('hero-new-page')
+    document.documentElement.style.setProperty('background', '#0a0f1a', 'important')
+    document.documentElement.style.setProperty('background-image', 'none', 'important')
+    
+    // Inject style tag to override navbar styles with !important
+    const styleId = 'hero-new-navbar-override'
+    let styleTag = document.getElementById(styleId) as HTMLStyleElement
+    if (!styleTag) {
+      styleTag = document.createElement('style')
+      styleTag.id = styleId
+      styleTag.textContent = `
+        body.hero-new-page .desktop-nav,
+        body.hero-new-page .mobile-nav {
+          margin: 0 !important;
+          padding: 20px 0 0 0 !important;
+        }
+        body.hero-new-page .desktop-nav > div:first-child,
+        body.hero-new-page .mobile-nav > div:first-child {
+          background: rgba(10, 15, 26, 0.98) !important;
+          backdrop-filter: blur(30px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+        }
+      `
+      document.head.appendChild(styleTag)
+    }
+    
     const handleScroll = () => {
       const scrollY = window.scrollY
       const windowHeight = window.innerHeight
@@ -688,6 +715,15 @@ export default function HeroNewPage() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      // Remove class and restore default background when component unmounts
+      document.body.classList.remove('hero-new-page')
+      document.documentElement.style.removeProperty('background')
+      document.documentElement.style.removeProperty('background-image')
+      // Remove style tag
+      const style = document.getElementById(styleId)
+      if (style) {
+        style.remove()
+      }
     }
   }, [])
 

@@ -71,6 +71,30 @@ body {
   flex-direction: column;
 }
 
+/* Hero-new page: Remove all gaps and make navbar blend with hero section */
+body.hero-new-page {
+  background: #0a0f1a !important;
+}
+
+/* Override HTML gradient background on hero-new page */
+html:has(body.hero-new-page) {
+  background: #0a0f1a !important;
+  background-image: none !important;
+}
+
+/* Remove navbar margin completely on hero-new page */
+body.hero-new-page .desktop-nav,
+body.hero-new-page .mobile-nav {
+  margin: 0 !important;
+  padding: 20px 0 0 0 !important;
+}
+
+/* Make navbar background darker/more opaque to match hero section */
+body.hero-new-page .desktop-nav > div[style],
+body.hero-new-page .mobile-nav > div[style] {
+  background: rgba(10, 15, 26, 0.98) !important;
+}
+
 @media (max-width: 767px) {
   .desktop-nav {
     display: none !important;
