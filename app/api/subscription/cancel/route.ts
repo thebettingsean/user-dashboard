@@ -4,7 +4,7 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { supabaseFunnel } from '@/lib/supabase-funnel'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover',
+  apiVersion: '2025-10-29.clover',
 })
 
 const PROMO_50_OFF = process.env.STRIPE_PROMO_50_OFF!
