@@ -127,6 +127,9 @@ export async function GET(request: NextRequest) {
       const topThree = players
         .map(({ player, category }) => {
           const hitRate = computeHitRate(player)
+          const wins = toNumber(player?.record?.hit)
+          const losses = toNumber(player?.record?.miss)
+          
           return {
             id: `${row.game_id}-${player.player_id ?? player.player_name}`,
             playerName: player.player_name || 'Player',
@@ -134,6 +137,8 @@ export async function GET(request: NextRequest) {
             betTitle: category?.title || player.bet_name || 'Prop',
             line: formatPropLine(player, category),
             hitRate,
+            wins,
+            losses,
             record: formatRecord(player)
           }
         })

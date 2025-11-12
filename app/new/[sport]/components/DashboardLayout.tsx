@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
+import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
 import { FaFireAlt, FaLock } from 'react-icons/fa'
 import { FaDice } from 'react-icons/fa6'
@@ -910,8 +911,26 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     <span className={styles.sbTeamName}>{game.awayTeam}</span>
                   </div>
                   <div className={styles.sbRight}>
-                    <span className={styles.sbPill}>Picks {game.picks.total}</span>
-                    <span className={styles.sbPill}>Data {dataCount}/4</span>
+                    <span 
+                      className={styles.sbPill}
+                      style={game.picks.total > 0 ? {
+                        background: 'rgba(234, 88, 12, 0.25)',
+                        borderColor: 'rgba(251, 146, 60, 0.5)',
+                        color: 'rgba(251, 146, 60, 0.95)'
+                      } : {}}
+                    >
+                      Picks {game.picks.total}
+                    </span>
+                    <span 
+                      className={styles.sbPill}
+                      style={dataCount === 4 ? {
+                        background: 'rgba(30, 58, 138, 0.35)',
+                        borderColor: 'rgba(96, 165, 250, 0.5)',
+                        color: 'rgba(147, 197, 253, 0.95)'
+                      } : {}}
+                    >
+                      Data {dataCount}/4
+                    </span>
                   </div>
                 </div>
                 <div className={styles.sbRow}>
@@ -920,7 +939,22 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     <span className={styles.sbTeamName}>{game.homeTeam}</span>
                   </div>
                   <div className={styles.sbRight}>
-                    <span className={styles.sbPill}>Script {game.script.strengthLabel ?? 'Minimal'}</span>
+                    <span 
+                      className={styles.sbPill}
+                      style={
+                        game.script.strengthLabel === 'Strong' ? {
+                          background: 'rgba(21, 128, 61, 0.25)',
+                          borderColor: 'rgba(74, 222, 128, 0.5)',
+                          color: 'rgba(134, 239, 172, 0.95)'
+                        } : game.script.strengthLabel === 'Above Average' ? {
+                          background: 'rgba(133, 77, 14, 0.25)',
+                          borderColor: 'rgba(250, 204, 21, 0.5)',
+                          color: 'rgba(253, 224, 71, 0.95)'
+                        } : {}
+                      }
+                    >
+                      Script {game.script.strengthLabel ?? 'Minimal'}
+                    </span>
                   </div>
                 </div>
                 <div className={styles.sbTimeRow}>
@@ -973,7 +1007,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       {prop.hitRate !== null && (
                         <span className={styles.topPropBadge}>
                           <FaFireAlt className={styles.topPropIcon} />
-                          {formatPercentage(prop.hitRate)}
+                          {prop.wins !== undefined && prop.losses !== undefined ? `${prop.wins}-${prop.losses} ` : ''}
+                          ({formatPercentage(prop.hitRate)})
                         </span>
                       )}
                     </div>
@@ -1386,7 +1421,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       <span className={styles.dot}></span>
                     </div>
                   ) : (
-                    <div className={styles.scriptText} dangerouslySetInnerHTML={{ __html: content || '' }} />
+                    <div className={styles.scriptText} dangerouslySetInnerHTML={{ __html: formatScript(content || '') }} />
                   )}
                 </div>
               )}

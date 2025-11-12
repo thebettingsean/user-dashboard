@@ -7,6 +7,7 @@ import { useSubscription } from '../../../../../../lib/hooks/useSubscription'
 import { FaLock } from 'react-icons/fa'
 import GameLayout from '../components/GameLayout'
 import styles from './scriptTab.module.css'
+import { formatScript } from '../../../../../../lib/utils/formatScript'
 
 export default function ScriptTabPage() {
   const params = useParams()
@@ -112,9 +113,10 @@ export default function ScriptTabPage() {
   return (
     <GameLayout>
       <div className={styles.scriptContainer}>
-        <div className={styles.scriptContent}>
-          {script}
-        </div>
+        <div 
+          className={styles.scriptContent}
+          dangerouslySetInnerHTML={{ __html: formatScript(script) }}
+        />
       </div>
     </GameLayout>
   )

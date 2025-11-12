@@ -11,8 +11,20 @@
   color: #f8fafc;
   font-size: 14px;
   line-height: 1.8;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+}
+
+.scriptContent p {
+  margin: 0 0 16px 0;
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.scriptContent p:last-child {
+  margin-bottom: 0;
+}
+
+.scriptContent strong {
+  color: #6366f1;
+  font-weight: 700;
 }
 
 .loading, .noScript, .lockedContainer {
