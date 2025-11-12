@@ -33,6 +33,14 @@ interface GameData {
   publicMoney: PublicMoneyData | null
 }
 
+interface Market {
+  id: string
+  label: string
+  bets: number | null
+  stake: number | null
+  diff: number | null
+}
+
 export default function PublicBettingTabPage() {
   const params = useParams()
   const sport = params.sport as string
@@ -121,37 +129,91 @@ export default function PublicBettingTabPage() {
   
   // Helper to format percentages
   const formatPct = (val: number | null | undefined) => {
-    if (val === null || val === undefined) return '--'
-    return `${Math.round(val)}%`
+    if (val === null || val === undefined) return null
+    return val
   }
   
-  // Calculate big money stats (difference between money % and bets %)
-  const getBigMoneyForMarket = (bets: number | null | undefined, money: number | null | undefined) => {
-    if (bets === null || bets === undefined || money === null || money === undefined) return null
-    return money - bets
+  // Helper to safely convert to number
+  const toNumber = (val: any): number | null => {
+    if (val === null || val === undefined) return null
+    const num = typeof val === 'number' ? val : parseFloat(val)
+    return isNaN(num) ? null : num
   }
   
-  // Most public ML
-  const mlAwayBigMoney = getBigMoneyForMarket(pm.public_money_ml_away_bets_pct, pm.public_money_ml_away_stake_pct)
-  const mlHomeBigMoney = getBigMoneyForMarket(pm.public_money_ml_home_bets_pct, pm.public_money_ml_home_stake_pct)
-  const mostPublicML = 
-    (pm.public_money_ml_away_bets_pct ?? 0) > (pm.public_money_ml_home_bets_pct ?? 0)
-      ? { team: `${gameData.awayTeam} ML`, bets: pm.public_money_ml_away_bets_pct, money: pm.public_money_ml_away_stake_pct, diff: mlAwayBigMoney }
-      : { team: `${gameData.homeTeam} ML`, bets: pm.public_money_ml_home_bets_pct, money: pm.public_money_ml_home_stake_pct, diff: mlHomeBigMoney }
+  // Build all markets (showing MOST PUBLIC side for each)
+  const markets: Market[] = []
   
-  // Most public Spread
-  const spreadAwayBigMoney = getBigMoneyForMarket(pm.public_money_spread_away_bets_pct, pm.public_money_spread_away_stake_pct)
-  const spreadHomeBigMoney = getBigMoneyForMarket(pm.public_money_spread_home_bets_pct, pm.public_money_spread_home_stake_pct)
-  const mostPublicSpread = 
-    (pm.public_money_spread_away_bets_pct ?? 0) > (pm.public_money_spread_home_bets_pct ?? 0)
-      ? { team: `${gameData.awayTeam} Spread`, bets: pm.public_money_spread_away_bets_pct, money: pm.public_money_spread_away_stake_pct, diff: spreadAwayBigMoney }
-      : { team: `${gameData.homeTeam} Spread`, bets: pm.public_money_spread_home_bets_pct, money: pm.public_money_spread_home_stake_pct, diff: spreadHomeBigMoney }
+  // ML Markets
+  const mlAwayBets = toNumber(pm.public_money_ml_away_bets_pct)
+  const mlAwayStake = toNumber(pm.public_money_ml_away_stake_pct)
+  const mlHomeBets = toNumber(pm.public_money_ml_home_bets_pct)
+  const mlHomeStake = toNumber(pm.public_money_ml_home_stake_pct)
   
-  // Most public Total
-  const mostPublicTotal = 
-    (pm.public_money_over_bets_pct ?? 0) > (pm.public_money_under_bets_pct ?? 0)
-      ? { label: 'Over', bets: pm.public_money_over_bets_pct, money: pm.public_money_over_stake_pct, diff: getBigMoneyForMarket(pm.public_money_over_bets_pct, pm.public_money_over_stake_pct) }
-      : { label: 'Under', bets: pm.public_money_under_bets_pct, money: pm.public_money_under_stake_pct, diff: getBigMoneyForMarket(pm.public_money_under_bets_pct, pm.public_money_under_stake_pct) }
+  if (mlAwayBets !== null && mlHomeBets !== null) {
+    const mostPublicML = mlAwayBets > mlHomeBets
+      ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake }
+      : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake }
+    
+    const diff = mostPublicML.stake !== null && mostPublicML.bets !== null 
+      ? mostPublicML.stake - mostPublicML.bets 
+      : null
+    
+    markets.push({
+      id: 'ml',
+      label: mostPublicML.label,
+      bets: mostPublicML.bets,
+      stake: mostPublicML.stake,
+      diff
+    })
+  }
+  
+  // Spread Markets
+  const spreadAwayBets = toNumber(pm.public_money_spread_away_bets_pct)
+  const spreadAwayStake = toNumber(pm.public_money_spread_away_stake_pct)
+  const spreadHomeBets = toNumber(pm.public_money_spread_home_bets_pct)
+  const spreadHomeStake = toNumber(pm.public_money_spread_home_stake_pct)
+  
+  if (spreadAwayBets !== null && spreadHomeBets !== null) {
+    const mostPublicSpread = spreadAwayBets > spreadHomeBets
+      ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake }
+      : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake }
+    
+    const diff = mostPublicSpread.stake !== null && mostPublicSpread.bets !== null 
+      ? mostPublicSpread.stake - mostPublicSpread.bets 
+      : null
+    
+    markets.push({
+      id: 'spread',
+      label: mostPublicSpread.label,
+      bets: mostPublicSpread.bets,
+      stake: mostPublicSpread.stake,
+      diff
+    })
+  }
+  
+  // Total Markets
+  const overBets = toNumber(pm.public_money_over_bets_pct)
+  const overStake = toNumber(pm.public_money_over_stake_pct)
+  const underBets = toNumber(pm.public_money_under_bets_pct)
+  const underStake = toNumber(pm.public_money_under_stake_pct)
+  
+  if (overBets !== null && underBets !== null) {
+    const mostPublicTotal = overBets > underBets
+      ? { label: 'Over', bets: overBets, stake: overStake }
+      : { label: 'Under', bets: underBets, stake: underStake }
+    
+    const diff = mostPublicTotal.stake !== null && mostPublicTotal.bets !== null 
+      ? mostPublicTotal.stake - mostPublicTotal.bets 
+      : null
+    
+    markets.push({
+      id: 'total',
+      label: mostPublicTotal.label,
+      bets: mostPublicTotal.bets,
+      stake: mostPublicTotal.stake,
+      diff
+    })
+  }
   
   // RLM stats for Vegas Backed
   const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
@@ -165,78 +227,61 @@ export default function PublicBettingTabPage() {
     return betType
   }
   
+  const formatPercentage = (val: number | null) => {
+    if (val === null) return '--'
+    return `${Math.round(val)}%`
+  }
+  
   return (
     <GameLayout>
       <div className={styles.publicContainer}>
-        {/* Most Public ML */}
-        <div className={styles.publicSection}>
-          <div className={styles.sectionLabel}>Most Public ML</div>
-          <div className={styles.publicMetric}>
-            <div className={styles.metricLabel}>{mostPublicML.team}</div>
-            <div className={styles.metricValues}>
-              <span>{formatPct(mostPublicML.bets)} bets</span>
-              <span className={styles.metricMoney}>{formatPct(mostPublicML.money)} money</span>
-              {mostPublicML.diff !== null && mostPublicML.diff > 0 && (
-                <span className={styles.metricDiff}>+{formatPct(mostPublicML.diff)} diff</span>
-              )}
+        {/* Big Money Markets */}
+        <div className={styles.publicMetrics}>
+          {markets.map((market) => (
+            <div key={market.id} className={styles.publicMetric}>
+              <div className={styles.publicMetricLabel}>{market.label}</div>
+              <div className={styles.publicMetricValues}>
+                <span>{formatPercentage(market.bets)} bets</span>
+                <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>
+                {market.diff !== null && (
+                  <span className={market.diff >= 0 ? styles.publicDiff : styles.publicDiffNegative}>
+                    {market.diff >= 0 ? '+' : ''}{Math.round(market.diff * 10) / 10}% diff
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
-        
-        <div className={styles.divider} />
-        
-        {/* Most Public Spread */}
-        <div className={styles.publicSection}>
-          <div className={styles.sectionLabel}>Most Public Spread</div>
-          <div className={styles.publicMetric}>
-            <div className={styles.metricLabel}>{mostPublicSpread.team}</div>
-            <div className={styles.metricValues}>
-              <span>{formatPct(mostPublicSpread.bets)} bets</span>
-              <span className={styles.metricMoney}>{formatPct(mostPublicSpread.money)} money</span>
-              {mostPublicSpread.diff !== null && mostPublicSpread.diff > 0 && (
-                <span className={styles.metricDiff}>+{formatPct(mostPublicSpread.diff)} diff</span>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className={styles.divider} />
-        
-        {/* Most Public Total */}
-        <div className={styles.publicSection}>
-          <div className={styles.sectionLabel}>Most Public Total</div>
-          <div className={styles.publicMetric}>
-            <div className={styles.metricLabel}>{mostPublicTotal.label}</div>
-            <div className={styles.metricValues}>
-              <span>{formatPct(mostPublicTotal.bets)} bets</span>
-              <span className={styles.metricMoney}>{formatPct(mostPublicTotal.money)} money</span>
-              {mostPublicTotal.diff !== null && mostPublicTotal.diff > 0 && (
-                <span className={styles.metricDiff}>+{formatPct(mostPublicTotal.diff)} diff</span>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className={styles.divider} />
         
         {/* Vegas Backed Section */}
-        <div className={styles.publicSection}>
-          <div className={styles.sectionTitle}>Vegas Backed</div>
-          {rlmStats.length === 0 ? (
-            <div className={styles.noDataInline}>None found</div>
-          ) : (
-            <div className={styles.vegasBackedList}>
-              {rlmStats.map((stat, index) => (
-                <div key={index} className={styles.publicMetric}>
-                  <div className={styles.metricLabel}>{formatBetType(stat.bet_type)}</div>
-                  <div className={styles.metricValues}>
-                    <span>{formatPct(stat.percentage)} movement</span>
+        {rlmStats.length > 0 && (
+          <>
+            <div className={styles.sectionDivider} />
+            <div className={styles.vegasBackedSection}>
+              <div className={styles.sectionTitle}>Vegas Backed</div>
+              <div className={styles.publicMetrics}>
+                {rlmStats.map((stat, index) => (
+                  <div key={index} className={styles.publicMetric}>
+                    <div className={styles.publicMetricLabel}>{formatBetType(stat.bet_type)}</div>
+                    <div className={styles.publicMetricValues}>
+                      <span>{formatPercentage(toNumber(stat.percentage))} movement</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
+        
+        {rlmStats.length === 0 && (
+          <>
+            <div className={styles.sectionDivider} />
+            <div className={styles.vegasBackedSection}>
+              <div className={styles.sectionTitle}>Vegas Backed</div>
+              <div className={styles.noDataInline}>None found</div>
+            </div>
+          </>
+        )}
       </div>
     </GameLayout>
   )
