@@ -102,7 +102,7 @@ type GameSummary = {
     away: number | null
   }
   script: {
-    strengthLabel: 'Edge' | 'Moderate' | 'Strong' | null
+    strengthLabel: 'Minimal' | 'Above Avg' | 'Strong' | null
     creditsRequired: number | null
     generatedAt: string | null
   }
