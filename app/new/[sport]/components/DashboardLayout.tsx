@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../../../lib/hooks/useSubscription'
+import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import styles from './dashboard.module.css'
 import { FaFireAlt, FaLock } from 'react-icons/fa'
 import { FaDice } from 'react-icons/fa6'
@@ -852,9 +853,18 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     ]
     const refereeName = (displayGame.referee as any)?.referee_name || 'Ref TBD'
 
+    const handleGameClick = (game: GameSummary) => {
+      const slug = generateGameSlug(game.awayTeam, game.homeTeam, game.kickoff)
+      router.push(`/new/${activeSport}/games/${slug}/data`)
+    }
+
     return (
       <div className={styles.gameContent}>
-        <div className={`${styles.featuredWrapper} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}>
+        <div 
+          className={`${styles.featuredWrapper} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}
+          onClick={() => handleGameClick(displayGame)}
+          style={{ cursor: 'pointer' }}
+        >
           <div className={styles.featuredTitle}>Featured Game</div>
           <div className={styles.featuredSeparator} />
           <div className={styles.featuredMatchup}>
@@ -891,6 +901,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               <div
                 key={game.id}
                 className={styles.gameCard}
+                onClick={() => handleGameClick(game)}
+                style={{ cursor: 'pointer' }}
               >
                 <div className={styles.sbRow}>
                   <div className={styles.sbTeamRow}>
