@@ -131,27 +131,25 @@ export default function GameLayout({ children }: GameLayoutProps) {
         </div>
         
         <div className={styles.bettingLines}>
-          <div className={styles.line}>
-            <span className={styles.lineValue}>
-              {gameData.spread?.awayLine != null 
-                ? `${gameData.spread.awayLine > 0 ? '+' : ''}${gameData.spread.awayLine}` 
-                : '-'}
-            </span>
-          </div>
+          <span className={styles.lineValue}>
+            {gameData.spread?.awayLine != null 
+              ? `${gameData.spread.awayLine > 0 ? '+' : ''}${gameData.spread.awayLine}` 
+              : '-'}
+          </span>
           
-          <div className={styles.line}>
-            <span className={styles.lineValue}>
-              {gameData.totals?.number || '-'}
-            </span>
-          </div>
+          <span className={styles.lineDivider}>|</span>
           
-          <div className={styles.line}>
-            <span className={styles.lineValue}>
-              {gameData.spread?.homeLine != null 
-                ? `${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}` 
-                : '-'}
-            </span>
-          </div>
+          <span className={styles.lineValue}>
+            {gameData.totals?.number || '-'}
+          </span>
+          
+          <span className={styles.lineDivider}>|</span>
+          
+          <span className={styles.lineValue}>
+            {gameData.spread?.homeLine != null 
+              ? `${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}` 
+              : '-'}
+          </span>
         </div>
         
         <div className={styles.gameTime}>{formatDate()}</div>

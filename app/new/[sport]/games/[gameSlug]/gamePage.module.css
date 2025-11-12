@@ -96,6 +96,13 @@
   letter-spacing: 0.05em;
 }
 
+.lineDivider {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 300;
+  margin: 0 0.5rem;
+}
+
 .gameTime {
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.875rem;
