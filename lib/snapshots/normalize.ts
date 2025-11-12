@@ -13,6 +13,11 @@ export interface NormalizedGameSchedule {
   venue?: string
 }
 
+/**
+ * Trendline sends timestamps in 24-hour military format as EST times but labeled as UTC.
+ * Example: "2025-11-16T13:00:00Z" = 1:00 PM EST (13:00 in 24-hour = 1 PM)
+ * We just need to parse and format properly - the time values are already correct EST times.
+ */
 export function normalizeTrendlineDate(gameDate: string): { utc: string; label: string } {
   if (!gameDate) {
     return {
@@ -21,27 +26,41 @@ export function normalizeTrendlineDate(gameDate: string): { utc: string; label: 
     }
   }
 
-  // Trendline sends UTC timestamps - parse and keep as UTC
-  const kickoff = new Date(gameDate)
-
-  if (Number.isNaN(kickoff.getTime())) {
+  // Parse the date string - Trendline format: "2025-11-16T13:00:00Z"
+  const match = gameDate.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/)
+  if (!match) {
     return {
       utc: new Date().toISOString(),
       label: 'TBD'
     }
   }
 
-  // Format the label in EST timezone
-  const estFormatter = new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'America/New_York'
-  })
+  const [, year, month, day, hour, minute] = match
+  const hourNum = parseInt(hour, 10)
+  const minuteNum = parseInt(minute, 10)
+
+  // Convert 24-hour to 12-hour format
+  let hour12 = hourNum
+  let ampm = 'AM'
+  
+  if (hourNum === 0) {
+    hour12 = 12 // Midnight
+  } else if (hourNum === 12) {
+    ampm = 'PM' // Noon
+  } else if (hourNum > 12) {
+    hour12 = hourNum - 12
+    ampm = 'PM'
+  }
+
+  const label = `${hour12}:${minute} ${ampm} ET`
+
+  // Store as proper UTC (add 5 hours to EST to get UTC)
+  const estDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`)
+  const utcDate = new Date(estDate.getTime() + (5 * 60 * 60 * 1000))
 
   return {
-    utc: kickoff.toISOString(),
-    label: `${estFormatter.format(kickoff)} ET`
+    utc: utcDate.toISOString(),
+    label
   }
 }
 
