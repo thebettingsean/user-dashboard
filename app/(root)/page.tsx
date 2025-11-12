@@ -3,6 +3,11 @@
 import { useRouter } from 'next/navigation'
 import styles from '../sportSelector.module.css'
 
+export const metadata = {
+  title: 'Select Your Sport | The Betting Insider',
+  description: 'Access expert picks, AI game scripts, public betting data, and analytics for NFL, NBA, and more sports.'
+}
+
 export default function SportSelectorPage() {
   const router = useRouter()
 
