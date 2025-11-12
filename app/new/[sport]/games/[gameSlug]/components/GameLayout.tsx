@@ -114,39 +114,40 @@ export default function GameLayout({ children }: GameLayoutProps) {
       {/* Game Header */}
       <div className={styles.gameHeader}>
         <div className={styles.gameTitle}>
-          {gameData.awayTeam} @ {gameData.homeTeam}
+          {gameData.awayTeam.toUpperCase()} @ {gameData.homeTeam.toUpperCase()}
         </div>
         
         <div className={styles.divider} />
         
         <div className={styles.teams}>
           {gameData.awayTeamLogo && (
-            <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
+            <div className={styles.teamLogoWrapper}>
+              <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
+            </div>
           )}
           {gameData.homeTeamLogo && (
-            <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
+            <div className={styles.teamLogoWrapper}>
+              <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
+            </div>
           )}
         </div>
         
         <div className={styles.bettingLines}>
           <div className={styles.line}>
-            <span className={styles.lineLabel}>Spread {gameData.awayTeam}</span>
             <span className={styles.lineValue}>
-              {gameData.spread?.away_line ? `${gameData.spread.away_line > 0 ? '+' : ''}${gameData.spread.away_line}` : '-'}
+              {gameData.spread?.away_line != null ? `${gameData.spread.away_line > 0 ? '+' : ''}${gameData.spread.away_line}` : '-'}
             </span>
           </div>
           
           <div className={styles.line}>
-            <span className={styles.lineLabel}>O/U</span>
             <span className={styles.lineValue}>
               {gameData.totals?.number || '-'}
             </span>
           </div>
           
           <div className={styles.line}>
-            <span className={styles.lineLabel}>Spread {gameData.homeTeam}</span>
             <span className={styles.lineValue}>
-              {gameData.spread?.home_line ? `${gameData.spread.home_line > 0 ? '+' : ''}${gameData.spread.home_line}` : '-'}
+              {gameData.spread?.home_line != null ? `${gameData.spread.home_line > 0 ? '+' : ''}${gameData.spread.home_line}` : '-'}
             </span>
           </div>
         </div>
