@@ -1,0 +1,149 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1a 0%, #151b2e 100%);
+  padding: 1rem;
+}
+
+.loading, .error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: white;
+  font-size: 1.125rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: white;
+}
+
+.gameHeader {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.teamLogo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.at {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.bettingLines {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lineLabel {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.lineValue {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+}
+
+.tabButton {
+  flex: 1;
+  padding: 0.75rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tabButton:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tabButtonActive {
+  color: white !important;
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-bottom: 2px solid rgb(59, 130, 246);
+}
+
+.content {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  padding: 1rem;
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .teamLogo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .bettingLines {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .line {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
