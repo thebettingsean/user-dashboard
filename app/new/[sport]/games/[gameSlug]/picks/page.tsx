@@ -46,13 +46,20 @@ export default function PicksTabPage() {
         const res = await fetch(`/api/dashboard/game-hub?sport=${sport}`)
         const data = await res.json()
         
+        console.log('[PicksTab] All games:', data.games?.map((g: any) => ({ id: g.id, teams: `${g.awayTeam} @ ${g.homeTeam}` })))
+        console.log('[PicksTab] Looking for slug:', gameSlug)
+        
         const game = data.games?.find((g: any) => {
           const slug = `${g.awayTeam.toLowerCase().replace(/\s+/g, '-')}-at-${g.homeTeam.toLowerCase().replace(/\s+/g, '-')}`
+          console.log('[PicksTab] Comparing slug:', slug, 'with gameSlug:', gameSlug)
           return gameSlug.startsWith(slug)
         })
         
         if (game) {
+          console.log('[PicksTab] Found game:', game.id)
           setGameId(game.id)
+        } else {
+          console.error('[PicksTab] No matching game found for slug:', gameSlug)
         }
       } catch (error) {
         console.error('Failed to fetch game ID:', error)
