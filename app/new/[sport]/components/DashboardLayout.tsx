@@ -946,7 +946,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                           background: 'rgba(21, 128, 61, 0.25)',
                           borderColor: 'rgba(74, 222, 128, 0.5)',
                           color: 'rgba(134, 239, 172, 0.95)'
-                        } : game.script.strengthLabel === 'Above Average' ? {
+                        } : game.script.strengthLabel === 'Above Avg' ? {
                           background: 'rgba(133, 77, 14, 0.25)',
                           borderColor: 'rgba(250, 204, 21, 0.5)',
                           color: 'rgba(253, 224, 71, 0.95)'
