@@ -42,12 +42,10 @@
 }
 
 .gameTitle {
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: white;
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .divider {
@@ -97,8 +95,10 @@
 
 .lineValue {
   color: white;
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 500;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
 }
 
 .gameTime {

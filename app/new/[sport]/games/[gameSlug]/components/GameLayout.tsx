@@ -114,7 +114,7 @@ export default function GameLayout({ children }: GameLayoutProps) {
       {/* Game Header */}
       <div className={styles.gameHeader}>
         <div className={styles.gameTitle}>
-          {gameData.awayTeam.toUpperCase()} @ {gameData.homeTeam.toUpperCase()}
+          {gameData.awayTeam} @ {gameData.homeTeam}
         </div>
         
         <div className={styles.divider} />
@@ -135,7 +135,7 @@ export default function GameLayout({ children }: GameLayoutProps) {
         <div className={styles.bettingLines}>
           <div className={styles.line}>
             <span className={styles.lineValue}>
-              {gameData.spread?.away_line != null ? `${gameData.spread.away_line > 0 ? '+' : ''}${gameData.spread.away_line}` : '-'}
+              {(gameData.spread as any)?.away_line != null ? `${(gameData.spread as any).away_line > 0 ? '+' : ''}${(gameData.spread as any).away_line}` : '-'}
             </span>
           </div>
           
@@ -147,7 +147,7 @@ export default function GameLayout({ children }: GameLayoutProps) {
           
           <div className={styles.line}>
             <span className={styles.lineValue}>
-              {gameData.spread?.home_line != null ? `${gameData.spread.home_line > 0 ? '+' : ''}${gameData.spread.home_line}` : '-'}
+              {(gameData.spread as any)?.home_line != null ? `${(gameData.spread as any).home_line > 0 ? '+' : ''}${(gameData.spread as any).home_line}` : '-'}
             </span>
           </div>
         </div>
