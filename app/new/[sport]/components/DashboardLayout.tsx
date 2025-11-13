@@ -482,7 +482,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   const getDefaultFilter = (tab: TabKey): SubFilterKey | undefined => subFilters[tab][0]
 
   const [activeFilter, setActiveFilter] = useState<SubFilterKey>(
-    initialFilter || getDefaultFilter(initialTab) ?? 'upcoming'
+    initialFilter || (getDefaultFilter(initialTab) ?? 'upcoming')
   )
 
   const availableFilters = subFilters[activeTab] ?? []
