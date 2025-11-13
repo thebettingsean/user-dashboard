@@ -270,46 +270,59 @@ function formatPercentage(value: number | null | undefined) {
 
 function getPublicMarkets(game: GameSummary) {
   const pm = game.publicMoney
-  if (!pm) return [] as Array<{ id: string; label: string; bets: number | null; stake: number | null }>
+  if (!pm) return [] as Array<{ id: string; label: string; bets: number | null; stake: number | null; lineMovement: number | null }>
 
-  const markets: Array<{ id: string; label: string; bets: number | null; stake: number | null }> = []
+  // Extract RLM stats for line movement
+  const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
+  const getRlmForBetType = (betType: string) => {
+    const stat = rlmStats.find((s) => s?.bet_type?.toLowerCase().includes(betType.toLowerCase()))
+    return stat?.line_movement !== undefined && stat?.line_movement !== null ? toNumber(stat.line_movement) : null
+  }
+
+  const markets: Array<{ id: string; label: string; bets: number | null; stake: number | null; lineMovement: number | null }> = []
 
   markets.push(
     {
       id: 'ml_away',
       label: `${game.awayTeam} ML`,
       bets: toNumber(pm.public_money_ml_away_bets_pct),
-      stake: toNumber(pm.public_money_ml_away_stake_pct)
+      stake: toNumber(pm.public_money_ml_away_stake_pct),
+      lineMovement: getRlmForBetType('moneyline_away')
     },
     {
       id: 'ml_home',
       label: `${game.homeTeam} ML`,
       bets: toNumber(pm.public_money_ml_home_bets_pct),
-      stake: toNumber(pm.public_money_ml_home_stake_pct)
+      stake: toNumber(pm.public_money_ml_home_stake_pct),
+      lineMovement: getRlmForBetType('moneyline_home')
     },
     {
       id: 'spread_away',
       label: `${game.awayTeam} Spread`,
       bets: toNumber(pm.public_money_spread_away_bets_pct),
-      stake: toNumber(pm.public_money_spread_away_stake_pct)
+      stake: toNumber(pm.public_money_spread_away_stake_pct),
+      lineMovement: getRlmForBetType('spread_away')
     },
     {
       id: 'spread_home',
       label: `${game.homeTeam} Spread`,
       bets: toNumber(pm.public_money_spread_home_bets_pct),
-      stake: toNumber(pm.public_money_spread_home_stake_pct)
+      stake: toNumber(pm.public_money_spread_home_stake_pct),
+      lineMovement: getRlmForBetType('spread_home')
     },
     {
       id: 'total_over',
       label: 'Over',
       bets: toNumber(pm.public_money_over_bets_pct),
-      stake: toNumber(pm.public_money_over_stake_pct)
+      stake: toNumber(pm.public_money_over_stake_pct),
+      lineMovement: getRlmForBetType('over')
     },
     {
       id: 'total_under',
       label: 'Under',
       bets: toNumber(pm.public_money_under_bets_pct),
-      stake: toNumber(pm.public_money_under_stake_pct)
+      stake: toNumber(pm.public_money_under_stake_pct),
+      lineMovement: getRlmForBetType('under')
     }
   )
 
@@ -1573,7 +1586,14 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       <div className={styles.publicMetrics}>
                         {mostMarkets.map((market) => (
                           <div key={market.id} className={styles.publicMetric}>
-                            <div className={styles.publicMetricLabel}>{market.label}</div>
+                            <div className={styles.publicMetricLabel}>
+                              {market.label}
+                              {market.lineMovement !== null && (
+                                <span className={styles.lineMovementBadge}>
+                                  {market.lineMovement > 0 ? '-' : '+'}{Math.abs(market.lineMovement).toFixed(1)}
+                                </span>
+                              )}
+                            </div>
                             <div className={styles.publicMetricValues}>
                               <span>{formatPercentage(market.bets)} bets</span>
                               {market.stake !== null && <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>}
@@ -1591,20 +1611,32 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
                     {activeFilter === 'publicVegas' && (
                       <div className={styles.publicMetrics}>
-                        {rlmStats.map((stat, index) => (
-                          <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
-                            <div className={styles.publicMetricLabel}>{formatBetTypeLabel(stat.bet_type as string | undefined, game)}</div>
-                            <div className={styles.publicMetricValues}>
-                              <span>{formatPercentage(stat.percentage)} movement</span>
+                        {rlmStats.map((stat, index) => {
+                          const rlmValue = toNumber(stat.percentage || (stat as any).percentage2)
+                          const lineMove = toNumber(stat.line_movement)
+                          
+                          return (
+                            <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
+                              <div className={styles.publicMetricLabel}>
+                                {formatBetTypeLabel(stat.bet_type as string | undefined, game)}
+                                {lineMove !== null && (
+                                  <span className={styles.lineMovementBadge}>
+                                    {lineMove > 0 ? '-' : '+'}{Math.abs(lineMove).toFixed(1)}
+                                  </span>
+                                )}
+                              </div>
+                              <div className={styles.publicMetricValues}>
+                                <span>{Math.round(rlmValue ?? 0)}% value</span>
+                              </div>
+                              <div className={styles.publicMetricBar}>
+                                <div
+                                  className={styles.publicMetricFill}
+                                  style={{ width: `${Math.min(100, Math.max(0, rlmValue ?? 0))}%` }}
+                                />
+                              </div>
                             </div>
-                            <div className={styles.publicMetricBar}>
-                              <div
-                                className={styles.publicMetricFill}
-                                style={{ width: `${Math.min(100, Math.max(0, stat.percentage ?? 0))}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
 
