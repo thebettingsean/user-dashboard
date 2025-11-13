@@ -308,7 +308,7 @@ export default function DataTabPage() {
           </button>
           
           {expandedSection === 'referee' && hasAccess && (
-            <div className={styles.accordionContent}>
+            <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
               {/* Moneylines */}
               <div className={styles.statGroup}>
                 <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
