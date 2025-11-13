@@ -481,7 +481,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
   const getDefaultFilter = (tab: TabKey): SubFilterKey | undefined => subFilters[tab][0]
 
-  const [activeFilter, setActiveFilter] = useState<SubFilterKey>(getDefaultFilter('picks') ?? 'upcoming')
+  const [activeFilter, setActiveFilter] = useState<SubFilterKey>(
+    initialFilter || getDefaultFilter(initialTab) ?? 'upcoming'
+  )
 
   const availableFilters = subFilters[activeTab] ?? []
 
@@ -495,6 +497,15 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     }
     
     const route = tabRoutes[tab]
+    
+    // Set default filter for public tab
+    if (tab === 'public') {
+      setActiveFilter('publicMost')
+    } else {
+      const defaultFilter = getDefaultFilter(tab)
+      if (defaultFilter) setActiveFilter(defaultFilter)
+    }
+    
     router.push(`/new/${activeSport}/${route}`)
   }
 
@@ -1570,12 +1581,12 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     width: '48px',
                     height: '48px',
                     borderRadius: '50%',
-                    border: '2px solid rgba(59, 130, 246, 0.4)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1.25rem',
-                    color: 'rgba(37, 99, 235, 0.9)'
+                    fontSize: activeFilter === 'publicSharp' ? '1.5rem' : '1.25rem',
+                    color: 'rgba(255, 255, 255, 0.9)'
                   }}>
                     {activeFilter === 'publicMost' && <PiMoneyWavy />}
                     {activeFilter === 'publicVegas' && <FaDice />}

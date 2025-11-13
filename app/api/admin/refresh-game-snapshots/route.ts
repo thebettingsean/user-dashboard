@@ -240,8 +240,15 @@ export async function POST(request: NextRequest) {
               })
             : Promise.resolve(null),
           fetchPlayerProps(sport, game.game_id).catch((error) => {
-            console.warn('[snapshot-refresh] player props failed', game.game_id, error)
+            console.error('[snapshot-refresh] player props FAILED for', game.game_id, error)
             return []
+          }).then((props) => {
+            if (!props || props.length === 0) {
+              console.warn('[snapshot-refresh] NO PROPS returned for', game.game_id)
+            } else {
+              console.log('[snapshot-refresh] ✅ Props fetched for', game.game_id, ':', props.length, 'categories')
+            }
+            return props
           }),
           fetchGameDetails(sport, game.game_id).catch((error) => {
             console.warn('[snapshot-refresh] game details failed', game.game_id, error)
@@ -269,9 +276,21 @@ export async function POST(request: NextRequest) {
           publicMoneyPresent: !!publicMoney,
           teamStatsPresent: !!teamStats,
           propsCount: Array.isArray(playerProps) ? playerProps.length : 0,
+          propsWillBeNull: !playerProps || playerProps.length === 0,
           picksCount: pickMeta.get(game.game_id)?.pending_count || 0,
           strength: calculatedStrength.strength_label
         })
+        
+        if (playerProps && playerProps.length > 0) {
+          const totalPlayers = playerProps.reduce((sum: number, cat: any) => {
+            return sum + (Array.isArray(cat.players) ? cat.players.length : 0)
+          }, 0)
+          console.log('[snapshot-refresh] Props detail for', game.game_id, ':', {
+            categories: playerProps.length,
+            totalPlayers,
+            firstCategory: playerProps[0]?.title || 'unknown'
+          })
+        }
 
         const spread = game.odds
           ? {

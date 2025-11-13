@@ -124,11 +124,12 @@ export async function GET(request: NextRequest) {
           .map((player: any) => ({ player, category }))
       })
 
-      const topThree = players
+      const allProps = players
         .map(({ player, category }) => {
           const hitRate = computeHitRate(player)
           const wins = toNumber(player?.record?.hit)
           const losses = toNumber(player?.record?.miss)
+          const total = toNumber(player?.record?.total)
           
           return {
             id: `${row.game_id}-${player.player_id ?? player.player_name}`,
@@ -139,11 +140,25 @@ export async function GET(request: NextRequest) {
             hitRate,
             wins,
             losses,
+            total,
             record: formatRecord(player)
           }
         })
-        .sort((a, b) => (b.hitRate ?? -Infinity) - (a.hitRate ?? -Infinity))
-        .slice(0, 3)
+        // Filter out props with no valid hitRate
+        .filter(prop => prop.hitRate !== null && prop.hitRate > 0)
+        .sort((a, b) => {
+          // Primary: sort by hitRate descending
+          const rateA = a.hitRate ?? -Infinity
+          const rateB = b.hitRate ?? -Infinity
+          if (rateB !== rateA) return rateB - rateA
+          
+          // Secondary: sort by total games (more data = more reliable)
+          const totalA = a.total ?? 0
+          const totalB = b.total ?? 0
+          return totalB - totalA
+        })
+      
+      const topThree = allProps.slice(0, 3)
 
       return {
         gameId: row.game_id,
