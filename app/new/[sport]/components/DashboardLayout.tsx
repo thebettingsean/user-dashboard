@@ -53,6 +53,10 @@ type SharpStat = {
 type RlmStat = {
   bet_type?: string
   percentage?: number
+  percentage2?: number
+  rlm_strength?: number
+  line_movement?: number
+  rlm_strength_normalized?: number
 }
 
 type PublicMoneySummary = {
