@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { FaLock } from 'react-icons/fa'
+import { FaLock, FaChevronDown } from 'react-icons/fa'
 import { GiWhistle, GiHumanTarget } from 'react-icons/gi'
 import { LuFileChartColumnIncreasing } from 'react-icons/lu'
 import { TbVs } from 'react-icons/tb'
@@ -296,15 +296,11 @@ export default function DataTabPage() {
             onClick={() => toggleSection('referee')}
             disabled={!hasAccess}
           >
-            <div className={styles.accordionTitle}>
-              <GiWhistle className={styles.accordionIcon} />
-              <span>
-                {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
-              </span>
-            </div>
-            <div className={styles.accordionIndicator}>
-              <div className={styles.dropdownLine}></div>
-            </div>
+            <GiWhistle className={styles.accordionIcon} />
+            <span className={styles.accordionText}>
+              {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
+            </span>
+            <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'referee' ? styles.chevronIconRotated : ''}`} />
           </button>
           
           {expandedSection === 'referee' && hasAccess && (
@@ -364,13 +360,9 @@ export default function DataTabPage() {
             onClick={() => toggleSection('props')}
             disabled={!hasAccess}
           >
-            <div className={styles.accordionTitle}>
-              <GiHumanTarget className={styles.accordionIcon} />
-              <span>Top Player Props</span>
-            </div>
-            <div className={styles.accordionIndicator}>
-              <div className={styles.dropdownLine}></div>
-            </div>
+            <GiHumanTarget className={styles.accordionIcon} />
+            <span className={styles.accordionText}>Top Player Props</span>
+            <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'props' ? styles.chevronIconRotated : ''}`} />
           </button>
           
           {expandedSection === 'props' && hasAccess && (
@@ -413,13 +405,9 @@ export default function DataTabPage() {
             onClick={() => toggleSection('betting')}
             disabled={!hasAccess}
           >
-            <div className={styles.accordionTitle}>
-              <LuFileChartColumnIncreasing className={styles.accordionIcon} />
-              <span>Team Betting Data</span>
-            </div>
-            <div className={styles.accordionIndicator}>
-              <div className={styles.dropdownLine}></div>
-            </div>
+            <LuFileChartColumnIncreasing className={styles.accordionIcon} />
+            <span className={styles.accordionText}>Team Betting Data</span>
+            <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'betting' ? styles.chevronIconRotated : ''}`} />
           </button>
           
           {expandedSection === 'betting' && hasAccess && (
@@ -525,13 +513,9 @@ export default function DataTabPage() {
             onClick={() => toggleSection('stats')}
             disabled={!hasAccess}
           >
-            <div className={styles.accordionTitle}>
-              <TbVs className={styles.accordionIcon} />
-              <span>Team Stats</span>
-            </div>
-            <div className={styles.accordionIndicator}>
-              <div className={styles.dropdownLine}></div>
-            </div>
+            <TbVs className={styles.accordionIcon} />
+            <span className={styles.accordionText}>Team Stats</span>
+            <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'stats' ? styles.chevronIconRotated : ''}`} />
           </button>
           
           {expandedSection === 'stats' && hasAccess && (
