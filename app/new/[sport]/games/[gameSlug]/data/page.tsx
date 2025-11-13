@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { FaLock } from 'react-icons/fa'
+import { GiWhistle, GiHumanTarget } from 'react-icons/gi'
+import { LuFileChartColumnIncreasing } from 'react-icons/lu'
+import { TbVs } from 'react-icons/tb'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../../../../../lib/hooks/useSubscription'
 import GameLayout from '../components/GameLayout'
@@ -50,10 +53,16 @@ export default function DataTabPage() {
   const { isSubscribed } = useSubscription()
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
   
   const hasAccess = isSubscribed
   const gameSlug = params.gameSlug as string
   const sport = params.sport as string
+
+  const toggleSection = (sectionId: string) => {
+    if (!hasAccess) return
+    setExpandedSection(expandedSection === sectionId ? null : sectionId)
+  }
 
   useEffect(() => {
     async function fetchGameData() {
@@ -281,49 +290,62 @@ export default function DataTabPage() {
     <GameLayout>
       <div className={styles.dataContainer}>
         {/* 1. REFEREE STATS */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>
-            📍 REFEREE IMPACT
-            {refereeStats.refereeName && <span className={styles.refereeName}> - {refereeStats.refereeName}</span>}
-          </h3>
+        <div className={styles.accordion}>
+          <button
+            className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
+            onClick={() => toggleSection('referee')}
+            disabled={!hasAccess}
+          >
+            <div className={styles.accordionTitle}>
+              <GiWhistle className={styles.accordionIcon} />
+              <span>
+                {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
+              </span>
+            </div>
+            <div className={styles.accordionIndicator}>
+              <div className={styles.dropdownLine}></div>
+            </div>
+          </button>
           
-          <div className={styles.refereeContent} style={!hasAccess ? { filter: 'blur(4px)', pointerEvents: 'none' } : {}}>
-            {/* Moneylines */}
-            <div className={styles.statGroup}>
-              <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
-              <div className={styles.statDivider}></div>
-              {refereeStats.ml.map((stat, i) => (
-                <div key={i} className={styles.statRow}>
-                  <span className={styles.statLabel}>{stat.label}</span>
-                  <span className={styles.statValue}>{stat.value}</span>
-                </div>
-              ))}
+          {expandedSection === 'referee' && hasAccess && (
+            <div className={styles.accordionContent}>
+              {/* Moneylines */}
+              <div className={styles.statGroup}>
+                <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
+                <div className={styles.statDivider}></div>
+                {refereeStats.ml.map((stat, i) => (
+                  <div key={i} className={styles.statRow}>
+                    <span className={styles.statLabel}>{stat.label}</span>
+                    <span className={styles.statValue}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Spreads */}
+              <div className={styles.statGroup}>
+                <h4 className={styles.statGroupTitle}>SPREADS</h4>
+                <div className={styles.statDivider}></div>
+                {refereeStats.spread.map((stat, i) => (
+                  <div key={i} className={styles.statRow}>
+                    <span className={styles.statLabel}>{stat.label}</span>
+                    <span className={styles.statValue}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Over/Under */}
+              <div className={styles.statGroup}>
+                <h4 className={styles.statGroupTitle}>OVER/UNDER</h4>
+                <div className={styles.statDivider}></div>
+                {refereeStats.ou.map((stat, i) => (
+                  <div key={i} className={styles.statRow}>
+                    <span className={styles.statLabel}>{stat.label}</span>
+                    <span className={styles.statValue}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            
-            {/* Spreads */}
-            <div className={styles.statGroup}>
-              <h4 className={styles.statGroupTitle}>SPREADS</h4>
-              <div className={styles.statDivider}></div>
-              {refereeStats.spread.map((stat, i) => (
-                <div key={i} className={styles.statRow}>
-                  <span className={styles.statLabel}>{stat.label}</span>
-                  <span className={styles.statValue}>{stat.value}</span>
-                </div>
-              ))}
-            </div>
-            
-            {/* Over/Under */}
-            <div className={styles.statGroup}>
-              <h4 className={styles.statGroupTitle}>OVER/UNDER</h4>
-              <div className={styles.statDivider}></div>
-              {refereeStats.ou.map((stat, i) => (
-                <div key={i} className={styles.statRow}>
-                  <span className={styles.statLabel}>{stat.label}</span>
-                  <span className={styles.statValue}>{stat.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
           
           {!hasAccess && (
             <div className={styles.lockOverlay}>
@@ -336,29 +358,43 @@ export default function DataTabPage() {
         </div>
 
         {/* 2. TOP PROPS */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>🎯 TOP PLAYER PROPS</h3>
+        <div className={styles.accordion}>
+          <button
+            className={`${styles.accordionHeader} ${expandedSection === 'props' ? styles.accordionHeaderActive : ''}`}
+            onClick={() => toggleSection('props')}
+            disabled={!hasAccess}
+          >
+            <div className={styles.accordionTitle}>
+              <GiHumanTarget className={styles.accordionIcon} />
+              <span>Top Player Props</span>
+            </div>
+            <div className={styles.accordionIndicator}>
+              <div className={styles.dropdownLine}></div>
+            </div>
+          </button>
           
-          <div className={styles.propsContent} style={!hasAccess ? { filter: 'blur(4px)', pointerEvents: 'none' } : {}}>
-            {topProps.length === 0 ? (
-              <div className={styles.noData}>No prop data available</div>
-            ) : (
-              <div className={styles.propsGrid}>
-                {topProps.map((prop) => (
-                  <div key={prop.id} className={styles.propCard}>
-                    <div className={styles.propHeader}>
-                      <span className={styles.propPlayer}>{prop.playerName}</span>
-                      <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
+          {expandedSection === 'props' && hasAccess && (
+            <div className={styles.accordionContent}>
+              {topProps.length === 0 ? (
+                <div className={styles.noData}>No prop data available</div>
+              ) : (
+                <div className={styles.propsGrid}>
+                  {topProps.map((prop) => (
+                    <div key={prop.id} className={styles.propCard}>
+                      <div className={styles.propHeader}>
+                        <span className={styles.propPlayer}>{prop.playerName}</span>
+                        <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
+                      </div>
+                      <div className={styles.propDetails}>
+                        <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
+                        <span className={styles.propRecord}>{prop.record}</span>
+                      </div>
                     </div>
-                    <div className={styles.propDetails}>
-                      <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
-                      <span className={styles.propRecord}>{prop.record}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           
           {!hasAccess && (
             <div className={styles.lockOverlay}>
@@ -371,92 +407,106 @@ export default function DataTabPage() {
         </div>
 
         {/* 3. TEAM BETTING STATS */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>📊 TEAM BETTING TRENDS (Last 3 Years)</h3>
+        <div className={styles.accordion}>
+          <button
+            className={`${styles.accordionHeader} ${expandedSection === 'betting' ? styles.accordionHeaderActive : ''}`}
+            onClick={() => toggleSection('betting')}
+            disabled={!hasAccess}
+          >
+            <div className={styles.accordionTitle}>
+              <LuFileChartColumnIncreasing className={styles.accordionIcon} />
+              <span>Team Betting Data</span>
+            </div>
+            <div className={styles.accordionIndicator}>
+              <div className={styles.dropdownLine}></div>
+            </div>
+          </button>
           
-          <div className={styles.teamStatsContent} style={!hasAccess ? { filter: 'blur(4px)', pointerEvents: 'none' } : {}}>
-            {/* Team Logos */}
-            <div className={styles.teamLogos}>
-              {gameData.awayTeamLogo && (
-                <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
-              )}
-              {gameData.homeTeamLogo && (
-                <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
-              )}
-            </div>
-            
-            {/* Moneylines */}
-            <div className={styles.comparisonGroup}>
-              <h4 className={styles.comparisonTitle}>MONEYLINES</h4>
-              <div className={styles.statDivider}></div>
-              <div className={styles.comparisonRow}>
-                <div className={styles.comparisonLeft}>
-                  {teamBettingStats.away.ml.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
+          {expandedSection === 'betting' && hasAccess && (
+            <div className={styles.accordionContent}>
+              {/* Team Logos */}
+              <div className={styles.teamLogos}>
+                {gameData.awayTeamLogo && (
+                  <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
+                )}
+                {gameData.homeTeamLogo && (
+                  <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
+                )}
+              </div>
+              
+              {/* Moneylines */}
+              <div className={styles.comparisonGroup}>
+                <h4 className={styles.comparisonTitle}>MONEYLINES</h4>
+                <div className={styles.statDivider}></div>
+                <div className={styles.comparisonRow}>
+                  <div className={styles.comparisonLeft}>
+                    {teamBettingStats.away.ml.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.comparisonRight}>
+                    {teamBettingStats.home.ml.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className={styles.comparisonRight}>
-                  {teamBettingStats.home.ml.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
+              </div>
+              
+              {/* Spreads */}
+              <div className={styles.comparisonGroup}>
+                <h4 className={styles.comparisonTitle}>SPREADS</h4>
+                <div className={styles.statDivider}></div>
+                <div className={styles.comparisonRow}>
+                  <div className={styles.comparisonLeft}>
+                    {teamBettingStats.away.spread.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.comparisonRight}>
+                    {teamBettingStats.home.spread.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Totals */}
+              <div className={styles.comparisonGroup}>
+                <h4 className={styles.comparisonTitle}>TOTALS</h4>
+                <div className={styles.statDivider}></div>
+                <div className={styles.comparisonRow}>
+                  <div className={styles.comparisonLeft}>
+                    {teamBettingStats.away.totals.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.comparisonRight}>
+                    {teamBettingStats.home.totals.map((stat, i) => (
+                      <div key={i} className={styles.comparisonStat}>
+                        <span className={styles.comparisonLabel}>{stat.label}</span>
+                        <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            
-            {/* Spreads */}
-            <div className={styles.comparisonGroup}>
-              <h4 className={styles.comparisonTitle}>SPREADS</h4>
-              <div className={styles.statDivider}></div>
-              <div className={styles.comparisonRow}>
-                <div className={styles.comparisonLeft}>
-                  {teamBettingStats.away.spread.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.comparisonRight}>
-                  {teamBettingStats.home.spread.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Totals */}
-            <div className={styles.comparisonGroup}>
-              <h4 className={styles.comparisonTitle}>TOTALS</h4>
-              <div className={styles.statDivider}></div>
-              <div className={styles.comparisonRow}>
-                <div className={styles.comparisonLeft}>
-                  {teamBettingStats.away.totals.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.comparisonRight}>
-                  {teamBettingStats.home.totals.map((stat, i) => (
-                    <div key={i} className={styles.comparisonStat}>
-                      <span className={styles.comparisonLabel}>{stat.label}</span>
-                      <span className={styles.comparisonValue}>{stat.record} ({stat.roi})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
           
           {!hasAccess && (
             <div className={styles.lockOverlay}>
@@ -469,12 +519,28 @@ export default function DataTabPage() {
         </div>
 
         {/* 4. TEAM STATS (Placeholder) */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>📈 ADVANCED TEAM STATS</h3>
+        <div className={styles.accordion}>
+          <button
+            className={`${styles.accordionHeader} ${expandedSection === 'stats' ? styles.accordionHeaderActive : ''}`}
+            onClick={() => toggleSection('stats')}
+            disabled={!hasAccess}
+          >
+            <div className={styles.accordionTitle}>
+              <TbVs className={styles.accordionIcon} />
+              <span>Team Stats</span>
+            </div>
+            <div className={styles.accordionIndicator}>
+              <div className={styles.dropdownLine}></div>
+            </div>
+          </button>
           
-          <div className={styles.placeholder} style={!hasAccess ? { filter: 'blur(4px)', pointerEvents: 'none' } : {}}>
-            <p>TeamRankings data coming soon...</p>
-          </div>
+          {expandedSection === 'stats' && hasAccess && (
+            <div className={styles.accordionContent}>
+              <div className={styles.placeholder}>
+                <p>TeamRankings data coming soon...</p>
+              </div>
+            </div>
+          )}
           
           {!hasAccess && (
             <div className={styles.lockOverlay}>
