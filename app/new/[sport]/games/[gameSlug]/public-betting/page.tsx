@@ -154,16 +154,17 @@ export default function PublicBettingTabPage() {
   const mlHomeStake = toNumber(pm.public_money_ml_home_stake_pct)
   
   if (mlAwayBets !== null && mlHomeBets !== null) {
-    const mostPublicML = mlAwayBets > mlHomeBets
-      ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake }
-      : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake }
+    const isAwayMostPublic = mlAwayBets > mlHomeBets
+    const mostPublicML = isAwayMostPublic
+      ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
+      : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
     
     const diff = mostPublicML.stake !== null && mostPublicML.bets !== null 
       ? mostPublicML.stake - mostPublicML.bets 
       : null
     
     markets.push({
-      id: 'ml',
+      id: mostPublicML.id,
       label: mostPublicML.label,
       bets: mostPublicML.bets,
       stake: mostPublicML.stake,
@@ -178,16 +179,17 @@ export default function PublicBettingTabPage() {
   const spreadHomeStake = toNumber(pm.public_money_spread_home_stake_pct)
   
   if (spreadAwayBets !== null && spreadHomeBets !== null) {
-    const mostPublicSpread = spreadAwayBets > spreadHomeBets
-      ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake }
-      : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake }
+    const isAwayMostPublic = spreadAwayBets > spreadHomeBets
+    const mostPublicSpread = isAwayMostPublic
+      ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
+      : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
     
     const diff = mostPublicSpread.stake !== null && mostPublicSpread.bets !== null 
       ? mostPublicSpread.stake - mostPublicSpread.bets 
       : null
     
     markets.push({
-      id: 'spread',
+      id: mostPublicSpread.id,
       label: mostPublicSpread.label,
       bets: mostPublicSpread.bets,
       stake: mostPublicSpread.stake,
@@ -202,16 +204,17 @@ export default function PublicBettingTabPage() {
   const underStake = toNumber(pm.public_money_under_stake_pct)
   
   if (overBets !== null && underBets !== null) {
-    const mostPublicTotal = overBets > underBets
-      ? { label: 'Over', bets: overBets, stake: overStake }
-      : { label: 'Under', bets: underBets, stake: underStake }
+    const isOverMostPublic = overBets > underBets
+    const mostPublicTotal = isOverMostPublic
+      ? { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
+      : { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
     
     const diff = mostPublicTotal.stake !== null && mostPublicTotal.bets !== null 
       ? mostPublicTotal.stake - mostPublicTotal.bets 
       : null
     
     markets.push({
-      id: 'total',
+      id: mostPublicTotal.id,
       label: mostPublicTotal.label,
       bets: mostPublicTotal.bets,
       stake: mostPublicTotal.stake,
@@ -322,7 +325,7 @@ export default function PublicBettingTabPage() {
               
               {/* Vegas Backed Value */}
               <div className={styles.vegasBackedValue}>
-                {rlm.value !== null && rlm.value > 0 ? `${Math.round(rlm.value)}% value` : '0% value'}
+                {rlm.value !== null && rlm.value > 0 ? `${Math.round(rlm.value)}% value` : 'No value'}
               </div>
               
               {/* Progress Bar for Vegas Backed */}
