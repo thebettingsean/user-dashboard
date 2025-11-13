@@ -263,70 +263,78 @@ export default function PublicBettingTabPage() {
     return `${Math.round(val)}%`
   }
   
+  // Get RLM data for a specific market
+  const getRlmForMarket = (marketId: string) => {
+    let betTypeToMatch = ''
+    if (marketId.includes('ml_away')) betTypeToMatch = 'moneyline_away'
+    else if (marketId.includes('ml_home')) betTypeToMatch = 'moneyline_home'
+    else if (marketId.includes('spread_away')) betTypeToMatch = 'spread_away'
+    else if (marketId.includes('spread_home')) betTypeToMatch = 'spread_home'
+    else if (marketId.includes('over')) betTypeToMatch = 'over'
+    else if (marketId.includes('under')) betTypeToMatch = 'under'
+    
+    const stat = rlmStats.find((s) => s.bet_type?.toLowerCase().includes(betTypeToMatch.toLowerCase()))
+    return {
+      value: toNumber(stat?.percentage || (stat as any)?.percentage2),
+      lineMovement: toNumber(stat?.line_movement)
+    }
+  }
+  
   return (
     <GameLayout>
       <div className={styles.publicContainer}>
-        {/* Big Money Markets */}
-        <div className={styles.publicMetrics}>
-          {markets.map((market) => (
-            <div key={market.id} className={styles.publicMetric}>
-              <div className={styles.publicMetricLabel}>{market.label}</div>
-              <div className={styles.publicMetricValues}>
+        {markets.map((market) => {
+          const rlm = getRlmForMarket(market.id)
+          
+          return (
+            <div key={market.id} className={styles.marketCard}>
+              {/* Market Label + Line Movement Badge */}
+              <div className={styles.marketHeader}>
+                <span className={styles.marketLabel}>{market.label}</span>
+                {rlm.lineMovement !== null && (
+                  <span className={styles.lineMovementBadge}>
+                    {rlm.lineMovement > 0 ? '-' : '+'}{Math.abs(rlm.lineMovement).toFixed(1)}
+                  </span>
+                )}
+              </div>
+              
+              {/* Bets | Money | Diff */}
+              <div className={styles.marketStats}>
                 <span>{formatPercentage(market.bets)} bets</span>
-                <span className={styles.publicStake}>{formatPercentage(market.stake)} money</span>
+                <span className={styles.moneyText}>{formatPercentage(market.stake)} money</span>
                 {market.diff !== null && (
-                  <span className={market.diff >= 0 ? styles.publicDiff : styles.publicDiffNegative}>
+                  <span className={market.diff >= 0 ? styles.diffPositive : styles.diffNegative}>
                     {market.diff >= 0 ? '+' : ''}{Math.round(market.diff * 10) / 10}% diff
                   </span>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Vegas Backed Section */}
-        {rlmStats.length > 0 && (
-          <>
-            <div className={styles.sectionDivider} />
-            <div className={styles.vegasBackedSection}>
-              <div className={styles.sectionTitle}>Vegas Backed (RLM)</div>
-              <div className={styles.publicMetrics}>
-                {rlmStats.map((stat, index) => {
-                  const rlmValue = toNumber(stat.percentage || stat.percentage2)
-                  const lineMove = toNumber(stat.line_movement)
-                  const strength = getRlmStrength(stat.rlm_strength_normalized)
-                  
-                  return (
-                    <div key={index} className={styles.publicMetric}>
-                      <div className={styles.publicMetricLabel}>
-                        {formatRlmLabel(stat.bet_type)}
-                        {strength && <span className={styles.strengthBadge}>{strength}</span>}
-                      </div>
-                      <div className={styles.publicMetricValues}>
-                        {rlmValue !== null && <span>RLM: {Math.round(rlmValue * 10) / 10}%</span>}
-                        {lineMove !== null && (
-                          <span className={styles.publicStake}>
-                            Line moved: {lineMove > 0 ? '+' : ''}{Math.round(lineMove * 10) / 10}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
+              
+              {/* Progress Bar for Public Bets */}
+              <div className={styles.progressBarContainer}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${Math.min(100, Math.max(0, market.bets ?? 0))}%` }}
+                />
+              </div>
+              
+              {/* Vegas Backed Label */}
+              <div className={styles.vegasBackedLabel}>Vegas Backed</div>
+              
+              {/* Vegas Backed Value */}
+              <div className={styles.vegasBackedValue}>
+                {rlm.value !== null && rlm.value > 0 ? `${Math.round(rlm.value)}% value` : '0% value'}
+              </div>
+              
+              {/* Progress Bar for Vegas Backed */}
+              <div className={styles.progressBarContainer}>
+                <div
+                  className={styles.progressBarFillVegas}
+                  style={{ width: `${Math.min(100, Math.max(0, rlm.value ?? 0))}%` }}
+                />
               </div>
             </div>
-          </>
-        )}
-        
-        {rlmStats.length === 0 && (
-          <>
-            <div className={styles.sectionDivider} />
-            <div className={styles.vegasBackedSection}>
-              <div className={styles.sectionTitle}>Vegas Backed</div>
-              <div className={styles.noDataInline}>None found</div>
-            </div>
-          </>
-        )}
+          )
+        })}
       </div>
     </GameLayout>
   )
