@@ -24,6 +24,10 @@ interface PublicMoneyData {
   rlm_stats?: Array<{
     bet_type?: string
     percentage?: number
+    percentage2?: number
+    rlm_strength?: number
+    line_movement?: number
+    rlm_strength_normalized?: number
   }>
 }
 
@@ -218,13 +222,40 @@ export default function PublicBettingTabPage() {
   // RLM stats for Vegas Backed
   const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
   
-  // Format bet type labels
-  const formatBetType = (betType: string | undefined) => {
+  // Format RLM labels with team names
+  const formatRlmLabel = (betType: string | undefined) => {
     if (!betType) return 'Unknown'
-    if (betType.toLowerCase().includes('spread')) return 'Spread'
-    if (betType.toLowerCase().includes('moneyline') || betType.toLowerCase().includes('ml')) return 'Moneyline'
-    if (betType.toLowerCase().includes('total') || betType.toLowerCase().includes('over') || betType.toLowerCase().includes('under')) return 'Total'
+    const lower = betType.toLowerCase()
+    
+    // Moneylines
+    if (lower.includes('moneyline_home') || lower === 'ml_home') {
+      return `${gameData.homeTeam} ML`
+    }
+    if (lower.includes('moneyline_away') || lower === 'ml_away') {
+      return `${gameData.awayTeam} ML`
+    }
+    
+    // Spreads
+    if (lower.includes('spread_home')) {
+      return `${gameData.homeTeam} Spread`
+    }
+    if (lower.includes('spread_away')) {
+      return `${gameData.awayTeam} Spread`
+    }
+    
+    // Totals (if they ever show up)
+    if (lower.includes('over')) return 'Over'
+    if (lower.includes('under')) return 'Under'
+    
     return betType
+  }
+  
+  // Get RLM strength label
+  const getRlmStrength = (normalized: number | undefined) => {
+    if (!normalized) return ''
+    if (normalized >= 1.0) return 'Strong'
+    if (normalized >= 0.5) return 'Moderate'
+    return 'Weak'
   }
   
   const formatPercentage = (val: number | null) => {
@@ -258,16 +289,30 @@ export default function PublicBettingTabPage() {
           <>
             <div className={styles.sectionDivider} />
             <div className={styles.vegasBackedSection}>
-              <div className={styles.sectionTitle}>Vegas Backed</div>
+              <div className={styles.sectionTitle}>Vegas Backed (RLM)</div>
               <div className={styles.publicMetrics}>
-                {rlmStats.map((stat, index) => (
-                  <div key={index} className={styles.publicMetric}>
-                    <div className={styles.publicMetricLabel}>{formatBetType(stat.bet_type)}</div>
-                    <div className={styles.publicMetricValues}>
-                      <span>{formatPercentage(toNumber(stat.percentage))} movement</span>
+                {rlmStats.map((stat, index) => {
+                  const rlmValue = toNumber(stat.percentage || stat.percentage2)
+                  const lineMove = toNumber(stat.line_movement)
+                  const strength = getRlmStrength(stat.rlm_strength_normalized)
+                  
+                  return (
+                    <div key={index} className={styles.publicMetric}>
+                      <div className={styles.publicMetricLabel}>
+                        {formatRlmLabel(stat.bet_type)}
+                        {strength && <span className={styles.strengthBadge}>{strength}</span>}
+                      </div>
+                      <div className={styles.publicMetricValues}>
+                        {rlmValue !== null && <span>RLM: {Math.round(rlmValue * 10) / 10}%</span>}
+                        {lineMove !== null && (
+                          <span className={styles.publicStake}>
+                            Line moved: {lineMove > 0 ? '+' : ''}{Math.round(lineMove * 10) / 10}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </>
