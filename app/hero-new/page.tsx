@@ -666,8 +666,16 @@ function ChromaVisualization({ item }: { item: (typeof chromaGridDemo)[number] }
 export default function HeroNewPage() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const floatingContainerRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
+    // Detect mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
     // Add class to body and html to override background
     document.body.classList.add('hero-new-page')
     document.documentElement.style.setProperty('background', '#0a0f1a', 'important')
@@ -715,6 +723,7 @@ export default function HeroNewPage() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', checkMobile)
       // Remove class and restore default background when component unmounts
       document.body.classList.remove('hero-new-page')
       document.documentElement.style.removeProperty('background')
@@ -880,7 +889,7 @@ export default function HeroNewPage() {
         <div className={styles.chromaCardsGridWrapper}>
           <ScrollStack 
             useWindowScroll={true}
-            stackPosition="45%"
+            stackPosition={isMobile ? "15%" : "20%"}
             itemDistance={150}
             itemStackDistance={5}
             baseScale={0.9}
@@ -1262,20 +1271,9 @@ function ReviewsReelSection() {
   return (
     <div className={styles.reviewsReel}>
       <div className={styles.reviewsHeader}>
-        <SplitText
-          text="What Our Members Say"
-          className={styles.reviewsTitle}
-          tag="h2"
-          delay={50}
-          duration={0.8}
-          ease="power3.out"
-          splitType="chars"
-          from={{ opacity: 0, y: 40 }}
-          to={{ opacity: 1, y: 0 }}
-          threshold={0.2}
-          rootMargin="-100px"
-          textAlign="center"
-        />
+        <h2 className={styles.reviewsTitle}>
+          What Our Members Say
+        </h2>
       </div>
       
       <div className={styles.reviewsContainer}>

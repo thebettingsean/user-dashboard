@@ -69,6 +69,8 @@ body {
   max-width: 500px;
   display: flex;
   flex-direction: column;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Hero-new page: Remove all gaps and make navbar blend with hero section */
@@ -85,8 +87,10 @@ html:has(body.hero-new-page) {
 /* Remove navbar margin completely on hero-new page */
 body.hero-new-page .desktop-nav,
 body.hero-new-page .mobile-nav {
-  margin: 0 !important;
+  margin: 0 auto !important;
   padding: 20px 0 0 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 /* Make navbar background darker/more opaque to match hero section */
