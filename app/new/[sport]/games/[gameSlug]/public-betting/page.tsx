@@ -144,7 +144,15 @@ export default function PublicBettingTabPage() {
     return isNaN(num) ? null : num
   }
   
-  // Build all markets (showing MOST PUBLIC side for each)
+  // RLM stats for Vegas Backed - check these FIRST
+  const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
+  
+  // Helper to check if a side has RLM
+  const hasRlm = (betType: string) => {
+    return rlmStats.some((s) => s?.bet_type?.toLowerCase().includes(betType.toLowerCase()))
+  }
+  
+  // Build all markets (prioritize RLM sides, fallback to most public)
   const markets: Market[] = []
   
   // ML Markets
@@ -154,20 +162,32 @@ export default function PublicBettingTabPage() {
   const mlHomeStake = toNumber(pm.public_money_ml_home_stake_pct)
   
   if (mlAwayBets !== null && mlHomeBets !== null) {
-    const isAwayMostPublic = mlAwayBets > mlHomeBets
-    const mostPublicML = isAwayMostPublic
-      ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
-      : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
+    // Check if either side has RLM
+    const awayHasRlm = hasRlm('moneyline_away')
+    const homeHasRlm = hasRlm('moneyline_home')
     
-    const diff = mostPublicML.stake !== null && mostPublicML.bets !== null 
-      ? mostPublicML.stake - mostPublicML.bets 
+    let chosenSide
+    if (awayHasRlm) {
+      chosenSide = { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
+    } else if (homeHasRlm) {
+      chosenSide = { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
+    } else {
+      // No RLM - show most public
+      const isAwayMostPublic = mlAwayBets > mlHomeBets
+      chosenSide = isAwayMostPublic
+        ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
+        : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
+    }
+    
+    const diff = chosenSide.stake !== null && chosenSide.bets !== null 
+      ? chosenSide.stake - chosenSide.bets 
       : null
     
     markets.push({
-      id: mostPublicML.id,
-      label: mostPublicML.label,
-      bets: mostPublicML.bets,
-      stake: mostPublicML.stake,
+      id: chosenSide.id,
+      label: chosenSide.label,
+      bets: chosenSide.bets,
+      stake: chosenSide.stake,
       diff
     })
   }
@@ -179,20 +199,32 @@ export default function PublicBettingTabPage() {
   const spreadHomeStake = toNumber(pm.public_money_spread_home_stake_pct)
   
   if (spreadAwayBets !== null && spreadHomeBets !== null) {
-    const isAwayMostPublic = spreadAwayBets > spreadHomeBets
-    const mostPublicSpread = isAwayMostPublic
-      ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
-      : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
+    // Check if either side has RLM
+    const awayHasRlm = hasRlm('spread_away')
+    const homeHasRlm = hasRlm('spread_home')
     
-    const diff = mostPublicSpread.stake !== null && mostPublicSpread.bets !== null 
-      ? mostPublicSpread.stake - mostPublicSpread.bets 
+    let chosenSide
+    if (awayHasRlm) {
+      chosenSide = { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
+    } else if (homeHasRlm) {
+      chosenSide = { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
+    } else {
+      // No RLM - show most public
+      const isAwayMostPublic = spreadAwayBets > spreadHomeBets
+      chosenSide = isAwayMostPublic
+        ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
+        : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
+    }
+    
+    const diff = chosenSide.stake !== null && chosenSide.bets !== null 
+      ? chosenSide.stake - chosenSide.bets 
       : null
     
     markets.push({
-      id: mostPublicSpread.id,
-      label: mostPublicSpread.label,
-      bets: mostPublicSpread.bets,
-      stake: mostPublicSpread.stake,
+      id: chosenSide.id,
+      label: chosenSide.label,
+      bets: chosenSide.bets,
+      stake: chosenSide.stake,
       diff
     })
   }
@@ -204,26 +236,35 @@ export default function PublicBettingTabPage() {
   const underStake = toNumber(pm.public_money_under_stake_pct)
   
   if (overBets !== null && underBets !== null) {
-    const isOverMostPublic = overBets > underBets
-    const mostPublicTotal = isOverMostPublic
-      ? { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
-      : { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
+    // Check if either side has RLM
+    const overHasRlm = hasRlm('over')
+    const underHasRlm = hasRlm('under')
     
-    const diff = mostPublicTotal.stake !== null && mostPublicTotal.bets !== null 
-      ? mostPublicTotal.stake - mostPublicTotal.bets 
+    let chosenSide
+    if (overHasRlm) {
+      chosenSide = { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
+    } else if (underHasRlm) {
+      chosenSide = { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
+    } else {
+      // No RLM - show most public
+      const isOverMostPublic = overBets > underBets
+      chosenSide = isOverMostPublic
+        ? { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
+        : { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
+    }
+    
+    const diff = chosenSide.stake !== null && chosenSide.bets !== null 
+      ? chosenSide.stake - chosenSide.bets 
       : null
     
     markets.push({
-      id: mostPublicTotal.id,
-      label: mostPublicTotal.label,
-      bets: mostPublicTotal.bets,
-      stake: mostPublicTotal.stake,
+      id: chosenSide.id,
+      label: chosenSide.label,
+      bets: chosenSide.bets,
+      stake: chosenSide.stake,
       diff
     })
   }
-  
-  // RLM stats for Vegas Backed
-  const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
   
   // Format RLM labels with team names
   const formatRlmLabel = (betType: string | undefined) => {
