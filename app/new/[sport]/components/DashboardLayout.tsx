@@ -148,6 +148,8 @@ type DashboardPropGame = {
     team: string | null
     betTitle: string
     line: string
+    wins: number | null
+    losses: number | null
     record: string | null
     hitRate: number | null
   }>
