@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #050e1f 0%, #050e1f 48%, #040b1a 100%);
+  background: transparent;
   color: #f8fafc;
   padding-bottom: 32px;
 }
