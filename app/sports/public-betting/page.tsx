@@ -339,7 +339,7 @@ export default function AllSportsPublicPage() {
 
         {/* Betting data */}
         <div style={{ position: 'relative' }}>
-          <div style={!hasAccess ? { filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none' } : {}}>
+          <div style={!hasAccess() ? { filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none' } : {}}>
             {activeView === 'most' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {mostMarkets.map((market) => (
@@ -484,7 +484,7 @@ export default function AllSportsPublicPage() {
           </div>
           
           {/* Lock overlay */}
-          {!hasAccess && (
+          {!hasAccess() && (
             <div style={{
               position: 'absolute',
               inset: 0,

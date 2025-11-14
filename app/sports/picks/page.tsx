@@ -472,9 +472,9 @@ export default function AllSportsPicksPage() {
                           fontSize: '14px',
                           fontWeight: '700',
                           lineHeight: '1.4',
-                          color: hasAccess ? '#f8fafc' : 'transparent',
-                          filter: hasAccess ? 'none' : 'blur(6px)',
-                          userSelect: hasAccess ? 'auto' : 'none'
+                          color: hasAccess() ? '#f8fafc' : 'transparent',
+                          filter: hasAccess() ? 'none' : 'blur(6px)',
+                          userSelect: hasAccess() ? 'auto' : 'none'
                         }}>
                           {pick.bet_title}
                         </p>
@@ -487,7 +487,7 @@ export default function AllSportsPicksPage() {
                           fontSize: '11px',
                           color: 'rgba(203, 213, 225, 0.7)'
                         }}>
-                          {hasAccess ? (
+                          {hasAccess() ? (
                             <>
                               <button
                                 onClick={() => togglePickAnalysis(pick.id)}
@@ -534,7 +534,7 @@ export default function AllSportsPicksPage() {
                         </div>
 
                         {/* Analysis */}
-                        {hasAccess && isExpanded && pick.analysis && (
+                        {hasAccess() && isExpanded && pick.analysis && (
                           <div
                             style={{
                               marginTop: '10px',
