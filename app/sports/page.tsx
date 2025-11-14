@@ -70,6 +70,11 @@ export default function SportsSelectorPage() {
     } else {
       setActiveFilter(undefined)
     }
+
+    // Navigate to dedicated pages for picks, scripts, and public
+    if (tab === 'picks') {
+      router.push('/sports/picks')
+    }
   }
 
   // Fetch all sports data when on games tab
