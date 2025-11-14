@@ -74,6 +74,8 @@ export default function SportsSelectorPage() {
     // Navigate to dedicated pages for picks, scripts, and public
     if (tab === 'picks') {
       router.push('/sports/picks')
+    } else if (tab === 'scripts') {
+      router.push('/sports/ai-scripts')
     }
   }
 
