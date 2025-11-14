@@ -123,6 +123,14 @@ export default function SportsSelectorPage() {
             }
           } catch (error) {
             console.error(`Error fetching ${sport.id}:`, error)
+            
+            // Determine date label even on error
+            let dateLabel = 'Today'
+            if (sport.id === 'nfl') {
+              const currentWeek = 11
+              dateLabel = `Week ${currentWeek}`
+            }
+            
             return {
               sport: sport.id,
               sportLabel: sport.label,
@@ -130,6 +138,7 @@ export default function SportsSelectorPage() {
               gamesCount: 0,
               picksCount: 0,
               scriptsCount: 0,
+              dateLabel,
               isActive: true
             }
           }
