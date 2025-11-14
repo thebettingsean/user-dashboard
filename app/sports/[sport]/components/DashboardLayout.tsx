@@ -506,7 +506,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       if (defaultFilter) setActiveFilter(defaultFilter)
     }
     
-    router.push(`/new/${activeSport}/${route}`)
+    router.push(`/sports/${activeSport}/${route}`)
   }
 
   const upcomingGames = useMemo(() => {
@@ -886,7 +886,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
     const handleGameClick = (game: GameSummary) => {
       const slug = generateGameSlug(game.awayTeam, game.homeTeam, game.kickoff)
-      router.push(`/new/${activeSport}/games/${slug}/data`)
+      router.push(`/sports/${activeSport}/games/${slug}/data`)
     }
 
     return (
@@ -1756,7 +1756,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                           public: 'public-betting'
                         }
                         const route = tabRoutes[activeTab]
-                        router.push(`/new/${option.id}/${route}`)
+                        router.push(`/sports/${option.id}/${route}`)
                         setIsSportMenuOpen(false)
                       }
                     }}

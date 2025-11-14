@@ -73,11 +73,11 @@ export default function GameLayout({ children }: GameLayoutProps) {
   }, [sport, gameSlug])
   
   const handleTabClick = (tab: TabKey) => {
-    router.push(`/new/${sport}/games/${gameSlug}/${tab}`)
+    router.push(`/sports/${sport}/games/${gameSlug}/${tab}`)
   }
   
   const handleBackClick = () => {
-    router.push(`/new/${sport}/games`)
+    router.push(`/sports/${sport}/games`)
   }
   
   if (isLoading) {

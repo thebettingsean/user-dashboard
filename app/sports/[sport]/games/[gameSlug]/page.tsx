@@ -35,7 +35,7 @@ export default function GamePage() {
   
   // Default to data tab
   useEffect(() => {
-    router.replace(`/new/${sport}/games/${gameSlug}/data`)
+    router.replace(`/sports/${sport}/games/${gameSlug}/data`)
   }, [router, sport, gameSlug])
   
   return (
