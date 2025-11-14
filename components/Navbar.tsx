@@ -488,12 +488,12 @@ export default function Navbar() {
 const styles = {
   // DESKTOP STYLES
   desktopCenterSection: {
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    // ULTRA-TRANSPARENT GLASSMORPHISM - floats on any background:
+    background: 'rgba(255, 255, 255, 0.02)',
+    backdropFilter: 'blur(20px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.2)',
     borderRadius: '60px',
     padding: '4px 24px',
     margin: '0 auto',
@@ -535,11 +535,11 @@ const styles = {
     position: 'absolute' as const,
     top: 'calc(100% + 8px)',
     left: '0',
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    background: 'rgba(255, 255, 255, 0.03)',
+    backdropFilter: 'blur(20px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.3)',
     borderRadius: '16px',
     padding: '12px',
     minWidth: '200px',
@@ -595,11 +595,12 @@ const styles = {
 
   // MOBILE STYLES
   mobileContainer: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    // ULTRA-TRANSPARENT GLASSMORPHISM - floats on any background:
+    background: 'rgba(255, 255, 255, 0.02)',
+    backdropFilter: 'blur(20px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.2)',
     borderRadius: '20px',
     padding: '4px 16px',
     height: '52px',
@@ -648,11 +649,11 @@ const styles = {
   },
 
   mobileMenu: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    background: 'rgba(255, 255, 255, 0.03)',
+    backdropFilter: 'blur(20px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.06)',
+    boxShadow: '0 4px 24px 0 rgba(0, 0, 0, 0.3)',
     borderRadius: '16px',
     marginTop: '12px',
     padding: '16px',
