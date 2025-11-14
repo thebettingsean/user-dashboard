@@ -52,7 +52,7 @@ body {
   }
 }
 
-/* Navbar mobile/desktop toggles */
+/* Navbar mobile/desktop toggles - UNIVERSAL STYLING */
 .desktop-nav {
   position: relative;
   margin: 20px auto 0;
@@ -71,32 +71,6 @@ body {
   flex-direction: column;
   left: 50%;
   transform: translateX(-50%);
-}
-
-/* Hero-new page: Remove all gaps and make navbar blend with hero section */
-body.hero-new-page {
-  background: #0a0f1a !important;
-}
-
-/* Override HTML gradient background on hero-new page */
-html:has(body.hero-new-page) {
-  background: #0a0f1a !important;
-  background-image: none !important;
-}
-
-/* Remove navbar margin completely on hero-new page */
-body.hero-new-page .desktop-nav,
-body.hero-new-page .mobile-nav {
-  margin: 0 auto !important;
-  padding: 20px 0 0 0 !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-}
-
-/* Make navbar background darker/more opaque to match hero section */
-body.hero-new-page .desktop-nav > div[style],
-body.hero-new-page .mobile-nav > div[style] {
-  background: rgba(10, 15, 26, 0.98) !important;
 }
 
 @media (max-width: 767px) {
@@ -376,159 +350,6 @@ button[aria-label*="manage account"],
   }
 }
 
-/* ========== NAVBAR CORE STYLES ========== */
-.navbar {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
-  position: relative !important;
-  z-index: 1000 !important;
-  backdrop-filter: blur(40px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-  min-height: 85px !important;
-  display: flex !important;
-  align-items: center !important;
-  box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-}
+/* ========== REMOVED OLD NAVBAR STYLES - Using component styles only ========== */
 
-/* Navbar link overrides */
-.navbar a,
-.navbar .nav-item,
-.navbar .dropdown-item,
-.navbar .mobile-nav-link,
-.navbar .mobile-dropdown-item {
-  color: #ffffff !important;
-  text-decoration: none !important;
-}
-
-.navbar a:hover,
-.navbar .nav-item:hover,
-.navbar .dropdown-item:hover {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Force logo size */
-.navbar .logo {
-  height: 70px !important;
-  width: auto !important;
-}
-
-/* Fix DESKTOP dropdown display */
-.navbar .dropdown {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.navbar .dropdown-item {
-  width: 100% !important;
-  padding: 0.9rem 1.25rem !important;
-  border-bottom: none !important;
-  position: relative !important;
-}
-
-/* Dashboard subdropdown - ensure vertical layout */
-.navbar .dashboard-subdropdown {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.navbar .subdropdown-item {
-  display: block !important;
-  width: 100% !important;
-  padding: 0.75rem 1.25rem !important;
-  border-bottom: none !important;
-  white-space: nowrap !important;
-}
-
-.navbar .subdropdown-header {
-  width: 100% !important;
-  display: block !important;
-}
-
-/* Fix MOBILE dropdown display */
-.navbar .mobile-dropdown {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.navbar .mobile-dropdown-item {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-  padding: 0.75rem 1.5rem 0.75rem 3rem !important;
-  margin: 0 !important;
-  border-bottom: none !important;
-  white-space: normal !important;
-  font-size: 0.9rem !important;
-}
-
-/* Mobile dashboard subdropdown - ensure vertical layout */
-.navbar .mobile-dashboard-subdropdown {
-  display: flex !important;
-  flex-direction: column !important;
-  overflow-y: auto !important;
-}
-
-.navbar .mobile-subdropdown-item {
-  display: block !important;
-  width: 100% !important;
-  padding: 0.75rem 1.5rem 0.75rem 4rem !important;
-  border-bottom: none !important;
-  white-space: nowrap !important;
-  font-size: 0.7rem !important;
-}
-
-.navbar .mobile-subdropdown-header {
-  width: 100% !important;
-  display: block !important;
-  font-size: 0.65rem !important;
-}
-
-/* Free Tools Mobile Dropdown - Match Insider HQ styling */
-.navbar .mobile-free-tool-item {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  padding: 0.75rem 1.5rem 0.75rem 3rem !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-  text-decoration: none !important;
-  font-size: 0.9rem !important;
-  border-bottom: none !important;
-  white-space: normal !important;
-  width: 100% !important;
-  margin: 0 !important;
-  background: transparent !important;
-}
-
-.navbar .mobile-free-tool-item:last-child {
-  border-bottom: none !important;
-}
-
-.navbar .mobile-free-tool-item:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: white !important;
-}
-
-.navbar .mobile-free-tool-icon {
-  width: 16px !important;
-  height: 16px !important;
-  object-fit: contain !important;
-  flex-shrink: 0 !important;
-  margin: 0 !important;
-}
-
-/* Navbar dropdown - guaranteed dark background that works everywhere */
-.navbar-dropdown {
-  position: absolute !important;
-  /* Solid, opaque dark background - works on ALL browsers */
-  background: rgba(15, 23, 42, 0.98) !important;
-  border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7) !important;
-  border-radius: 16px !important;
-  padding: 16px !important;
-  z-index: 1001 !important;
-  overflow: hidden !important;
-  /* Try backdrop-filter as enhancement, but solid background ensures it works */
-  backdrop-filter: blur(30px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-}
+/* ========== All navbar styling moved to Navbar.tsx component ========== */
