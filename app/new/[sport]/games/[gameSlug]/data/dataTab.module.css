@@ -66,17 +66,17 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 4px;
   background: white;
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .refereeHeader::before {
-  right: 28px;
+  right: 50px;
 }
 
 .refereeHeader::after {
-  right: 24px;
+  right: 40px;
 }
 
 .refereeHeader:hover:not(:disabled) {
@@ -124,6 +124,24 @@
 .refereeContent {
   background: #000000 !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.refereeMetadata {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.refereeMetadataItem {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8125rem;
+}
+
+.refereeMetadataItem strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
 }
 
 @keyframes slideDown {

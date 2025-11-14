@@ -41,6 +41,7 @@ type GameData = {
   homeTeam: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
+  spread: { awayLine: number | null, homeLine: number | null } | null
   referee: any
   teamStats: any
   props: any[]
@@ -90,6 +91,7 @@ export default function DataTabPage() {
           homeTeam: game.homeTeam,
           awayTeamLogo: game.awayTeamLogo,
           homeTeamLogo: game.homeTeamLogo,
+          spread: game.spread || null,
           referee: game.referee,
           teamStats: game.teamStats,
           props: game.props || []
@@ -129,49 +131,146 @@ export default function DataTabPage() {
     )
   }
 
-  // Extract referee stats
-  const getRefereeStats = (): { ml: RefereeStat[], spread: RefereeStat[], ou: RefereeStat[], refereeName: string | null } => {
+  // Extract referee stats (home team focused, based on favorite/underdog status)
+  const getRefereeStats = (): { 
+    ml: RefereeStat[], 
+    spread: RefereeStat[], 
+    ou: RefereeStat[], 
+    refereeName: string | null,
+    totalGames: number | null
+  } => {
     const ref = gameData.referee
-    if (!ref) return { ml: [], spread: [], ou: [], refereeName: null }
+    if (!ref) return { ml: [], spread: [], ou: [], refereeName: null, totalGames: null }
     
     const ml: RefereeStat[] = []
     const spread: RefereeStat[] = []
     const ou: RefereeStat[] = []
     
+    // Determine if home team is favorite or underdog based on current game spread
+    const homeSpread = gameData.spread?.homeLine || 0
+    const isHomeFavorite = homeSpread < -0.5
+    const isHomeUnderdog = homeSpread > 0.5
+    
     // ML stats
     if (ref.moneyline?.ml) {
       const data = ref.moneyline.ml
-      ml.push(
-        { label: 'Away ML ROI', value: `${data.away_ml_roi?.toFixed(2)}%` },
-        { label: 'Home ML ROI', value: `${data.home_ml_roi?.toFixed(2)}%` },
-        { label: 'Away Favorite', value: `${data.away_favorite_wins}-${data.away_favorite_losses} (${data.away_favorite_net_roi?.toFixed(2)}%)` },
-        { label: 'Home Underdog', value: `${data.home_underdog_wins}-${data.home_underdog_losses} (${data.home_underdog_net_roi?.toFixed(2)}%)` }
-      )
+      
+      // Home ML overall
+      ml.push({
+        label: 'Home ML',
+        value: `${data.home_ml_wins}-${data.home_ml_losses} (${data.home_ml_roi?.toFixed(2)}%)`
+      })
+      
+      // Home Fav or Dog
+      if (isHomeFavorite) {
+        ml.push({
+          label: 'Home Fav ML',
+          value: `${data.home_favorite_wins}-${data.home_favorite_losses} (${data.home_favorite_net_roi?.toFixed(2)}%)`
+        })
+      } else if (isHomeUnderdog) {
+        ml.push({
+          label: 'Home Dog ML',
+          value: `${data.home_underdog_wins}-${data.home_underdog_losses} (${data.home_underdog_net_roi?.toFixed(2)}%)`
+        })
+      }
+      
+      // ML Range
+      if (ref.moneyline?.ml_range) {
+        const range = ref.moneyline.ml_range
+        const rangeLabel = isHomeFavorite ? range.home_ml_range : range.home_ml_range
+        const rangeRoi = isHomeFavorite ? range.home_ml_range_roi : range.home_ml_range_roi
+        const rangeWins = isHomeFavorite ? range.home_ml_range_wins : range.home_ml_range_wins
+        const rangeLosses = isHomeFavorite ? range.home_ml_range_losses : range.home_ml_range_losses
+        
+        if (rangeLabel) {
+          ml.push({
+            label: `Between ${rangeLabel}`,
+            value: `${rangeWins}-${rangeLosses} (${rangeRoi?.toFixed(2)}%)`
+          })
+        }
+      }
     }
     
     // Spread stats
     if (ref.spread?.spread) {
       const data = ref.spread.spread
-      spread.push(
-        { label: 'ATS Overall', value: `${data.ats_wins}-${data.ats_losses} (${data.ats_roi?.toFixed(2)}%)` },
-        { label: 'Home Favorite', value: `${data.home_favorite_wins}-${data.home_favorite_losses} (${data.home_favorite_net_roi?.toFixed(2)}%)` },
-        { label: 'Away Underdog', value: `${data.away_underdog_wins}-${data.away_underdog_losses} (${data.away_underdog_net_roi?.toFixed(2)}%)` },
-        { label: 'Away Favorite', value: `${data.away_favorite_wins}-${data.away_favorite_losses} (${data.away_favorite_net_roi?.toFixed(2)}%)` }
-      )
+      
+      // Home ATS overall (using total from data)
+      spread.push({
+        label: 'Home ATS',
+        value: `${data.ats_wins}-${data.ats_losses} (${data.ats_roi?.toFixed(2)}%)`
+      })
+      
+      // Home Fav or Dog
+      if (isHomeFavorite) {
+        spread.push({
+          label: 'Home Fav ATS',
+          value: `${data.home_favorite_wins}-${data.home_favorite_losses} (${data.home_favorite_net_roi?.toFixed(2)}%)`
+        })
+      } else if (isHomeUnderdog) {
+        spread.push({
+          label: 'Home Dog ATS',
+          value: `${data.home_underdog_wins}-${data.home_underdog_losses} (${data.home_underdog_net_roi?.toFixed(2)}%)`
+        })
+      }
+      
+      // Spread Range
+      if (ref.spread?.spread_range) {
+        const range = ref.spread.spread_range
+        const rangeLabel = isHomeFavorite ? range.home_spread_range : range.home_spread_range
+        const rangeRoi = isHomeFavorite ? range.home_spread_range_roi : range.home_spread_range_roi
+        const rangeWins = isHomeFavorite ? range.home_spread_range_wins : range.home_spread_range_wins
+        const rangeLosses = isHomeFavorite ? range.home_spread_range_losses : range.home_spread_range_losses
+        
+        if (rangeLabel) {
+          spread.push({
+            label: `Between ${rangeLabel}`,
+            value: `${rangeWins}-${rangeLosses} (${rangeRoi?.toFixed(2)}%)`
+          })
+        }
+      }
     }
     
-    // O/U stats
+    // O/U stats (Overs only)
     if (ref.over_under?.over_under) {
       const data = ref.over_under.over_under
-      ou.push(
-        { label: 'Over', value: `${data.over_hits} games (${data.over_roi?.toFixed(2)}% ROI)` },
-        { label: 'Under', value: `${data.under_hits} games (${data.under_roi?.toFixed(2)}% ROI)` },
-        { label: 'Over %', value: `${data.over_percentage?.toFixed(1)}%` },
-        { label: 'Under %', value: `${data.under_percentage?.toFixed(1)}%` }
-      )
+      
+      // Overall O-U record
+      ou.push({
+        label: 'O-U Record',
+        value: `${data.over_hits}-${data.under_hits} (${data.over_roi?.toFixed(2)}%)`
+      })
+      
+      // If home favorite
+      if (isHomeFavorite && data.home_favorite) {
+        ou.push({
+          label: 'If Home Fav',
+          value: `${data.home_favorite.wins}-${data.home_favorite.losses} (${data.home_favorite.roi?.toFixed(2)}%)`
+        })
+      } else if (isHomeUnderdog && data.home_underdog) {
+        ou.push({
+          label: 'If Home Dog',
+          value: `${data.home_underdog.wins}-${data.home_underdog.losses} (${data.home_underdog.roi?.toFixed(2)}%)`
+        })
+      }
+      
+      // O/U Range
+      if (ref.over_under?.over_under_range) {
+        const range = ref.over_under.over_under_range
+        ou.push({
+          label: `Between ${range.ou_range}`,
+          value: `${range.ou_range_wins}-${range.ou_range_losses} (${range.ou_range_roi?.toFixed(2)}%)`
+        })
+      }
     }
     
-    return { ml, spread, ou, refereeName: ref.referee_name || null }
+    return { 
+      ml, 
+      spread, 
+      ou, 
+      refereeName: ref.referee_name || null,
+      totalGames: ref.total_games || null
+    }
   }
 
   // Get top 15 props sorted by hit rate
@@ -305,6 +404,18 @@ export default function DataTabPage() {
           
           {expandedSection === 'referee' && hasAccess && (
             <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
+              {/* Metadata */}
+              {refereeStats.totalGames && (
+                <div className={styles.refereeMetadata}>
+                  <div className={styles.refereeMetadataItem}>
+                    Total games: <strong>{refereeStats.totalGames}</strong>
+                  </div>
+                  <div className={styles.refereeMetadataItem}>
+                    Time: <strong>L6 years</strong>
+                  </div>
+                </div>
+              )}
+              
               {/* Moneylines */}
               <div className={styles.statGroup}>
                 <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
@@ -329,9 +440,9 @@ export default function DataTabPage() {
                 ))}
               </div>
               
-              {/* Over/Under */}
+              {/* Over-Unders */}
               <div className={styles.statGroup}>
-                <h4 className={styles.statGroupTitle}>OVER/UNDER</h4>
+                <h4 className={styles.statGroupTitle}>OVER-UNDERS</h4>
                 <div className={styles.statDivider}></div>
                 {refereeStats.ou.map((stat, i) => (
                   <div key={i} className={styles.statRow}>
