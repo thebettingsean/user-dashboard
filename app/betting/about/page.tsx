@@ -1134,9 +1134,9 @@ export default function BetsPage() {
             transition: `opacity 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}, transform 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}`
           } as React.CSSProperties}
         >
-          <button className={styles.ctaButton}>
-            View Today's Slate
-          </button>
+          <a href="/sports" className={styles.ctaButton}>
+            View Today's Picks
+          </a>
         </div>
       </section>
 
@@ -1361,9 +1361,9 @@ export default function BetsPage() {
           </div>
 
           {/* CTA Button */}
-          <button className={styles.insiderCtaButton}>
+          <a href="/pricing" className={styles.insiderCtaButton}>
             Unlock Now!
-          </button>
+          </a>
         </div>
       </section>
 
@@ -1499,9 +1499,7 @@ function PricingSection() {
               <p className={styles.pricingSimpleDescription}>Spend credits on AI scripts, analyst picks, blueprints, and more.</p>
               <a
                 className={`${styles.pricingSimpleButton} ${styles.glassButton}`}
-                href="https://dashboard.thebettinginsider.com/pricing?tab=credits"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/pricing"
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
@@ -1537,9 +1535,7 @@ function PricingSection() {
 
               <a
                 className={`${styles.pricingSimpleButton} ${styles.pricingSimpleButtonSecondary} ${styles.glassButton}`}
-                href={activePlan.checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/pricing"
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>

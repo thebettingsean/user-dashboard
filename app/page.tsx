@@ -987,7 +987,7 @@ export default function HeroNewPage() {
                 </div>
               </div>
             </div>
-            <a className={`${styles.howItWorksButton} ${styles.glassButton}`} href="/signup">
+            <a className={`${styles.howItWorksButton} ${styles.glassButton}`} href="/sports">
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
               <div className={styles.glassSpecular}></div>
@@ -1041,9 +1041,7 @@ export default function HeroNewPage() {
             </div>
             <a
               className={`${styles.howItWorksButtonSecondary} ${styles.glassButton}`}
-              href="https://dashboard.thebettinginsider.com"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/sports"
             >
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
@@ -1110,9 +1108,7 @@ function PricingSection() {
               <p className={styles.pricingSimpleDescription}>Spend credits on AI scripts, analyst picks, blueprints, and more.</p>
               <a
                 className={`${styles.pricingSimpleButton} ${styles.glassButton}`}
-                href="https://dashboard.thebettinginsider.com/pricing?tab=credits"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/pricing"
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
@@ -1148,9 +1144,7 @@ function PricingSection() {
 
               <a
                 className={`${styles.pricingSimpleButton} ${styles.pricingSimpleButtonSecondary} ${styles.glassButton}`}
-                href={activePlan.checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/pricing"
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
