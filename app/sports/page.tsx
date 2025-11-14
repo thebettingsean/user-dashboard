@@ -18,6 +18,7 @@ type SportGameData = {
   picksCount: number
   scriptsCount: number
   topMatchup?: string
+  dateLabel: string
   isActive: boolean
 }
 
@@ -92,6 +93,16 @@ export default function SportsSelectorPage() {
             const data = await response.json()
             const games = data.games || []
             
+            // Determine date label based on sport
+            let dateLabel = 'Today'
+            if (sport.id === 'nfl') {
+              // For NFL, show week number (you can make this dynamic later)
+              const currentWeek = 11 // This would be calculated dynamically
+              dateLabel = `Week ${currentWeek}`
+            } else if (sport.id === 'nba' || sport.id === 'nhl') {
+              dateLabel = 'Today'
+            }
+            
             return {
               sport: sport.id,
               sportLabel: sport.label,
@@ -100,6 +111,7 @@ export default function SportsSelectorPage() {
               picksCount: games.reduce((sum: number, g: any) => sum + (g.picks?.total || 0), 0),
               scriptsCount: games.filter((g: any) => g.script?.strengthLabel).length,
               topMatchup: games[0] ? `${games[0].awayTeam} @ ${games[0].homeTeam}` : undefined,
+              dateLabel,
               isActive: true
             }
           } catch (error) {
@@ -274,6 +286,7 @@ export default function SportsSelectorPage() {
             key={sport.sport}
             onClick={() => router.push(`/sports/${sport.sport}/games`)}
             style={{
+              position: 'relative',
               background: 'rgba(15, 23, 42, 0.8)',
               border: '1px solid rgba(99, 102, 241, 0.2)',
               borderRadius: '20px',
@@ -293,6 +306,24 @@ export default function SportsSelectorPage() {
               e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
             }}
           >
+            {/* Date Tag - Top Right */}
+            <div style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              color: '#a5b4fc',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {sport.dateLabel}
+            </div>
+
             {/* Sport Logo & Label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
               <img 
@@ -309,7 +340,7 @@ export default function SportsSelectorPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
               <div style={{
                 background: 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.2)',
+                border: '1px dashed rgba(99, 102, 241, 0.3)',
                 borderRadius: '12px',
                 padding: '12px',
                 textAlign: 'center'
@@ -324,7 +355,7 @@ export default function SportsSelectorPage() {
               
               <div style={{
                 background: 'rgba(234, 88, 12, 0.1)',
-                border: '1px solid rgba(234, 88, 12, 0.2)',
+                border: '1px dashed rgba(234, 88, 12, 0.3)',
                 borderRadius: '12px',
                 padding: '12px',
                 textAlign: 'center'
@@ -339,7 +370,7 @@ export default function SportsSelectorPage() {
               
               <div style={{
                 background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
+                border: '1px dashed rgba(16, 185, 129, 0.3)',
                 borderRadius: '12px',
                 padding: '12px',
                 textAlign: 'center'
