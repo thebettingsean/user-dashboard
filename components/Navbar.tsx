@@ -56,20 +56,108 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Dashboard */}
-          <Link href="/sports" style={styles.desktopNavLink}>
-            <span style={styles.desktopNavButtonText}>DASHBOARD</span>
-          </Link>
+          {/* Dashboard Dropdown */}
+          <div
+            style={styles.desktopNavButton}
+            onMouseEnter={() => handleMouseEnter('dashboard')}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span style={styles.desktopNavButtonText}>Dashboard</span>
+            
+            {openDropdown === 'dashboard' && (
+              <div 
+                style={styles.dropdown}
+                onMouseEnter={() => handleMouseEnter('dashboard')}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div style={styles.dropdownSection}>
+                  <h4 style={styles.dropdownHeader}>YOUR HQ</h4>
+                  <Link href="/sports" style={styles.dropdownLink}>
+                    Your HQ
+                  </Link>
+                  <Link href="/betting/about" style={styles.dropdownLink}>
+                    Today's Picks
+                  </Link>
+                  <Link href="/fantasy" style={styles.dropdownLink}>
+                    Fantasy
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Premium */}
-          <Link href="/betting/dashboard" style={styles.desktopNavLink}>
-            <span style={styles.desktopNavButtonText}>PREMIUM</span>
-          </Link>
+          {/* Sports Dropdown */}
+          <div
+            style={styles.desktopNavButton}
+            onMouseEnter={() => handleMouseEnter('sports')}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span style={styles.desktopNavButtonText}>Sports</span>
+            
+            {openDropdown === 'sports' && (
+              <div 
+                style={styles.dropdown}
+                onMouseEnter={() => handleMouseEnter('sports')}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div style={styles.dropdownSection}>
+                  <Link href="/sports/nfl/games" style={styles.dropdownLink}>
+                    NFL
+                  </Link>
+                  <Link href="/sports/nba/games" style={styles.dropdownLink}>
+                    NBA
+                  </Link>
+                  <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
+                    NHL (soon)
+                  </div>
+                  <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
+                    NCAAF (soon)
+                  </div>
+                  <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
+                    NCAAB (soon)
+                  </div>
+                  <div style={{...styles.dropdownLink, opacity: 0.3, cursor: 'default'}}>
+                    MLB (no season)
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Free */}
-          <Link href="/betting/about" style={styles.desktopNavLink}>
-            <span style={styles.desktopNavButtonText}>FREE</span>
-          </Link>
+          {/* Tools Dropdown */}
+          <div
+            style={styles.desktopNavButton}
+            onMouseEnter={() => handleMouseEnter('tools')}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span style={styles.desktopNavButtonText}>Tools</span>
+            
+            {openDropdown === 'tools' && (
+              <div 
+                style={styles.dropdown}
+                onMouseEnter={() => handleMouseEnter('tools')}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div style={styles.dropdownSection}>
+                  <Link href="/prop-parlay-tool" style={styles.dropdownLink}>
+                    Perfect Parlays
+                  </Link>
+                  <Link href="/bankroll-builder" style={styles.dropdownLink}>
+                    Bankroll Builder
+                  </Link>
+                  <Link href="/betting-guide" style={styles.dropdownLink}>
+                    Betting Guide
+                  </Link>
+                  <Link href="/roi-calculator" style={styles.dropdownLink}>
+                    ROI Calculator
+                  </Link>
+                  <Link href="/anytime-td" style={styles.dropdownLink}>
+                    Anytime TD's
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Clerk Profile */}
           <div style={styles.desktopClerkWrapper}>
@@ -406,33 +494,33 @@ const styles = {
     WebkitBackdropFilter: 'blur(30px) saturate(180%)',
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-    borderRadius: '60px', // More pill-shaped
-    padding: '4px 24px', // Slim vertical padding
-    margin: '0 auto', // Center the bar
+    borderRadius: '60px',
+    padding: '4px 24px',
+    margin: '0 auto',
     maxWidth: 'fit-content',
-    height: '54px', // Fixed height for slim navbar
+    height: '54px',
     display: 'flex',
     alignItems: 'center',
-    gap: '16px' // Reduced gap between items
+    gap: '16px'
   },
 
   desktopClerkWrapper: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: '8px' // Small gap before Clerk button
+    marginLeft: '8px'
   },
 
   desktopLogo: {
-    height: '60px', // Much bigger logo
+    height: '60px',
     width: 'auto',
     cursor: 'pointer',
-    marginRight: '24px' // Extra spacing after logo
+    marginRight: '24px'
   },
 
-  desktopNavLink: {
-    textDecoration: 'none',
+  desktopNavButton: {
+    position: 'relative' as const,
     cursor: 'pointer',
-    padding: '6px 14px', // Reduced padding
+    padding: '6px 14px',
     transition: 'all 0.2s ease'
   },
 
@@ -440,7 +528,52 @@ const styles = {
     color: '#ffffff',
     fontSize: '0.875rem',
     fontWeight: '600',
-    letterSpacing: '0.05em'
+    letterSpacing: '0.02em'
+  },
+
+  dropdown: {
+    position: 'absolute' as const,
+    top: 'calc(100% + 8px)',
+    left: '0',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(30px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+    borderRadius: '16px',
+    padding: '12px',
+    minWidth: '200px',
+    zIndex: 1001
+  },
+
+  dropdownSection: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px'
+  },
+
+  dropdownHeader: {
+    fontSize: '0.75rem',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '700',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.1em',
+    marginBottom: '6px',
+    marginTop: '4px',
+    paddingLeft: '12px',
+    margin: '4px 0 6px 0'
+  },
+
+  dropdownLink: {
+    display: 'block',
+    padding: '10px 12px',
+    color: '#ffffff',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    textDecoration: 'none',
+    borderRadius: '8px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    transition: 'all 0.2s ease'
   },
 
   signInButton: {
@@ -462,15 +595,14 @@ const styles = {
 
   // MOBILE STYLES
   mobileContainer: {
-    // PROPER GLASSMORPHISM:
     background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(30px) saturate(180%)',
     WebkitBackdropFilter: 'blur(30px) saturate(180%)',
     border: '0.5px solid rgba(255, 255, 255, 0.08)',
     boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
     borderRadius: '20px',
-    padding: '4px 16px', // Slim vertical padding
-    height: '52px', // Fixed height for slim navbar
+    padding: '4px 16px',
+    height: '52px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between'
@@ -495,7 +627,7 @@ const styles = {
   },
 
   mobileLogo: {
-    height: '56px', // Much bigger logo
+    height: '56px',
     width: 'auto'
   },
 
@@ -516,7 +648,6 @@ const styles = {
   },
 
   mobileMenu: {
-    // PROPER GLASSMORPHISM:
     background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(30px) saturate(180%)',
     WebkitBackdropFilter: 'blur(30px) saturate(180%)',
