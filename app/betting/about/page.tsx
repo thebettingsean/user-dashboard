@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { gsap } from 'gsap'
-import styles from './bets.module.css'
+import styles from './about.module.css'
 import ScrollStack, { ScrollStackItem } from '@/components/ScrollStack'
 import SplitText from '@/components/SplitText'
-import ChromaGrid from '../hero-new/ChromaGrid'
-import '../hero-new/ChromaGrid.css'
+import ChromaGrid from '../../hero-new/ChromaGrid'
+import '../../hero-new/ChromaGrid.css'
 
 gsap.registerPlugin(ScrollTrigger)
 import { LuBrainCircuit } from "react-icons/lu"

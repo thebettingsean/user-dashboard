@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useUser, useClerk } from '@clerk/nextjs'
-import { supabase } from '../../lib/supabase'
-import { useSubscription } from '../../lib/hooks/useSubscription'
-import MonthCalendarModal from '../../components/MonthCalendarModal'
-import AICreditBadge from '../../components/AICreditBadge'
-import PickUnlockModal from '../../components/PickUnlockModal'
+import { supabase } from '@/lib/supabase'
+import { useSubscription } from '@/lib/hooks/useSubscription'
+import MonthCalendarModal from '@/components/MonthCalendarModal'
+import AICreditBadge from '@/components/AICreditBadge'
+import PickUnlockModal from '@/components/PickUnlockModal'
 import { GiTwoCoins } from 'react-icons/gi'
 
 // Add global styles for rich text content
