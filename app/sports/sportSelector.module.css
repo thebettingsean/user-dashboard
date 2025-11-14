@@ -16,8 +16,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: 20px 20px 12px;
-  background: linear-gradient(180deg, rgba(5, 14, 31, 0.97) 0%, rgba(5, 14, 31, 0.92) 100%);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .sportPicker {
