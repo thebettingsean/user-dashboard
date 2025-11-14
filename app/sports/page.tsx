@@ -129,8 +129,8 @@ const tabLabels: Record<TabKey, string> = {
 const subFilters: Record<TabKey, SubFilterKey[]> = {
   games: [],
   picks: [],
-  scripts: ['scriptsAbout'],
-  public: ['publicAbout']
+  scripts: [],
+  public: []
 }
 
 const sportOptions = [
@@ -315,24 +315,59 @@ export default function SportsSelectorPage() {
     fetchAllSports()
   }, [activeTab])
 
-  // Fetch picks data
+  // Fetch picks data (EXACT same logic as /betting/dashboard)
   useEffect(() => {
     if (activeTab !== 'picks') return
     
     async function fetchPicks() {
       setIsLoadingPicks(true)
       try {
-        const dateStr = formatDateString(currentDate)
+        const targetDate = currentDate
+        const start = new Date(targetDate)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(targetDate)
+        end.setHours(23, 59, 59, 999)
         
         const { data, error } = await supabase
-          .from('analyst_picks')
-          .select('*')
-          .eq('date', dateStr)
-          .order('created_at', { ascending: false })
+          .from('picks')
+          .select('*, bettors(name, record, win_streak, profile_initials)')
+          .gte('game_time', start.toISOString())
+          .lte('game_time', end.toISOString())
+          .order('game_time', { ascending: true })
 
         if (error) throw error
 
-        setAllPicks(data || [])
+        const picks = (data || []).map(p => ({
+          ...p,
+          id: p.id,
+          bet_title: p.bet_title || '',
+          odds: p.odds || '',
+          units: p.units || 0,
+          game_time: p.game_time || '',
+          game_id: p.game_id || '',
+          result: p.result || 'pending',
+          bettor_id: p.bettor_id || '',
+          bettor_name: p.bettors?.name || 'Unknown',
+          bettor_record: p.bettors?.record || '',
+          bettor_win_streak: p.bettors?.win_streak || 0,
+          bettor_profile_initials: p.bettors?.profile_initials || '??',
+          bettor_profile_image: null,
+          sport: p.sport || '',
+          away_team: null,
+          home_team: null,
+          analysis: p.analysis || '',
+          date: formatDateString(targetDate)
+        }))
+
+        // Sort by bettor name, then by game time
+        picks.sort((a, b) => {
+          if (a.bettor_name !== b.bettor_name) {
+            return a.bettor_name.localeCompare(b.bettor_name)
+          }
+          return new Date(a.game_time).getTime() - new Date(b.game_time).getTime()
+        })
+
+        setAllPicks(picks)
       } catch (error) {
         console.error('Error fetching picks:', error)
         setAllPicks([])
@@ -344,7 +379,7 @@ export default function SportsSelectorPage() {
     fetchPicks()
   }, [activeTab, currentDate])
 
-  // Fetch pick counts for calendar
+  // Fetch pick counts for calendar (EXACT same logic as /betting/dashboard)
   useEffect(() => {
     if (activeTab !== 'picks') return
     
@@ -353,23 +388,33 @@ export default function SportsSelectorPage() {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         
-        const dates: string[] = []
+        const dates = []
         for (let i = 0; i < 30; i++) {
           const date = new Date(today)
           date.setDate(today.getDate() + i)
-          dates.push(formatDateString(date))
+          dates.push(date)
         }
 
+        const startDate = dates[0]
+        const endDate = new Date(dates[dates.length - 1])
+        endDate.setHours(23, 59, 59, 999)
+
         const { data, error } = await supabase
-          .from('analyst_picks')
-          .select('date')
-          .in('date', dates)
+          .from('picks')
+          .select('game_time')
+          .gte('game_time', startDate.toISOString())
+          .lte('game_time', endDate.toISOString())
 
         if (error) throw error
 
         const counts: Record<string, number> = {}
-        data?.forEach((pick: any) => {
-          counts[pick.date] = (counts[pick.date] || 0) + 1
+        
+        ;(data || []).forEach(pick => {
+          const gameTimeUTC = new Date(pick.game_time)
+          const gameTimeEST = new Date(gameTimeUTC.toLocaleString("en-US", {timeZone: "America/New_York"}))
+          const estDateStr = `${gameTimeEST.getFullYear()}-${String(gameTimeEST.getMonth() + 1).padStart(2, '0')}-${String(gameTimeEST.getDate()).padStart(2, '0')}`
+          
+          counts[estDateStr] = (counts[estDateStr] || 0) + 1
         })
 
         setPickCounts(counts)
@@ -383,7 +428,7 @@ export default function SportsSelectorPage() {
 
   // Fetch scripts data
   useEffect(() => {
-    if (activeTab !== 'scripts' || activeFilter === 'scriptsAbout') return
+    if (activeTab !== 'scripts') return
     
     async function fetchAllScripts() {
       setIsLoadingScripts(true)
@@ -445,7 +490,7 @@ export default function SportsSelectorPage() {
 
   // Fetch public data
   useEffect(() => {
-    if (activeTab !== 'public' || activeFilter === 'publicAbout') return
+    if (activeTab !== 'public') return
     
     async function fetchAllPublic() {
       setIsLoadingPublic(true)
@@ -940,87 +985,111 @@ export default function SportsSelectorPage() {
 
     return (
       <div style={{ padding: '20px' }}>
-        {/* Calendar */}
-        <div style={{ marginBottom: '24px' }}>
+        {/* Horizontal Date Bar (like /betting/dashboard) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.75rem',
+          marginBottom: '1.5rem',
+          overflow: 'hidden'
+        }}>
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px'
+            background: '#334155',
+            color: '#fff',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '8px',
+            fontWeight: '700',
+            fontSize: '0.85rem',
+            flexShrink: 0,
+            marginTop: '20px',
+            border: 'none',
+            cursor: 'default'
           }}>
-            <h2 style={{
-              fontSize: '1.25rem',
-              fontWeight: '700',
-              color: '#ffffff',
-              margin: 0
-            }}>
-              {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </h2>
+            {currentDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
           </div>
-          
-          {/* Calendar grid */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '8px'
+            flex: 1,
+            overflow: 'hidden',
+            position: 'relative'
           }}>
-            {(() => {
-              const today = new Date()
-              today.setHours(0, 0, 0, 0)
-              const dates = []
-              for (let i = 0; i < 30; i++) {
-                const date = new Date(today)
-                date.setDate(today.getDate() + i)
-                dates.push(date)
-              }
-              return dates.map((date) => {
-                const dateStr = formatDateString(date)
-                const isSelected = isSameDay(date, currentDate)
-                const count = pickCounts[dateStr] || 0
-                const hasData = count > 0
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              overflowX: 'auto',
+              paddingBottom: '0.5rem',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch'
+            }}>
+              {(() => {
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                const dates = []
+                for (let i = 0; i < 30; i++) {
+                  const date = new Date(today)
+                  date.setDate(today.getDate() + i)
+                  dates.push(date)
+                }
+                return dates.map((date, index) => {
+                  const dateStr = formatDateString(date)
+                  const isSelected = isSameDay(date, currentDate)
+                  const count = pickCounts[dateStr] || 0
+                  const hasData = count > 0
+                  const isToday = index === 0
 
-                return (
-                  <button
-                    key={dateStr}
-                    onClick={() => selectDate(dateStr)}
-                    style={{
-                      padding: '12px 8px',
-                      background: isSelected ? 'rgba(99, 102, 241, 0.25)' : hasData ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                      border: `1px solid ${isSelected ? 'rgba(129, 140, 248, 0.5)' : hasData ? 'rgba(99, 102, 241, 0.3)' : 'rgba(148, 163, 184, 0.2)'}`,
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'center'
-                    }}
-                  >
-                    <div style={{
-                      fontSize: '0.75rem',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      marginBottom: '4px'
-                    }}>
-                      {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                    </div>
-                    <div style={{
-                      fontSize: '1rem',
-                      fontWeight: '700',
-                      color: isSelected ? '#e0e7ff' : '#ffffff'
-                    }}>
-                      {date.getDate()}
-                    </div>
-                    {hasData && (
+                  return (
+                    <button
+                      key={dateStr}
+                      onClick={() => selectDate(dateStr)}
+                      style={{
+                        minWidth: '65px',
+                        padding: '0.75rem',
+                        background: isSelected ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : hasData ? '#1e293b' : '#0f172a',
+                        border: `1px solid ${isSelected ? '#8b5cf6' : hasData ? '#334155' : '#1e293b'}`,
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        flexShrink: 0
+                      }}
+                    >
                       <div style={{
-                        fontSize: '0.625rem',
-                        color: '#6366f1',
-                        marginTop: '2px',
-                        fontWeight: '600'
+                        fontSize: '0.7rem',
+                        fontWeight: '500',
+                        color: isSelected ? '#e9d5ff' : '#94a3b8',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
                       }}>
-                        {count}
+                        {isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' })}
                       </div>
-                    )}
-                  </button>
-                )
-              })
-            })()}
+                      <div style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '700',
+                        color: '#ffffff'
+                      }}>
+                        {date.getDate()}
+                      </div>
+                      {hasData && (
+                        <div style={{
+                          fontSize: '0.65rem',
+                          fontWeight: '700',
+                          color: isSelected ? '#c4b5fd' : '#6366f1',
+                          background: isSelected ? 'rgba(255, 255, 255, 0.15)' : 'rgba(99, 102, 241, 0.2)',
+                          padding: '2px 6px',
+                          borderRadius: '10px',
+                          minWidth: '24px'
+                        }}>
+                          {count}
+                        </div>
+                      )}
+                    </button>
+                  )
+                })
+              })()}
+            </div>
           </div>
         </div>
 
