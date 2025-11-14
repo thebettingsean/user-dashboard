@@ -10,6 +10,17 @@ import styles from './sportSelector.module.css'
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 type SubFilterKey = 'scriptsAbout' | 'publicAbout'
 
+type SportGameData = {
+  sport: string
+  sportLabel: string
+  sportLogo: string
+  gamesCount: number
+  picksCount: number
+  scriptsCount: number
+  topMatchup?: string
+  isActive: boolean
+}
+
 const tabLabels: Record<TabKey, string> = {
   games: 'Games',
   picks: 'Picks',
@@ -37,6 +48,8 @@ export default function SportsSelectorPage() {
   const [activeFilter, setActiveFilter] = useState<SubFilterKey | undefined>(undefined)
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
+  const [sportsData, setSportsData] = useState<SportGameData[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,6 +70,63 @@ export default function SportsSelectorPage() {
       setActiveFilter(undefined)
     }
   }
+
+  // Fetch all sports data when on games tab
+  useEffect(() => {
+    if (activeTab !== 'games') return
+    
+    setIsLoading(true)
+    
+    async function fetchAllSports() {
+      try {
+        // Fetch data for each active sport
+        const activeSports = sportOptions.filter(s => s.status === 'active')
+        const promises = activeSports.map(async (sport) => {
+          try {
+            const response = await fetch(`/api/dashboard/game-hub?sport=${sport.id}`, {
+              cache: 'no-store'
+            })
+            
+            if (!response.ok) throw new Error(`Failed to fetch ${sport.id}`)
+            
+            const data = await response.json()
+            const games = data.games || []
+            
+            return {
+              sport: sport.id,
+              sportLabel: sport.label,
+              sportLogo: sport.logo,
+              gamesCount: games.length,
+              picksCount: games.reduce((sum: number, g: any) => sum + (g.picks?.total || 0), 0),
+              scriptsCount: games.filter((g: any) => g.script?.strengthLabel).length,
+              topMatchup: games[0] ? `${games[0].awayTeam} @ ${games[0].homeTeam}` : undefined,
+              isActive: true
+            }
+          } catch (error) {
+            console.error(`Error fetching ${sport.id}:`, error)
+            return {
+              sport: sport.id,
+              sportLabel: sport.label,
+              sportLogo: sport.logo,
+              gamesCount: 0,
+              picksCount: 0,
+              scriptsCount: 0,
+              isActive: true
+            }
+          }
+        })
+        
+        const results = await Promise.all(promises)
+        setSportsData(results)
+      } catch (error) {
+        console.error('Error fetching all sports:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchAllSports()
+  }, [activeTab])
 
   const handleSportSelect = (sportId: string) => {
     const tabRoutes: Record<TabKey, string> = {
@@ -154,6 +224,154 @@ export default function SportsSelectorPage() {
     )
   }
 
+  const renderGamesView = () => {
+    if (isLoading) {
+      return (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '400px',
+          color: 'rgba(255, 255, 255, 0.7)',
+          fontSize: '1rem'
+        }}>
+          Loading sports data...
+        </div>
+      )
+    }
+
+    if (sportsData.length === 0) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '400px',
+          padding: '2rem',
+          textAlign: 'center'
+        }}>
+          <BsClipboard2Data style={{ fontSize: '4rem', marginBottom: '1.5rem', color: 'rgba(255, 255, 255, 0.3)' }} />
+          <div style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600, marginBottom: '0.5rem' }}>
+            No games available
+          </div>
+          <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+            Check back soon for upcoming games
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: '20px',
+        padding: '20px'
+      }}>
+        {sportsData.map((sport) => (
+          <div
+            key={sport.sport}
+            onClick={() => router.push(`/sports/${sport.sport}/games`)}
+            style={{
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+              borderRadius: '20px',
+              padding: '24px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)'
+              e.currentTarget.style.boxShadow = '0 15px 40px rgba(99, 102, 241, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)'
+              e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            {/* Sport Logo & Label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <img 
+                src={sport.sportLogo} 
+                alt={sport.sportLabel}
+                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+              />
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+                {sport.sportLabel}
+              </h3>
+            </div>
+
+            {/* Stats Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+              <div style={{
+                background: 'rgba(99, 102, 241, 0.1)',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                borderRadius: '12px',
+                padding: '12px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#6366f1' }}>
+                  {sport.gamesCount}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                  Games
+                </div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(234, 88, 12, 0.1)',
+                border: '1px solid rgba(234, 88, 12, 0.2)',
+                borderRadius: '12px',
+                padding: '12px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#ea580c' }}>
+                  {sport.picksCount}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                  Picks
+                </div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '12px',
+                padding: '12px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#10b981' }}>
+                  {sport.scriptsCount}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                  Scripts
+                </div>
+              </div>
+            </div>
+
+            {/* Top Matchup */}
+            {sport.topMatchup && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '10px',
+                padding: '10px',
+                fontSize: '0.875rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: 'center'
+              }}>
+                Featured: <span style={{ color: '#ffffff', fontWeight: 600 }}>{sport.topMatchup}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   const renderContent = () => {
     if (activeFilter === 'scriptsAbout') {
       return renderAboutScripts()
@@ -162,6 +380,12 @@ export default function SportsSelectorPage() {
       return renderAboutPublic()
     }
 
+    // NEW: Render games view with all sports data
+    if (activeTab === 'games') {
+      return renderGamesView()
+    }
+
+    // For other tabs, show placeholder for now
     const messages: Record<TabKey, string> = {
       games: 'Select a sport to get game data for today',
       picks: 'Select a sport to get picks for today',
