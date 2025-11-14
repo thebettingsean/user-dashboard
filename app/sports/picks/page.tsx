@@ -442,7 +442,6 @@ export default function AllSportsPicksPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '11px',
-                            color: 'rgba(226, 232, 240, 0.9)',
                             background: pick.units > 1.5 ? 'rgba(234, 88, 12, 0.25)' : 'rgba(99, 102, 241, 0.18)',
                             border: `1px solid ${pick.units > 1.5 ? 'rgba(251, 146, 60, 0.5)' : 'rgba(129, 140, 248, 0.35)'}`,
                             borderRadius: '999px',
