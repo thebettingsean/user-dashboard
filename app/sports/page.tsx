@@ -1408,11 +1408,17 @@ export default function SportsSelectorPage() {
                                   style={{ 
                                     fontSize: '0.75rem', 
                                     color: 'rgba(255, 255, 255, 0.5)',
-                                    cursor: !isSignedIn ? 'pointer' : 'default'
+                                    cursor: 'pointer'
                                   }}
-                                  onClick={() => !isSignedIn && openSignUp()}
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      openSignUp({ redirectUrl: '/pricing' })
+                                    } else {
+                                      router.push('/pricing')
+                                    }
+                                  }}
                                 >
-                                  {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                                  {!isSignedIn ? 'Sign Up for FREE Trial' : 'Unlock with FREE Trial'}
                                 </span>
                               </>
                             )}
@@ -1882,14 +1888,20 @@ export default function SportsSelectorPage() {
               gap: '0.5rem',
               background: 'rgba(10, 15, 26, 0.5)',
               backdropFilter: 'blur(2px)',
-              cursor: !isSignedIn ? 'pointer' : 'default',
+              cursor: 'pointer',
               zIndex: 1
             }}
-            onClick={() => !isSignedIn && openSignUp()}
+            onClick={() => {
+              if (!isSignedIn) {
+                openSignUp({ redirectUrl: '/pricing' })
+              } else {
+                router.push('/pricing')
+              }
+            }}
             >
               <FaLock style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.7)' }} />
               <span style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}>
-                {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                {!isSignedIn ? 'Sign Up for FREE Trial' : 'Unlock with FREE Trial'}
               </span>
             </div>
           )}
