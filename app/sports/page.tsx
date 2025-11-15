@@ -1238,6 +1238,7 @@ export default function SportsSelectorPage() {
         }}>
           <div style={{
             minWidth: '60px',
+            height: '56px',
             padding: '0.5rem 0.4rem',
             background: '#334155',
             border: '1px solid #334155',
@@ -1247,6 +1248,7 @@ export default function SportsSelectorPage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '0.15rem',
             flexShrink: 0
           }}>
