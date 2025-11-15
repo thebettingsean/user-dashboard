@@ -1134,7 +1134,7 @@ export default function BetsPage() {
             transition: `opacity 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}, transform 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}`
           } as React.CSSProperties}
         >
-          <a href="/sports" className={styles.ctaButton}>
+          <a href="/pricing" className={styles.ctaButton}>
             Start FREE Trial
           </a>
         </div>
