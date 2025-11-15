@@ -55,29 +55,44 @@ export async function GET(request: NextRequest) {
     const plan = (privateMeta.plan as string) || null
     const subscriptionStatus = (privateMeta.subscriptionStatus as string) || null
     const cancelAtPeriodEnd = (privateMeta.cancelAtPeriodEnd as boolean) || false
+    const currentPeriodEnd = (privateMeta.currentPeriodEnd as number) || null
 
     // User has access if:
     // 1. They have a valid plan in our price IDs list (includes legacy)
-    // 2. AND one of these conditions:
-    //    a) subscriptionStatus is 'active' (new webhook system)
-    //    b) subscriptionStatus is null/undefined (legacy users who never had status tracked)
-    //       BUT they must have a plan set (old system only set 'plan')
+    // 2. AND one of these subscription states grants access:
+    //    a) 'trialing' - User is in FREE 3-day trial (FULL ACCESS)
+    //    b) 'active' - User has active paid subscription (FULL ACCESS)
+    //    c) 'canceled' BUT cancelAtPeriodEnd = false AND currentPeriodEnd > now (still in paid period)
+    //    d) Legacy user with plan but no status tracked (backward compatibility)
     const hasValidPlan = plan && VALID_SUBSCRIPTION_PRICE_IDS.includes(plan)
-    const hasActiveSub = subscriptionStatus === 'active'
-    const isLegacyWithPlan = !subscriptionStatus && !!plan // Legacy user with plan but no status
     
-    // Grant access if they have a valid plan AND (active status OR legacy user)
-    const hasAccess = hasValidPlan && (hasActiveSub || isLegacyWithPlan)
+    // Check if subscription is still valid (not past expiration)
+    const now = Math.floor(Date.now() / 1000) // Current time in seconds
+    const isPeriodValid = !currentPeriodEnd || currentPeriodEnd > now
+    
+    // Determine access based on subscription status
+    const isTrialing = subscriptionStatus === 'trialing' && isPeriodValid
+    const isActive = subscriptionStatus === 'active' && isPeriodValid
+    const isCanceledButStillValid = subscriptionStatus === 'canceled' && !cancelAtPeriodEnd && isPeriodValid
+    const isLegacyWithPlan = !subscriptionStatus && !!plan // Legacy user
+    
+    // Grant access for ANY valid subscription state
+    const hasAccess = hasValidPlan && (isTrialing || isActive || isCanceledButStillValid || isLegacyWithPlan)
 
     console.log(`🔍 Subscription check for ${user.id}:`, {
       plan,
       subscriptionStatus,
       cancelAtPeriodEnd,
+      currentPeriodEnd,
+      currentPeriodEndDate: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
+      now,
       hasValidPlan,
-      hasActiveSub,
+      isPeriodValid,
+      isTrialing,
+      isActive,
+      isCanceledButStillValid,
       isLegacyWithPlan,
-      hasAccess,
-      isLegacyPriceId: plan && !['price_1SIZoo07WIhZOuSIJB8OGgVU', 'price_1SIZoN07WIhZOuSIm8hTDjy4', 'price_1SIZp507WIhZOuSIFMzU7Kkm'].includes(plan)
+      hasAccess
     })
 
     return NextResponse.json({

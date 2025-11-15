@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     const now = new Date()
-    const isSubscribed = userData?.subscription_status === 'active' && 
+    const isSubscribed = (userData?.subscription_status === 'active' || userData?.subscription_status === 'trialing') && 
                         (!userData.subscription_end_date || new Date(userData.subscription_end_date) > now)
 
     if (isSubscribed) {
