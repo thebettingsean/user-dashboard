@@ -135,12 +135,12 @@ const subFilters: Record<TabKey, SubFilterKey[]> = {
 }
 
 const sportOptions = [
-  { id: 'all', label: 'All Sports', logo: '', status: 'active' },
+  { id: 'all', label: 'All Sports', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6917f63fdc8769f00b25fc23_every%20sport%20in%201-2.svg', status: 'active' },
   { id: 'nfl', label: 'NFL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg', status: 'active' },
   { id: 'nba', label: 'NBA', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg', status: 'active' },
   { id: 'nhl', label: 'NHL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg', status: 'inactive' },
-  { id: 'ncaaf', label: 'NCAAF', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ad5b84bd99ac1f0e7_3.svg', status: 'inactive' },
-  { id: 'ncaab', label: 'NCAAB', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b06c8e66f82c8494b_4.svg', status: 'inactive' },
+  { id: 'ncaaf', label: 'NCAAF', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg', status: 'inactive' },
+  { id: 'ncaab', label: 'NCAAB', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg', status: 'inactive' },
   { id: 'mlb', label: 'MLB', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', status: 'inactive' }
 ]
 
@@ -1089,7 +1089,7 @@ export default function SportsSelectorPage() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ad5b84bd99ac1f0e7_3.svg"
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg"
               alt="NCAAF"
               style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
             />
@@ -1140,7 +1140,7 @@ export default function SportsSelectorPage() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b06c8e66f82c8494b_4.svg"
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg"
               alt="NCAAB"
               style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
             />

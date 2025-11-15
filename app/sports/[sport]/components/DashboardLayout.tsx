@@ -195,7 +195,7 @@ const sportOptions: Array<{
   {
     id: 'all',
     label: 'All Sports',
-    logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6728c8f0a75e9f4a64e8cd47_BETTING%20INSIDER%20SVG.svg',
+    logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6917f63fdc8769f00b25fc23_every%20sport%20in%201-2.svg',
     status: 'active'
   },
   {
