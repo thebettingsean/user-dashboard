@@ -1779,7 +1779,6 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             </div>
           )}
         </div>
-        <div className={styles.creditPill}>Credits: 12</div>
       </div>
 
       <nav className={styles.tabBar}>
