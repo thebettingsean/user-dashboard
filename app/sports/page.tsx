@@ -291,7 +291,7 @@ export default function SportsSelectorPage() {
     
     async function fetchAllSports() {
       try {
-        const activeSports = sportOptions.filter(s => s.status === 'active')
+        const activeSports = sportOptions.filter(s => s.status === 'active' && s.id !== 'all')
         const promises = activeSports.map(async (sport) => {
           try {
             const response = await fetch(`/api/dashboard/game-hub?sport=${sport.id}`, {
@@ -474,7 +474,7 @@ export default function SportsSelectorPage() {
     async function fetchAllScripts() {
       setIsLoadingScripts(true)
       try {
-        const activeSports = sportOptions.filter(s => s.status === 'active')
+        const activeSports = sportOptions.filter(s => s.status === 'active' && s.id !== 'all')
         const promises = activeSports.map(async (sport) => {
           try {
             const response = await fetch(`/api/dashboard/game-hub?sport=${sport.id}`, {
@@ -536,7 +536,7 @@ export default function SportsSelectorPage() {
     async function fetchAllPublic() {
       setIsLoadingPublic(true)
       try {
-        const activeSports = sportOptions.filter(s => s.status === 'active')
+        const activeSports = sportOptions.filter(s => s.status === 'active' && s.id !== 'all')
         const promises = activeSports.map(async (sport) => {
           try {
             const response = await fetch(`/api/dashboard/game-hub?sport=${sport.id}`, {

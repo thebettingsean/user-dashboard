@@ -187,11 +187,17 @@ const subFilterLabels: Record<SubFilterKey, string> = {
 }
 
 const sportOptions: Array<{
-  id: SupportedSport | 'nhl' | 'ncaaf' | 'ncaab' | 'mlb'
+  id: SupportedSport | 'nhl' | 'ncaaf' | 'ncaab' | 'mlb' | 'all'
   label: string
   logo: string
   status: 'active' | 'coming-soon' | 'season-over'
 }> = [
+  {
+    id: 'all',
+    label: 'All Sports',
+    logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6728c8f0a75e9f4a64e8cd47_BETTING%20INSIDER%20SVG.svg',
+    status: 'active'
+  },
   {
     id: 'nfl',
     label: 'NFL',
