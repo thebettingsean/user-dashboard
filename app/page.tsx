@@ -945,7 +945,7 @@ export default function HeroNewPage() {
       <section className={styles.howItWorksSection}>
         <h2 className={styles.howItWorksTitle}>Start Your FREE 3-Day Trial</h2>
         <p className={styles.howItWorksSubtitle}>Get instant access to everything—picks, data, tools, and more.</p>
-        <div className={styles.howItWorksContent}>
+        <div className={styles.howItWorksContent} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
           {/* Free Trial Card */}
           <div className={`${styles.howItWorksCard} ${styles.glassCard}`}>
             <div className={styles.glassFilter}></div>
@@ -987,21 +987,19 @@ export default function HeroNewPage() {
                 </div>
               </div>
             </div>
-            <a
+            <button
               className={`${styles.howItWorksButtonSecondary} ${styles.glassButton}`}
-              href="/pricing"
+              onClick={handlePricingClick}
+              style={{ cursor: 'pointer' }}
             >
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
               <div className={styles.glassSpecular}></div>
               <div className={styles.glassContent}>Start FREE Trial</div>
-            </a>
+            </button>
           </div>
         </div>
       </section>
-
-      {/* Pricing Section */}
-      <PricingSection />
 
       {/* Reviews Section */}
       <ReviewsReelSection />
