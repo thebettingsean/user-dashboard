@@ -1135,7 +1135,7 @@ export default function BetsPage() {
           } as React.CSSProperties}
         >
           <a href="/sports" className={styles.ctaButton}>
-            View Today's Picks
+            Start FREE Trial
           </a>
         </div>
       </section>
@@ -1362,7 +1362,7 @@ export default function BetsPage() {
 
           {/* CTA Button */}
           <a href="/pricing" className={styles.insiderCtaButton}>
-            Unlock Now!
+            Start FREE Trial
           </a>
         </div>
       </section>
@@ -1504,7 +1504,7 @@ function PricingSection() {
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
                 <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Buy Credits</div>
+                <div className={styles.glassContent}>Start FREE Trial</div>
               </a>
             </div>
 
@@ -1540,7 +1540,7 @@ function PricingSection() {
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
                 <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Buy Now</div>
+                <div className={styles.glassContent}>Start FREE Trial</div>
               </a>
             </div>
           </div>
