@@ -135,6 +135,7 @@ const subFilters: Record<TabKey, SubFilterKey[]> = {
 }
 
 const sportOptions = [
+  { id: 'all', label: 'All Sports', logo: '', status: 'active' },
   { id: 'nfl', label: 'NFL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg', status: 'active' },
   { id: 'nba', label: 'NBA', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg', status: 'active' },
   { id: 'nhl', label: 'NHL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg', status: 'inactive' },
@@ -370,7 +371,7 @@ export default function SportsSelectorPage() {
         
         const { data, error } = await supabase
           .from('picks')
-          .select('*, bettors(name, record, win_streak, profile_initials)')
+          .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
           .gte('game_time', start.toISOString())
           .lte('game_time', end.toISOString())
           .order('game_time', { ascending: true })
@@ -391,7 +392,7 @@ export default function SportsSelectorPage() {
           bettor_record: p.bettors?.record || '',
           bettor_win_streak: p.bettors?.win_streak || 0,
           bettor_profile_initials: p.bettors?.profile_initials || '??',
-          bettor_profile_image: null,
+          bettor_profile_image: p.bettors?.profile_image || null,
           sport: p.sport || '',
           away_team: null,
           home_team: null,
@@ -767,14 +768,19 @@ export default function SportsSelectorPage() {
   }
 
   const handleSportSelect = (sportId: string) => {
-    const tabRoutes: Record<TabKey, string> = {
-      games: 'games',
-      picks: 'picks',
-      scripts: 'ai-scripts',
-      public: 'public-betting'
+    if (sportId === 'all') {
+      // Navigate back to /sports page
+      router.push('/sports')
+    } else {
+      const tabRoutes: Record<TabKey, string> = {
+        games: 'games',
+        picks: 'picks',
+        scripts: 'ai-scripts',
+        public: 'public-betting'
+      }
+      const route = tabRoutes[activeTab]
+      router.push(`/sports/${sportId}/${route}`)
     }
-    const route = tabRoutes[activeTab]
-    router.push(`/sports/${sportId}/${route}`)
   }
 
   const renderAboutScripts = () => {
@@ -1021,7 +1027,26 @@ export default function SportsSelectorPage() {
       return acc
     }, {} as Record<string, any>)
 
-    const cappers = Object.values(picksByCapper)
+    // Sort cappers by win streak (descending), then by record win percentage
+    const cappers = Object.values(picksByCapper).sort((a: any, b: any) => {
+      // First sort by win streak
+      if (b.winStreak !== a.winStreak) {
+        return b.winStreak - a.winStreak
+      }
+      
+      // Then by record (extract wins and calculate percentage)
+      const parseRecord = (record: string) => {
+        if (!record) return 0
+        const match = record.match(/(\d+)-(\d+)/)
+        if (!match) return 0
+        const wins = parseInt(match[1])
+        const losses = parseInt(match[2])
+        const total = wins + losses
+        return total > 0 ? wins / total : 0
+      }
+      
+      return parseRecord(b.record) - parseRecord(a.record)
+    })
 
     return (
       <div style={{ padding: '20px' }}>
@@ -1341,11 +1366,15 @@ export default function SportsSelectorPage() {
             </div>
 
             {/* Scripts Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '16px'
-            }}>
+            <div 
+              onClick={() => router.push(`/sports/${sportData.sport}/ai-scripts`)}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: '16px',
+                cursor: 'pointer'
+              }}
+            >
               {sportData.scripts.map((script) => {
                 const isExpanded = expandedScripts.has(script.id)
                 const isGenerating = generatingScripts.has(script.id)
@@ -1460,6 +1489,37 @@ export default function SportsSelectorPage() {
                   </div>
                 )
               })}
+            </div>
+            
+            {/* CTA */}
+            <div 
+              onClick={() => router.push(`/sports/${sportData.sport}/ai-scripts`)}
+              style={{
+                marginTop: '16px',
+                padding: '12px',
+                background: 'rgba(99, 102, 241, 0.1)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                borderRadius: '12px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
+              }}
+            >
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#a5b4fc'
+              }}>
+                Click here to view all {sportData.sportLabel} scripts →
+              </span>
             </div>
           </div>
         ))}
@@ -1738,39 +1798,7 @@ export default function SportsSelectorPage() {
 
     return (
       <div style={{ padding: '20px' }}>
-        {/* View filters */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '24px',
-          flexWrap: 'wrap'
-        }}>
-          {[
-            { id: 'most' as const, label: 'Most Public' },
-            { id: 'vegas' as const, label: 'Vegas Backed' },
-            { id: 'sharp' as const, label: 'Big Money' }
-          ].map((view) => (
-            <button
-              key={view.id}
-              onClick={() => setPublicView(view.id)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '12px',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                background: publicView === view.id ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                border: `1px solid ${publicView === view.id ? 'rgba(129, 140, 248, 0.5)' : 'rgba(148, 163, 184, 0.2)'}`,
-                color: publicView === view.id ? '#e0e7ff' : 'rgba(226, 232, 240, 0.75)'
-              }}
-            >
-              {view.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Sports and games */}
+        {/* Sports and games - Default to Most Public view */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           {sportsPublic.map((sportData) => (
             <div key={sportData.sport}>
@@ -1806,12 +1834,47 @@ export default function SportsSelectorPage() {
               </div>
 
               {/* Games Grid */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '16px'
-              }}>
+              <div 
+                onClick={() => router.push(`/sports/${sportData.sport}/public-betting`)}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '16px',
+                  cursor: 'pointer'
+                }}
+              >
                 {sportData.games.map((game) => renderPublicGameCard(game))}
+              </div>
+              
+              {/* CTA */}
+              <div 
+                onClick={() => router.push(`/sports/${sportData.sport}/public-betting`)}
+                style={{
+                  marginTop: '16px',
+                  padding: '12px',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  borderRadius: '12px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
+                }}
+              >
+                <span style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#a5b4fc'
+                }}>
+                  Click here to view detailed {sportData.sportLabel} public trends →
+                </span>
               </div>
             </div>
           ))}

@@ -102,24 +102,7 @@ iframe[src*="pushlapgrowth"] {
   100% { transform: rotate(360deg); }
 }
 
-/* Custom horizontal scrollbar for game cards */
-*::-webkit-scrollbar {
-  height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.5);
-  border-radius: 4px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.7);
-}
+/* Use system default scrollbar */
 
 /* Force Clerk custom menu items to be white - AGGRESSIVE */
 /* Target all possible Clerk menu item elements */
