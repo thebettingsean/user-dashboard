@@ -1753,7 +1753,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     className={`${styles.sportOption} ${isActive ? styles.sportOptionActive : ''} ${isDisabled ? styles.sportOptionDisabled : ''}`}
                     onClick={() => {
                       if (isDisabled || option.id === activeSport) return
-                      if (option.id === 'nfl' || option.id === 'nba') {
+                      if (option.id === 'all') {
+                        router.push('/sports')
+                        setIsSportMenuOpen(false)
+                      } else if (option.id === 'nfl' || option.id === 'nba') {
                         // Map current tab to route path
                         const tabRoutes: Record<TabKey, string> = {
                           games: 'games',
