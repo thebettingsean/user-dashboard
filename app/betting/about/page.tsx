@@ -1480,11 +1480,11 @@ function PricingSection() {
 
   return (
     <section className={styles.pricingSimpleSection}>
-      <div className={styles.pricingSimpleWrapper}>
-        <div className={styles.pricingSimpleHeader}>
-          <h2 className={styles.pricingTitle}>Gain Instant Access</h2>
+      <div className={styles.pricingSimpleWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        <div className={styles.pricingSimpleHeader} style={{ textAlign: 'center' }}>
+          <h2 className={styles.pricingTitle}>Start Your FREE 3-Day Trial</h2>
           <p className={styles.pricingTagline}>
-            Pick a path and start betting smarter right now—single-match credits or full-time access.
+            Try everything for free, then choose your plan—cancel anytime.
           </p>
         </div>
 
@@ -1493,28 +1493,23 @@ function PricingSection() {
           <div className={styles.glassOverlay}></div>
           <div className={styles.glassSpecular}></div>
           <div className={styles.pricingSimpleBody}>
-            <div className={styles.pricingSimpleOption}>
-              <h3 className={styles.pricingSimpleOptionTitle}>One Time Purchase</h3>
-              <div className={styles.pricingSimplePrice}>$10 <span>/ 15 Credits</span></div>
-              <p className={styles.pricingSimpleDescription}>Spend credits on AI scripts, analyst picks, blueprints, and more.</p>
-              <a
-                className={`${styles.pricingSimpleButton} ${styles.glassButton}`}
-                href="/pricing"
-              >
-                <div className={styles.glassFilter}></div>
-                <div className={styles.glassOverlay}></div>
-                <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Start FREE Trial</div>
-              </a>
-            </div>
-
-            <div className={styles.pricingSimpleDivider}>
-              <span>or</span>
-            </div>
-
-            <div className={styles.pricingSimpleOption}>
+            <div className={styles.pricingSimpleOption} style={{ maxWidth: '100%' }}>
+              <div style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '700',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: '1rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                3-Day FREE Trial Included
+              </div>
               <h3 className={styles.pricingSimpleOptionTitle}>Full Access</h3>
-              <p className={styles.pricingSimpleDescription}>Unlock every tool, pick, and dashboard update with ongoing access.</p>
+              <p className={styles.pricingSimpleDescription}>Try everything FREE for 3 days. Unlimited picks, AI tools, props & stats.</p>
 
               <div className={styles.pricingSimpleTierList}>
                 {unlimitedPlans.map((plan, index) => (
@@ -1546,7 +1541,7 @@ function PricingSection() {
           </div>
 
           <div className={styles.pricingSimpleFooter}>
-            <span>Secure payment • Cancel anytime • Instant access</span>
+            <span>3-Day FREE Trial • Cancel anytime • Instant access</span>
             <a
               href="https://dashboard.thebettinginsider.com"
               target="_blank"
