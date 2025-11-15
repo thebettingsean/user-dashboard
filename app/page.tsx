@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { gsap } from 'gsap'
 import styles from './hero.module.css'
@@ -664,9 +666,23 @@ function ChromaVisualization({ item }: { item: (typeof chromaGridDemo)[number] }
 }
 
 export default function HeroNewPage() {
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const router = useRouter()
   const [scrollProgress, setScrollProgress] = useState(0)
   const floatingContainerRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(false)
+
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isSignedIn) {
+      openSignUp({
+        redirectUrl: '/pricing'
+      })
+    } else {
+      router.push('/pricing')
+    }
+  }
 
   useEffect(() => {
     // Detect mobile
