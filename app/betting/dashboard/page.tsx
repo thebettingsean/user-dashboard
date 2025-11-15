@@ -704,8 +704,7 @@ export default function AnalystPicksPage() {
   const renderPick = (pick: Pick, showBettorName = false) => {
     const pickId = `p-${pick.id}`
     const isPremiumPick = pick.is_free !== true
-    const unlocked = isPickUnlocked(pick.id)
-    const hasAccessToPick = !isPremiumPick || unlocked
+    const hasAccessToPick = !isPremiumPick || isPremium
     const isExpanded = expandedPicks.has(pickId)
 
     const truncatedTitle = hasAccessToPick 
@@ -780,40 +779,17 @@ export default function AnalystPicksPage() {
                   <svg style={styles.lockIconLarge} viewBox="0 0 24 24">
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" fill="#f59e0b"/>
                   </svg>
-                  <span>🔒 Premium Analysis Locked</span>
-                  {isSignedIn && !isPremium ? (
-                    <button 
-                      style={{
-                        ...styles.unlockButton,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        cursor: isUnlocking ? 'wait' : 'pointer',
-                        opacity: isUnlocking ? 0.6 : 1
-                      }} 
-                      className="analyst-picks-unlock-button" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        handleUnlockSingle(pick.id, pick.bet_title)
-                      }}
-                      disabled={isUnlocking}
-                    >
-                      <GiTwoCoins style={{ fontSize: '1rem' }} />
-                      {isUnlocking ? 'Unlocking...' : '1 Credit or Upgrade'}
-                    </button>
-                  ) : (
-                    <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { 
-                      e.stopPropagation(); 
-                      if (!isSignedIn) {
-                        openSignUp()
-                      } else {
-                        window.location.href = '/pricing'
-                      }
-                    }}>
-                      {isSignedIn ? 'Get Credits' : 'Sign In to Unlock'}
-                    </button>
-                  )}
+                  <span>🔒 Premium Analysis</span>
+                  <button style={styles.unlockButton} className="analyst-picks-unlock-button" onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (!isSignedIn) {
+                      openSignUp()
+                    } else {
+                      window.location.href = '/pricing'
+                    }
+                  }}>
+                    {isSignedIn ? 'Start FREE Trial' : 'Sign In for FREE Trial'}
+                  </button>
                 </div>
               )}
 
