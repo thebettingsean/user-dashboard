@@ -1364,16 +1364,7 @@ export default function AnalystPicksPage() {
           <p style={styles.subtitle} className="analyst-picks-subtitle">Updated live throughout the day</p>
         </header>
 
-        {/* Credit Badge - positioned on left */}
-        <div style={{ marginBottom: '1rem' }}>
-          <AICreditBadge onShowModal={() => {
-            if (!isSignedIn) {
-              openSignUp()
-            } else {
-              window.location.href = '/pricing'
-            }
-          }} />
-        </div>
+        {/* Removed credit badge */}
 
         {/* Filters */}
         <section style={styles.filters} className="analyst-picks-filters">
