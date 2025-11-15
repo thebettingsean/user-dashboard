@@ -873,8 +873,8 @@ export default function SportsSelectorPage() {
     return (
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '20px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+        gap: '12px',
         padding: '20px'
       }}>
         {sportsData.map((sport) => (
@@ -885,32 +885,32 @@ export default function SportsSelectorPage() {
               position: 'relative',
               background: 'rgba(15, 23, 42, 0.8)',
               border: '1px solid rgba(99, 102, 241, 0.2)',
-              borderRadius: '20px',
-              padding: '24px',
+              borderRadius: '16px',
+              padding: '16px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
               e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)'
-              e.currentTarget.style.boxShadow = '0 15px 40px rgba(99, 102, 241, 0.2)'
+              e.currentTarget.style.boxShadow = '0 12px 32px rgba(99, 102, 241, 0.2)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)'
-              e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.3)'
             }}
           >
             <div style={{
               position: 'absolute',
-              top: '16px',
-              right: '16px',
+              top: '12px',
+              right: '12px',
               background: 'rgba(99, 102, 241, 0.15)',
               border: '1px solid rgba(99, 102, 241, 0.3)',
-              borderRadius: '8px',
-              padding: '6px 12px',
-              fontSize: '0.75rem',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              fontSize: '0.65rem',
               fontWeight: '600',
               color: '#a5b4fc',
               textTransform: 'uppercase',
@@ -919,29 +919,29 @@ export default function SportsSelectorPage() {
               {sport.dateLabel}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <img 
                 src={sport.sportLogo} 
                 alt={sport.sportLabel}
-                style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
               />
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ffffff', margin: 0 }}>
                 {sport.sportLabel}
               </h3>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '12px' }}>
               <div style={{
                 background: 'rgba(99, 102, 241, 0.1)',
                 border: '1px dashed rgba(99, 102, 241, 0.3)',
-                borderRadius: '12px',
-                padding: '12px',
+                borderRadius: '8px',
+                padding: '8px 4px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#6366f1' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#6366f1' }}>
                   {sport.gamesCount}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '2px' }}>
                   Games
                 </div>
               </div>
@@ -949,14 +949,14 @@ export default function SportsSelectorPage() {
               <div style={{
                 background: 'rgba(234, 88, 12, 0.1)',
                 border: '1px dashed rgba(234, 88, 12, 0.3)',
-                borderRadius: '12px',
-                padding: '12px',
+                borderRadius: '8px',
+                padding: '8px 4px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#ea580c' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#ea580c' }}>
                   {sport.picksCount}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '2px' }}>
                   Picks
                 </div>
               </div>
@@ -964,33 +964,198 @@ export default function SportsSelectorPage() {
               <div style={{
                 background: 'rgba(16, 185, 129, 0.1)',
                 border: '1px dashed rgba(16, 185, 129, 0.3)',
-                borderRadius: '12px',
-                padding: '12px',
+                borderRadius: '8px',
+                padding: '8px 4px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#10b981' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#10b981' }}>
                   {sport.scriptsCount}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '2px' }}>
                   Scripts
+                </div>
+              </div>
+
+              <div style={{
+                background: 'rgba(251, 146, 60, 0.1)',
+                border: '1px dashed rgba(251, 146, 60, 0.3)',
+                borderRadius: '8px',
+                padding: '8px 4px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fb923c' }}>
+                  0
+                </div>
+                <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '2px' }}>
+                  Data
                 </div>
               </div>
             </div>
 
-            {sport.topMatchup && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '10px',
-                padding: '10px',
-                fontSize: '0.875rem',
-                color: 'rgba(255, 255, 255, 0.7)',
-                textAlign: 'center'
-              }}>
-                Featured: <span style={{ color: '#ffffff', fontWeight: 600 }}>{sport.topMatchup}</span>
-              </div>
-            )}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '8px',
+              padding: '8px',
+              fontSize: '0.75rem',
+              color: 'rgba(255, 255, 255, 0.5)',
+              textAlign: 'center',
+              fontWeight: '600',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase'
+            }}>
+              Coming Soon
+            </div>
           </div>
         ))}
+        
+        {/* NHL */}
+        <div
+          style={{
+            position: 'relative',
+            background: 'rgba(15, 23, 42, 0.5)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+            borderRadius: '16px',
+            padding: '16px',
+            opacity: 0.6
+          }}
+        >
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(148, 163, 184, 0.15)',
+            border: '1px solid rgba(148, 163, 184, 0.3)',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textTransform: 'uppercase'
+          }}>
+            Soon
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg"
+              alt="NHL"
+              style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
+            />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
+              NHL
+            </h3>
+          </div>
+
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '8px',
+            padding: '24px 8px',
+            fontSize: '0.75rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textAlign: 'center',
+            fontWeight: '600'
+          }}>
+            Coming Soon
+          </div>
+        </div>
+
+        {/* NCAAF */}
+        <div
+          style={{
+            position: 'relative',
+            background: 'rgba(15, 23, 42, 0.5)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+            borderRadius: '16px',
+            padding: '16px',
+            opacity: 0.6
+          }}
+        >
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(148, 163, 184, 0.15)',
+            border: '1px solid rgba(148, 163, 184, 0.3)',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textTransform: 'uppercase'
+          }}>
+            Soon
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.5 }}>
+              🏈
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
+              NCAAF
+            </h3>
+          </div>
+
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '8px',
+            padding: '24px 8px',
+            fontSize: '0.75rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textAlign: 'center',
+            fontWeight: '600'
+          }}>
+            Coming Soon
+          </div>
+        </div>
+
+        {/* NCAAB */}
+        <div
+          style={{
+            position: 'relative',
+            background: 'rgba(15, 23, 42, 0.5)',
+            border: '1px solid rgba(148, 163, 184, 0.2)',
+            borderRadius: '16px',
+            padding: '16px',
+            opacity: 0.6
+          }}
+        >
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(148, 163, 184, 0.15)',
+            border: '1px solid rgba(148, 163, 184, 0.3)',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textTransform: 'uppercase'
+          }}>
+            Soon
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.5 }}>
+              🏀
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
+              NCAAB
+            </h3>
+          </div>
+
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '8px',
+            padding: '24px 8px',
+            fontSize: '0.75rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            textAlign: 'center',
+            fontWeight: '600'
+          }}>
+            Coming Soon
+          </div>
+        </div>
       </div>
     )
   }
@@ -1106,32 +1271,34 @@ export default function SportsSelectorPage() {
                       key={dateStr}
                       onClick={() => selectDate(dateStr)}
                       style={{
-                        minWidth: '65px',
-                        padding: '0.75rem',
+                        minWidth: isToday ? '55px' : '45px',
+                        padding: '0.5rem 0.4rem',
                         background: isSelected ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : hasData ? '#1e293b' : '#0f172a',
                         border: `1px solid ${isSelected ? '#8b5cf6' : hasData ? '#334155' : '#1e293b'}`,
-                        borderRadius: '12px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '0.25rem',
+                        gap: '0.15rem',
                         flexShrink: 0
                       }}
                     >
+                      {isToday && (
+                        <div style={{
+                          fontSize: '0.6rem',
+                          fontWeight: '600',
+                          color: isSelected ? '#e9d5ff' : '#94a3b8',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Today
+                        </div>
+                      )}
                       <div style={{
-                        fontSize: '0.7rem',
-                        fontWeight: '500',
-                        color: isSelected ? '#e9d5ff' : '#94a3b8',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}>
-                        {isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' })}
-                      </div>
-                      <div style={{
-                        fontSize: '1.25rem',
+                        fontSize: isToday ? '1rem' : '1.1rem',
                         fontWeight: '700',
                         color: '#ffffff'
                       }}>
@@ -1139,13 +1306,13 @@ export default function SportsSelectorPage() {
                       </div>
                       {hasData && (
                         <div style={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           fontWeight: '700',
                           color: isSelected ? '#c4b5fd' : '#6366f1',
                           background: isSelected ? 'rgba(255, 255, 255, 0.15)' : 'rgba(99, 102, 241, 0.2)',
-                          padding: '2px 6px',
-                          borderRadius: '10px',
-                          minWidth: '24px'
+                          padding: '1px 5px',
+                          borderRadius: '8px',
+                          minWidth: '20px'
                         }}>
                           {count}
                         </div>
