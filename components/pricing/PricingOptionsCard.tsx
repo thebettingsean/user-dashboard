@@ -47,10 +47,38 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
     if (!selectedPlan) return
 
     setLoading(true)
-    const plan = subscriptionPlans.find((p) => p.id === selectedPlan)
-    if (plan && plan.paymentLink) {
-      // Redirect directly to Stripe Checkout link with FREE trial
-      window.location.href = plan.paymentLink
+    try {
+      const plan = subscriptionPlans.find((p) => p.id === selectedPlan)
+      if (!plan) return
+
+      // Call API to create checkout session with user metadata
+      const response = await fetch('/api/checkout/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: plan.priceId
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Failed to create checkout session:', data.error)
+        alert('Failed to start checkout. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error)
+      alert('An error occurred. Please try again.')
+      setLoading(false)
     }
   }
 

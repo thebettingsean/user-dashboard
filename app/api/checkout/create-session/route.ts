@@ -88,10 +88,11 @@ export async function POST(request: NextRequest) {
       metadata,
     }
 
-    // For subscriptions, add subscription data
+    // For subscriptions, add subscription data with FREE 3-day trial
     if (config.type === 'subscription') {
       sessionConfig.subscription_data = {
-        metadata
+        metadata,
+        trial_period_days: 3  // 3-day FREE trial
       }
     }
 
