@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useEffect, useState, useRef } from 'react'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { gsap } from 'gsap'
 import styles from './about.module.css'
@@ -764,11 +766,25 @@ function getDailyUnitValue(): string {
 }
 
 export default function BetsPage() {
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const router = useRouter()
   const [scrollProgress, setScrollProgress] = useState(0)
   const floatingContainerRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [hologramVisible, setHologramVisible] = useState(false)
   const hologramRef = useRef<HTMLDivElement>(null)
+
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isSignedIn) {
+      openSignUp({
+        redirectUrl: '/pricing'
+      })
+    } else {
+      router.push('/pricing')
+    }
+  }
   const [unitValue, setUnitValue] = useState(() => getDailyUnitValue())
   const [quoteVisible, setQuoteVisible] = useState(false)
   const quoteRef = useRef<HTMLDivElement>(null)
@@ -1134,9 +1150,9 @@ export default function BetsPage() {
             transition: `opacity 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}, transform 0.8s ease ${hologramVisible ? '2400ms' : '0ms'}`
           } as React.CSSProperties}
         >
-          <a href="/pricing" className={styles.ctaButton}>
+          <button onClick={handlePricingClick} className={styles.ctaButton} style={{ cursor: 'pointer', border: 'none' }}>
             Start FREE Trial
-          </a>
+          </button>
         </div>
       </section>
 
@@ -1361,9 +1377,9 @@ export default function BetsPage() {
           </div>
 
           {/* CTA Button */}
-          <a href="/pricing" className={styles.insiderCtaButton}>
+          <button onClick={handlePricingClick} className={styles.insiderCtaButton} style={{ cursor: 'pointer', border: 'none' }}>
             Start FREE Trial
-          </a>
+          </button>
         </div>
       </section>
 
@@ -1528,15 +1544,16 @@ function PricingSection() {
                 ))}
               </div>
 
-              <a
+              <button
                 className={`${styles.pricingSimpleButton} ${styles.pricingSimpleButtonSecondary} ${styles.glassButton}`}
-                href="/pricing"
+                onClick={handlePricingClick}
+                style={{ cursor: 'pointer' }}
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
                 <div className={styles.glassSpecular}></div>
                 <div className={styles.glassContent}>Start FREE Trial</div>
-              </a>
+              </button>
             </div>
           </div>
 
