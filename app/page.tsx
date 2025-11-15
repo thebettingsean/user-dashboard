@@ -943,8 +943,8 @@ export default function HeroNewPage() {
 
       {/* How It Works Section */}
       <section className={styles.howItWorksSection}>
-        <h2 className={styles.howItWorksTitle}>Here's How It Works</h2>
-        <p className={styles.howItWorksSubtitle}>Choose your lane—load up on credits or go all-in with full access.</p>
+        <h2 className={styles.howItWorksTitle}>Start Your FREE 3-Day Trial</h2>
+        <p className={styles.howItWorksSubtitle}>Get instant access to everything—picks, data, tools, and more.</p>
         <div className={styles.howItWorksContent}>
           {/* Credits Card */}
           <div className={`${styles.howItWorksCard} ${styles.glassCard}`}>
@@ -1007,8 +1007,8 @@ export default function HeroNewPage() {
               <div className={`${styles.howItWorksCardIcon} ${styles.howItWorksCardIconWhite}`}>
                 <FaRegCalendarAlt />
               </div>
-              <h3 className={styles.howItWorksCardTitle}>Monthly Subscription</h3>
-              <p className={styles.howItWorksCardSubtitle}>Unlock everything, all the time—your full access package to every Insider tool and pick.</p>
+              <h3 className={styles.howItWorksCardTitle}>FREE 3-Day Trial</h3>
+              <p className={styles.howItWorksCardSubtitle}>Full access to everything—picks, data, AI tools. No credit card required to start.</p>
             </div>
             <div className={styles.howItWorksCardBody}>
               <div className={styles.howItWorksFeature}>
@@ -1017,7 +1017,7 @@ export default function HeroNewPage() {
                 </div>
                 <div className={styles.howItWorksFeatureText}>
                   <h4 className={styles.howItWorksFeatureTitle}>Analyst Picks</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Unlimited access to every single pick, no credits needed, with instant notifications pushed right to your phone.</p>
+                  <p className={styles.howItWorksFeatureDesc}>Unlimited access to every single pick with instant notifications pushed right to your phone.</p>
                 </div>
               </div>
               <div className={styles.howItWorksFeature}>
@@ -1035,7 +1035,7 @@ export default function HeroNewPage() {
                 </div>
                 <div className={styles.howItWorksFeatureText}>
                   <h4 className={styles.howItWorksFeatureTitle}>Automated Tools</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Unlock the prop engine for top hit-rate props, the perfect parlay builder, our Vegas-backed fantasy optimizer, and the script writer—all with zero limits.</p>
+                  <p className={styles.howItWorksFeatureDesc}>Full access to the prop engine, perfect parlay builder, Vegas-backed fantasy optimizer, and AI script writer.</p>
                 </div>
               </div>
             </div>
@@ -1046,7 +1046,7 @@ export default function HeroNewPage() {
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
               <div className={styles.glassSpecular}></div>
-              <div className={styles.glassContent}>View Our Dashboard</div>
+              <div className={styles.glassContent}>Start FREE Trial</div>
             </a>
           </div>
         </div>
@@ -1091,9 +1091,9 @@ function PricingSection() {
     <section className={styles.pricingSimpleSection}>
       <div className={styles.pricingSimpleWrapper}>
         <div className={styles.pricingSimpleHeader}>
-          <h2 className={styles.pricingTitle}>Gain Instant Access</h2>
+          <h2 className={styles.pricingTitle}>Start Your FREE 3-Day Trial</h2>
           <p className={styles.pricingTagline}>
-            Pick a path and start betting smarter right now—single-match credits or full-time access.
+            Try everything for free, then choose your plan—cancel anytime.
           </p>
         </div>
 
