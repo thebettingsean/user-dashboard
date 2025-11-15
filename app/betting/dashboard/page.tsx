@@ -707,13 +707,12 @@ export default function AnalystPicksPage() {
     const unlocked = isPickUnlocked(pick.id)
     const hasAccessToPick = !isPremiumPick || unlocked
     const isExpanded = expandedPicks.has(pickId)
-    const isUnlocking = unlocking === pick.id
 
     const truncatedTitle = hasAccessToPick 
       ? (pick.bet_title.length > 35 ? pick.bet_title.substring(0, 35) + '...' : pick.bet_title)
       : 'Premium Pick'
 
-    const fullTitle = hasAccessToPick ? pick.bet_title : '🔒 Premium Pick - Unlock to View'
+    const fullTitle = hasAccessToPick ? pick.bet_title : '🔒 Premium Pick - Get Full Access'
 
     let resultBadge = null
     let pickClass = styles.pickCard
@@ -904,9 +903,9 @@ export default function AnalystPicksPage() {
                   <svg style={styles.lockIconLarge} viewBox="0 0 24 24">
                     <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" fill="#f59e0b"/>
                   </svg>
-                  <span>🔒 Premium Consensus Analysis Locked</span>
-                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.open('https://thebettinginsider.com/pricing', '_blank') }}>
-                    Unlock Now
+                  <span>🔒 Premium Consensus Analysis</span>
+                  <button style={styles.unlockButton} onClick={(e) => { e.stopPropagation(); window.location.href = '/pricing' }}>
+                    Start FREE Trial
                   </button>
                 </div>
               )}
