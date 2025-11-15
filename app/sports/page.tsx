@@ -234,11 +234,19 @@ function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: strin
 
 export default function SportsSelectorPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
   const { hasAccess } = useSubscription()
   
-  const [activeTab, setActiveTab] = useState<TabKey>('games')
+  // Determine active tab from URL
+  const activeTab: TabKey = useMemo(() => {
+    if (pathname === '/sports/picks') return 'picks'
+    if (pathname === '/sports/ai-scripts') return 'scripts'
+    if (pathname === '/sports/public-betting') return 'public'
+    return 'games'
+  }, [pathname])
+  
   const [activeFilter, setActiveFilter] = useState<SubFilterKey | undefined>(undefined)
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
@@ -276,13 +284,13 @@ export default function SportsSelectorPage() {
   }, [])
 
   const handleTabSelect = (tab: TabKey) => {
-    setActiveTab(tab)
-    const filters = subFilters[tab]
-    if (filters.length > 0) {
-      setActiveFilter(filters[0])
-    } else {
-      setActiveFilter(undefined)
+    const routes: Record<TabKey, string> = {
+      games: '/sports',
+      picks: '/sports/picks',
+      scripts: '/sports/ai-scripts',
+      public: '/sports/public-betting'
     }
+    router.push(routes[tab])
   }
 
   // Fetch games data
@@ -1229,18 +1237,28 @@ export default function SportsSelectorPage() {
           overflow: 'hidden'
         }}>
           <div style={{
+            minWidth: '60px',
+            padding: '0.5rem 0.4rem',
             background: '#334155',
-            color: '#fff',
-            padding: '0.5rem 0.75rem',
+            border: '1px solid #334155',
             borderRadius: '8px',
-            fontWeight: '700',
-            fontSize: '0.85rem',
-            flexShrink: 0,
-            marginTop: '20px',
-            border: 'none',
-            cursor: 'default'
+            cursor: 'default',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.15rem',
+            flexShrink: 0
           }}>
-            {currentDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+            <div style={{
+              fontSize: '0.65rem',
+              fontWeight: '600',
+              color: '#fff',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              {currentDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+            </div>
           </div>
           <div style={{
             flex: 1,
