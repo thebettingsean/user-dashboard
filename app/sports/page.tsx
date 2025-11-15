@@ -1231,50 +1231,13 @@ export default function SportsSelectorPage() {
         {/* Horizontal Date Bar (like /betting/dashboard) */}
         <div style={{
           display: 'flex',
-          alignItems: 'flex-start',
-          gap: '0.75rem',
+          gap: '0.5rem',
           marginBottom: '1.5rem',
-          overflow: 'hidden'
+          overflowX: 'auto',
+          paddingBottom: '0.5rem',
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch'
         }}>
-          <div style={{
-            minWidth: '60px',
-            height: '56px',
-            padding: '0.5rem 0.4rem',
-            background: '#334155',
-            border: '1px solid #334155',
-            borderRadius: '8px',
-            cursor: 'default',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.15rem',
-            flexShrink: 0
-          }}>
-            <div style={{
-              fontSize: '0.65rem',
-              fontWeight: '600',
-              color: '#fff',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              {currentDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
-            </div>
-          </div>
-          <div style={{
-            flex: 1,
-            overflow: 'hidden',
-            position: 'relative'
-          }}>
-            <div style={{
-              display: 'flex',
-              gap: '0.5rem',
-              overflowX: 'auto',
-              paddingBottom: '0.5rem',
-              scrollBehavior: 'smooth',
-              WebkitOverflowScrolling: 'touch'
-            }}>
               {(() => {
                 const today = new Date()
                 today.setHours(0, 0, 0, 0)
@@ -1337,8 +1300,6 @@ export default function SportsSelectorPage() {
                   )
                 })
               })()}
-            </div>
-          </div>
         </div>
 
         {/* Picks by capper - Using dashboard styles */}
