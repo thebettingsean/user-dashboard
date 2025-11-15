@@ -79,6 +79,23 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
             marginBottom: '2rem'
           }}
         >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: '700',
+              color: '#fff',
+              textAlign: 'center',
+              marginBottom: '1rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'inline-block'
+            }}
+          >
+            3-Day FREE Trial Included
+          </div>
           <h2
             style={{
               fontSize: variant === 'compact' ? '1.6rem' : '1.75rem',
@@ -88,105 +105,11 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               lineHeight: 1.2
             }}
           >
-            Get Credits or Subscribe
+            Start Your FREE Trial
           </h2>
         </div>
 
         <div>
-          <div style={{ marginBottom: '1rem' }}>
-            <button
-              onClick={() => setSelectedPlan('credits')}
-              style={{
-                width: '100%',
-                padding: '1rem',
-                background:
-                  selectedPlan === 'credits'
-                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1))'
-                    : 'rgba(255, 255, 255, 0.03)',
-                backdropFilter: 'blur(20px)',
-                border:
-                  selectedPlan === 'credits'
-                    ? '2px solid rgba(59, 130, 246, 0.5)'
-                    : '2px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                textAlign: 'left',
-                boxShadow:
-                  selectedPlan === 'credits' ? '0 8px 32px rgba(59, 130, 246, 0.2)' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedPlan !== 'credits') {
-                  e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.15)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedPlan !== 'credits') {
-                  e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.08)'
-                }
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div
-                    style={{
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      fontSize: '0.75rem',
-                      marginBottom: '0.25rem'
-                    }}
-                  >
-                    One Time Purchase
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '1.75rem',
-                      fontWeight: 800,
-                      color: '#fff',
-                      marginBottom: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    $10
-                    <span
-                      style={{
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem'
-                      }}
-                    >
-                      / 15 Credits
-                      <GiTwoCoins style={{ fontSize: '1rem', color: '#fbbf24' }} />
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.4)' }}>
-                    Spend credits on scripts, picks & more!
-                  </div>
-                </div>
-                {selectedPlan === 'credits' && (
-                  <div
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: '#3b82f6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    <Check size={14} style={{ color: '#fff' }} />
-                  </div>
-                )}
-              </div>
-            </button>
-          </div>
-
           <div
             style={{
               padding: '1rem',
@@ -212,7 +135,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               }}
             >
               <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>
-                Unlimited Credits & Full Access
+                Full Access - Try FREE for 3 Days
               </div>
               {isSubscriptionSelected && (
                 <div
@@ -291,7 +214,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                         gap: '0.4rem'
                       }}
                     >
-                      {['Unlimited Credits', 'Daily Insider Picks', 'All Premium Data'].map((feature) => (
+                      {['Unlimited Everything', 'Daily Insider Picks', 'All Premium Data', 'AI Scripts & Tools'].map((feature) => (
                         <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <div
                             style={{
@@ -358,14 +281,12 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
           >
             {loading
               ? 'Processing...'
-              : selectedPlan === 'credits'
-              ? 'Continue for $10'
               : selectedPlan === 'weekly'
-              ? 'Continue for $29'
+              ? 'Start FREE Trial (Then $29/week)'
               : selectedPlan === 'monthly'
-              ? 'Continue for $99'
+              ? 'Start FREE Trial (Then $99/month)'
               : selectedPlan === '6month'
-              ? 'Continue for $299'
+              ? 'Start FREE Trial (Then $299/6-months)'
               : 'Select a Plan'}
           </button>
 
@@ -430,7 +351,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               color: 'rgba(255, 255, 255, 0.35)'
             }}
           >
-            Secure payment • Cancel anytime • Instant access
+            3-Day FREE Trial • Cancel anytime • Instant access
           </div>
         </div>
       </div>
