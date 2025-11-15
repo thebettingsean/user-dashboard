@@ -1102,28 +1102,23 @@ function PricingSection() {
           <div className={styles.glassOverlay}></div>
           <div className={styles.glassSpecular}></div>
           <div className={styles.pricingSimpleBody}>
-            <div className={styles.pricingSimpleOption}>
-              <h3 className={styles.pricingSimpleOptionTitle}>One Time Purchase</h3>
-              <div className={styles.pricingSimplePrice}>$10 <span>/ 15 Credits</span></div>
-              <p className={styles.pricingSimpleDescription}>Spend credits on AI scripts, analyst picks, blueprints, and more.</p>
-              <a
-                className={`${styles.pricingSimpleButton} ${styles.glassButton}`}
-                href="/pricing"
-              >
-                <div className={styles.glassFilter}></div>
-                <div className={styles.glassOverlay}></div>
-                <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Buy Credits</div>
-              </a>
-            </div>
-
-            <div className={styles.pricingSimpleDivider}>
-              <span>or</span>
-            </div>
-
-            <div className={styles.pricingSimpleOption}>
+            <div className={styles.pricingSimpleOption} style={{ maxWidth: '100%' }}>
+              <div style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '700',
+                color: '#fff',
+                textAlign: 'center',
+                marginBottom: '1rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                3-Day FREE Trial Included
+              </div>
               <h3 className={styles.pricingSimpleOptionTitle}>Full Access</h3>
-              <p className={styles.pricingSimpleDescription}>Unlock every tool, pick, and dashboard update with ongoing access.</p>
+              <p className={styles.pricingSimpleDescription}>Try everything FREE for 3 days. Unlimited picks, AI tools, props & stats.</p>
 
               <div className={styles.pricingSimpleTierList}>
                 {unlimitedPlans.map((plan, index) => (
@@ -1149,7 +1144,7 @@ function PricingSection() {
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
                 <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Buy Now</div>
+                <div className={styles.glassContent}>Start FREE Trial</div>
               </a>
             </div>
           </div>
