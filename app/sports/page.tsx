@@ -139,6 +139,8 @@ const sportOptions = [
   { id: 'nfl', label: 'NFL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg', status: 'active' },
   { id: 'nba', label: 'NBA', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg', status: 'active' },
   { id: 'nhl', label: 'NHL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg', status: 'inactive' },
+  { id: 'ncaaf', label: 'NCAAF', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ad5b84bd99ac1f0e7_3.svg', status: 'inactive' },
+  { id: 'ncaab', label: 'NCAAB', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b06c8e66f82c8494b_4.svg', status: 'inactive' },
   { id: 'mlb', label: 'MLB', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', status: 'inactive' }
 ]
 
@@ -984,7 +986,7 @@ export default function SportsSelectorPage() {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#fb923c' }}>
-                  0
+                  {sport.gamesCount * 4}
                 </div>
                 <div style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.6)', textTransform: 'uppercase', marginTop: '2px' }}>
                   Data
@@ -992,19 +994,18 @@ export default function SportsSelectorPage() {
               </div>
             </div>
 
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '8px',
-              padding: '8px',
-              fontSize: '0.75rem',
-              color: 'rgba(255, 255, 255, 0.5)',
-              textAlign: 'center',
-              fontWeight: '600',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase'
-            }}>
-              Coming Soon
-            </div>
+            {sport.topMatchup && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '8px',
+                padding: '8px',
+                fontSize: '0.75rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: 'center'
+              }}>
+                Featured: <span style={{ color: '#ffffff', fontWeight: 600 }}>{sport.topMatchup}</span>
+              </div>
+            )}
           </div>
         ))}
         
@@ -1087,9 +1088,11 @@ export default function SportsSelectorPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.5 }}>
-              🏈
-            </div>
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ad5b84bd99ac1f0e7_3.svg"
+              alt="NCAAF"
+              style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
+            />
             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
               NCAAF
             </h3>
@@ -1136,9 +1139,11 @@ export default function SportsSelectorPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.5 }}>
-              🏀
-            </div>
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b06c8e66f82c8494b_4.svg"
+              alt="NCAAB"
+              style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
+            />
             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
               NCAAB
             </h3>
@@ -1271,7 +1276,7 @@ export default function SportsSelectorPage() {
                       key={dateStr}
                       onClick={() => selectDate(dateStr)}
                       style={{
-                        minWidth: isToday ? '55px' : '45px',
+                        minWidth: isToday ? '60px' : '50px',
                         padding: '0.5rem 0.4rem',
                         background: isSelected ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : hasData ? '#1e293b' : '#0f172a',
                         border: `1px solid ${isSelected ? '#8b5cf6' : hasData ? '#334155' : '#1e293b'}`,
@@ -1286,23 +1291,14 @@ export default function SportsSelectorPage() {
                         flexShrink: 0
                       }}
                     >
-                      {isToday && (
-                        <div style={{
-                          fontSize: '0.6rem',
-                          fontWeight: '600',
-                          color: isSelected ? '#e9d5ff' : '#94a3b8',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em'
-                        }}>
-                          Today
-                        </div>
-                      )}
                       <div style={{
-                        fontSize: isToday ? '1rem' : '1.1rem',
-                        fontWeight: '700',
-                        color: '#ffffff'
+                        fontSize: '0.65rem',
+                        fontWeight: '600',
+                        color: isSelected ? '#e9d5ff' : '#94a3b8',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
                       }}>
-                        {date.getDate()}
+                        {isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
                       </div>
                       {hasData && (
                         <div style={{
@@ -1663,28 +1659,24 @@ export default function SportsSelectorPage() {
               onClick={() => router.push(`/sports/${sportData.sport}/ai-scripts`)}
               style={{
                 marginTop: '16px',
-                padding: '12px',
-                background: 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                borderRadius: '12px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
               }}
             >
               <span style={{
                 fontSize: '0.875rem',
                 fontWeight: '600',
-                color: '#a5b4fc'
-              }}>
+                color: '#a5b4fc',
+                textDecoration: 'underline'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#c4b5fd'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#a5b4fc'
+              }}
+              >
                 Click here to view all {sportData.sportLabel} scripts →
               </span>
             </div>
@@ -2018,28 +2010,24 @@ export default function SportsSelectorPage() {
                 onClick={() => router.push(`/sports/${sportData.sport}/public-betting`)}
                 style={{
                   marginTop: '16px',
-                  padding: '12px',
-                  background: 'rgba(99, 102, 241, 0.1)',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                  borderRadius: '12px',
                   textAlign: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
-                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
-                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)'
                 }}
               >
                 <span style={{
                   fontSize: '0.875rem',
                   fontWeight: '600',
-                  color: '#a5b4fc'
-                }}>
+                  color: '#a5b4fc',
+                  textDecoration: 'underline'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#c4b5fd'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#a5b4fc'
+                }}
+                >
                   Click here to view detailed {sportData.sportLabel} public trends →
                 </span>
               </div>
