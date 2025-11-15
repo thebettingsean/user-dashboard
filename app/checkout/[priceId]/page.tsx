@@ -100,19 +100,34 @@ export default function CheckoutPage() {
               animation: 'spin 1s linear infinite',
               margin: '0 auto 1.5rem'
             }} />
+            <div style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              color: '#fff',
+              textAlign: 'center',
+              marginBottom: '1rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              display: 'inline-block'
+            }}>
+              3-Day FREE Trial
+            </div>
             <h2 style={{
               fontSize: '1.5rem',
               fontWeight: '700',
               color: '#fff',
               marginBottom: '0.5rem'
             }}>
-              Redirecting to checkout...
+              Starting Your FREE Trial...
             </h2>
             <p style={{
               fontSize: '0.95rem',
               color: 'rgba(255, 255, 255, 0.6)'
             }}>
-              Please wait while we set up your secure payment.
+              Try everything free for 3 days. Cancel anytime.
             </p>
           </>
         )}
