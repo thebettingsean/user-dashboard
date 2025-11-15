@@ -1437,11 +1437,6 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   {content ? (isExpanded ? 'Hide Script' : 'View Script') : (
                     <>
                       Generate
-                      {isSignedIn && !hasAccess && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          ({strength} <GiTwoCoins style={{ fontSize: '0.8rem' }} />)
-                        </span>
-                      )}
                     </>
                   )}
                 </button>
