@@ -166,7 +166,7 @@ export default function CreditPurchaseSuccessPage() {
 
         {/* CTA Button */}
         <button
-          onClick={() => router.push('https://dashboard.thebettinginsider.com')}
+          onClick={() => router.push('/sports')}
           style={{
             width: '100%',
             padding: '1rem',
@@ -189,7 +189,7 @@ export default function CreditPurchaseSuccessPage() {
             e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 92, 246, 0.3)'
           }}
         >
-          Return Home
+          Start Winning
         </button>
       </div>
     </div>
