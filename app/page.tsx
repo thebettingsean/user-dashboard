@@ -989,7 +989,7 @@ export default function HeroNewPage() {
             </div>
             <a
               className={`${styles.howItWorksButtonSecondary} ${styles.glassButton}`}
-              href="/sports"
+              href="/pricing"
             >
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
