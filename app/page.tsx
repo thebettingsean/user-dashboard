@@ -1037,8 +1037,8 @@ function PricingSection() {
 
   return (
     <section className={styles.pricingSimpleSection}>
-      <div className={styles.pricingSimpleWrapper}>
-        <div className={styles.pricingSimpleHeader}>
+      <div className={styles.pricingSimpleWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        <div className={styles.pricingSimpleHeader} style={{ textAlign: 'center' }}>
           <h2 className={styles.pricingTitle}>Start Your FREE 3-Day Trial</h2>
           <p className={styles.pricingTagline}>
             Try everything for free, then choose your plan—cancel anytime.
