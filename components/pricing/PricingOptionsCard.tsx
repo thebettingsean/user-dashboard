@@ -47,13 +47,10 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
     if (!selectedPlan) return
 
     setLoading(true)
-    if (selectedPlan === 'credits') {
-      router.push(`/checkout/${CREDIT_PACK_PRICE}`)
-    } else {
-      const plan = subscriptionPlans.find((plan) => plan.id === selectedPlan)
-      if (plan) {
-        router.push(`/checkout/${plan.priceId}`)
-      }
+    const plan = subscriptionPlans.find((p) => p.id === selectedPlan)
+    if (plan && plan.paymentLink) {
+      // Redirect directly to Stripe Checkout link with FREE trial
+      window.location.href = plan.paymentLink
     }
   }
 
