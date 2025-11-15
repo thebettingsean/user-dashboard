@@ -9,9 +9,10 @@ import { BsClipboard2Data } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
-import { FaDice, FaLock } from 'react-icons/fa'
+import { FaDice, FaLock, FaFireAlt } from 'react-icons/fa'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import styles from './sportSelector.module.css'
+import dashboardStyles from './[sport]/components/dashboard.module.css'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 type SubFilterKey = 'scriptsAbout' | 'publicAbout'
@@ -187,6 +188,45 @@ function formatPublicCardDate(isoString: string) {
     minute: '2-digit',
     timeZone: 'America/New_York'
   }).format(date)
+}
+
+// Bettor Profile Image Component
+function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: string | null; initials: string | null; size?: number }) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt="Bettor"
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'rgba(71, 85, 105, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size * 0.4,
+        fontWeight: 600,
+        color: 'rgba(255, 255, 255, 0.8)',
+        flexShrink: 0
+      }}
+    >
+      {initials || '?'}
+    </div>
+  )
 }
 
 export default function SportsSelectorPage() {
@@ -1093,7 +1133,7 @@ export default function SportsSelectorPage() {
           </div>
         </div>
 
-        {/* Picks by capper */}
+        {/* Picks by capper - Using dashboard styles */}
         {cappers.length === 0 ? (
           <div style={{
             display: 'flex',
@@ -1113,220 +1153,108 @@ export default function SportsSelectorPage() {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className={dashboardStyles.capperList}>
             {cappers.map((capper) => (
-              <div
-                key={capper.name}
-                style={{
-                  background: 'rgba(15, 23, 42, 0.8)',
-                  border: '1px solid rgba(148, 163, 184, 0.2)',
-                  borderRadius: '16px',
-                  padding: '20px'
-                }}
-              >
-                {/* Capper header */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '16px',
-                  paddingBottom: '16px',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.2)'
-                }}>
-                  {capper.profileImage ? (
-                    <img
-                      src={capper.profileImage}
-                      alt={capper.name}
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
-                      }}
+              <div key={capper.name} className={dashboardStyles.capperCard}>
+                <div className={dashboardStyles.capperHeader}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <BettorProfileImage 
+                      imageUrl={capper.profileImage} 
+                      initials={capper.profileInitials}
+                      size={36}
                     />
-                  ) : (
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: 'rgba(99, 102, 241, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.25rem',
-                      fontWeight: '700',
-                      color: '#6366f1'
-                    }}>
-                      {capper.profileInitials}
-                    </div>
+                    <span className={dashboardStyles.capperName}>{capper.name}</span>
+                  </div>
+                  {capper.winStreak > 0 && (
+                    <span className={dashboardStyles.capperStreak}>
+                      <FaFireAlt className={dashboardStyles.capperStreakIcon} />
+                      {capper.winStreak}
+                    </span>
                   )}
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{
-                      fontSize: '1.125rem',
-                      fontWeight: '700',
-                      color: '#ffffff',
-                      margin: '0 0 4px 0'
-                    }}>
-                      {capper.name}
-                    </h3>
-                    <div style={{
-                      display: 'flex',
-                      gap: '12px',
-                      fontSize: '0.875rem',
-                      color: 'rgba(255, 255, 255, 0.6)'
-                    }}>
-                      {capper.record && <span>Record: {capper.record}</span>}
-                      {capper.winStreak > 0 && (
-                        <span style={{ color: '#10b981' }}>🔥 {capper.winStreak}W streak</span>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{
-                    background: 'rgba(99, 102, 241, 0.15)',
-                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                    borderRadius: '8px',
-                    padding: '6px 12px',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    color: '#a5b4fc'
-                  }}>
-                    {capper.picks.length} {capper.picks.length === 1 ? 'Pick' : 'Picks'}
-                  </div>
                 </div>
-
-                {/* Picks */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                {capper.record && <div className={dashboardStyles.capperRecord}>{capper.record}</div>}
+                <div className={dashboardStyles.capperPickList}>
                   {capper.picks.map((pick: Pick) => {
                     const isExpanded = expandedPicks.has(pick.id)
                     return (
-                      <div
-                        key={pick.id}
-                        style={{
-                          background: 'rgba(30, 41, 59, 0.5)',
-                          border: '1px solid rgba(148, 163, 184, 0.2)',
-                          borderRadius: '12px',
-                          padding: '16px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '8px'
-                        }}
-                      >
-                        {/* Odds & Units */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          marginBottom: '8px'
-                        }}>
-                          <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px',
-                            background: pick.units > 1.5 ? 'rgba(234, 88, 12, 0.25)' : 'rgba(99, 102, 241, 0.18)',
-                            border: `1px solid ${pick.units > 1.5 ? 'rgba(251, 146, 60, 0.5)' : 'rgba(129, 140, 248, 0.35)'}`,
-                            borderRadius: '999px',
-                            padding: '3px 12px',
-                            fontWeight: '600',
-                            color: pick.units > 1.5 ? 'rgba(251, 146, 60, 0.95)' : 'rgba(226, 232, 240, 0.9)'
-                          }}>
+                      <div key={pick.id} className={dashboardStyles.capperPickCard}>
+                        <div className={dashboardStyles.capperPickHeader}>
+                          <div 
+                            className={dashboardStyles.pickHeaderMeta}
+                            style={pick.units > 1.5 ? { 
+                              background: 'rgba(234, 88, 12, 0.25)', 
+                              borderColor: 'rgba(251, 146, 60, 0.5)',
+                              color: 'rgba(251, 146, 60, 0.95)'
+                            } : {}}
+                          >
                             {pick.odds} | {pick.units.toFixed(1)}u
                           </div>
                         </div>
-
-                        {/* Matchup */}
-                        {(pick.away_team || pick.home_team) && (
-                          <div style={{
-                            fontSize: '11px',
-                            color: 'rgba(226, 232, 240, 0.65)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
-                            marginBottom: '8px'
-                          }}>
-                            {pick.away_team} @ {pick.home_team}
+                        <div className={dashboardStyles.pickBody}>
+                          {(pick.away_team || pick.home_team) && (
+                            <div className={dashboardStyles.pickMatchup}>
+                              {pick.away_team ?? 'Away'} @ {pick.home_team ?? 'Home'}
+                            </div>
+                          )}
+                          <p 
+                            className={dashboardStyles.pickTitle}
+                            style={!hasAccess() ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                          >
+                            {pick.bet_title}
+                          </p>
+                          <div className={dashboardStyles.pickFooter}>
+                            {hasAccess() ? (
+                              <>
+                                <button
+                                  className={dashboardStyles.pickAnalysisLink}
+                                  type="button"
+                                  onClick={() => togglePickAnalysis(pick.id)}
+                                >
+                                  <span>Analysis</span>
+                                  <span
+                                    className={dashboardStyles.pickAnalysisLinkIcon}
+                                    style={{ transform: isExpanded ? 'rotate(-135deg)' : 'rotate(45deg)' }}
+                                  />
+                                </button>
+                                <span>{new Date(pick.game_time).toLocaleString('en-US', {
+                                  timeZone: 'America/New_York',
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}</span>
+                              </>
+                            ) : (
+                              <>
+                                <div style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '0.5rem',
+                                  filter: 'blur(6px)',
+                                  userSelect: 'none'
+                                }}>
+                                  <FaLock style={{ fontSize: '0.75rem' }} />
+                                  <span style={{ fontSize: '0.875rem' }}>Analysis</span>
+                                </div>
+                                <span 
+                                  style={{ 
+                                    fontSize: '0.75rem', 
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    cursor: !isSignedIn ? 'pointer' : 'default'
+                                  }}
+                                  onClick={() => !isSignedIn && openSignUp()}
+                                >
+                                  {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
+                                </span>
+                              </>
+                            )}
                           </div>
-                        )}
-
-                        {/* Bet Title */}
-                        <p style={{
-                          margin: '0 0 8px 0',
-                          fontSize: '14px',
-                          fontWeight: '700',
-                          lineHeight: '1.4',
-                          color: hasAccess() ? '#f8fafc' : 'transparent',
-                          filter: hasAccess() ? 'none' : 'blur(6px)',
-                          userSelect: hasAccess() ? 'auto' : 'none'
-                        }}>
-                          {pick.bet_title}
-                        </p>
-
-                        {/* Footer */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          fontSize: '11px',
-                          color: 'rgba(203, 213, 225, 0.7)'
-                        }}>
-                          {hasAccess() ? (
-                            <>
-                              <button
-                                onClick={() => togglePickAnalysis(pick.id)}
-                                style={{
-                                  fontWeight: '600',
-                                  color: '#8b5cf6',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  fontSize: '11px',
-                                  padding: 0
-                                }}
-                              >
-                                Analysis {isExpanded ? '▲' : '▼'}
-                              </button>
-                              <span>{pick.game_time}</span>
-                            </>
-                          ) : (
-                            <>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                filter: 'blur(6px)',
-                                userSelect: 'none'
-                              }}>
-                                🔒 <span style={{ fontSize: '0.875rem' }}>Analysis</span>
-                              </div>
-                              <span 
-                                style={{
-                                  fontSize: '0.75rem',
-                                  color: 'rgba(255, 255, 255, 0.5)',
-                                  cursor: !isSignedIn ? 'pointer' : 'default'
-                                }}
-                                onClick={() => !isSignedIn && openSignUp()}
-                              >
-                                {!isSignedIn ? 'Sign up to view' : 'Get sub to view'}
-                              </span>
-                            </>
+                          {hasAccess() && isExpanded && pick.analysis && (
+                            <div
+                              className={dashboardStyles.pickAnalysisContent}
+                              dangerouslySetInnerHTML={{ __html: pick.analysis }}
+                            />
                           )}
                         </div>
-
-                        {/* Analysis */}
-                        {hasAccess() && isExpanded && pick.analysis && (
-                          <div
-                            style={{
-                              marginTop: '10px',
-                              paddingTop: '10px',
-                              borderTop: '1px solid rgba(148, 163, 184, 0.2)',
-                              color: '#ffffff',
-                              fontSize: '12px',
-                              lineHeight: '1.5'
-                            }}
-                            dangerouslySetInnerHTML={{ __html: pick.analysis }}
-                          />
-                        )}
                       </div>
                     )
                   })}
