@@ -946,59 +946,7 @@ export default function HeroNewPage() {
         <h2 className={styles.howItWorksTitle}>Start Your FREE 3-Day Trial</h2>
         <p className={styles.howItWorksSubtitle}>Get instant access to everything—picks, data, tools, and more.</p>
         <div className={styles.howItWorksContent}>
-          {/* Credits Card */}
-          <div className={`${styles.howItWorksCard} ${styles.glassCard}`}>
-            <div className={styles.glassFilter}></div>
-            <div className={styles.glassOverlay}></div>
-            <div className={styles.glassSpecular}></div>
-            <div className={styles.howItWorksCardHeader}>
-              <div className={`${styles.howItWorksCardIcon} ${styles.howItWorksCardIconWhite}`}>
-                <GiTwoCoins />
-              </div>
-              <h3 className={styles.howItWorksCardTitle}>AI Credits</h3>
-              <p className={styles.howItWorksCardSubtitle}>Don’t want a full subscription? Purchase credits to unlock one bet, blueprint, or script at a time.</p>
-            </div>
-            <div className={styles.howItWorksCardBody}>
-              <div className={styles.howItWorksFeature}>
-                <div className={styles.howItWorksFeatureIcon}>
-                  <FaWandMagicSparkles />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>AI Scripts</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Generate elite analyst-level scripts for every sport using our proprietary data and insider picks. Credit spend scales with the strength of the script.</p>
-                </div>
-              </div>
-              <div className={styles.howItWorksFeature}>
-                <div className={`${styles.howItWorksFeatureIcon} ${styles.howItWorksFeatureIconBlue}`}>
-                  <RiNewspaperLine />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Game Blueprints</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Use credits to unlock quick blueprints that surface the top narratives and angles for each matchup.</p>
-                </div>
-              </div>
-              <div className={styles.howItWorksFeature}>
-                <div className={`${styles.howItWorksFeatureIcon} ${styles.howItWorksFeatureIconYellow}`}>
-                  <PiListChecksBold />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Analyst Picks</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Spend credits to unlock individual Insider picks for the big time matchups you care about most.</p>
-                </div>
-              </div>
-            </div>
-            <a className={`${styles.howItWorksButton} ${styles.glassButton}`} href="/sports">
-              <div className={styles.glassFilter}></div>
-              <div className={styles.glassOverlay}></div>
-              <div className={styles.glassSpecular}></div>
-              <div className={styles.glassContent}>Try For Free</div>
-            </a>
-          </div>
-          {/* Or divider */}
-          <div className={styles.howItWorksOr}>
-            <span className={styles.howItWorksOrText}>or</span>
-          </div>
-          {/* Subscription Card - Placeholder for now */}
+          {/* Free Trial Card */}
           <div className={`${styles.howItWorksCard} ${styles.glassCard}`}>
             <div className={styles.glassFilter}></div>
             <div className={styles.glassOverlay}></div>
