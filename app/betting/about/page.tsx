@@ -1470,6 +1470,21 @@ export default function BetsPage() {
 
 // Pricing Section Component
 function PricingSection() {
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const router = useRouter()
+
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isSignedIn) {
+      openSignUp({
+        redirectUrl: '/pricing'
+      })
+    } else {
+      router.push('/pricing')
+    }
+  }
+
   const unlimitedPlans = [
     {
       label: 'week',
