@@ -105,7 +105,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               lineHeight: 1.2
             }}
           >
-            Start Your FREE Trial
+            Start F*cking Winning
           </h2>
         </div>
 
@@ -197,8 +197,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                             gap: '0.3rem'
                           }}
                         >
-                          / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'} - unlimited
-                          <GiTwoCoins style={{ fontSize: '0.9rem', color: '#fbbf24' }} />
+                          / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'}
                         </span>
                       </div>
                       <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
