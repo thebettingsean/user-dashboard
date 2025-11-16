@@ -798,22 +798,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   }
 
   const handleGenerateScript = async (gameId: string) => {
-    // Check authentication first
-    if (!isSignedIn) {
-      openSignUp({
-        redirectUrl: '/pricing'
-      })
-      return
-    }
-
-    // Check subscription access
-    if (!hasAccess()) {
-      router.push('/pricing')
-      return
-    }
-    
-    if (loadingScripts.has(gameId) || scriptContent.has(gameId)) {
-      // Toggle expand/collapse if already loaded
+    // If already loaded, toggle expand/collapse
+    if (scriptContent.has(gameId)) {
       setExpandedScripts((prev) => {
         const next = new Set(prev)
         if (next.has(gameId)) {
@@ -826,12 +812,54 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       return
     }
 
-    // Start loading
+    // If already loading, expand it
+    if (loadingScripts.has(gameId)) {
+      setExpandedScripts((prev) => new Set(prev).add(gameId))
+      return
+    }
+
+    // Start loading FIRST (to show user feedback)
     setLoadingScripts((prev) => new Set(prev).add(gameId))
     setExpandedScripts((prev) => new Set(prev).add(gameId))
 
     try {
-      // Simulate 3-second loading
+      // Check authentication after showing loading
+      if (!isSignedIn) {
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+        setScriptContent((prev) => new Map(prev).set(gameId, 
+          '⚠️ **Sign In Required**\n\nOops! You need to sign in to generate AI scripts.\n\n[Click here to sign in and start your FREE trial](/pricing)'
+        ))
+        setLoadingScripts((prev) => {
+          const next = new Set(prev)
+          next.delete(gameId)
+          return next
+        })
+        
+        setTimeout(() => {
+          openSignUp({ redirectUrl: '/pricing' })
+        }, 500)
+        return
+      }
+
+      // Check subscription access
+      if (!hasAccess()) {
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+        setScriptContent((prev) => new Map(prev).set(gameId, 
+          '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your FREE trial to generate AI scripts.\n\n[Start FREE Trial Now](/pricing)'
+        ))
+        setLoadingScripts((prev) => {
+          const next = new Set(prev)
+          next.delete(gameId)
+          return next
+        })
+        
+        setTimeout(() => {
+          router.push('/pricing')
+        }, 500)
+        return
+      }
+
+      // Simulate loading
       await new Promise((resolve) => setTimeout(resolve, 3000))
 
       // Fetch the actual script
@@ -1464,51 +1492,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       <div 
                         className={styles.scriptText} 
                         dangerouslySetInnerHTML={{ __html: formatScript(content || '') }}
-                        style={!hasAccess() ? { filter: 'blur(8px)', pointerEvents: 'none' } : {}}
                       />
-                      {!hasAccess() && (
-                        <div 
-                          onClick={() => {
-                            if (!isSignedIn) {
-                              openSignUp({ redirectUrl: '/pricing' })
-                            } else {
-                              router.push('/pricing')
-                            }
-                          }}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '1rem',
-                            cursor: 'pointer',
-                            zIndex: 10
-                          }}
-                        >
-                          <div style={{
-                            fontSize: '3rem',
-                            filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.8))'
-                          }}>🔒</div>
-                          <button style={{
-                            padding: '0.75rem 1.5rem',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '10px',
-                            fontSize: '1rem',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
-                          }}>
-                            {isSignedIn ? 'Unlock with FREE Trial' : 'Sign Up for FREE Trial'}
-                          </button>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
