@@ -409,7 +409,6 @@ export default function DataTabPage() {
           <button
             className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('referee')}
-            disabled={!hasAccess}
           >
             <GiWhistle className={styles.accordionIcon} />
             <span className={styles.accordionText}>
@@ -486,7 +485,6 @@ export default function DataTabPage() {
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'props' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('props')}
-            disabled={!hasAccess}
           >
             <GiHumanTarget className={styles.accordionIcon} />
             <span className={styles.accordionText}>Top Player Props</span>
@@ -544,7 +542,6 @@ export default function DataTabPage() {
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'betting' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('betting')}
-            disabled={!hasAccess}
           >
             <LuFileChartColumnIncreasing className={styles.accordionIcon} />
             <span className={styles.accordionText}>Team Betting Data</span>
@@ -653,7 +650,6 @@ export default function DataTabPage() {
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'stats' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('stats')}
-            disabled={!hasAccess}
           >
             <TbVs className={styles.accordionIcon} />
             <span className={styles.accordionText}>Team Stats</span>

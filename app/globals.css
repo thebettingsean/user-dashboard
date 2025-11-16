@@ -70,8 +70,7 @@ body {
   max-width: 500px;
   display: flex;
   flex-direction: column;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Remove the left/transform that's causing the shift */
 }
 
 @media (max-width: 767px) {
