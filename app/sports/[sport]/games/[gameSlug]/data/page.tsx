@@ -517,6 +517,7 @@ export default function DataTabPage() {
                         </div>
                         <div className={styles.propDetails}>
                           <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
+                          <span className={styles.propRecord}>{prop.record}</span>
                         </div>
                       </div>
                     </div>

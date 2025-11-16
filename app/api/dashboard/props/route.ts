@@ -25,6 +25,7 @@ type DashboardProp = {
     line: string
     hitRate: number | null
     record: string | null
+    headshot: string | null
   }>
 }
 
@@ -141,11 +142,17 @@ export async function GET(request: NextRequest) {
             wins,
             losses,
             total,
-            record: formatRecord(player)
+            record: formatRecord(player),
+            headshot: player.headshot || null
           }
         })
-        // Filter out props with no valid hitRate
-        .filter(prop => prop.hitRate !== null && prop.hitRate > 0)
+        // Filter: must have valid hitRate, at least 7 game sample size, and a headshot image
+        .filter(prop => 
+          prop.hitRate !== null && 
+          prop.hitRate > 0 && 
+          (prop.total ?? 0) >= 7 &&
+          prop.headshot !== null
+        )
         .sort((a, b) => {
           // Primary: sort by hitRate descending
           const rateA = a.hitRate ?? -Infinity

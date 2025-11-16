@@ -273,8 +273,9 @@
 
 .propDetails {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .propBet {
@@ -286,6 +287,7 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.625rem;
   font-family: 'Courier New', monospace;
+  flex-shrink: 0;
 }
 
 /* === TEAM BETTING STATS === */

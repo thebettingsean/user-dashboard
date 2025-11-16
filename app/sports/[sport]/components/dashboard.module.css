@@ -1336,14 +1336,32 @@
 
 .topPropRow {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 12px;
   padding: 6px 0;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  align-items: center;
 }
 
 .topPropRow:last-child {
   border-bottom: none;
+}
+
+.topPropHeadshot {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.topPropInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .topPropNameLine {
@@ -1354,10 +1372,13 @@
 }
 
 .topPropName {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topPropBadge {
@@ -1378,11 +1399,11 @@
 }
 
 .topPropMeta {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .topPropTitle {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.88);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.75);
 }

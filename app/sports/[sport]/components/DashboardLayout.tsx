@@ -156,6 +156,7 @@ type DashboardPropGame = {
     losses: number | null
     record: string | null
     hitRate: number | null
+    headshot: string | null
   }>
 }
 
@@ -1074,18 +1075,30 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 {game.props.length === 0 && <div className={styles.topPropsEmpty}>Props syncing soon.</div>}
                 {game.props.map((prop) => (
                   <div key={prop.id} className={styles.topPropRow}>
-                    <div className={styles.topPropNameLine}>
-                      <span className={styles.topPropName}>{prop.playerName}</span>
-                      {prop.hitRate !== null && (
-                        <span className={styles.topPropBadge}>
-                          <FaFireAlt className={styles.topPropIcon} />
-                          {prop.wins !== undefined && prop.losses !== undefined ? `${prop.wins}-${prop.losses} ` : ''}
-                          ({formatPercentage(prop.hitRate)})
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.topPropMeta}>
-                      <span className={styles.topPropTitle}>{prop.betTitle} | {prop.line}</span>
+                    {/* Player Headshot */}
+                    {prop.headshot && (
+                      <img 
+                        src={prop.headshot} 
+                        alt={prop.playerName}
+                        className={styles.topPropHeadshot}
+                      />
+                    )}
+                    
+                    {/* Player Info */}
+                    <div className={styles.topPropInfo}>
+                      <div className={styles.topPropNameLine}>
+                        <span className={styles.topPropName}>{prop.playerName}</span>
+                        {prop.hitRate !== null && (
+                          <span className={styles.topPropBadge}>
+                            <FaFireAlt className={styles.topPropIcon} />
+                            {prop.wins !== undefined && prop.losses !== undefined ? `${prop.wins}-${prop.losses} ` : ''}
+                            ({formatPercentage(prop.hitRate)})
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.topPropMeta}>
+                        <span className={styles.topPropTitle}>{prop.betTitle} | {prop.line}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
