@@ -56,13 +56,27 @@ export default function DataTabPage() {
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [showSignUpModal, setShowSignUpModal] = useState(false)
+  const [modalMessage, setModalMessage] = useState('')
   
   const hasAccess = isSubscribed
   const gameSlug = params.gameSlug as string
   const sport = params.sport as string
 
   const toggleSection = (sectionId: string) => {
-    // Allow anyone to toggle sections (lock overlay will show for non-subscribers)
+    // If no access, show sign-up modal instead of expanding
+    if (!hasAccess) {
+      const messages: Record<string, string> = {
+        referee: 'Sign up for free to view referee data',
+        props: 'Sign up for free to view high hit rate props',
+        betting: 'Sign up for free to view historical betting data',
+        stats: 'Sign up for free to view team stats'
+      }
+      setModalMessage(messages[sectionId] || 'Sign up for free to unlock premium data')
+      setShowSignUpModal(true)
+      return
+    }
+    // If has access, toggle normally
     setExpandedSection(expandedSection === sectionId ? null : sectionId)
   }
 
@@ -109,8 +123,9 @@ export default function DataTabPage() {
   }, [gameSlug, sport])
 
   const handleSignUpPrompt = () => {
+    setShowSignUpModal(false)
     if (!isSignedIn) {
-      openSignUp()
+      openSignUp({ redirectUrl: '/pricing' })
     } else {
       window.location.href = '/pricing'
     }
@@ -468,16 +483,6 @@ export default function DataTabPage() {
               </div>
             </div>
           )}
-          
-          {!hasAccess && expandedSection === 'referee' && (
-            <div className={styles.lockOverlay}>
-              <FaLock className={styles.lockIcon} />
-              <p className={styles.lockTagline}>Sign up to view referee data for this game</p>
-              <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                Sign Up Free
-              </button>
-            </div>
-          )}
         </div>
 
         {/* 2. TOP PROPS */}
@@ -523,16 +528,6 @@ export default function DataTabPage() {
                   ))}
                 </div>
               )}
-            </div>
-          )}
-          
-          {!hasAccess && expandedSection === 'props' && (
-            <div className={styles.lockOverlay}>
-              <FaLock className={styles.lockIcon} />
-              <p className={styles.lockTagline}>Sign up to view player props for this game</p>
-              <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                Sign Up Free
-              </button>
             </div>
           )}
         </div>
@@ -633,16 +628,6 @@ export default function DataTabPage() {
               </div>
             </div>
           )}
-          
-          {!hasAccess && expandedSection === 'betting' && (
-            <div className={styles.lockOverlay}>
-              <FaLock className={styles.lockIcon} />
-              <p className={styles.lockTagline}>Sign up to view betting trends for this game</p>
-              <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                Sign Up Free
-              </button>
-            </div>
-          )}
         </div>
 
         {/* 4. TEAM STATS (Placeholder) */}
@@ -663,18 +648,81 @@ export default function DataTabPage() {
               </div>
             </div>
           )}
-          
-          {!hasAccess && expandedSection === 'stats' && (
-            <div className={styles.lockOverlay}>
-              <FaLock className={styles.lockIcon} />
-              <p className={styles.lockTagline}>Sign up to view team stats for this game</p>
-              <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                Sign Up Free
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Sign Up Modal */}
+      {showSignUpModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem'
+          }}
+          onClick={() => setShowSignUpModal(false)}
+        >
+          <div 
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: '16px',
+              padding: '2rem',
+              maxWidth: '400px',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1.5rem',
+              boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FaLock style={{ fontSize: '2.5rem', color: 'rgba(139, 92, 246, 0.9)' }} />
+            <p style={{ 
+              color: 'rgba(255, 255, 255, 0.95)',
+              fontSize: '1.125rem',
+              fontWeight: 500,
+              textAlign: 'center',
+              margin: 0
+            }}>
+              {modalMessage}
+            </p>
+            <button 
+              onClick={handleSignUpPrompt}
+              style={{
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(99, 102, 241, 0.9) 100%)',
+                border: '1px solid rgba(139, 92, 246, 0.5)',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 600,
+                padding: '0.875rem 2rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                width: '100%'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 92, 246, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
+              Sign Up Free
+            </button>
+          </div>
+        </div>
+      )}
     </GameLayout>
   )
 }
