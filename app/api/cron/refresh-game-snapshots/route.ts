@@ -183,15 +183,41 @@ export async function POST(request: NextRequest) {
               team_form: gameDetails.team_form || null
             } : null
 
-            // Get script meta if exists
+            // Calculate script strength dynamically based on available data
+            const hasProps = Array.isArray(playerProps) && playerProps.length > 0
+            const hasPicks = (pickMeta.get(game.game_id)?.pending_count || 0) > 0
+            
+            let strengthLabel: string | null = null
+            let strengthValue: number | null = null
+            let creditsRequired: number | null = null
+            
+            // Only calculate strength if script exists
             const scriptMetaForGame = scriptMeta.get(game.game_id)
+            if (scriptMetaForGame) {
+              // Calculate based on props + picks
+              if (!hasProps && !hasPicks) {
+                strengthLabel = 'Minimal'
+                strengthValue = 1
+                creditsRequired = 1
+              } else if (hasProps && !hasPicks) {
+                strengthLabel = 'Above Avg'
+                strengthValue = 2
+                creditsRequired = 2
+              } else {
+                // Both props and picks available
+                strengthLabel = 'Strong'
+                strengthValue = 3
+                creditsRequired = 3
+              }
+            }
+
             const finalScriptMeta = scriptMetaForGame
               ? {
                   exists: true,
                   generated_at: scriptMetaForGame.generated_at,
-                  strength_label: scriptMetaForGame.strength_label,
-                  strength_value: scriptMetaForGame.strength_value,
-                  credits_required: scriptMetaForGame.credits_required
+                  strength_label: strengthLabel,
+                  strength_value: strengthValue,
+                  credits_required: creditsRequired
                 }
               : null
 
