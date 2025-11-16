@@ -26,6 +26,7 @@ type PropPlayer = {
   record: string | null
   wins: number | null
   losses: number | null
+  headshot?: string // Player headshot image URL
 }
 
 type TeamBettingStat = {
@@ -277,15 +278,29 @@ export default function DataTabPage() {
   const getTopProps = (): PropPlayer[] => {
     const allProps: PropPlayer[] = []
     
+    // Defensive prop keywords to filter out (for NFL)
+    const defensiveProps = ['sacks', 'tackles', 'tackles + assists', 'solo tackles', 'combined tackles', 'interceptions']
+    
     gameData.props.forEach((category: any) => {
       if (!Array.isArray(category.players)) return
+      
+      // Skip defensive categories for NFL
+      if (sport === 'nfl') {
+        const categoryTitle = (category.title || '').toLowerCase()
+        if (defensiveProps.some(def => categoryTitle.includes(def))) {
+          return
+        }
+      }
       
       category.players.forEach((player: any) => {
         const wins = player.record?.hit || 0
         const total = player.record?.total || 0
         const hitRate = total > 0 ? (wins / total) * 100 : null
         
-        if (hitRate && hitRate > 0 && total >= 7) {
+        // Only include props with:
+        // 1. Valid hit rate and minimum games
+        // 2. Player has a headshot image
+        if (hitRate && hitRate > 0 && total >= 7 && player.headshot) {
           allProps.push({
             id: `${player.player_id}-${category.prop_key}`,
             playerName: player.player_name || 'Player',
@@ -295,7 +310,8 @@ export default function DataTabPage() {
             hitRate,
             record: `${wins}-${player.record?.miss || 0}`,
             wins,
-            losses: player.record?.miss || null
+            losses: player.record?.miss || null,
+            headshot: player.headshot // Add headshot URL
           })
         }
       })
@@ -484,13 +500,24 @@ export default function DataTabPage() {
                 <div className={styles.propsGrid}>
                   {topProps.map((prop) => (
                     <div key={prop.id} className={styles.propCard}>
-                      <div className={styles.propHeader}>
-                        <span className={styles.propPlayer}>{prop.playerName}</span>
-                        <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
-                      </div>
-                      <div className={styles.propDetails}>
-                        <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
-                        <span className={styles.propRecord}>{prop.record}</span>
+                      {/* Player Image */}
+                      {prop.headshot && (
+                        <img 
+                          src={prop.headshot} 
+                          alt={prop.playerName}
+                          className={styles.propHeadshot}
+                        />
+                      )}
+                      
+                      {/* Player Info */}
+                      <div className={styles.propInfo}>
+                        <div className={styles.propHeader}>
+                          <span className={styles.propPlayer}>{prop.playerName}</span>
+                          <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
+                        </div>
+                        <div className={styles.propDetails}>
+                          <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
