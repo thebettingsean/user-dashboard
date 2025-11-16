@@ -100,13 +100,13 @@ async function loadPickMeta(gameIds: string[], sport: League) {
 }
 
 /**
- * POST /api/cron/refresh-game-snapshots
+ * GET /api/cron/refresh-game-snapshots
  * Automated cron job to refresh game snapshots for NFL and NBA
- * Runs every 6 hours to keep data fresh
+ * Runs every 30 minutes to keep data fresh
  */
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret to prevent unauthorized access
+    // Verify cron secret to prevent unauthorized access (Vercel cron passes this)
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       console.error('❌ Unauthorized cron request')
@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
 
             // Log what data we successfully fetched for this game
             console.log(`📊 Game ${game.game_id} data: PublicMoney=${!!publicMoney}, Referee=${!!refereeStats}, Props=${!!playerProps}, Details=${!!gameDetails}`)
+            console.log(`💰 Game ${game.game_id} odds: spread=${game.odds?.spread}, total=${game.odds?.over_under}, home_ml=${game.odds?.home_team_odds?.moneyline}, away_ml=${game.odds?.away_team_odds?.moneyline}`)
 
             // Extract team stats (includes 3-year betting data)
             const teamStats = gameDetails ? {
@@ -221,25 +222,25 @@ export async function POST(request: NextRequest) {
                 }
               : null
 
-            // Extract odds
+            // Extract odds from Trendline API structure
             const spread = game.odds
               ? {
-                  home: (game.odds.home_team_odds as any)?.spread ?? null,
-                  away: (game.odds.away_team_odds as any)?.spread ?? null
+                  home: game.odds.spread ? -game.odds.spread : null, // Home team gets negative spread
+                  away: game.odds.spread || null
                 }
               : null
 
-            const totals = game.odds
+            const totals = game.odds?.over_under
               ? {
-                  over: (game.odds.home_team_odds as any)?.total ?? (game.odds.away_team_odds as any)?.total ?? null,
-                  under: (game.odds.home_team_odds as any)?.total ?? (game.odds.away_team_odds as any)?.total ?? null
+                  over: game.odds.over_under,
+                  under: game.odds.over_under
                 }
               : null
 
             const moneyline = game.odds
               ? {
-                  home: (game.odds.home_team_odds as any)?.moneyline ?? null,
-                  away: (game.odds.away_team_odds as any)?.moneyline ?? null
+                  home: game.odds.home_team_odds?.moneyline ?? null,
+                  away: game.odds.away_team_odds?.moneyline ?? null
                 }
               : null
 
@@ -311,3 +312,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Force dynamic rendering for cron jobs
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
