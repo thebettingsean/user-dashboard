@@ -1447,6 +1447,30 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 </div>
               </div>
 
+              {/* Row 1.5: Spread & Total */}
+              {(game.spread || game.totals) && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.75rem',
+                  marginBottom: '0.5rem',
+                  fontSize: '0.7rem',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontFamily: '"Courier New", monospace'
+                }}>
+                  {game.spread?.awayLine != null && (
+                    <span>
+                      {game.spread.awayLine > 0 ? '+' : ''}{game.spread.awayLine}
+                    </span>
+                  )}
+                  {game.totals?.number != null && (
+                    <span>
+                      O/U {game.totals.number}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Row 2: Date/Time + Generate button */}
               <div style={{ 
                 display: 'flex', 

@@ -62,7 +62,7 @@ export default function DataTabPage() {
   const sport = params.sport as string
 
   const toggleSection = (sectionId: string) => {
-    if (!hasAccess) return
+    // Allow anyone to toggle sections (lock overlay will show for non-subscribers)
     setExpandedSection(expandedSection === sectionId ? null : sectionId)
   }
 

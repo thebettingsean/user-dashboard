@@ -225,9 +225,9 @@ export async function GET(request: NextRequest) {
       const spreadSummary: SpreadSummary | null = row.spread
         ? {
             label: formatSpreadLabel(row.home_team, row.away_team, row.spread),
-            homeLine: row.spread.home_line ?? null,
+            homeLine: row.spread.home ?? null,
             homeOdds: row.spread.home_odds ?? null,
-            awayLine: row.spread.away_line ?? null,
+            awayLine: row.spread.away ?? null,
             awayOdds: row.spread.away_odds ?? null
           }
         : null
@@ -235,7 +235,7 @@ export async function GET(request: NextRequest) {
       const totalsSummary: TotalsSummary | null = row.totals
         ? {
             label: formatTotalsLabel(row.totals),
-            number: row.totals.number ?? null,
+            number: row.totals.over ?? row.totals.under ?? null, // Use over or under (they should be the same)
             overOdds: row.totals.over_odds ?? null,
             underOdds: row.totals.under_odds ?? null
           }
