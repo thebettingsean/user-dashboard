@@ -73,9 +73,9 @@ export default function Navbar() {
                 <div style={styles.dropdownSection}>
                   <h4 style={styles.dropdownHeader}>YOUR HQ</h4>
                   <Link href="/sports" style={styles.dropdownLink}>
-                    Your HQ
+                    Home
                   </Link>
-                  <Link href="/betting/about" style={styles.dropdownLink}>
+                  <Link href="/sports/picks" style={styles.dropdownLink}>
                     Today's Picks
                   </Link>
                   <Link href="/fantasy" style={styles.dropdownLink}>
@@ -398,9 +398,9 @@ export default function Navbar() {
                 <div style={styles.mobileSubMenu}>
                   <h4 style={styles.mobileSubHeader}>YOUR HQ</h4>
                   <Link href="/sports" style={styles.mobileSubLink}>
-                    Your HQ
+                    Home
                   </Link>
-                  <Link href="/betting/about" style={styles.mobileSubLink}>
+                  <Link href="/sports/picks" style={styles.mobileSubLink}>
                     Today's Picks
                   </Link>
                   <Link href="/fantasy" style={styles.mobileSubLink}>

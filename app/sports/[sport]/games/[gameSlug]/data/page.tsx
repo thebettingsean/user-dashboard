@@ -470,11 +470,12 @@ export default function DataTabPage() {
             </div>
           )}
           
-          {!hasAccess && (
+          {!hasAccess && expandedSection === 'referee' && (
             <div className={styles.lockOverlay}>
               <FaLock className={styles.lockIcon} />
+              <p className={styles.lockTagline}>Sign up to view referee data for this game</p>
               <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                {!isSignedIn ? 'Sign up to view' : 'Get subscription to view'}
+                Sign Up Free
               </button>
             </div>
           )}
@@ -527,11 +528,12 @@ export default function DataTabPage() {
             </div>
           )}
           
-          {!hasAccess && (
+          {!hasAccess && expandedSection === 'props' && (
             <div className={styles.lockOverlay}>
               <FaLock className={styles.lockIcon} />
+              <p className={styles.lockTagline}>Sign up to view player props for this game</p>
               <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                {!isSignedIn ? 'Sign up to view' : 'Get subscription to view'}
+                Sign Up Free
               </button>
             </div>
           )}
@@ -635,11 +637,12 @@ export default function DataTabPage() {
             </div>
           )}
           
-          {!hasAccess && (
+          {!hasAccess && expandedSection === 'betting' && (
             <div className={styles.lockOverlay}>
               <FaLock className={styles.lockIcon} />
+              <p className={styles.lockTagline}>Sign up to view betting trends for this game</p>
               <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                {!isSignedIn ? 'Sign up to view' : 'Get subscription to view'}
+                Sign Up Free
               </button>
             </div>
           )}
@@ -665,11 +668,12 @@ export default function DataTabPage() {
             </div>
           )}
           
-          {!hasAccess && (
+          {!hasAccess && expandedSection === 'stats' && (
             <div className={styles.lockOverlay}>
               <FaLock className={styles.lockIcon} />
+              <p className={styles.lockTagline}>Sign up to view team stats for this game</p>
               <button onClick={handleSignUpPrompt} className={styles.lockButton}>
-                {!isSignedIn ? 'Sign up to view' : 'Get subscription to view'}
+                Sign Up Free
               </button>
             </div>
           )}
