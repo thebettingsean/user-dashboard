@@ -177,9 +177,10 @@ export async function POST(request: NextRequest) {
             console.log(`📊 Game ${game.game_id} data: PublicMoney=${!!publicMoney}, Referee=${!!refereeStats}, Props=${!!playerProps}, Details=${!!gameDetails}`)
 
             // Extract team stats (includes 3-year betting data)
-            const teamStats = gameDetails?.trends ? {
-              home: gameDetails.trends.home_team_trends || null,
-              away: gameDetails.trends.away_team_trends || null
+            const teamStats = gameDetails ? {
+              h2h_3year: gameDetails.h2h_3year || null,
+              season_avg: gameDetails.season_avg || null,
+              team_form: gameDetails.team_form || null
             } : null
 
             // Get script meta if exists
