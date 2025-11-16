@@ -296,8 +296,10 @@ export async function GET(request: NextRequest) {
             }
           : null,
         teamTrends: getTrendSummary(row.team_stats),
-        propsCount,
-        referee: row.referee ?? null
+        teamStats: row.team_stats, // Full team stats including 3-year betting data
+        referee: row.referee ?? null, // Referee stats for O/U trends
+        props: row.props || [], // Player props
+        propsCount
       }
     })
 

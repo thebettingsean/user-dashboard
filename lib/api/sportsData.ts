@@ -319,10 +319,12 @@ export async function fetchRefereeStats(
       }
       
       const totalGames = overHits + underHits
-      if (totalGames < 10) {
-        console.log(`  ✗ Insufficient referee history for ${gameId} (${totalGames} games)`)
+      if (totalGames < 5) {
+        console.log(`  ✗ Insufficient referee history for ${gameId} (${totalGames} games, minimum 5 required)`)
         return null
       }
+      
+      console.log(`  → Referee ${rawData.referee_name} has ${totalGames} games in history`)
       
       // Convert to NFL-style structure for consistency
       const normalized: RefereeStats = {

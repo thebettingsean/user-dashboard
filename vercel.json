@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/admin/refresh-game-snapshots?sport=nfl",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/admin/refresh-game-snapshots?sport=nba",
-      "schedule": "*/15 * * * *"
+      "path": "/api/cron/refresh-game-snapshots",
+      "schedule": "0 */6 * * *"
     },
     {
       "path": "/api/cron/sync-free-users",
