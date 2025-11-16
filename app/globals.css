@@ -23,6 +23,7 @@ html {
   background-attachment: fixed !important;
   min-height: 100vh !important;
   overflow-x: hidden !important;
+  scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears */
 }
 
 body {
