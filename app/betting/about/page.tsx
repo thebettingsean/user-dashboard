@@ -1194,43 +1194,22 @@ export default function BetsPage() {
         <div className={styles.insiderViewContainer}>
           <h2 className={styles.insiderViewTitle}>See What an Insider Sees</h2>
           <p className={styles.insiderViewSubtitle}>
-            {isMobile ? 'Tap to reveal members-only picks' : 'Hover to reveal members-only picks'}
+            Click to reveal members-only picks
           </p>
 
           <div 
             ref={dashboardPanelRef}
             className={styles.insiderDashboardPanel}
-            onMouseEnter={() => {
-              if (!isMobile) {
-                setIsInsiderHovered(true)
-              }
-            }}
-            onMouseLeave={() => {
-              if (!isMobile) {
-                setIsInsiderHovered(false)
-                setMousePosition({ x: 0, y: 0 })
-              }
-            }}
-            onMouseMove={(e) => {
-              if (!isMobile && dashboardPanelRef.current) {
-                const rect = dashboardPanelRef.current.getBoundingClientRect()
-                setMousePosition({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top
-                })
-              }
-            }}
             onClick={() => {
-              if (isMobile) {
-                setIsInsiderTapped(!isInsiderTapped)
-              }
+              setIsInsiderTapped(!isInsiderTapped)
             }}
+            style={{ cursor: 'pointer' }}
           >
             {/* Lock Overlay */}
             <div 
               className={styles.insiderLockOverlay}
               style={{
-                opacity: (isMobile ? isInsiderTapped : isInsiderHovered) ? 0 : 1,
+                opacity: isInsiderTapped ? 0 : 1,
                 transition: 'opacity 0.8s ease'
               } as React.CSSProperties}
             >
@@ -1243,28 +1222,14 @@ export default function BetsPage() {
             <div 
               className={styles.insiderDashboardPreview}
               style={{
-                filter: (isMobile ? isInsiderTapped : isInsiderHovered)
+                filter: isInsiderTapped
                   ? `blur(0px) brightness(1)` 
                   : `blur(15px) brightness(1)`,
-                WebkitFilter: (isMobile ? isInsiderTapped : isInsiderHovered)
+                WebkitFilter: isInsiderTapped
                   ? `blur(0px) brightness(1)` 
                   : `blur(15px) brightness(1)`,
                 opacity: 1,
-                transition: (isMobile ? isInsiderTapped : isInsiderHovered) 
-                  ? (isMobile ? 'filter 0.6s ease, -webkit-filter 0.6s ease' : 'none')
-                  : 'filter 0.3s ease, -webkit-filter 0.3s ease',
-                maskImage: (!isMobile && isInsiderHovered)
-                  ? `radial-gradient(circle 180px at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 75%)`
-                  : 'none',
-                WebkitMaskImage: (!isMobile && isInsiderHovered)
-                  ? `radial-gradient(circle 180px at ${mousePosition.x}px ${mousePosition.y}px, black 0%, transparent 75%)`
-                  : 'none',
-                maskSize: '100% 100%',
-                WebkitMaskSize: '100% 100%',
-                maskPosition: '0% 0%',
-                WebkitMaskPosition: '0% 0%',
-                maskRepeat: 'no-repeat',
-                WebkitMaskRepeat: 'no-repeat'
+                transition: 'filter 0.6s ease, -webkit-filter 0.6s ease'
               } as React.CSSProperties}
             >
               {/* Dashboard Header */}
