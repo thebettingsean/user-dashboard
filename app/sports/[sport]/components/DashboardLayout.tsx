@@ -860,25 +860,41 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         return
       }
 
-      // Simulate loading
-      await new Promise((resolve) => setTimeout(resolve, 3000))
+      // Brief loading delay for UX
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Fetch the actual script
       const response = await fetch(`/api/scripts/${gameId}?sport=${activeSport}`, {
         cache: 'no-store'
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to load script')
-      }
-
       const data = await response.json()
-      const content = data.script?.content || data.script || 'Script not available'
+      
+      // Log for debugging
+      console.log(`Script fetch for ${gameId}:`, {
+        status: response.status,
+        ok: response.ok,
+        data
+      })
 
-      setScriptContent((prev) => new Map(prev).set(gameId, content))
+      if (!response.ok) {
+        // If script doesn't exist yet, show friendly message
+        if (response.status === 404) {
+          setScriptContent((prev) => new Map(prev).set(gameId, 
+            '📝 **Script Not Ready Yet**\n\nThis game script hasn\'t been generated yet. Our AI generates scripts closer to game time when more data is available.\n\nCheck back later for the full analysis!'
+          ))
+        } else {
+          throw new Error(`API returned ${response.status}`)
+        }
+      } else {
+        const content = data.script?.content || data.script || 'Script not available'
+        setScriptContent((prev) => new Map(prev).set(gameId, content))
+      }
     } catch (error) {
       console.error('Failed to load script:', error)
-      setScriptContent((prev) => new Map(prev).set(gameId, 'Unable to load script. Please try again.'))
+      setScriptContent((prev) => new Map(prev).set(gameId, 
+        '❌ **Error Loading Script**\n\nUnable to load the script right now. Please try again in a moment.\n\nIf the problem persists, contact support.'
+      ))
     } finally {
       setLoadingScripts((prev) => {
         const next = new Set(prev)
