@@ -404,7 +404,7 @@ async function handleConfirmCancel(
     }
 
     // Handle trials differently - cancel immediately
-    let canceledSubscription
+    let canceledSubscription: Stripe.Subscription
     if (subscription.status === 'trialing') {
       console.log('Canceling trial subscription immediately')
       canceledSubscription = await stripe.subscriptions.cancel(subscription.id)
@@ -418,7 +418,7 @@ async function handleConfirmCancel(
     console.log('Stripe cancellation successful:', {
       subscriptionId: canceledSubscription.id,
       cancelAtPeriodEnd: canceledSubscription.cancel_at_period_end,
-      currentPeriodEnd: canceledSubscription.current_period_end
+      currentPeriodEnd: (canceledSubscription as any).current_period_end
     })
 
     // Update Supabase
