@@ -3,11 +3,22 @@ import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { supabaseFunnel } from '@/lib/supabase-funnel'
 
+// Validate Stripe key exists
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('STRIPE_SECRET_KEY is not set in environment variables!')
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
 })
 
 const PROMO_50_OFF = process.env.STRIPE_PROMO_50_OFF!
+
+console.log('Cancel Route Config:', {
+  hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+  stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7) + '...',
+  hasPromoCode: !!PROMO_50_OFF
+})
 
 export async function POST(req: NextRequest) {
   try {
@@ -371,13 +382,47 @@ async function handleConfirmCancel(
   email: string
 ) {
   try {
-    // Cancel subscription at period end
-    const canceledSubscription = await stripe.subscriptions.update(subscription.id, {
-      cancel_at_period_end: true,
+    console.log('Attempting to cancel subscription:', {
+      subscriptionId: subscription.id,
+      userId,
+      email,
+      currentStatus: subscription.status,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end
+    })
+
+    // Check if already canceled or canceling
+    if (subscription.status === 'canceled') {
+      return NextResponse.json({ 
+        error: 'This subscription is already canceled' 
+      }, { status: 400 })
+    }
+
+    if (subscription.cancel_at_period_end) {
+      return NextResponse.json({ 
+        error: 'This subscription is already scheduled for cancellation' 
+      }, { status: 400 })
+    }
+
+    // Handle trials differently - cancel immediately
+    let canceledSubscription
+    if (subscription.status === 'trialing') {
+      console.log('Canceling trial subscription immediately')
+      canceledSubscription = await stripe.subscriptions.cancel(subscription.id)
+    } else {
+      console.log('Scheduling paid subscription to cancel at period end')
+      canceledSubscription = await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true,
+      })
+    }
+
+    console.log('Stripe cancellation successful:', {
+      subscriptionId: canceledSubscription.id,
+      cancelAtPeriodEnd: canceledSubscription.cancel_at_period_end,
+      currentPeriodEnd: canceledSubscription.current_period_end
     })
 
     // Update Supabase
-    const { data: existingFeedback } = await supabaseFunnel
+    const { data: existingFeedback, error: selectError } = await supabaseFunnel
       .from('cancellation_feedback')
       .select('id')
       .eq('user_id', userId)
@@ -386,8 +431,12 @@ async function handleConfirmCancel(
       .limit(1)
       .single()
 
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error('Error fetching feedback for cancel update:', selectError)
+    }
+
     if (existingFeedback) {
-      await supabaseFunnel
+      const { error: updateError } = await supabaseFunnel
         .from('cancellation_feedback')
         .update({
           final_offer_accepted: false,
@@ -396,19 +445,37 @@ async function handleConfirmCancel(
           cancelled_at: new Date().toISOString(),
         })
         .eq('id', existingFeedback.id)
+      
+      if (updateError) {
+        console.error('Error updating feedback with cancellation:', updateError)
+      }
+    }
+
+    // Format cancellation date
+    let cancelsOn = ''
+    if (subscription.status === 'trialing') {
+      cancelsOn = 'immediately'
+    } else if ((canceledSubscription as any).current_period_end) {
+      cancelsOn = new Date((canceledSubscription as any).current_period_end * 1000).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      })
     }
 
     return NextResponse.json({
       success: true,
       message: 'Subscription cancelled successfully',
-      cancelsOn: new Date((canceledSubscription as any).current_period_end * 1000).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      })
+      cancelsOn
     })
   } catch (error: any) {
     console.error('Confirm cancel error:', error)
+    console.error('Stripe error details:', {
+      type: error.type,
+      code: error.code,
+      message: error.message,
+      raw: error.raw
+    })
     return NextResponse.json({ error: error.message || 'Failed to cancel subscription' }, { status: 500 })
   }
 }
