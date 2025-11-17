@@ -1523,8 +1523,8 @@ function PricingSection() {
           <div className={styles.glassFilter}></div>
           <div className={styles.glassOverlay}></div>
           <div className={styles.glassSpecular}></div>
-          <div className={styles.pricingSimpleBody}>
-            <div className={styles.pricingSimpleOption} style={{ maxWidth: '100%' }}>
+          <div className={styles.pricingSimpleBody} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div className={styles.pricingSimpleOption} style={{ maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ 
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 padding: '8px 16px',
@@ -1539,10 +1539,10 @@ function PricingSection() {
               }}>
                 3-Day FREE Trial Included
               </div>
-              <h3 className={styles.pricingSimpleOptionTitle}>Full Access</h3>
-              <p className={styles.pricingSimpleDescription}>Try everything FREE for 3 days. Unlimited picks, AI tools, props & stats.</p>
+              <h3 className={styles.pricingSimpleOptionTitle} style={{ textAlign: 'center', width: '100%' }}>Full Access</h3>
+              <p className={styles.pricingSimpleDescription} style={{ textAlign: 'center', width: '100%' }}>Try everything FREE for 3 days. Unlimited picks, AI tools, props & stats.</p>
 
-              <div className={styles.pricingSimpleTierList}>
+              <div className={styles.pricingSimpleTierList} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '0.75rem' }}>
                 {unlimitedPlans.map((plan, index) => (
                   <button
                     key={plan.label}
@@ -1550,6 +1550,7 @@ function PricingSection() {
                     onClick={() => setSelectedPlanIndex(index)}
                     className={`${styles.pricingSimpleTier} ${index === selectedPlanIndex ? styles.pricingSimpleTierActive : ''}`}
                     aria-pressed={index === selectedPlanIndex}
+                    style={{ width: '100%', maxWidth: '400px' }}
                   >
                     <div className={styles.pricingSimpleTierContent}>
                       <span className={styles.pricingSimpleTierPrice}>{plan.price}</span>
@@ -1562,7 +1563,7 @@ function PricingSection() {
               <button
                 className={`${styles.pricingSimpleButton} ${styles.pricingSimpleButtonSecondary} ${styles.glassButton}`}
                 onClick={handlePricingClick}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', width: '100%', maxWidth: '400px' }}
               >
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
