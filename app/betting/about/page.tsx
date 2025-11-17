@@ -1048,8 +1048,8 @@ export default function BetsPage() {
             <h1 className={styles.heroTitle}>
               <DecryptedText text="Start. F*cking. Winning." delay={0} />
               <br />
-              <span className={styles.heroSubtitle}>
-                <DecryptedText text="learn how our team is 12 years in the green" delay={500} />
+              <span className={styles.heroSubtitle} style={{ fontSize: '0.85em' }}>
+                <DecryptedText text="It's about time you started dominating the books" delay={500} />
               </span>
             </h1>
           </div>
