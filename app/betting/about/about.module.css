@@ -9,10 +9,6 @@
   }
 }
 
-:global(.hero-fade-in) {
-  animation: heroFadeIn 0.6s ease forwards !important;
-}
-
 .heroNewPage {
   background: #0a0f1a;
   color: #ffffff;
