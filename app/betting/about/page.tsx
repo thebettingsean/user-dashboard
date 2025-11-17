@@ -1136,7 +1136,7 @@ export default function BetsPage() {
                 transition: `opacity 0.8s ease ${hologramVisible ? '2000ms' : '0ms'}, transform 0.8s ease ${hologramVisible ? '2000ms' : '0ms'}`
               } as React.CSSProperties}
             >
-              a $100 Insider bettor would be up $1,620 in the last month
+              a $100 Insider bettor would be up ${(parseFloat(unitValue) * 100).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })} in the last month
             </div>
           </div>
         </div>
@@ -1511,15 +1511,15 @@ function PricingSection() {
 
   return (
     <section className={styles.pricingSimpleSection}>
-      <div className={styles.pricingSimpleWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-        <div className={styles.pricingSimpleHeader} style={{ textAlign: 'center' }}>
+      <div className={styles.pricingSimpleWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+        <div className={styles.pricingSimpleHeader} style={{ textAlign: 'center', width: '100%' }}>
           <h2 className={styles.pricingTitle}>Start Your FREE 3-Day Trial</h2>
           <p className={styles.pricingTagline}>
             Try everything for free, then choose your plan—cancel anytime.
           </p>
         </div>
 
-        <div className={`${styles.pricingSimpleCard} ${styles.glassCard}`}>
+        <div className={`${styles.pricingSimpleCard} ${styles.glassCard}`} style={{ width: '100%', maxWidth: '500px' }}>
           <div className={styles.glassFilter}></div>
           <div className={styles.glassOverlay}></div>
           <div className={styles.glassSpecular}></div>
@@ -1583,11 +1583,6 @@ function PricingSection() {
             </a>
           </div>
         </div>
-
-        <p className={styles.pricingSimpleNote}>
-          Prefer the full pricing breakdown? Visit our{' '}
-          <a href="/pricing">pricing page</a> for more details.
-        </p>
       </div>
     </section>
   )
