@@ -1049,7 +1049,7 @@ export default function BetsPage() {
               <span 
                 style={{
                   opacity: 0,
-                  animation: 'fadeIn 0.6s ease forwards',
+                  animation: 'heroFadeIn 0.6s ease forwards',
                   animationDelay: '0s'
                 } as React.CSSProperties}
               >
@@ -1058,7 +1058,7 @@ export default function BetsPage() {
               <span 
                 style={{
                   opacity: 0,
-                  animation: 'fadeIn 0.6s ease forwards',
+                  animation: 'heroFadeIn 0.6s ease forwards',
                   animationDelay: '0.5s'
                 } as React.CSSProperties}
               >
@@ -1067,7 +1067,7 @@ export default function BetsPage() {
               <span 
                 style={{
                   opacity: 0,
-                  animation: 'fadeIn 0.6s ease forwards',
+                  animation: 'heroFadeIn 0.6s ease forwards',
                   animationDelay: '1s'
                 } as React.CSSProperties}
               >
@@ -1079,7 +1079,7 @@ export default function BetsPage() {
                 style={{ 
                   fontSize: '0.5em',
                   opacity: 0,
-                  animation: 'fadeIn 0.8s ease forwards',
+                  animation: 'heroFadeIn 0.8s ease forwards',
                   animationDelay: '0.6s',
                   display: 'inline-block',
                   marginTop: '1rem'
