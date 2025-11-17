@@ -223,10 +223,14 @@ export async function GET(request: NextRequest) {
               : null
 
             // Extract odds from Trendline API structure
-            const spread = game.odds
+            // NOTE: game.odds.spread is from the HOME team's perspective
+            // Positive = home is underdog, Negative = home is favorite
+            const spread = game.odds?.spread !== undefined && game.odds.spread !== null
               ? {
-                  home: game.odds.spread ? -game.odds.spread : null, // Home team gets negative spread
-                  away: game.odds.spread || null
+                  home: game.odds.spread, // Use as-is (from home perspective)
+                  away: -game.odds.spread, // Flip sign for away team
+                  home_odds: game.odds.home_team_odds?.spread_odds ?? null,
+                  away_odds: game.odds.away_team_odds?.spread_odds ?? null
                 }
               : null
 
