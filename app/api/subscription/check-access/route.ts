@@ -52,10 +52,11 @@ export async function GET(request: NextRequest) {
     
     console.log(`📋 Raw privateMetadata for ${user.id}:`, JSON.stringify(privateMeta, null, 2))
     
-    const plan = (privateMeta.plan as string) || null
-    const subscriptionStatus = (privateMeta.subscriptionStatus as string) || null
-    const cancelAtPeriodEnd = (privateMeta.cancelAtPeriodEnd as boolean) || false
-    const currentPeriodEnd = (privateMeta.currentPeriodEnd as number) || null
+    // Extract and normalize metadata fields (trim whitespace, handle edge cases)
+    const plan = privateMeta.plan ? String(privateMeta.plan).trim() : null
+    const subscriptionStatus = privateMeta.subscriptionStatus ? String(privateMeta.subscriptionStatus).trim() : null
+    const cancelAtPeriodEnd = Boolean(privateMeta.cancelAtPeriodEnd)
+    const currentPeriodEnd = privateMeta.currentPeriodEnd ? Number(privateMeta.currentPeriodEnd) : null
     
     console.log(`🔎 Extracted metadata fields:`, {
       plan,
@@ -63,7 +64,9 @@ export async function GET(request: NextRequest) {
       cancelAtPeriodEnd,
       currentPeriodEnd,
       planType: typeof plan,
-      statusType: typeof subscriptionStatus
+      statusType: typeof subscriptionStatus,
+      planLength: plan?.length,
+      planCharCodes: plan?.split('').map(c => c.charCodeAt(0)).join(',')
     })
 
     // User has access if:
@@ -73,7 +76,8 @@ export async function GET(request: NextRequest) {
     //    b) 'active' - User has active paid subscription (FULL ACCESS)
     //    c) 'canceled' BUT cancelAtPeriodEnd = false AND currentPeriodEnd > now (still in paid period)
     //    d) Legacy user with plan but no status tracked (backward compatibility)
-    const hasValidPlan = plan && VALID_SUBSCRIPTION_PRICE_IDS.includes(plan)
+    // Check if plan is in valid list (case-insensitive comparison for safety)
+    const hasValidPlan = plan && VALID_SUBSCRIPTION_PRICE_IDS.some(validId => validId.toLowerCase() === plan.toLowerCase())
     
     // Check if subscription is still valid (not past expiration)
     const now = Math.floor(Date.now() / 1000) // Current time in seconds
