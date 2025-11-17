@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Lazy-load Supabase client to avoid build-time initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase credentials')
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 /**
  * CRON JOB: Refresh TeamRankings data for upcoming games
@@ -53,6 +61,7 @@ export async function GET(request: NextRequest) {
       const futureDate = new Date(now)
       futureDate.setDate(now.getDate() + (sport === 'NFL' ? 10 : 2))
 
+      const supabase = getSupabaseClient()
       const query = supabase
         .from('game_snapshots')
         .select('id, game_id, sport, home_team, away_team, start_time_utc, team_rankings')
@@ -126,7 +135,8 @@ export async function GET(request: NextRequest) {
               }
 
               // Update game_snapshots
-              const { error: updateError } = await supabase
+              const supabaseUpdate = getSupabaseClient()
+              const { error: updateError } = await supabaseUpdate
                 .from('game_snapshots')
                 .update({ 
                   team_rankings: teamRankings,
