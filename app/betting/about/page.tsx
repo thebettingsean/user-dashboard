@@ -1045,42 +1045,13 @@ export default function BetsPage() {
         <div className={styles.heroContainer}>
           {/* Central message */}
           <div className={styles.centralMessage}>
-            <h1 className={styles.heroTitle}>
-              <span 
-                style={{
-                  opacity: 0,
-                  animation: 'heroFadeIn 0.6s ease forwards',
-                  animationDelay: '0s'
-                } as React.CSSProperties}
-              >
-                Start.{' '}
-              </span>
-              <span 
-                style={{
-                  opacity: 0,
-                  animation: 'heroFadeIn 0.6s ease forwards',
-                  animationDelay: '0.5s'
-                } as React.CSSProperties}
-              >
-                F*cking.{' '}
-              </span>
-              <span 
-                style={{
-                  opacity: 0,
-                  animation: 'heroFadeIn 0.6s ease forwards',
-                  animationDelay: '1s'
-                } as React.CSSProperties}
-              >
-                Winning.
-              </span>
+            <h1 className={`${styles.heroTitle} ${styles.fadeInText}`}>
+              Start. F*cking. Winning.
               <br />
               <span 
-                className={styles.heroSubtitle} 
+                className={`${styles.heroSubtitle} ${styles.fadeInText}`}
                 style={{ 
                   fontSize: '0.5em',
-                  opacity: 0,
-                  animation: 'heroFadeIn 0.8s ease forwards',
-                  animationDelay: '0.6s',
                   display: 'inline-block',
                   marginTop: '1rem'
                 } as React.CSSProperties}

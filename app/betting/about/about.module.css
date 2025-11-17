@@ -1,12 +1,14 @@
-@keyframes heroFadeIn {
+@keyframes simpleFadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
+}
+
+.fadeInText {
+  animation: simpleFadeIn 1s ease forwards;
 }
 
 .heroNewPage {
