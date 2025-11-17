@@ -9,6 +9,14 @@
       "schedule": "0 10 * * *"
     },
     {
+      "path": "/api/cron/refresh-team-rankings?sport=NFL",
+      "schedule": "0 10 * * 2"
+    },
+    {
+      "path": "/api/cron/refresh-team-rankings?sport=NBA",
+      "schedule": "0 11 * * *"
+    },
+    {
       "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 14 * * *"
     },
