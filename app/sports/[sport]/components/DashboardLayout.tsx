@@ -860,35 +860,29 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         return
       }
 
-      // Brief loading delay for UX
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Fetch the actual script
+      // Fetch the actual script (using same approach as game-specific script page)
       const response = await fetch(`/api/scripts/${gameId}?sport=${activeSport}`, {
         cache: 'no-store'
       })
-
+      
       const data = await response.json()
       
       // Log for debugging
       console.log(`Script fetch for ${gameId}:`, {
         status: response.status,
         ok: response.ok,
+        hasScript: !!data.script,
         data
       })
 
-      if (!response.ok) {
-        // If script doesn't exist yet, show friendly message
-        if (response.status === 404) {
-          setScriptContent((prev) => new Map(prev).set(gameId, 
-            '📝 **Script Not Ready Yet**\n\nThis game script hasn\'t been generated yet. Our AI generates scripts closer to game time when more data is available.\n\nCheck back later for the full analysis!'
-          ))
-        } else {
-          throw new Error(`API returned ${response.status}`)
-        }
+      // Handle response exactly like the game-specific script page does
+      if (data.script) {
+        setScriptContent((prev) => new Map(prev).set(gameId, data.script))
       } else {
-        const content = data.script?.content || data.script || 'Script not available'
-        setScriptContent((prev) => new Map(prev).set(gameId, content))
+        // No script available yet
+        setScriptContent((prev) => new Map(prev).set(gameId, 
+          '📝 **Script Not Ready Yet**\n\nThis game script hasn\'t been generated yet. Our AI generates scripts closer to game time when more data is available.\n\nCheck back later for the full analysis!'
+        ))
       }
     } catch (error) {
       console.error('Failed to load script:', error)
