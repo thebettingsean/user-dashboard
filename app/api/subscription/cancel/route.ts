@@ -247,6 +247,14 @@ async function handleSubmitReasons(
     const startDate = (subscription as any).start_date || Math.floor(Date.now() / 1000)
     const tenureDays = Math.floor((Date.now() / 1000 - startDate) / 86400)
 
+    console.log('Submitting cancellation reasons:', {
+      userId,
+      email,
+      subscriptionId: subscription.id,
+      reasons,
+      otherText
+    })
+
     // Update Supabase with reasons
     const { data: existingFeedback, error: selectError } = await supabaseFunnel
       .from('cancellation_feedback')
@@ -259,9 +267,11 @@ async function handleSubmitReasons(
 
     if (selectError && selectError.code !== 'PGRST116') {
       console.error('Error fetching existing feedback:', selectError)
+      console.error('Select error details:', JSON.stringify(selectError))
     }
 
     if (existingFeedback) {
+      console.log('Updating existing feedback:', existingFeedback.id)
       const { error: updateError } = await supabaseFunnel
         .from('cancellation_feedback')
         .update({
@@ -273,10 +283,12 @@ async function handleSubmitReasons(
       
       if (updateError) {
         console.error('Error updating feedback:', updateError)
-        throw new Error('Failed to save cancellation reasons')
+        console.error('Update error details:', JSON.stringify(updateError))
+        throw new Error(`Failed to save cancellation reasons: ${updateError.message}`)
       }
     } else {
-      const { error: insertError } = await supabaseFunnel.from('cancellation_feedback').insert({
+      console.log('Creating new feedback entry')
+      const { data: insertData, error: insertError } = await supabaseFunnel.from('cancellation_feedback').insert({
         user_id: userId,
         user_email: email,
         clerk_user_id: userId,
@@ -289,12 +301,14 @@ async function handleSubmitReasons(
         first_offer_accepted: false,
         final_offer_shown: true,
         cancellation_completed: false,
-      })
+      }).select()
 
       if (insertError) {
         console.error('Error inserting feedback:', insertError)
-        throw new Error('Failed to save cancellation reasons')
+        console.error('Insert error details:', JSON.stringify(insertError))
+        throw new Error(`Failed to save cancellation reasons: ${insertError.message}`)
       }
+      console.log('Successfully created feedback:', insertData)
     }
 
     return NextResponse.json({
