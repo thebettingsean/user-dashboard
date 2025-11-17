@@ -1136,7 +1136,7 @@ export default function BetsPage() {
                 transition: `opacity 0.8s ease ${hologramVisible ? '2000ms' : '0ms'}, transform 0.8s ease ${hologramVisible ? '2000ms' : '0ms'}`
               } as React.CSSProperties}
             >
-              a $100 Insider bettor would be up ${(parseFloat(unitValue) * 100).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })} in the last month
+              a $100 Insider bettor would be up $${Math.round(parseFloat(unitValue) * 100).toLocaleString('en-US')} in the last month
             </div>
           </div>
         </div>
