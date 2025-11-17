@@ -56,6 +56,15 @@ export async function GET(request: NextRequest) {
     const subscriptionStatus = (privateMeta.subscriptionStatus as string) || null
     const cancelAtPeriodEnd = (privateMeta.cancelAtPeriodEnd as boolean) || false
     const currentPeriodEnd = (privateMeta.currentPeriodEnd as number) || null
+    
+    console.log(`🔎 Extracted metadata fields:`, {
+      plan,
+      subscriptionStatus,
+      cancelAtPeriodEnd,
+      currentPeriodEnd,
+      planType: typeof plan,
+      statusType: typeof subscriptionStatus
+    })
 
     // User has access if:
     // 1. They have a valid plan in our price IDs list (includes legacy)
@@ -93,6 +102,21 @@ export async function GET(request: NextRequest) {
       isCanceledButStillValid,
       isLegacyWithPlan,
       hasAccess
+    })
+    
+    console.log(`🎯 FINAL ACCESS DECISION for ${user.id}:`, {
+      hasAccess,
+      reason: hasAccess ? 
+        (isTrialing ? 'User is in trial period' : 
+         isActive ? 'User has active subscription' :
+         isCanceledButStillValid ? 'User canceled but still in paid period' :
+         isLegacyWithPlan ? 'Legacy user with valid plan' :
+         'Unknown') :
+        (!hasValidPlan ? 'Invalid or missing plan ID' :
+         !isPeriodValid ? 'Subscription period expired' :
+         'No valid subscription status'),
+      planInList: hasValidPlan ? 'YES - Plan ID is valid' : 'NO - Plan ID not in valid list',
+      allValidPlans: VALID_SUBSCRIPTION_PRICE_IDS
     })
 
     return NextResponse.json({
