@@ -46,17 +46,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Stripe customer not found' }, { status: 404 })
     }
 
-    // List active subscriptions
+    // List active subscriptions (excluding canceled ones)
     const subscriptions = await stripe.subscriptions.list({
       customer: customer.id,
-      status: 'all',
-      limit: 1,
+      status: 'active',
+      limit: 10,
     })
 
-    const subscription = subscriptions.data[0]
+    // Also check for trialing subscriptions
+    const trialingSubscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'trialing',
+      limit: 10,
+    })
+
+    // Combine and find the first active or trialing subscription
+    const allActiveSubscriptions = [...subscriptions.data, ...trialingSubscriptions.data]
+    const subscription = allActiveSubscriptions[0]
+
+    console.log('Found subscriptions:', {
+      activeCount: subscriptions.data.length,
+      trialingCount: trialingSubscriptions.data.length,
+      selectedSubscription: subscription ? {
+        id: subscription.id,
+        status: subscription.status,
+        cancel_at_period_end: subscription.cancel_at_period_end
+      } : null
+    })
 
     if (!subscription) {
-      return NextResponse.json({ error: 'No subscription found' }, { status: 404 })
+      return NextResponse.json({ error: 'No active subscription found' }, { status: 404 })
     }
 
     // Handle different actions
@@ -184,12 +203,20 @@ async function handleAcceptFirstOffer(
         }
       })
     } else {
-      // Add free trial days
+      // Extend subscription by updating billing cycle anchor
       const currentPeriodEnd = (subscription as any).current_period_end as number
       const newPeriodEnd = currentPeriodEnd + (offerDays * 86400)
 
+      console.log('Extending subscription:', {
+        subscriptionId: subscription.id,
+        currentPeriodEnd,
+        offerDays,
+        newPeriodEnd
+      })
+
       const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
-        trial_end: newPeriodEnd,
+        billing_cycle_anchor: newPeriodEnd,
+        proration_behavior: 'none',
       })
 
       // Log to Supabase
