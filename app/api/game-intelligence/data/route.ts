@@ -9,9 +9,16 @@ import {
   type PublicMoneyData,
   type PropCategory
 } from '@/lib/api/sportsData'
+import { createClient } from '@supabase/supabase-js'
 
 const API_BASE_URL = 'https://api.trendlinelabs.ai'
 const API_KEY = process.env.INSIDER_API_KEY || 'cd4a0edc-8df6-4158-a0ac-ca968df17cd3'
+
+// Supabase client for game_snapshots table (game snapshots project)
+const supabaseSnapshots = createClient(
+  process.env.SNAPSHOTS_SUPABASE_URL || 'https://knccqavkxvezhdfoktay.supabase.co',
+  process.env.SNAPSHOTS_SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2NxYXZreHZlemhkZm9rdGF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjM1ODkwNywiZXhwIjoyMDY3OTM0OTA3fQ.JjGpZGVnZsN7P2lldSrtByx8Y9cqJjzTj3mYm8fj29M'
+)
 
 interface TeamStats {
   homeTeam: {
@@ -304,45 +311,43 @@ export async function GET(request: NextRequest) {
       console.log('⚠️ Fantasy tool error:', error)
     }
 
-    // 9. Fetch TeamRankings data (DETAILED TEAM STATS + ATS RESULTS)
-    console.log('Fetching TeamRankings data...')
+    // 9. Fetch TeamRankings data from game_snapshots table (DETAILED TEAM STATS + ATS RESULTS)
+    console.log('Fetching TeamRankings data from game_snapshots...')
     let homeTeamRankings: any | null = null
     let awayTeamRankings: any | null = null
     try {
-      // Fetch home team rankings WITH ATS results
-      const homeRankingsRes = await fetch(
-        `${request.nextUrl.origin}/api/team-rankings/scrape?team=${encodeURIComponent(game.home_team)}&sport=${league}&includeATS=true`,
-        { cache: 'no-store' }
-      )
-      if (homeRankingsRes.ok) {
-        homeTeamRankings = await homeRankingsRes.json()
-        console.log(`✅ Home team rankings: ${game.home_team}${homeTeamRankings.atsResults ? ` (${homeTeamRankings.atsResults.length} ATS results)` : ''}`)
-      }
+      // Query game_snapshots table for this game - it has team_rankings for BOTH teams
+      const { data: snapshot, error: snapshotError } = await supabaseSnapshots
+        .from('game_snapshots')
+        .select('team_rankings')
+        .eq('game_id', gameId)
+        .single()
 
-      // Fetch away team rankings WITH ATS results
-      const awayRankingsRes = await fetch(
-        `${request.nextUrl.origin}/api/team-rankings/scrape?team=${encodeURIComponent(game.away_team)}&sport=${league}&includeATS=true`,
-        { cache: 'no-store' }
-      )
-      if (awayRankingsRes.ok) {
-        awayTeamRankings = await awayRankingsRes.json()
-        console.log(`✅ Away team rankings: ${game.away_team}${awayTeamRankings.atsResults ? ` (${awayTeamRankings.atsResults.length} ATS results)` : ''}`)
-      }
-
-      if (homeTeamRankings && awayTeamRankings) {
-        availableDataSources.push('team_rankings')
-        dataSourceCount += 2 // Worth 2 data sources (rich contextual data)
+      if (snapshotError) {
+        console.log(`⚠️ Game snapshot not found: ${snapshotError.message}`)
+      } else if (snapshot && snapshot.team_rankings) {
+        const rankings = snapshot.team_rankings as any
+        homeTeamRankings = rankings.home_team
+        awayTeamRankings = rankings.away_team
         
-        // Extra credit for ATS results
-        if (homeTeamRankings.atsResults || awayTeamRankings.atsResults) {
-          availableDataSources.push('ats_results')
-          dataSourceCount++ // ATS results add situational context
+        console.log(`✅ Home team rankings: ${game.home_team} (from game_snapshots)`)
+        console.log(`✅ Away team rankings: ${game.away_team} (from game_snapshots)`)
+
+        if (homeTeamRankings && awayTeamRankings) {
+          availableDataSources.push('team_rankings')
+          dataSourceCount += 2 // Worth 2 data sources (rich contextual data)
+          
+          // Extra credit for ATS results if they exist
+          if (homeTeamRankings.atsResults || awayTeamRankings.atsResults) {
+            availableDataSources.push('ats_results')
+            dataSourceCount++ // ATS results add situational context
+          }
         }
       } else {
-        console.log('⚠️ Incomplete team rankings data')
+        console.log('⚠️ No team_rankings data in game snapshot')
       }
     } catch (error) {
-      console.log('⚠️ TeamRankings error:', error)
+      console.log('⚠️ TeamRankings fetch error:', error)
     }
 
     // Calculate data strength based on PREMIUM features only:
