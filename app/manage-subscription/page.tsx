@@ -164,18 +164,26 @@ export default function ManageSubscriptionPage() {
       <div style={styles.page}>
         <div style={styles.container}>
           <div style={styles.error}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '0 auto 1rem'}}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '0 auto 1rem'}}>
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            <h1 style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>{error}</h1>
-            <p style={{fontSize: '0.85rem'}}>If you believe this is an error, please contact support.</p>
+            <h1 style={{fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: '700'}}>No Subscriptions Found</h1>
+            <p style={{fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem'}}>
+              If you believe this is an error, please contact support.
+            </p>
             <button 
-              style={styles.backButton}
+              style={styles.contactButton}
+              onClick={() => window.location.href = 'https://www.thebettinginsider.com/contact'}
+            >
+              Contact Support
+            </button>
+            <button 
+              style={{...styles.backButton, marginTop: '0.75rem'}}
               onClick={() => router.push('https://dashboard.thebettinginsider.com')}
             >
-              Back to Dashboard
+              ← Back to Dashboard
             </button>
           </div>
         </div>
@@ -572,5 +580,20 @@ const styles = {
     display: 'block',
     margin: '0 auto',
     width: 'fit-content'
+  },
+  contactButton: {
+    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+    border: 'none',
+    color: '#fff',
+    padding: '0.85rem 2rem',
+    borderRadius: '10px',
+    fontSize: '0.95rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    display: 'block',
+    margin: '0 auto',
+    width: 'fit-content',
+    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)'
   }
 }
