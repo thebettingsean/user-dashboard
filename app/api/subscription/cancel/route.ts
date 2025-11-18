@@ -59,27 +59,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Stripe customer not found' }, { status: 404 })
     }
 
-    // List active subscriptions (excluding canceled ones)
+    // List subscriptions (get active and trialing, exclude only fully canceled ones)
     const subscriptions = await stripe.subscriptions.list({
       customer: customer.id,
-      status: 'active',
       limit: 10,
     })
 
-    // Also check for trialing subscriptions
-    const trialingSubscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      status: 'trialing',
-      limit: 10,
-    })
+    // Filter to only active, trialing, or past_due (exclude only 'canceled' and 'incomplete')
+    const validSubscriptions = subscriptions.data.filter(sub => 
+      ['active', 'trialing', 'past_due'].includes(sub.status)
+    )
 
-    // Combine and find the first active or trialing subscription
-    const allActiveSubscriptions = [...subscriptions.data, ...trialingSubscriptions.data]
-    const subscription = allActiveSubscriptions[0]
+    const subscription = validSubscriptions[0]
 
     console.log('Found subscriptions:', {
-      activeCount: subscriptions.data.length,
-      trialingCount: trialingSubscriptions.data.length,
+      totalCount: subscriptions.data.length,
+      validCount: validSubscriptions.length,
+      allStatuses: subscriptions.data.map(s => ({ id: s.id, status: s.status, cancel_at_period_end: s.cancel_at_period_end })),
       selectedSubscription: subscription ? {
         id: subscription.id,
         status: subscription.status,
