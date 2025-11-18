@@ -65,14 +65,8 @@ export default function CancelPage() {
       }
 
       const data = await response.json()
-      
-      // Skip first offer if API tells us to
-      if (data.skipFirstOffer) {
-        setStep('reasons')
-      } else {
-        setOffer(data)
-        setStep('offer')
-      }
+      setOffer(data)
+      setStep('offer')
     } catch (err: any) {
       console.error('Load offer error:', err)
       alert(`Error: ${err.message}`)

@@ -121,10 +121,56 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleGetOffer(subscription: Stripe.Subscription, userId: string, email: string) {
-  // Skip the first offer for now - go straight to reasons
-  // Trial extensions are complex to implement with Stripe API
+  const isTrial = subscription.status === 'trialing'
+  const startDate = subscription.start_date
+  const currentDate = Math.floor(Date.now() / 1000)
+  const tenureDays = Math.floor((currentDate - startDate) / 86400)
+
+  let offerType = ''
+  let offerDays = 0
+  let offerMessage = ''
+
+  if (isTrial) {
+    // User is on trial
+    offerType = 'trial_extension'
+    offerDays = 7
+    offerMessage = "We feel like you haven't had the full experience yet. Let us extend your trial by +7 days!"
+  } else if (tenureDays < 7) {
+    // Real sub 0-6 days after trial
+    offerType = 'free_week'
+    offerDays = 7
+    offerMessage = "You just started! Let us give you a free 1 week extension to experience the full value."
+  } else if (tenureDays >= 7 && tenureDays <= 21) {
+    // Real sub 7-21 days after trial
+    offerType = 'free_two_weeks'
+    offerDays = 14
+    offerMessage = "We appreciate your time with us! Here's a free 2 week extension on us."
+  } else {
+    // Real sub 22+ days after trial
+    offerType = 'free_month'
+    offerDays = 30
+    offerMessage = "Thank you for your loyalty! Here's a FREE MONTH on us to continue enjoying our premium features."
+  }
+
+  // Calculate new renewal date
+  let newRenewalDate = ''
+  if (offerDays > 0) {
+    const currentPeriodEnd = (subscription as any).current_period_end as number
+    const newEndDate = new Date((currentPeriodEnd + (offerDays * 86400)) * 1000)
+    newRenewalDate = newEndDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
   return NextResponse.json({
-    skipFirstOffer: true
+    offerType,
+    offerDays,
+    offerMessage,
+    newRenewalDate,
+    tenureDays,
+    isTrial
   })
 }
 
@@ -170,15 +216,16 @@ async function handleAcceptFirstOffer(
         }
       })
     } else {
-      // For now, trial/time extensions are not supported via API
-      // TODO: Implement using Stripe subscription schedules or coupons
-      console.log('Trial extension requested but not implemented:', {
+      // Log trial/time extension acceptance
+      // Note: Manual fulfillment required - extend via Stripe dashboard
+      console.log('Trial/time extension accepted (manual fulfillment required):', {
         subscriptionId: subscription.id,
         offerType,
-        offerDays
+        offerDays,
+        userId,
+        email
       })
 
-      // Log the attempt to Supabase
       await supabaseFunnel.from('cancellation_feedback').insert({
         user_id: userId,
         user_email: email,
@@ -189,14 +236,16 @@ async function handleAcceptFirstOffer(
         was_on_trial: subscription.status === 'trialing',
         first_offer_type: offerType,
         first_offer_days: offerDays,
-        first_offer_accepted: false,
+        first_offer_accepted: true,
         final_offer_shown: false,
         cancellation_completed: false,
       })
 
       return NextResponse.json({
-        error: 'Trial extensions are currently unavailable. Please contact support or proceed with cancellation.'
-      }, { status: 400 })
+        success: true,
+        message: `Great! We'll extend your subscription by ${offerDays} days. Please allow 24 hours for this to be applied.`,
+        requiresManualFulfillment: true
+      })
     }
   } catch (error: any) {
     console.error('Accept offer error:', error)
