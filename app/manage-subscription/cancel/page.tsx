@@ -64,8 +64,14 @@ export default function CancelPage() {
       }
 
       const data = await response.json()
-      setOffer(data)
-      setStep('offer')
+      
+      // Skip first offer if API tells us to
+      if (data.skipFirstOffer) {
+        setStep('reasons')
+      } else {
+        setOffer(data)
+        setStep('offer')
+      }
     } catch (err: any) {
       alert(`Error: ${err.message}`)
       router.push('/manage-subscription')

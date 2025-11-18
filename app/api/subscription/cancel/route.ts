@@ -108,56 +108,10 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleGetOffer(subscription: Stripe.Subscription, userId: string, email: string) {
-  const isTrial = subscription.status === 'trialing'
-  const startDate = subscription.start_date
-  const currentDate = Math.floor(Date.now() / 1000)
-  const tenureDays = Math.floor((currentDate - startDate) / 86400)
-
-  let offerType = ''
-  let offerDays = 0
-  let offerMessage = ''
-
-  if (isTrial) {
-    // User is on trial
-    offerType = 'trial_extension'
-    offerDays = 7
-    offerMessage = "We feel like you haven't had the full experience yet. Let us extend your trial by +7 days!"
-  } else if (tenureDays < 7) {
-    // Real sub 0-6 days after trial
-    offerType = 'free_week'
-    offerDays = 7
-    offerMessage = "You just started! Let us give you a free 1 week extension to experience the full value."
-  } else if (tenureDays >= 7 && tenureDays <= 21) {
-    // Real sub 7-21 days after trial
-    offerType = 'free_two_weeks'
-    offerDays = 14
-    offerMessage = "We appreciate your time with us! Here's a free 2 week extension on us."
-  } else {
-    // Real sub 22+ days after trial
-    offerType = 'free_month'
-    offerDays = 30
-    offerMessage = "Thank you for your loyalty! Here's a FREE MONTH on us to continue enjoying our premium features."
-  }
-
-  // Calculate new renewal date if applicable
-  let newRenewalDate = ''
-  if (offerDays > 0 && 'current_period_end' in subscription) {
-    const currentPeriodEnd = (subscription as any).current_period_end as number
-    const newEndDate = new Date((currentPeriodEnd + (offerDays * 86400)) * 1000)
-    newRenewalDate = newEndDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
+  // Skip the first offer for now - go straight to reasons
+  // Trial extensions are complex to implement with Stripe API
   return NextResponse.json({
-    offerType,
-    offerDays,
-    offerMessage,
-    newRenewalDate,
-    tenureDays,
-    isTrial
+    skipFirstOffer: true
   })
 }
 
@@ -203,23 +157,15 @@ async function handleAcceptFirstOffer(
         }
       })
     } else {
-      // Extend subscription by updating billing cycle anchor
-      const currentPeriodEnd = (subscription as any).current_period_end as number
-      const newPeriodEnd = currentPeriodEnd + (offerDays * 86400)
-
-      console.log('Extending subscription:', {
+      // For now, trial/time extensions are not supported via API
+      // TODO: Implement using Stripe subscription schedules or coupons
+      console.log('Trial extension requested but not implemented:', {
         subscriptionId: subscription.id,
-        currentPeriodEnd,
-        offerDays,
-        newPeriodEnd
+        offerType,
+        offerDays
       })
 
-      const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
-        billing_cycle_anchor: newPeriodEnd,
-        proration_behavior: 'none',
-      })
-
-      // Log to Supabase
+      // Log the attempt to Supabase
       await supabaseFunnel.from('cancellation_feedback').insert({
         user_id: userId,
         user_email: email,
@@ -230,21 +176,14 @@ async function handleAcceptFirstOffer(
         was_on_trial: subscription.status === 'trialing',
         first_offer_type: offerType,
         first_offer_days: offerDays,
-        first_offer_accepted: true,
+        first_offer_accepted: false,
         final_offer_shown: false,
         cancellation_completed: false,
-        new_subscription_id: updatedSubscription.id,
       })
 
       return NextResponse.json({
-        success: true,
-        message: `${offerDays} days added to your subscription!`,
-        newRenewalDate: new Date(newPeriodEnd * 1000).toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric'
-        })
-      })
+        error: 'Trial extensions are currently unavailable. Please contact support or proceed with cancellation.'
+      }, { status: 400 })
     }
   } catch (error: any) {
     console.error('Accept offer error:', error)
