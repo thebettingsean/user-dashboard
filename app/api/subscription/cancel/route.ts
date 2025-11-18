@@ -45,64 +45,63 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User email not found' }, { status: 404 })
     }
 
-    // Find Stripe customer - prioritize metadata, fallback to email
-    let customer
+    // Collect all customer IDs (match get-all API logic exactly)
+    let customerIds: string[] = []
+
     if (stripeCustomerId) {
-      try {
-        customer = await stripe.customers.retrieve(stripeCustomerId)
-        console.log('Stripe customer found via metadata:', { customerId: customer.id })
-      } catch (err) {
-        console.warn('Stripe customer in metadata not found, falling back to email:', err)
-      }
+      customerIds.push(stripeCustomerId)
     }
 
-    // Fallback to email search if no customer found via metadata
-    if (!customer) {
-      const customers = await stripe.customers.list({ email: email, limit: 1 })
-      customer = customers.data[0]
-      console.log('Stripe customer lookup via email:', { 
-        email, 
-        found: !!customer,
-        customerId: customer?.id 
+    // Also search by email (user might have multiple Stripe customers)
+    if (email) {
+      const customers = await stripe.customers.list({
+        email: email,
+        limit: 10
       })
+      customerIds.push(...customers.data.map(c => c.id))
     }
 
-    if (!customer) {
-      console.error('No Stripe customer found for email:', email)
+    // Remove duplicates
+    customerIds = [...new Set(customerIds)]
+
+    console.log('Found customer IDs:', { customerIds })
+
+    if (!customerIds.length) {
+      console.error('No Stripe customer found')
       return NextResponse.json({ error: 'Stripe customer not found' }, { status: 404 })
     }
 
-    // List all subscriptions for this customer
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
-      limit: 100,
-    })
+    // Collect ALL subscriptions from ALL customers (match get-all API)
+    const allSubscriptions: any[] = []
 
-    // Filter using SAME logic as get-all API
-    const validSubscriptions = subscriptions.data.filter(sub => {
-      const isPaused = (sub as any).pause_collection !== null && (sub as any).pause_collection !== undefined
-      const isCanceling = sub.cancel_at_period_end === true
-      
-      return ['active', 'trialing', 'past_due'].includes(sub.status) || isCanceling || isPaused
-    })
+    for (const customerId of customerIds) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 100
+      })
 
-    const subscription = validSubscriptions[0]
+      for (const sub of subscriptions.data) {
+        const isPaused = (sub as any).pause_collection !== null && (sub as any).pause_collection !== undefined
+        const isCanceling = sub.cancel_at_period_end === true
+        
+        if (['active', 'trialing', 'past_due'].includes(sub.status) || isCanceling || isPaused) {
+          allSubscriptions.push(sub)
+        }
+      }
+    }
 
     console.log('Found subscriptions:', {
-      totalCount: subscriptions.data.length,
-      validCount: validSubscriptions.length,
-      allStatuses: subscriptions.data.map(s => ({ 
+      customerCount: customerIds.length,
+      totalValidSubscriptions: allSubscriptions.length,
+      subscriptions: allSubscriptions.map(s => ({ 
         id: s.id, 
+        customerId: s.customer,
         status: s.status, 
-        cancel_at_period_end: s.cancel_at_period_end,
-        pause_collection: (s as any).pause_collection 
-      })),
-      selectedSubscription: subscription ? {
-        id: subscription.id,
-        status: subscription.status,
-        cancel_at_period_end: subscription.cancel_at_period_end
-      } : null
+        cancel_at_period_end: s.cancel_at_period_end
+      }))
     })
+
+    const subscription = allSubscriptions[0]
 
     if (!subscription) {
       return NextResponse.json({ error: 'No active subscription found' }, { status: 404 })
