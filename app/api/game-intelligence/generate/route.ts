@@ -259,7 +259,7 @@ This is where value lives. You're looking for rank gaps that scream "bet this":
 - Example: "#5 pass offense (267 YPG) going against #28 pass defense (251 YPG allowed)" = 23-rank spread = that's not a game, that's a mismatch
 
 **YOU'LL GET DATA WITH RANK + VALUE:**
-- Format: `{rank: 5, value: 267.4}` = #5 ranked, 267.4 YPG
+- Format: rank=5, value=267.4 means #5 ranked, averaging 267.4 YPG
 - ALWAYS cite both: "Bears #5 in pass offense (267.4 YPG) vs Bengals #28 defense allowing 251.2 YPG"
 - That's not just ranks - that's a 16 yard per game edge backed by a 23-rank gap. Double confirmation.
 
