@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { scrapeTeamRankings } from '@/lib/team-rankings-scraper'
 
 // Lazy-load Supabase client to avoid build-time initialization
 function getSupabaseClient() {
@@ -111,21 +112,15 @@ export async function GET(request: NextRequest) {
 
               console.log(`\n📊 Fetching TeamRankings for: ${game.away_team} @ ${game.home_team}`)
 
-              // Fetch TeamRankings for both teams
-              const baseUrl = request.nextUrl.origin
-              const [homeResponse, awayResponse] = await Promise.all([
-                fetch(`${baseUrl}/api/team-rankings/scrape?team=${encodeURIComponent(game.home_team)}&sport=${sport.toLowerCase()}&includeATS=true`),
-                fetch(`${baseUrl}/api/team-rankings/scrape?team=${encodeURIComponent(game.away_team)}&sport=${sport.toLowerCase()}&includeATS=true`)
-              ])
-
-              if (!homeResponse.ok || !awayResponse.ok) {
-                throw new Error(`Failed to fetch TeamRankings: Home ${homeResponse.status}, Away ${awayResponse.status}`)
-              }
-
+              // Scrape TeamRankings for both teams directly (no HTTP call)
               const [homeData, awayData] = await Promise.all([
-                homeResponse.json(),
-                awayResponse.json()
+                scrapeTeamRankings(sport.toLowerCase(), game.home_team),
+                scrapeTeamRankings(sport.toLowerCase(), game.away_team)
               ])
+
+              if (!homeData || !awayData) {
+                throw new Error(`Failed to scrape TeamRankings: ${!homeData ? 'Home' : ''} ${!awayData ? 'Away' : ''}`)
+              }
 
               // Combine into single object
               const teamRankings = {
