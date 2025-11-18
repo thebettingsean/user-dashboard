@@ -32,27 +32,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
-    // Get user email from Clerk
+    // Get user from Clerk
     const clerk = await clerkClient()
     const user = await clerk.users.getUser(userId)
     const email = user?.emailAddresses?.[0]?.emailAddress
+    const stripeCustomerId = (user.publicMetadata as any)?.stripeCustomerId
 
-    console.log('Clerk user found:', { userId, email })
+    console.log('Clerk user found:', { userId, email, stripeCustomerId })
 
     if (!email) {
       console.error('No email found for user:', userId)
       return NextResponse.json({ error: 'User email not found' }, { status: 404 })
     }
 
-    // Find Stripe customer by email
-    const customers = await stripe.customers.list({ email: email, limit: 1 })
-    const customer = customers.data[0]
+    // Find Stripe customer - prioritize metadata, fallback to email
+    let customer
+    if (stripeCustomerId) {
+      try {
+        customer = await stripe.customers.retrieve(stripeCustomerId)
+        console.log('Stripe customer found via metadata:', { customerId: customer.id })
+      } catch (err) {
+        console.warn('Stripe customer in metadata not found, falling back to email:', err)
+      }
+    }
 
-    console.log('Stripe customer lookup:', { 
-      email, 
-      found: !!customer,
-      customerId: customer?.id 
-    })
+    // Fallback to email search if no customer found via metadata
+    if (!customer) {
+      const customers = await stripe.customers.list({ email: email, limit: 1 })
+      customer = customers.data[0]
+      console.log('Stripe customer lookup via email:', { 
+        email, 
+        found: !!customer,
+        customerId: customer?.id 
+      })
+    }
 
     if (!customer) {
       console.error('No Stripe customer found for email:', email)
