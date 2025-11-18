@@ -5,21 +5,6 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.footerContent}>
-        {/* Logo and Taglines */}
-        <div className={styles.logoSection}>
-          <img
-            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
-            alt="The Betting Insider"
-            className={styles.logoImage}
-          />
-          <p className={styles.tagline}>
-            © {new Date().getFullYear()} The Betting Insider. All rights reserved.
-          </p>
-          <p className={styles.tagline}>
-            All data provided by Trendline Labs
-          </p>
-        </div>
-
         {/* Links Grid */}
         <div className={styles.linksGrid}>
           {/* Company Section */}
@@ -83,6 +68,21 @@ export default function Footer() {
               Refund Policy
             </Link>
           </div>
+        </div>
+
+        {/* Logo and Taglines */}
+        <div className={styles.logoSection}>
+          <img
+            src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
+            alt="The Betting Insider"
+            className={styles.logoImage}
+          />
+          <p className={styles.tagline}>
+            © {new Date().getFullYear()} The Betting Insider. All rights reserved.
+          </p>
+          <p className={styles.tagline}>
+            All data provided by Trendline Labs
+          </p>
         </div>
 
         {/* Gambling Addiction Notice */}
