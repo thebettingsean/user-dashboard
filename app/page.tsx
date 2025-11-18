@@ -972,12 +972,12 @@ export default function HeroNewPage() {
                 <FaRegCalendarAlt />
               </div>
               <h3 className={styles.howItWorksCardTitle}>FREE 3-Day Trial</h3>
-              <p className={styles.howItWorksCardSubtitle}>Full access to everything—picks, data, AI tools. No credit card required to start.</p>
+              <p className={styles.howItWorksCardSubtitle}>Full access to everything—picks, data, AI tools.</p>
             </div>
             <div className={styles.howItWorksCardBody}>
               <div className={styles.howItWorksFeature}>
-                <div className={`${styles.howItWorksFeatureIcon} ${styles.howItWorksFeatureIconYellow}`}>
-                  <PiListChecksBold />
+                <div className={styles.howItWorksFeatureImage}>
+                  <PiListChecksBold className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconYellow}`} />
                 </div>
                 <div className={styles.howItWorksFeatureText}>
                   <h4 className={styles.howItWorksFeatureTitle}>Analyst Picks</h4>
@@ -985,21 +985,30 @@ export default function HeroNewPage() {
                 </div>
               </div>
               <div className={styles.howItWorksFeature}>
-                <div className={`${styles.howItWorksFeatureIcon} ${styles.howItWorksFeatureIconGreen}`}>
-                  <IoPieChart />
+                <div className={styles.howItWorksFeatureImage}>
+                  <IoPieChart className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconBlue}`} />
                 </div>
                 <div className={styles.howItWorksFeatureText}>
                   <h4 className={styles.howItWorksFeatureTitle}>Advanced Data</h4>
-                  <p className={styles.howItWorksFeatureDesc}>All matchup analytics, betting splits, and referee trends—fully accessible on our stats dashboard the moment you need them.</p>
+                  <p className={styles.howItWorksFeatureDesc}>All matchup analytics, betting splits, and referee trends—fully accessible on our stats dashboard.</p>
                 </div>
               </div>
               <div className={styles.howItWorksFeature}>
-                <div className={`${styles.howItWorksFeatureIcon} ${styles.howItWorksFeatureIconRed}`}>
-                  <LuBrainCircuit />
+                <div className={styles.howItWorksFeatureImage}>
+                  <LuBrainCircuit className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconPurple}`} />
                 </div>
                 <div className={styles.howItWorksFeatureText}>
                   <h4 className={styles.howItWorksFeatureTitle}>Automated Tools</h4>
                   <p className={styles.howItWorksFeatureDesc}>Full access to the prop engine, perfect parlay builder, Vegas-backed fantasy optimizer, and AI script writer.</p>
+                </div>
+              </div>
+              <div className={styles.howItWorksFeature}>
+                <div className={styles.howItWorksFeatureImage}>
+                  <MdOutlineSportsHandball className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconRed}`} />
+                </div>
+                <div className={styles.howItWorksFeatureText}>
+                  <h4 className={styles.howItWorksFeatureTitle}>Fantasy Football</h4>
+                  <p className={styles.howItWorksFeatureDesc}>Start/sit recommendations, waiver wire analysis, and trade insights to dominate your fantasy leagues.</p>
                 </div>
               </div>
             </div>

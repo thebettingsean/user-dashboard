@@ -40,6 +40,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showInfoModal, setShowInfoModal] = useState(false)
+  const [hoveredFeature, setHoveredFeature] = useState<string | null>(null)
 
   const isSubscriptionSelected = ['weekly', 'monthly', '6month'].includes(selectedPlan || '')
 
@@ -95,7 +96,8 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
           padding: cardPadding,
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           width: '100%',
-          maxWidth: variant === 'compact' ? '560px' : '650px'
+          maxWidth: variant === 'compact' ? '560px' : '650px',
+          margin: '0 auto'
         }}
       >
         <div
@@ -126,146 +128,319 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               fontSize: variant === 'compact' ? '1.6rem' : '1.75rem',
               fontWeight: 700,
               color: '#fff',
-              marginBottom: '0.5rem',
+              marginBottom: '1.5rem',
               lineHeight: 1.2
             }}
           >
-            Start F*cking Winning
+            Unlock Instant Access to Our:
           </h2>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              justifyContent: 'center',
+              alignItems: 'flex-start',
+              marginTop: '0.5rem',
+              position: 'relative'
+            }}
+          >
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block'
+              }}
+              onMouseEnter={() => setHoveredFeature('picks')}
+              onMouseLeave={() => setHoveredFeature(null)}
+            >
+              <div
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  background: hoveredFeature === 'picks' 
+                    ? 'rgba(255, 255, 255, 0.08)' 
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: hoveredFeature === 'picks'
+                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Daily Insider Picks
+              </div>
+              {hoveredFeature === 'picks' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    marginTop: '0.75rem',
+                    padding: '1rem',
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '12px',
+                    minWidth: '220px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                    zIndex: 100,
+                    animation: 'fadeInUp 0.3s ease-out',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
+                    Get unlimited access to every single pick from our expert analysts with instant notifications pushed right to your phone.
+                  </div>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block'
+              }}
+              onMouseEnter={() => setHoveredFeature('data')}
+              onMouseLeave={() => setHoveredFeature(null)}
+            >
+              <div
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  background: hoveredFeature === 'data' 
+                    ? 'rgba(255, 255, 255, 0.08)' 
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: hoveredFeature === 'data'
+                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                All Premium Data
+              </div>
+              {hoveredFeature === 'data' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    marginTop: '0.75rem',
+                    padding: '1rem',
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '12px',
+                    minWidth: '220px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                    zIndex: 100,
+                    animation: 'fadeInUp 0.3s ease-out',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
+                    All matchup analytics, betting splits, and referee trends—fully accessible on our stats dashboard the moment you need them.
+                  </div>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block'
+              }}
+              onMouseEnter={() => setHoveredFeature('tools')}
+              onMouseLeave={() => setHoveredFeature(null)}
+            >
+              <div
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  background: hoveredFeature === 'tools' 
+                    ? 'rgba(255, 255, 255, 0.08)' 
+                    : 'rgba(255, 255, 255, 0.05)',
+                  border: hoveredFeature === 'tools'
+                    ? '1px solid rgba(255, 255, 255, 0.2)'
+                    : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                AI Scripts & Tools
+              </div>
+              {hoveredFeature === 'tools' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    marginTop: '0.75rem',
+                    padding: '1rem',
+                    background: 'rgba(15, 23, 42, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '12px',
+                    minWidth: '220px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                    zIndex: 100,
+                    animation: 'fadeInUp 0.3s ease-out',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
+                    Full access to the prop engine, perfect parlay builder, Vegas-backed fantasy optimizer, and AI script writer.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div>
           <div
             style={{
-              padding: '1rem',
-              background: isSubscriptionSelected
-                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1))'
-                : 'rgba(255, 255, 255, 0.03)',
+              padding: '1.5rem',
+              background: 'rgba(255, 255, 255, 0.03)',
               backdropFilter: 'blur(20px)',
-              border: isSubscriptionSelected
-                ? '2px solid rgba(59, 130, 246, 0.5)'
-                : '2px solid rgba(255, 255, 255, 0.08)',
+              border: '2px solid rgba(255, 255, 255, 0.08)',
               borderRadius: '12px',
-              marginBottom: '1rem',
-              boxShadow: isSubscriptionSelected ? '0 8px 32px rgba(59, 130, 246, 0.2)' : 'none',
-              transition: 'all 0.2s'
+              marginBottom: '1.5rem'
             }}
           >
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '0.75rem'
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                color: '#fff',
+                marginBottom: '1.25rem',
+                textAlign: 'center'
               }}
             >
-              <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>
-                Full Access - Try FREE for 3 Days
-              </div>
-              {isSubscriptionSelected && (
-                <div
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: '#3b82f6',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  <Check size={14} style={{ color: '#fff' }} />
-                </div>
-              )}
+              Select Your Plan
             </div>
 
-            <div style={{ marginBottom: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+              }}
+            >
               {subscriptionPlans.map((plan) => (
-                <div key={plan.id} style={{ marginBottom: '0.4rem' }}>
+                <div key={plan.id} style={{ position: 'relative' }}>
+                  {(plan.id === 'monthly' || plan.id === '6month') && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '8px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        zIndex: 10,
+                        background: plan.id === 'monthly' 
+                          ? 'linear-gradient(135deg, #3b82f6, #8b5cf6)'
+                          : 'linear-gradient(135deg, #10b981, #34d399)',
+                        color: '#fff',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                      }}
+                    >
+                      {plan.id === 'monthly' ? 'Most Popular' : 'Best Value'}
+                    </div>
+                  )}
                   <button
                     onClick={() => setSelectedPlan(plan.id)}
                     style={{
                       width: '100%',
-                      padding: '0.75rem',
-                      background:
-                        selectedPlan === plan.id ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
+                      padding: '1rem',
+                      background: selectedPlan === plan.id 
+                        ? 'rgba(255, 255, 255, 0.08)' 
+                        : 'transparent',
+                      border: selectedPlan === plan.id
+                        ? '2px solid rgba(59, 130, 246, 0.5)'
+                        : '2px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      textAlign: 'left',
-                      position: 'relative'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem'
                     }}
                     onMouseEnter={(e) => {
                       if (selectedPlan !== plan.id) {
                         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (selectedPlan !== plan.id) {
                         e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
                       }
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                        <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
-                          {plan.price}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '0.75rem',
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem'
-                          }}
-                        >
-                          / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'}
-                        </span>
-                      </div>
-                      <span style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.3)' }}>›</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flex: 1 }}>
+                      <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
+                        {plan.price}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '0.8rem',
+                          color: 'rgba(255, 255, 255, 0.5)'
+                        }}
+                      >
+                        / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'}
+                      </span>
                     </div>
-                  </button>
-
-                  {selectedPlan === plan.id && (
                     <div
                       style={{
-                        paddingLeft: '0.75rem',
-                        paddingTop: '0.5rem',
-                        display: 'grid',
-                        gap: '0.4rem'
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        border: selectedPlan === plan.id 
+                          ? '2px solid #3b82f6' 
+                          : '2px solid rgba(255, 255, 255, 0.3)',
+                        background: selectedPlan === plan.id 
+                          ? '#3b82f6' 
+                          : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        transition: 'all 0.2s'
                       }}
                     >
-                      {['Unlimited Everything', 'Daily Insider Picks', 'All Premium Data', 'AI Scripts & Tools'].map((feature) => (
-                        <div key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <div
-                            style={{
-                              width: '14px',
-                              height: '14px',
-                              borderRadius: '50%',
-                              background: 'rgba(59, 130, 246, 0.2)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0
-                            }}
-                          >
-                            <div
-                              style={{
-                                width: '5px',
-                                height: '5px',
-                                borderRadius: '50%',
-                                background: '#3b82f6'
-                              }}
-                            />
-                          </div>
-                          <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>{feature}</span>
-                        </div>
-                      ))}
+                      {selectedPlan === plan.id && (
+                        <div
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#fff'
+                          }}
+                        />
+                      )}
                     </div>
-                  )}
+                  </button>
                 </div>
               ))}
             </div>
@@ -288,7 +463,11 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               cursor: selectedPlan && !loading ? 'pointer' : 'not-allowed',
               opacity: selectedPlan && !loading ? 1 : 0.5,
               transition: 'all 0.2s',
-              boxShadow: selectedPlan ? '0 8px 24px rgba(59, 130, 246, 0.3)' : 'none'
+              boxShadow: selectedPlan ? '0 8px 24px rgba(59, 130, 246, 0.3)' : 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.25rem'
             }}
             onMouseEnter={(e) => {
               if (selectedPlan && !loading) {
@@ -303,15 +482,24 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               }
             }}
           >
-            {loading
-              ? 'Processing...'
-              : selectedPlan === 'weekly'
-              ? 'Start FREE Trial (Then $29/week)'
-              : selectedPlan === 'monthly'
-              ? 'Start FREE Trial (Then $99/month)'
-              : selectedPlan === '6month'
-              ? 'Start FREE Trial (Then $299/6-months)'
-              : 'Select a Plan'}
+            {loading ? (
+              'Processing...'
+            ) : selectedPlan ? (
+              <>
+                <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>
+                  START FREE TRIAL
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 400 }}>
+                  (then {selectedPlan === 'weekly' 
+                    ? '$29/week' 
+                    : selectedPlan === 'monthly' 
+                    ? '$99/month' 
+                    : '$299/6-months'})
+                </span>
+              </>
+            ) : (
+              'Select a Plan'
+            )}
           </button>
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
@@ -341,7 +529,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               Home
             </button>
             <button
-              onClick={() => setShowInfoModal(true)}
+              onClick={() => router.push('/sports')}
               style={{
                 flex: 1,
                 padding: '0.75rem',
@@ -363,7 +551,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                 e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
               }}
             >
-              Learn More
+              Dashboard
             </button>
           </div>
 
