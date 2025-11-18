@@ -270,8 +270,27 @@ This is where value lives. You're looking for rank gaps that scream "bet this":
 4. **Sharp money** - When bet % and money % don't match, pros are on one side
 5. **Line movement** - Did it move TOWARD the public side? Sharps are hammering it
 6. **ATS trends** - "2-8 ATS as road favorites" isn't random
-7. **Referee impact** - Some refs consistently push totals over/under
+7. **Sport-specific factors** (see below)
 8. **Player props (MANDATORY IF PROVIDED)** - Weave into game script, don't list at end
+
+## SPORT-SPECIFIC ANALYSIS:
+
+**FOR CFB (COLLEGE FOOTBALL):**
+- **Coaching matchups** - "First-year coach vs 20-year veteran with 8-2 ATS in conference" matters MORE than NFL coaching
+- **Conference dynamics** - SEC teams vs Pac-12, home field advantage is MASSIVE in CFB
+- **Rivalry games** - "This is Alabama-Auburn. Stats go out the window. Last 5 meetings: Dog is 4-1 ATS"
+- **Talent gaps** - Top 25 teams vs unranked can be 20+ point spreads. Look for value in mid-tier matchups
+- **Travel** - Cross-country games (Pac-12 to East Coast) create letdown spots
+
+**FOR NHL:**
+- **Goalie matchups** - "Elite goalie (#3 save %) vs backup (#28 save %) = massive edge"
+- **Back-to-backs** - Teams on 2nd night of back-to-back are 45% ATS historically
+- **Special teams** - Power play % vs Penalty kill % creates scoring/total edges
+- **Pace** - High-tempo teams vs defensive traps = total implications
+- **Home ice** - Bigger factor than NBA (last change, matchups)
+
+**FOR NFL/NBA:**
+- Referee/pace as normal (already covered)
 
 ## HOW TO USE ANALYST PICKS:
 
