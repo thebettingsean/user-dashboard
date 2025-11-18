@@ -273,8 +273,16 @@ export async function fetchRefereeStats(
   gameId: string
 ): Promise<RefereeStats | null> {
   try {
-    const url = `${API_BASE_URL}/api/${league}/games/${gameId}/referee-stats`
-    console.log(`  → Fetching referee stats: ${url}`)
+    // CFB has coach stats instead of referee stats
+    // NHL has no referee/coach stats
+    if (league === 'nhl') {
+      console.log(`  ⏭️  NHL has no referee stats, skipping`)
+      return null
+    }
+    
+    const endpoint = league === 'cfb' ? 'coach-stats' : 'referee-stats'
+    const url = `${API_BASE_URL}/api/${league}/games/${gameId}/${endpoint}`
+    console.log(`  → Fetching ${endpoint}: ${url}`)
     
     const response = await fetch(url, {
       headers: {

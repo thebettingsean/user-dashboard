@@ -23,16 +23,18 @@ const SNAPSHOTS_SUPABASE_SERVICE_KEY =
 const primarySupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 const snapshotsClient = createClient(SNAPSHOTS_SUPABASE_URL, SNAPSHOTS_SUPABASE_SERVICE_KEY)
 
-const SUPPORTED_SPORTS = ['nfl', 'nba'] as const
+const SUPPORTED_SPORTS = ['nfl', 'nba', 'cfb', 'nhl'] as const
 
 function getDateRangeForSport(sport: League) {
   const start = new Date()
   start.setHours(0, 0, 0, 0)
 
   const end = new Date(start)
-  if (sport === 'nfl') {
+  if (sport === 'nfl' || sport === 'cfb') {
+    // NFL and CFB games are weekly
     end.setDate(end.getDate() + 7)
   } else {
+    // NBA and NHL games are frequent (daily/multiple per day)
     end.setDate(end.getDate() + 2)
   }
 
@@ -118,7 +120,9 @@ export async function GET(request: NextRequest) {
 
     const results = {
       nfl: { success: false, count: 0, error: null as string | null },
-      nba: { success: false, count: 0, error: null as string | null }
+      nba: { success: false, count: 0, error: null as string | null },
+      cfb: { success: false, count: 0, error: null as string | null },
+      nhl: { success: false, count: 0, error: null as string | null }
     }
 
     // Refresh snapshots for both sports
