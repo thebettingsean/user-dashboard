@@ -17,6 +17,14 @@
       "schedule": "0 11 * * *"
     },
     {
+      "path": "/api/cron/refresh-team-rankings?sport=CFB",
+      "schedule": "0 10 * * 2"
+    },
+    {
+      "path": "/api/cron/refresh-team-rankings?sport=NHL",
+      "schedule": "0 11 * * *"
+    },
+    {
       "path": "/api/cron/generate-nfl-scripts",
       "schedule": "0 */2 * * *"
     },

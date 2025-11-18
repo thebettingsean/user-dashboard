@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { scrapeTeamRankings } from '@/lib/team-rankings-scraper'
+import { scrapeMoneyPuck } from '@/lib/moneypuck-scraper'
 
 // Lazy-load Supabase client to avoid build-time initialization
 function getSupabaseClient() {
@@ -39,12 +40,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get sport from query params (defaults to both NFL and NBA)
+    // Get sport from query params
     const { searchParams } = new URL(request.url)
     const sportFilter = searchParams.get('sport')?.toUpperCase()
     const forceRefresh = searchParams.get('force') === 'true'
 
-    const sportsToRefresh = sportFilter ? [sportFilter] : ['NFL', 'NBA']
+    const sportsToRefresh = sportFilter ? [sportFilter] : ['NFL', 'NBA', 'CFB', 'NHL']
     console.log(`📋 Sports to refresh: ${sportsToRefresh.join(', ')}`)
     if (forceRefresh) console.log('⚠️  FORCE REFRESH enabled - will update all games')
 
@@ -55,12 +56,12 @@ export async function GET(request: NextRequest) {
     for (const sport of sportsToRefresh) {
       console.log(`\n🏈 Processing ${sport} games...`)
 
-      // Get upcoming games that need TeamRankings refresh
-      // For NFL: next 10 days (covers current week)
-      // For NBA/NHL: next 2 days
+      // Get upcoming games that need team stats refresh
+      // For NFL/CFB: next 10 days (covers current week)
+      // For NBA/NHL: next 2 days (frequent games)
       const now = new Date()
       const futureDate = new Date(now)
-      futureDate.setDate(now.getDate() + (sport === 'NFL' ? 10 : 2))
+      futureDate.setDate(now.getDate() + (['NFL', 'CFB'].includes(sport) ? 10 : 2))
 
       const supabase = getSupabaseClient()
       const query = supabase
@@ -110,16 +111,27 @@ export async function GET(request: NextRequest) {
                 }
               }
 
-              console.log(`\n📊 Fetching TeamRankings for: ${game.away_team} @ ${game.home_team}`)
+              console.log(`\n📊 Fetching team stats for: ${game.away_team} @ ${game.home_team}`)
 
-              // Scrape TeamRankings for both teams directly (no HTTP call)
-              const [homeData, awayData] = await Promise.all([
-                scrapeTeamRankings(sport.toLowerCase(), game.home_team),
-                scrapeTeamRankings(sport.toLowerCase(), game.away_team)
-              ])
+              // Scrape team stats based on sport
+              let homeData, awayData
+              
+              if (sport === 'NHL') {
+                // NHL uses MoneyPuck
+                [homeData, awayData] = await Promise.all([
+                  scrapeMoneyPuck(game.home_team),
+                  scrapeMoneyPuck(game.away_team)
+                ])
+              } else {
+                // NFL, NBA, CFB use TeamRankings
+                [homeData, awayData] = await Promise.all([
+                  scrapeTeamRankings(sport.toLowerCase(), game.home_team),
+                  scrapeTeamRankings(sport.toLowerCase(), game.away_team)
+                ])
+              }
 
               if (!homeData || !awayData) {
-                throw new Error(`Failed to scrape TeamRankings: ${!homeData ? 'Home' : ''} ${!awayData ? 'Away' : ''}`)
+                throw new Error(`Failed to scrape team stats: ${!homeData ? 'Home' : ''} ${!awayData ? 'Away' : ''}`)
               }
 
               // Combine into single object

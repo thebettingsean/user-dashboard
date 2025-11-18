@@ -39,7 +39,9 @@ export async function scrapeTeamRankings(sport: string, teamName: string): Promi
     return cached.data
   }
 
-  const url = `https://www.teamrankings.com/${sport}/team/${teamSlug}/stats`
+  // Map sport to TeamRankings URL format
+  const sportUrl = sport === 'cfb' ? 'college-football' : sport
+  const url = `https://www.teamrankings.com/${sportUrl}/team/${teamSlug}/stats`
   console.log(`🔍 Scraping TeamRankings: ${url}`)
 
   try {
