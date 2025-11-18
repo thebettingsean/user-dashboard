@@ -25,7 +25,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { userId, action, offerType, offerDays, reasons, otherText, targetPriceId } = body
 
+    console.log('Cancel API called:', { userId, action })
+
     if (!userId) {
+      console.error('No userId provided')
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
 
@@ -34,7 +37,10 @@ export async function POST(req: NextRequest) {
     const user = await clerk.users.getUser(userId)
     const email = user?.emailAddresses?.[0]?.emailAddress
 
+    console.log('Clerk user found:', { userId, email })
+
     if (!email) {
+      console.error('No email found for user:', userId)
       return NextResponse.json({ error: 'User email not found' }, { status: 404 })
     }
 
@@ -42,7 +48,14 @@ export async function POST(req: NextRequest) {
     const customers = await stripe.customers.list({ email: email, limit: 1 })
     const customer = customers.data[0]
 
+    console.log('Stripe customer lookup:', { 
+      email, 
+      found: !!customer,
+      customerId: customer?.id 
+    })
+
     if (!customer) {
+      console.error('No Stripe customer found for email:', email)
       return NextResponse.json({ error: 'Stripe customer not found' }, { status: 404 })
     }
 

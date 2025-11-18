@@ -60,7 +60,8 @@ export default function CancelPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to load offer')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to load offer')
       }
 
       const data = await response.json()
@@ -73,6 +74,7 @@ export default function CancelPage() {
         setStep('offer')
       }
     } catch (err: any) {
+      console.error('Load offer error:', err)
       alert(`Error: ${err.message}`)
       router.push('/manage-subscription')
     }
