@@ -63,9 +63,13 @@ export async function GET(request: NextRequest) {
       const futureDate = new Date(now)
       futureDate.setDate(now.getDate() + (['NFL', 'CFB'].includes(sport) ? 10 : 2))
 
+      // Use college_game_snapshots for CFB, game_snapshots for others
+      const tableName = sport === 'CFB' ? 'college_game_snapshots' : 'game_snapshots'
+      console.log(`📋 Querying ${tableName} for ${sport} games`)
+
       const supabase = getSupabaseClient()
       const query = supabase
-        .from('game_snapshots')
+        .from(tableName)
         .select('id, game_id, sport, home_team, away_team, start_time_utc, team_rankings')
         .eq('sport', sport)
         .gte('start_time_utc', now.toISOString())
@@ -141,10 +145,11 @@ export async function GET(request: NextRequest) {
                 fetched_at: new Date().toISOString()
               }
 
-              // Update game_snapshots
+              // Update appropriate table (college_game_snapshots for CFB, game_snapshots for others)
+              const updateTableName = sport === 'CFB' ? 'college_game_snapshots' : 'game_snapshots'
               const supabaseUpdate = getSupabaseClient()
               const { error: updateError } = await supabaseUpdate
-                .from('game_snapshots')
+                .from(updateTableName)
                 .update({ 
                   team_rankings: teamRankings,
                   updated_at: new Date().toISOString()

@@ -316,9 +316,10 @@ export async function GET(request: NextRequest) {
     let homeTeamRankings: any | null = null
     let awayTeamRankings: any | null = null
     try {
-      // Query game_snapshots table for this game - it has team_rankings for BOTH teams
+      // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
+      const tableName = league === 'cfb' ? 'college_game_snapshots' : 'game_snapshots'
       const { data: snapshot, error: snapshotError } = await supabaseSnapshots
-        .from('game_snapshots')
+        .from(tableName)
         .select('team_rankings')
         .eq('game_id', gameId)
         .single()

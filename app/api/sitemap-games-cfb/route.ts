@@ -54,9 +54,9 @@ export async function GET(): Promise<Response> {
     
     const supabase = getSupabaseClient()
     
-    // Query game_snapshots for this sport (limit 10,000 for safety)
+    // Query college_game_snapshots for CFB (limit 10,000 for safety)
     const { data: games, error } = await supabase
-      .from('game_snapshots')
+      .from('college_game_snapshots')
       .select('id, sport, home_team, away_team, start_time_utc, updated_at')
       .eq('sport', SPORT)
       .order('start_time_utc', { ascending: false })

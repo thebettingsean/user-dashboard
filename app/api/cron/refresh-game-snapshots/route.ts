@@ -25,6 +25,16 @@ const snapshotsClient = createClient(SNAPSHOTS_SUPABASE_URL, SNAPSHOTS_SUPABASE_
 
 const SUPPORTED_SPORTS = ['nfl', 'nba', 'cfb', 'nhl'] as const
 
+// Helper: Get the correct Supabase table based on sport
+function getSnapshotsTable(sport: League): 'game_snapshots' | 'college_game_snapshots' {
+  // College sports (CFB, CBB in future) go to college_game_snapshots
+  if (sport === 'cfb') {
+    return 'college_game_snapshots'
+  }
+  // Pro sports (NFL, NBA, NHL, MLB) go to game_snapshots
+  return 'game_snapshots'
+}
+
 function getDateRangeForSport(sport: League) {
   const start = new Date()
   start.setHours(0, 0, 0, 0)
@@ -280,11 +290,12 @@ export async function GET(request: NextRequest) {
           })
         )
 
-        console.log(`📝 Upserting ${payloads.length} ${sport.toUpperCase()} game snapshots...`)
+        const tableName = getSnapshotsTable(sport)
+        console.log(`📝 Upserting ${payloads.length} ${sport.toUpperCase()} game snapshots to ${tableName}...`)
 
-        // Upsert to game_snapshots table
+        // Upsert to appropriate table (college_game_snapshots for CFB, game_snapshots for others)
         const { error } = await snapshotsClient
-          .from('game_snapshots')
+          .from(tableName)
           .upsert(payloads, { onConflict: 'sport,game_id' })
 
         if (error) {
