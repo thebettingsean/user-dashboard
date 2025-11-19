@@ -16,8 +16,8 @@ function getSupabaseClient() {
 }
 
 // Generate slug from game data
-function generateGameSlug(homeTeam: string, awayTeam: string, gameDate: string): string {
-  const date = new Date(gameDate)
+function generateGameSlug(homeTeam: string, awayTeam: string, startTime: string): string {
+  const date = new Date(startTime)
   const month = date.toLocaleString('en-US', { month: 'long' }).toLowerCase()
   const day = date.getDate()
   
@@ -27,9 +27,9 @@ function generateGameSlug(homeTeam: string, awayTeam: string, gameDate: string):
 }
 
 // Determine priority based on game date
-function getPriority(gameDate: string): number {
+function getPriority(startTime: string): number {
   const now = new Date()
-  const game = new Date(gameDate)
+  const game = new Date(startTime)
   const daysDiff = Math.floor((now.getTime() - game.getTime()) / (1000 * 60 * 60 * 24))
   
   if (daysDiff <= 7) return 0.9      // Last 7 days - high priority
@@ -38,9 +38,9 @@ function getPriority(gameDate: string): number {
 }
 
 // Determine change frequency based on game date
-function getChangeFrequency(gameDate: string): string {
+function getChangeFrequency(startTime: string): string {
   const now = new Date()
-  const game = new Date(gameDate)
+  const game = new Date(startTime)
   const daysDiff = Math.floor((now.getTime() - game.getTime()) / (1000 * 60 * 60 * 24))
   
   if (daysDiff <= 7) return 'daily'      // Recent games update frequently
@@ -57,9 +57,9 @@ export async function GET(): Promise<Response> {
     // Query game_snapshots for this sport (limit 10,000 for safety)
     const { data: games, error } = await supabase
       .from('game_snapshots')
-      .select('id, sport, home_team, away_team, game_date, updated_at')
+      .select('id, sport, home_team, away_team, start_time, updated_at')
       .eq('sport', SPORT)
-      .order('game_date', { ascending: false })
+      .order('start_time', { ascending: false })
       .limit(10000)
     
     if (error) {
@@ -99,10 +99,10 @@ export async function GET(): Promise<Response> {
     const urls: string[] = []
     
     for (const game of games) {
-      const slug = generateGameSlug(game.home_team, game.away_team, game.game_date)
-      const priority = getPriority(game.game_date)
-      const changefreq = getChangeFrequency(game.game_date)
-      const lastmod = game.updated_at || game.game_date
+      const slug = generateGameSlug(game.home_team, game.away_team, game.start_time)
+      const priority = getPriority(game.start_time)
+      const changefreq = getChangeFrequency(game.start_time)
+      const lastmod = game.updated_at || game.start_time
       const sport = game.sport.toLowerCase()
       
       // Generate URLs for all game sub-pages
