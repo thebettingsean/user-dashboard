@@ -835,7 +835,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     try {
       // Check authentication after showing loading
       if (!isSignedIn) {
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        await new Promise((resolve) => setTimeout(resolve, 5000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
           '⚠️ **Sign In Required**\n\nOops! You need to sign in to generate AI scripts.\n\n[Click here to sign in and start your FREE trial](/pricing)'
         ))
@@ -853,7 +853,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
       // Check subscription access
       if (!hasAccess) {
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        await new Promise((resolve) => setTimeout(resolve, 5000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
           '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your FREE trial to generate AI scripts.\n\n[Start FREE Trial Now](/pricing)'
         ))

@@ -267,8 +267,8 @@ This is where value lives. You're looking for rank gaps that scream "bet this":
 1. **H2H history (CRITICAL)** - If provided, use it! "Last 3 meetings: Home team 3-0 ATS, avg total 58.7" validates or contradicts current lines
 2. **Matchup exploits** - Where's the biggest rank differential? Lead with that
 3. **Efficiency gaps** - Yards/play, 3rd down %, red zone % (these predict scoring)
-4. **Sharp money** - When bet % and money % don't match, pros are on one side
-5. **Line movement** - Did it move TOWARD the public side? Sharps are hammering it
+4. **Sharp money** - When money % significantly exceeds bet % (e.g., 40% of bets but 60% of money), pros are loading up on one side
+5. **RLM (Reverse Line Movement)** - When the line moves AGAINST the public betting direction. Example: 80% on Team A but the line moves toward Team B = RLM
 6. **ATS trends** - "2-8 ATS as road favorites" isn't random
 7. **Sport-specific factors** (see below)
 8. **Player props (MANDATORY IF PROVIDED)** - Weave into game script, don't list at end
@@ -312,7 +312,7 @@ You'll see write-ups from other sharp bettors. DON'T just list their picks. Inst
 
 ### React to Data - Don't List It:
 - ❌ "Sharp money shows 45% of bets but 61% of money"
-- ✅ "Sharps are all over Raiders - 45% of bets but 61% of cash. That 16-point gap? That's professionals betting their mortgage."
+- ✅ "Sharps are all over Raiders - only 45% of bets but 61% of the actual money. That 16-point gap? That's professionals betting their mortgage, not Joe Public throwing $20 on his favorite team."
 
 ### Tell Stories with Stats:
 - ❌ "Cowboys are 2-8 ATS as road favorites"
@@ -353,22 +353,22 @@ Props aren't optional - they're extensions of your game script. Weave them into 
 
 📝 STRUCTURE (450-500 WORDS, NO SECTION HEADERS):
 
-**🚨 CRITICAL: Your output should be 4-5 FLOWING PARAGRAPHS with NO headers/sections. Just natural text like you're texting.**
+**🚨 CRITICAL: Your output MUST be 4-5 FLOWING PARAGRAPHS with NO headers/sections. Just natural text like you're texting.**
 
-**Paragraph 1 (75-100 words)** - Open with immediate reaction:
+**⚠️ AVOID SHORT, CHOPPY PARAGRAPHS! Each paragraph should be SUBSTANTIAL (75-150+ words). Let your thoughts flow naturally from one point to the next within the same paragraph. DON'T break into a new paragraph every 2-3 sentences.**
+
+**Paragraph 1 (75-100 words)** - Open with immediate reaction to the line/matchup:
 "Dallas laying road points against anyone right now is comedy, but 3.5 against Vegas? Books are begging for Cowboys money here. Line opened Dallas -4.5 and sharp money immediately hit Vegas +4.5, driving it down to 3.5. When's the last time you saw a line move TOWARD the public side? That's pros betting Vegas, and they're not done. Cowboys are 2-8 ATS laying points on the road. Two and eight!"
 
-**Paragraphs 2-3 (300-350 words total)** - Build your case with natural flow:
-"Here's the thing - Cowboys put up 29 PPG, looks great on ESPN. But that's against bad teams giving them short fields. Against teams over .500? Eighteen points per game. And now they're getting Vegas fresh off nearly beating Kansas City? Last three meetings between these teams? Road team is 3-0 ATS with an average margin of 9.2 points. Market still hasn't caught up.
+**Paragraphs 2-3 (300-350 words total)** - Build your case with LONG, FLOWING analysis. Don't break paragraphs unless you're shifting to a completely different angle:
+"Here's the thing - Cowboys put up 29 PPG, looks great on ESPN. But that's against bad teams giving them short fields. Against teams over .500? Eighteen points per game. And now they're getting Vegas fresh off nearly beating Kansas City? Last three meetings between these teams? Road team is 3-0 ATS with an average margin of 9.2 points. Market still hasn't caught up. The Pickens over 63.5 receiving yards is sitting there and honestly, it's too obvious. Vegas knows he's torched them for 78+ four straight weeks. They know he destroys Cover 3. They STILL hung this number. Why? Because Russell Wilson in primetime unders hits 67% over the last three years. They're banking on ugly football. I'll bite on Pickens because the matchup is too good, but I'm not loading up.
 
-The Pickens over 63.5 receiving yards is sitting there and honestly, it's too obvious. Vegas knows he's torched them for 78+ four straight weeks. They know he destroys Cover 3. They STILL hung this number. Why? Because Russell Wilson in primetime unders hits 67% over the last three years. They're banking on ugly football. I'll bite on Pickens because the matchup is too good, but I'm not loading up.
+What I'm loading up on is **Bowers over 71.5 receiving yards (-112)**. When an OC goes on radio and says 'we need to force-feed our best player' and that player's line is still in the 70s? Against Dallas? Cowboys give up 8.2 yards per target to TEs - dead last. Not one of the worst - THE worst. Bowers just went for 127 and 103 in his last two healthy games. This prop hits 71.4% of the time (15-6). Math doesn't lie. And here's the kicker - when Vegas is getting points at home and losing the TO battle, Bowers averages 9.2 targets per game. Volume plus matchup equals money."
 
-What I'm loading up on is **Bowers over 71.5 receiving yards (-112)**. When an OC goes on radio and says 'we need to force-feed our best player' and that player's line is still in the 70s? Against Dallas? Cowboys give up 8.2 yards per target to TEs - dead last. Not one of the worst - THE worst. Bowers just went for 127 and 103 in his last two healthy games. This prop hits 71.4% of the time (15-6). Math doesn't lie."
-
-**Paragraph 4 (75 words)** - Close with conviction and plays:
+**Paragraph 4 (75 words)** - Close with conviction and your final plays:
 "So here's what we're doing: **Raiders +3.5 (-110)** is the side - sharps don't lie and this line movement is screaming value. **Bowers over 71.5 receiving yards (-112)** is my favorite play on the board. **Under 50.5 (-110)** if you trust the sharp steam. Final score comes in around Cowboys 24, Raiders 23. Dallas probably wins but doesn't cover. Bowers goes for 85+. Book it."
 
-**REMEMBER:** These structure notes are for YOUR understanding. Your ACTUAL OUTPUT should have ZERO headers - just 4-5 natural paragraphs flowing like a conversation.
+**REMEMBER:** These structure notes are for YOUR understanding. Your ACTUAL OUTPUT should have ZERO headers - just 4-5 SUBSTANTIAL, FLOWING paragraphs. Think of it like texting a buddy - you don't start a new paragraph every other sentence. Let your analysis flow naturally within each paragraph before moving to the next major point.
 
 ## PHRASES TO USE (Sound like a sharp):
 
@@ -1151,8 +1151,8 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   prompt += `2. **Connects offense vs defense**: Don't just say "Team A scores 28 PPG, Team B allows 24" - explain WHY the matchup matters\n`
   prompt += `3. **Uses public/sharp splits intelligently**:\n`
   prompt += `   - High public % + weak data = fade opportunity\n`
-  prompt += `   - RLM (line against public) = sharp confirmation\n`
-  prompt += `   - Sharp money indicator = bet% vs money% difference\n`
+  prompt += `   - Sharp money = money% significantly exceeds bet% (e.g., 40% bets but 65% money = sharps loading up)\n`
+  prompt += `   - RLM = line moves AGAINST public direction (e.g., 80% on Team A but line moves toward Team B)\n`
   prompt += `4. **Weaves in plays naturally**: As you explain game script, introduce bets that capitalize on the edges you're describing\n`
   prompt += `5. **Only suggests plays from the data**: If a prop isn't listed above with hit rate/odds, DON'T mention it\n\n`
   
@@ -1162,7 +1162,8 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
   prompt += `**KEY REMINDERS:**\n\n`
   prompt += `✅ DO:\n`
   prompt += `- Connect stats: "Team X's #1 rush offense vs Team Y's #27 rush defense → RB props OVER"\n`
-  prompt += `- Explain betting concepts: "78% public but line moved away = RLM = sharp fade"\n`
+  prompt += `- Explain sharp money: "40% of bets but 65% of money on Raiders = sharps loading up"\n`
+  prompt += `- Explain RLM: "78% public on Cowboys but line moved from -4.5 to -3.5 toward Raiders = RLM = sharp fade"\n`
   prompt += `- Use analyst write-ups: If an analyst provided detailed analysis, USE IT and credit them\n`
   prompt += `- Focus on spreads/totals if props are weak: Not every game needs 5 player props\n`
   prompt += `- Include hit rates: **Player OVER X.X (odds)**: 68% hit rate (15-7)\n\n`
