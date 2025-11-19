@@ -204,10 +204,33 @@ export async function GET(request: NextRequest) {
 
     const sport = sportParam as SupportedSport
     
-    // Get current time and a future cutoff (7 days for NFL/CFB, 2 days for NBA/NHL)
+    // Calculate date range based on sport:
+    // - NHL & NBA: TODAY only (not in advance)
+    // - CFB: 7 days from most recent Sunday (this week's games)
+    // - NFL: 7 days from now (captures current + next week)
     const now = new Date()
+    now.setHours(0, 0, 0, 0) // Start of today
+    
     const futureDate = new Date(now)
-    futureDate.setDate(now.getDate() + (['nfl', 'cfb'].includes(sport) ? 7 : 2))
+    if (sport === 'nhl' || sport === 'nba') {
+      // Daily sports: Show TODAY's games only
+      futureDate.setHours(23, 59, 59, 999) // End of today
+    } else if (sport === 'cfb') {
+      // CFB: Show games from most recent Sunday + 7 days (this week's games)
+      const dayOfWeek = now.getDay() // 0 = Sunday
+      const daysSinceSunday = dayOfWeek === 0 ? 0 : dayOfWeek
+      const mostRecentSunday = new Date(now)
+      mostRecentSunday.setDate(now.getDate() - daysSinceSunday)
+      mostRecentSunday.setHours(0, 0, 0, 0)
+      
+      // Set start to most recent Sunday, end 7 days later
+      now.setTime(mostRecentSunday.getTime())
+      futureDate.setTime(mostRecentSunday.getTime())
+      futureDate.setDate(futureDate.getDate() + 7)
+    } else {
+      // NFL: 7 days from now
+      futureDate.setDate(now.getDate() + 7)
+    }
 
     // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
     const tableName = sport === 'cfb' ? 'college_game_snapshots' : 'game_snapshots'

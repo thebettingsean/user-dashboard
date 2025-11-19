@@ -293,6 +293,20 @@ export default function SportsSelectorPage() {
     router.push(routes[tab])
   }
 
+  // Calculate current NFL week (resets every Tuesday)
+  const getCurrentNFLWeek = (): number => {
+    const now = new Date()
+    const seasonStart = new Date('2024-09-05') // NFL 2024 Season Start (Thursday after Labor Day)
+    const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (1000 * 60 * 60 * 24))
+    
+    // Week resets every Tuesday (2 days after Sunday end of week)
+    const dayOfWeek = now.getDay() // 0 = Sunday, 2 = Tuesday
+    const daysSinceTuesday = dayOfWeek >= 2 ? dayOfWeek - 2 : dayOfWeek + 5
+    const adjustedDays = daysSinceStart - daysSinceTuesday
+    
+    return Math.max(1, Math.min(18, Math.floor(adjustedDays / 7) + 1))
+  }
+
   // Fetch games data
   useEffect(() => {
     if (activeTab !== 'games') return
@@ -315,10 +329,12 @@ export default function SportsSelectorPage() {
             
             let dateLabel = 'Today'
             if (sport.id === 'nfl') {
-              const currentWeek = 11
+              const currentWeek = getCurrentNFLWeek()
               dateLabel = `Week ${currentWeek}`
             } else if (sport.id === 'nba' || sport.id === 'nhl') {
               dateLabel = 'Today'
+            } else if (sport.id === 'college-football') {
+              dateLabel = 'This Week'
             }
             
             return {
@@ -337,8 +353,10 @@ export default function SportsSelectorPage() {
             
             let dateLabel = 'Today'
             if (sport.id === 'nfl') {
-              const currentWeek = 11
+              const currentWeek = getCurrentNFLWeek()
               dateLabel = `Week ${currentWeek}`
+            } else if (sport.id === 'college-football') {
+              dateLabel = 'This Week'
             }
             
             return {

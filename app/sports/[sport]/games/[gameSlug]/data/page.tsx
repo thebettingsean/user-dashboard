@@ -419,21 +419,22 @@ export default function DataTabPage() {
   return (
     <GameLayout>
       <div className={styles.dataContainer}>
-        {/* 1. REFEREE STATS */}
-        <div className={styles.accordion}>
-          <button
-            className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
-            onClick={() => toggleSection('referee')}
-          >
-            <GiWhistle className={styles.accordionIcon} />
-            <span className={styles.accordionText}>
-              {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
-            </span>
-            <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'referee' ? styles.chevronIconRotated : ''}`} />
-          </button>
-          
-          {expandedSection === 'referee' && hasAccess && (
-            <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
+        {/* 1. REFEREE STATS (NFL/NBA only - NHL has no referees, CFB has coach stats) */}
+        {sport !== 'nhl' && sport !== 'college-football' && (
+          <div className={styles.accordion}>
+            <button
+              className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
+              onClick={() => toggleSection('referee')}
+            >
+              <GiWhistle className={styles.accordionIcon} />
+              <span className={styles.accordionText}>
+                {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
+              </span>
+              <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'referee' ? styles.chevronIconRotated : ''}`} />
+            </button>
+            
+            {expandedSection === 'referee' && hasAccess && (
+              <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
               {/* Metadata */}
               {refereeStats.totalGames && (
                 <div className={styles.refereeMetadata}>
@@ -483,7 +484,8 @@ export default function DataTabPage() {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* 2. TOP PROPS */}
         <div className={styles.accordion}>

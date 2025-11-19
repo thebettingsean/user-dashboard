@@ -1473,21 +1473,45 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 justifyContent: 'space-between',
                 marginBottom: '0.5rem'
               }}>
-                {/* Game Stats (Spread | Total) */}
+                {/* Game Stats (NHL: Moneylines | NHL uses spread, NBA/NFL use spread) */}
                 <div style={{ 
                   fontSize: '0.7rem',
                   color: 'rgba(255, 255, 255, 0.5)',
                   fontFamily: '"Courier New", monospace',
                   letterSpacing: '0.03em'
                 }}>
-                  {game.spread?.awayLine != null && (
-                    <span>{game.spread.awayLine > 0 ? '+' : ''}{game.spread.awayLine}</span>
-                  )}
-                  {game.spread?.awayLine != null && game.totals?.number != null && (
-                    <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
-                  )}
-                  {game.totals?.number != null && (
-                    <span>o{game.totals.number}</span>
+                  {activeSport === 'nhl' ? (
+                    // NHL: Show Away ML | OU | Home ML
+                    <>
+                      {game.moneyline?.away != null && (
+                        <span>{game.moneyline.away > 0 ? '+' : ''}{game.moneyline.away}</span>
+                      )}
+                      {game.moneyline?.away != null && game.totals?.number != null && (
+                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                      )}
+                      {game.totals?.number != null && (
+                        <span>o{game.totals.number}</span>
+                      )}
+                      {game.totals?.number != null && game.moneyline?.home != null && (
+                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                      )}
+                      {game.moneyline?.home != null && (
+                        <span>{game.moneyline.home > 0 ? '+' : ''}{game.moneyline.home}</span>
+                      )}
+                    </>
+                  ) : (
+                    // NFL/NBA/CFB: Show Spread | Total
+                    <>
+                      {game.spread?.awayLine != null && (
+                        <span>{game.spread.awayLine > 0 ? '+' : ''}{game.spread.awayLine}</span>
+                      )}
+                      {game.spread?.awayLine != null && game.totals?.number != null && (
+                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                      )}
+                      {game.totals?.number != null && (
+                        <span>o{game.totals.number}</span>
+                      )}
+                    </>
                   )}
                 </div>
 
