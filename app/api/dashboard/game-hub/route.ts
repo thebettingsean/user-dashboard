@@ -205,30 +205,36 @@ export async function GET(request: NextRequest) {
     const sport = sportParam as SupportedSport
     
     // Calculate date range based on sport:
-    // - NHL & NBA: TODAY only (not in advance)
+    // - NHL & NBA: TODAY (accounting for ET timezone - games stored in UTC)
     // - CFB: 7 days from most recent Sunday (this week's games)
     // - NFL: 7 days from now (captures current + next week)
     const now = new Date()
-    now.setHours(0, 0, 0, 0) // Start of today
     
     const futureDate = new Date(now)
     if (sport === 'nhl' || sport === 'nba') {
-      // Daily sports: Show TODAY's games only
-      futureDate.setHours(23, 59, 59, 999) // End of today
+      // Daily sports: Show TODAY's games (accounting for timezone offset)
+      // Games labeled "today" in ET might be stored as tomorrow in UTC
+      // Fetch from 6 hours ago to +30 hours to catch all "today" games
+      now.setHours(now.getHours() - 6) // Look back 6 hours
+      futureDate.setHours(futureDate.getHours() + 30) // Look ahead 30 hours
     } else if (sport === 'cfb') {
       // CFB: Show games from most recent Sunday + 7 days (this week's games)
       const dayOfWeek = now.getDay() // 0 = Sunday
       const daysSinceSunday = dayOfWeek === 0 ? 0 : dayOfWeek
-      const mostRecentSunday = new Date(now)
-      mostRecentSunday.setDate(now.getDate() - daysSinceSunday)
+      const mostRecentSunday = new Date()
+      mostRecentSunday.setDate(mostRecentSunday.getDate() - daysSinceSunday)
       mostRecentSunday.setHours(0, 0, 0, 0)
       
       // Set start to most recent Sunday, end 7 days later
+      const endOfWeek = new Date(mostRecentSunday)
+      endOfWeek.setDate(endOfWeek.getDate() + 7)
+      
+      // Update now and futureDate
       now.setTime(mostRecentSunday.getTime())
-      futureDate.setTime(mostRecentSunday.getTime())
-      futureDate.setDate(futureDate.getDate() + 7)
+      futureDate.setTime(endOfWeek.getTime())
     } else {
       // NFL: 7 days from now
+      now.setHours(0, 0, 0, 0)
       futureDate.setDate(now.getDate() + 7)
     }
 
