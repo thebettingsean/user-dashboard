@@ -852,7 +852,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       }
 
       // Check subscription access
-      if (!hasAccess()) {
+      if (!hasAccess) {
         await new Promise((resolve) => setTimeout(resolve, 1500))
         setScriptContent((prev) => new Map(prev).set(gameId, 
           '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your FREE trial to generate AI scripts.\n\n[Start FREE Trial Now](/pricing)'
@@ -871,18 +871,28 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
       // Fetch the actual script (using same approach as game-specific script page)
       const apiSport = mapSportSlug(activeSport)
+      console.log(`📜 Fetching script: gameId=${gameId}, activeSport=${activeSport}, apiSport=${apiSport}`)
+      
       const response = await fetch(`/api/scripts/${gameId}?sport=${apiSport}`, {
         cache: 'no-store'
       })
       
+      console.log(`📡 Script API response: status=${response.status}, ok=${response.ok}`)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`❌ Script API failed: ${response.status} - ${errorText}`)
+        throw new Error(`API returned ${response.status}: ${errorText}`)
+      }
+      
       const data = await response.json()
       
       // Log for debugging
-      console.log(`Script fetch for ${gameId}:`, {
-        status: response.status,
-        ok: response.ok,
+      console.log(`✅ Script data received:`, {
         hasScript: !!data.script,
-        data
+        scriptLength: data.script?.length || 0,
+        strength: data.strength,
+        generatedAt: data.generatedAt
       })
 
       // Handle response exactly like the game-specific script page does
@@ -894,8 +904,14 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           '📝 **Script Not Ready Yet**\n\nThis game script hasn\'t been generated yet. Our AI generates scripts closer to game time when more data is available.\n\nCheck back later for the full analysis!'
         ))
       }
-    } catch (error) {
-      console.error('Failed to load script:', error)
+    } catch (error: any) {
+      console.error('❌ Script generation error:', error)
+      console.error('Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        gameId,
+        activeSport
+      })
       setScriptContent((prev) => new Map(prev).set(gameId, 
         '❌ **Error Loading Script**\n\nUnable to load the script right now. Please try again in a moment.\n\nIf the problem persists, contact support.'
       ))
