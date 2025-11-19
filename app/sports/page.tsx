@@ -10,6 +10,7 @@ import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
 import { FaDice, FaLock, FaFireAlt } from 'react-icons/fa'
+import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import styles from './sportSelector.module.css'
 import dashboardStyles from './[sport]/components/dashboard.module.css'
@@ -1538,18 +1539,26 @@ export default function SportsSelectorPage() {
                         onClick={() => !isGenerating && handleGenerateScript(script.id, script.sport)}
                         disabled={isGenerating}
                         style={{
-                          padding: '10px 16px',
-                          borderRadius: '10px',
-                          fontSize: '0.875rem',
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
                           fontWeight: '600',
                           cursor: isGenerating ? 'not-allowed' : 'pointer',
                           transition: 'all 0.2s ease',
                           background: isGenerating ? 'rgba(148, 163, 184, 0.15)' : 'rgba(99, 102, 241, 0.15)',
                           border: `1px solid ${isGenerating ? 'rgba(148, 163, 184, 0.3)' : 'rgba(99, 102, 241, 0.3)'}`,
-                          color: isGenerating ? 'rgba(148, 163, 184, 0.7)' : '#a5b4fc'
+                          color: isGenerating ? 'rgba(148, 163, 184, 0.7)' : '#a5b4fc',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.4rem'
                         }}
                       >
-                        {isGenerating ? 'Generating...' : 'Generate Script'}
+                        {isGenerating ? 'Generating...' : (
+                          <>
+                            Generate Script
+                            <FaWandMagicSparkles style={{ fontSize: '0.85rem' }} />
+                          </>
+                        )}
                       </button>
                     )}
                   </div>

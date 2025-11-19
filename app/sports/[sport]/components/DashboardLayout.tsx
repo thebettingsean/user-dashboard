@@ -8,7 +8,7 @@ import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
 import { FaFireAlt, FaLock } from 'react-icons/fa'
-import { FaDice } from 'react-icons/fa6'
+import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
 import { GiTwoCoins } from 'react-icons/gi'
 import { PiMoneyWavy } from 'react-icons/pi'
 import { LuArrowBigUpDash } from 'react-icons/lu'
@@ -870,7 +870,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       }
 
       // Fetch the actual script (using same approach as game-specific script page)
-      const response = await fetch(`/api/scripts/${gameId}?sport=${activeSport}`, {
+      const apiSport = mapSportSlug(activeSport)
+      const response = await fetch(`/api/scripts/${gameId}?sport=${apiSport}`, {
         cache: 'no-store'
       })
       
@@ -1466,62 +1467,79 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 </div>
               </div>
 
-              {/* Row 2: Game Stats + Generate Button */}
+              {/* Row 2: Game Stats + Date + Generate Button (Compact) */}
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between',
-                marginBottom: '0.5rem'
+                gap: '0.75rem'
               }}>
-                {/* Game Stats (NHL: Moneylines | NHL uses spread, NBA/NFL use spread) */}
+                {/* Left Side: Game Stats + Date on Same Line */}
                 <div style={{ 
-                  fontSize: '0.7rem',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  fontFamily: '"Courier New", monospace',
-                  letterSpacing: '0.03em'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  flex: 1
                 }}>
-                  {activeSport === 'nhl' ? (
-                    // NHL: Show Away ML | OU | Home ML
-                    <>
-                      {game.moneyline?.away != null && (
-                        <span>{game.moneyline.away > 0 ? '+' : ''}{game.moneyline.away}</span>
-                      )}
-                      {game.moneyline?.away != null && game.totals?.number != null && (
-                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
-                      )}
-                      {game.totals?.number != null && (
-                        <span>o{game.totals.number}</span>
-                      )}
-                      {game.totals?.number != null && game.moneyline?.home != null && (
-                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
-                      )}
-                      {game.moneyline?.home != null && (
-                        <span>{game.moneyline.home > 0 ? '+' : ''}{game.moneyline.home}</span>
-                      )}
-                    </>
-                  ) : (
-                    // NFL/NBA/CFB: Show Spread | Total
-                    <>
-                      {game.spread?.awayLine != null && (
-                        <span>{game.spread.awayLine > 0 ? '+' : ''}{game.spread.awayLine}</span>
-                      )}
-                      {game.spread?.awayLine != null && game.totals?.number != null && (
-                        <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
-                      )}
-                      {game.totals?.number != null && (
-                        <span>o{game.totals.number}</span>
-                      )}
-                    </>
-                  )}
+                  {/* Game Stats (NHL: Moneylines | Others: Spreads) */}
+                  <div style={{ 
+                    fontSize: '0.7rem',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontFamily: '"Courier New", monospace',
+                    letterSpacing: '0.03em'
+                  }}>
+                    {activeSport === 'nhl' ? (
+                      // NHL: Show Away ML | OU | Home ML
+                      <>
+                        {game.moneyline?.away != null && (
+                          <span>{game.moneyline.away > 0 ? '+' : ''}{game.moneyline.away}</span>
+                        )}
+                        {game.moneyline?.away != null && game.totals?.number != null && (
+                          <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                        )}
+                        {game.totals?.number != null && (
+                          <span>o{game.totals.number}</span>
+                        )}
+                        {game.totals?.number != null && game.moneyline?.home != null && (
+                          <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                        )}
+                        {game.moneyline?.home != null && (
+                          <span>{game.moneyline.home > 0 ? '+' : ''}{game.moneyline.home}</span>
+                        )}
+                      </>
+                    ) : (
+                      // NFL/NBA/CFB: Show Spread | Total
+                      <>
+                        {game.spread?.awayLine != null && (
+                          <span>{game.spread.awayLine > 0 ? '+' : ''}{game.spread.awayLine}</span>
+                        )}
+                        {game.spread?.awayLine != null && game.totals?.number != null && (
+                          <span style={{ margin: '0 0.4rem', color: 'rgba(255, 255, 255, 0.3)' }}>|</span>
+                        )}
+                        {game.totals?.number != null && (
+                          <span>o{game.totals.number}</span>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Date Tag */}
+                  <div style={{ 
+                    fontSize: '0.65rem',
+                    color: 'rgba(255, 255, 255, 0.4)'
+                  }}>
+                    {formatPublicCardDate(game.kickoff)}
+                  </div>
                 </div>
 
+                {/* Right Side: Generate Button */}
                 <button 
                   className={styles.scriptGenerate} 
                   type="button"
                   onClick={() => handleGenerateScript(game.id)}
                   style={{
-                    padding: '0.4rem 0.9rem',
-                    fontSize: '0.85rem',
+                    padding: '0.35rem 0.8rem',
+                    fontSize: '0.8rem',
                     background: 'rgba(37, 99, 235, 0.15)',
                     border: '1px solid rgba(59, 130, 246, 0.4)',
                     borderRadius: '6px',
@@ -1529,9 +1547,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: '0.4rem',
                     transition: 'all 0.2s ease',
-                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.2)'
+                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.2)',
+                    whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'rgba(37, 99, 235, 0.25)'
@@ -1545,18 +1564,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   {content ? (isExpanded ? 'Hide Script' : 'View Script') : (
                     <>
                       Generate
+                      <FaWandMagicSparkles style={{ fontSize: '0.9rem' }} />
                     </>
                   )}
                 </button>
-              </div>
-
-              {/* Row 3: Time Tag (Bottom Left) */}
-              <div style={{ 
-                fontSize: '0.65rem',
-                color: 'rgba(255, 255, 255, 0.4)',
-                marginTop: '0.25rem'
-              }}>
-                {formatPublicCardDate(game.kickoff)}
               </div>
 
               {/* Expanded Script Content */}

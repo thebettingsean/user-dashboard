@@ -131,25 +131,53 @@ export default function GameLayout({ children }: GameLayoutProps) {
         </div>
         
         <div className={styles.bettingLines}>
-          <span className={styles.lineValue}>
-            {gameData.spread?.awayLine != null 
-              ? `${gameData.spread.awayLine > 0 ? '+' : ''}${gameData.spread.awayLine}` 
-              : '-'}
-          </span>
-          
-          <span className={styles.lineDivider}>|</span>
-          
-          <span className={styles.lineValue}>
-            {gameData.totals?.number || '-'}
-          </span>
-          
-          <span className={styles.lineDivider}>|</span>
-          
-          <span className={styles.lineValue}>
-            {gameData.spread?.homeLine != null 
-              ? `${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}` 
-              : '-'}
-          </span>
+          {sport === 'nhl' ? (
+            // NHL: Show moneylines (Away ML | OU | Home ML)
+            <>
+              <span className={styles.lineValue}>
+                {gameData.moneyline?.away != null 
+                  ? `${gameData.moneyline.away > 0 ? '+' : ''}${gameData.moneyline.away}` 
+                  : '-'}
+              </span>
+              
+              <span className={styles.lineDivider}>|</span>
+              
+              <span className={styles.lineValue}>
+                {gameData.totals?.number ? `o${gameData.totals.number}` : '-'}
+              </span>
+              
+              <span className={styles.lineDivider}>|</span>
+              
+              <span className={styles.lineValue}>
+                {gameData.moneyline?.home != null 
+                  ? `${gameData.moneyline.home > 0 ? '+' : ''}${gameData.moneyline.home}` 
+                  : '-'}
+              </span>
+            </>
+          ) : (
+            // NFL/NBA/CFB: Show spreads (Away Spread | OU | Home Spread)
+            <>
+              <span className={styles.lineValue}>
+                {gameData.spread?.awayLine != null 
+                  ? `${gameData.spread.awayLine > 0 ? '+' : ''}${gameData.spread.awayLine}` 
+                  : '-'}
+              </span>
+              
+              <span className={styles.lineDivider}>|</span>
+              
+              <span className={styles.lineValue}>
+                {gameData.totals?.number || '-'}
+              </span>
+              
+              <span className={styles.lineDivider}>|</span>
+              
+              <span className={styles.lineValue}>
+                {gameData.spread?.homeLine != null 
+                  ? `${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}` 
+                  : '-'}
+              </span>
+            </>
+          )}
         </div>
         
         <div className={styles.gameTime}>{formatDate()}</div>
