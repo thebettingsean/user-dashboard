@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
 
             // Extract team stats (includes 3-year betting data)
             const teamStats = gameDetails ? {
-              h2h_3year: gameDetails.h2h_3year || null,
+              h2h_3year: gameDetails.h2h?.competitors || gameDetails.h2h_3year || null,
               season_avg: gameDetails.season_avg || null,
               team_form: gameDetails.team_form || null
             } : null

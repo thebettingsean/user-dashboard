@@ -13,7 +13,7 @@ const SNAPSHOTS_SUPABASE_SERVICE_KEY =
 
 const snapshotsClient = createClient(SNAPSHOTS_SUPABASE_URL, SNAPSHOTS_SUPABASE_SERVICE_KEY)
 
-const SUPPORTED_SPORTS = ['nfl', 'nba'] as const
+const SUPPORTED_SPORTS = ['nfl', 'nba', 'nhl', 'cfb'] as const
 
 type SupportedSport = (typeof SUPPORTED_SPORTS)[number]
 
@@ -199,13 +199,15 @@ export async function GET(request: NextRequest) {
 
     const sport = sportParam as SupportedSport
     
-    // Get current time and a future cutoff (7 days for NFL, 2 days for NBA)
+    // Get current time and a future cutoff (7 days for NFL/CFB, 2 days for NBA/NHL)
     const now = new Date()
     const futureDate = new Date(now)
-    futureDate.setDate(now.getDate() + (sport === 'nfl' ? 7 : 2))
+    futureDate.setDate(now.getDate() + (['nfl', 'cfb'].includes(sport) ? 7 : 2))
 
+    // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
+    const tableName = sport === 'cfb' ? 'college_game_snapshots' : 'game_snapshots'
     const { data: snapshotRows, error: snapshotError} = await snapshotsClient
-      .from('game_snapshots')
+      .from(tableName)
       .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee, raw_payload')
       .eq('sport', sport.toUpperCase())
       .gte('start_time_utc', now.toISOString())

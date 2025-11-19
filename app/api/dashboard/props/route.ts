@@ -8,7 +8,7 @@ const SNAPSHOTS_SUPABASE_SERVICE_KEY =
 
 const snapshotsClient = createClient(SNAPSHOTS_SUPABASE_URL, SNAPSHOTS_SUPABASE_SERVICE_KEY)
 
-const SUPPORTED_SPORTS = ['nfl', 'nba'] as const
+const SUPPORTED_SPORTS = ['nfl', 'nba', 'nhl', 'cfb'] as const
 
 type SupportedSport = (typeof SUPPORTED_SPORTS)[number]
 
@@ -104,8 +104,10 @@ export async function GET(request: NextRequest) {
 
     const sport = sportParam.toUpperCase()
 
+    // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
+    const tableName = sportParam === 'cfb' ? 'college_game_snapshots' : 'game_snapshots'
     const { data, error } = await snapshotsClient
-      .from('game_snapshots')
+      .from(tableName)
       .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, props')
       .eq('sport', sport)
       .gte('start_time_utc', new Date().toISOString())
