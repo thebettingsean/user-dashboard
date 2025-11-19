@@ -22,6 +22,22 @@ const nextConfig: NextConfig = {
         source: '/sitemap-tools.xml',
         destination: '/api/sitemap-tools',
       },
+      {
+        source: '/sitemap-games-nfl.xml',
+        destination: '/api/sitemap-games-nfl',
+      },
+      {
+        source: '/sitemap-games-nba.xml',
+        destination: '/api/sitemap-games-nba',
+      },
+      {
+        source: '/sitemap-games-cfb.xml',
+        destination: '/api/sitemap-games-cfb',
+      },
+      {
+        source: '/sitemap-games-nhl.xml',
+        destination: '/api/sitemap-games-nhl',
+      },
     ]
   },
 }

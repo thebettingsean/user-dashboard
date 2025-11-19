@@ -66,6 +66,10 @@ export default function robots(): MetadataRoute.Robots {
       'https://thebettinginsider.com/sitemap-pages.xml',
       'https://thebettinginsider.com/sitemap-sports.xml',
       'https://thebettinginsider.com/sitemap-tools.xml',
+      'https://thebettinginsider.com/sitemap-games-nfl.xml',
+      'https://thebettinginsider.com/sitemap-games-nba.xml',
+      'https://thebettinginsider.com/sitemap-games-cfb.xml',
+      'https://thebettinginsider.com/sitemap-games-nhl.xml',
     ],
   }
 }
