@@ -6,6 +6,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import Script from 'next/script'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import StructuredData from '@/components/StructuredData'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,9 +19,69 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Betting Insider - Dashboard",
-  description: "Premium NFL betting insights and analytics",
-  themeColor: "#0f172a",
+  metadataBase: new URL('https://thebettinginsider.com'),
+  title: {
+    default: "The Betting Insider - Premium Sports Betting Analytics & AI Insights",
+    template: "%s | The Betting Insider"
+  },
+  description: "Get expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics, real-time data, and insider insights. Join thousands of winning bettors.",
+  keywords: [
+    "sports betting",
+    "NFL picks",
+    "NBA picks", 
+    "CFB picks",
+    "NHL picks",
+    "betting analytics",
+    "AI sports betting",
+    "betting insights",
+    "prop bets",
+    "parlay builder",
+    "sports betting tips",
+    "betting strategy"
+  ],
+  authors: [{ name: "The Betting Insider" }],
+  creator: "The Betting Insider",
+  publisher: "The Betting Insider",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://thebettinginsider.com',
+    siteName: 'The Betting Insider',
+    title: 'The Betting Insider - Premium Sports Betting Analytics',
+    description: 'Expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics and real-time insights.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'The Betting Insider - Sports Betting Analytics',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Betting Insider - Premium Sports Betting Analytics',
+    description: 'Expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics.',
+    images: ['/og-image.png'],
+    creator: '@BettingInsider',
+  },
+  verification: {
+    google: 'your-google-site-verification-code', // Replace with actual code from Google Search Console
+  },
+  alternates: {
+    canonical: 'https://thebettinginsider.com',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <html lang="en">
         <head>
+          <StructuredData />
           {/* Pushlap Growth Affiliate Tracker */}
           <Script
             src="https://pushlapgrowth.com/affiliate-tracker.js"
