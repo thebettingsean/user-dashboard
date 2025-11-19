@@ -130,6 +130,7 @@ export async function GET(request: NextRequest) {
     for (const sport of SUPPORTED_SPORTS) {
       try {
         console.log(`\n🏈 Refreshing ${sport.toUpperCase()} game snapshots...`)
+        console.log(`🔄 Processing sport ${SUPPORTED_SPORTS.indexOf(sport) + 1} of ${SUPPORTED_SPORTS.length}`)
         
         const { from, to } = getDateRangeForSport(sport)
         console.log(`📅 Date range: ${from} to ${to}`)
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
         console.log(`📊 Found ${games.length} ${sport.toUpperCase()} games`)
 
         if (games.length === 0) {
-          console.log(`⏭️  No ${sport.toUpperCase()} games to process`)
+          console.log(`⏭️  No ${sport.toUpperCase()} games to process - continuing to next sport`)
           results[sport].success = true
           results[sport].count = 0
           continue
