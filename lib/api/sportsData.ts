@@ -288,12 +288,13 @@ export async function fetchRefereeStats(
       headers: {
         'insider-api-key': API_KEY,
       },
-      next: { revalidate: 86400 }, // Cache for 24 hours
+      cache: 'no-store', // DON'T cache - always fetch fresh data for cron jobs
       signal: AbortSignal.timeout(10000) // 10 second timeout
     })
 
     if (!response.ok) {
-      console.error(`  ✗ HTTP ${response.status} for ${gameId} referee stats`)
+      const errorText = await response.text()
+      console.error(`  ✗ HTTP ${response.status} for ${gameId} referee stats: ${errorText}`)
       return null
     }
 
@@ -302,6 +303,7 @@ export async function fetchRefereeStats(
     // NFL/MLB structure: has over_under.over_under directly
     if (rawData.over_under?.over_under) {
       console.log(`  ✓ Got referee stats for ${gameId} (NFL/MLB structure)`)
+      console.log(`  📊 Referee: ${rawData.referee_name}, Games: ${rawData.total_games}`)
       return rawData
     }
     
