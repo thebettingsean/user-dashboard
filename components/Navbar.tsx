@@ -107,12 +107,12 @@ export default function Navbar() {
                   <Link href="/sports/nba/games" style={styles.dropdownLink}>
                     NBA
                   </Link>
-                  <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
-                    NHL (soon)
-                  </div>
-                  <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
-                    NCAAF (soon)
-                  </div>
+                  <Link href="/sports/nhl/games" style={styles.dropdownLink}>
+                    NHL
+                  </Link>
+                  <Link href="/sports/college-football/games" style={styles.dropdownLink}>
+                    NCAAF
+                  </Link>
                   <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
                     NCAAB (soon)
                   </div>
@@ -430,12 +430,12 @@ export default function Navbar() {
                   <Link href="/sports/nba/games" style={styles.mobileSubLink}>
                     NBA
                   </Link>
-                  <div style={styles.mobileSubLink} onClick={(e) => e.preventDefault()}>
-                    NHL (soon)
-                  </div>
-                  <div style={styles.mobileSubLink} onClick={(e) => e.preventDefault()}>
-                    NCAAF (soon)
-                  </div>
+                  <Link href="/sports/nhl/games" style={styles.mobileSubLink}>
+                    NHL
+                  </Link>
+                  <Link href="/sports/college-football/games" style={styles.mobileSubLink}>
+                    NCAAF
+                  </Link>
                   <div style={styles.mobileSubLink} onClick={(e) => e.preventDefault()}>
                     NCAAB (soon)
                   </div>
