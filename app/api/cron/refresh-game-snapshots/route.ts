@@ -117,6 +117,7 @@ export async function GET(request: NextRequest) {
 
     console.log('\n🔄 ========== GAME SNAPSHOTS REFRESH CRON START ==========')
     console.log(`⏰ Timestamp: ${new Date().toISOString()}`)
+    console.log(`🎯 SUPPORTED SPORTS: ${SUPPORTED_SPORTS.join(', ')}`) // DEBUG: Verify CFB/NHL are included
 
     const results = {
       nfl: { success: false, count: 0, error: null as string | null },
