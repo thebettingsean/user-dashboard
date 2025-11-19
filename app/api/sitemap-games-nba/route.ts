@@ -57,9 +57,9 @@ export async function GET(): Promise<Response> {
     // Query game_snapshots for this sport (limit 10,000 for safety)
     const { data: games, error } = await supabase
       .from('game_snapshots')
-      .select('id, sport, home_team, away_team, start_time, updated_at')
+      .select('id, sport, home_team, away_team, start_time_utc, updated_at')
       .eq('sport', SPORT)
-      .order('start_time', { ascending: false })
+      .order('start_time_utc', { ascending: false })
       .limit(10000)
     
     if (error) {
@@ -99,10 +99,10 @@ export async function GET(): Promise<Response> {
     const urls: string[] = []
     
     for (const game of games) {
-      const slug = generateGameSlug(game.home_team, game.away_team, game.start_time)
-      const priority = getPriority(game.start_time)
-      const changefreq = getChangeFrequency(game.start_time)
-      const lastmod = game.updated_at || game.start_time
+      const slug = generateGameSlug(game.home_team, game.away_team, game.start_time_utc)
+      const priority = getPriority(game.start_time_utc)
+      const changefreq = getChangeFrequency(game.start_time_utc)
+      const lastmod = game.updated_at || game.start_time_utc
       const sport = game.sport.toLowerCase()
       
       // Generate URLs for all game sub-pages
