@@ -11,8 +11,11 @@ import { formatScript } from '../../../../../../lib/utils/formatScript'
 
 export default function ScriptTabPage() {
   const params = useParams()
-  const sport = params.sport as string
+  const sportSlug = params.sport as string
   const gameSlug = params.gameSlug as string
+  
+  // Map URL slug to API sport code (college-football → cfb)
+  const apiSport = sportSlug === 'college-football' ? 'cfb' : sportSlug
   
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
@@ -28,7 +31,8 @@ export default function ScriptTabPage() {
   useEffect(() => {
     const fetchGameId = async () => {
       try {
-        const res = await fetch(`/api/dashboard/game-hub?sport=${sport}`)
+        console.log(`🔍 Fetching game ID for sport=${apiSport}, slug=${gameSlug}`)
+        const res = await fetch(`/api/dashboard/game-hub?sport=${apiSport}`)
         const data = await res.json()
         
         const game = data.games?.find((g: any) => {
@@ -37,7 +41,10 @@ export default function ScriptTabPage() {
         })
         
         if (game) {
+          console.log(`✅ Found game ID: ${game.id}`)
           setGameId(game.id)
+        } else {
+          console.warn(`⚠️ No game found for slug: ${gameSlug}`)
         }
       } catch (error) {
         console.error('Failed to fetch game ID:', error)
@@ -45,7 +52,7 @@ export default function ScriptTabPage() {
     }
     
     fetchGameId()
-  }, [sport, gameSlug])
+  }, [apiSport, gameSlug])
   
   // Then fetch script for that game
   useEffect(() => {
@@ -54,8 +61,11 @@ export default function ScriptTabPage() {
     const fetchScript = async () => {
       try {
         setIsLoading(true)
-        const res = await fetch(`/api/scripts/${gameId}?sport=${sport}`)
+        console.log(`📜 Fetching script for gameId=${gameId}, sport=${apiSport}`)
+        const res = await fetch(`/api/scripts/${gameId}?sport=${apiSport}`)
         const data = await res.json()
+        
+        console.log(`📜 Script response:`, { hasScript: !!data.script, error: data.error })
         
         if (data.script) {
           setScript(data.script)
@@ -68,7 +78,7 @@ export default function ScriptTabPage() {
     }
     
     fetchScript()
-  }, [gameId, sport])
+  }, [gameId, apiSport])
   
   if (!hasAccess) {
     return (

@@ -15,7 +15,16 @@ export async function GET(
   try {
     const { gameId } = await params
     const searchParams = request.nextUrl.searchParams
-    const sport = (searchParams.get('sport') || 'nfl').toUpperCase()
+    let sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+    
+    // Map URL slugs to database sport codes
+    if (sportParam === 'college-football') {
+      sportParam = 'cfb'
+    }
+    
+    const sport = sportParam.toUpperCase()
+
+    console.log(`📜 Fetching script for gameId=${gameId}, sport=${sport}`)
 
     if (!gameId) {
       return NextResponse.json({ error: 'Game ID is required' }, { status: 400 })
@@ -30,6 +39,13 @@ export async function GET(
       .order('generated_at', { ascending: false })
       .limit(1)
       .single()
+    
+    console.log(`📜 Script query result:`, { 
+      found: !!data, 
+      error: error?.message,
+      gameId,
+      sport 
+    })
 
     if (error) {
       console.error('Error fetching script:', error)
