@@ -188,11 +188,16 @@ function getTrendSummary(trends: any): TrendSummary | null {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+    let sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+
+    // Map NCAAF to cfb for backend consistency
+    if (sportParam === 'ncaaf') {
+      sportParam = 'cfb'
+    }
 
     if (!SUPPORTED_SPORTS.includes(sportParam as SupportedSport)) {
       return NextResponse.json(
-        { error: 'Unsupported sport. Use nfl or nba.' },
+        { error: 'Unsupported sport. Use nfl, nba, nhl, or cfb.' },
         { status: 400 }
       )
     }

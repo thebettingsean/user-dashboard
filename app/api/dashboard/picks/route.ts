@@ -106,12 +106,17 @@ function getTeamNickname(name: string | null) {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+    let sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
     const filterParam = (searchParams.get('filter') || 'upcoming') as SupportedFilter
+
+    // Map college-football to cfb for backend consistency
+    if (sportParam === 'college-football') {
+      sportParam = 'cfb'
+    }
 
     if (!SUPPORTED_SPORTS.includes(sportParam as SupportedSport)) {
       return NextResponse.json(
-        { error: 'Unsupported sport. Use nfl or nba.' },
+        { error: 'Unsupported sport. Use nfl, nba, nhl, or cfb.' },
         { status: 400 }
       )
     }

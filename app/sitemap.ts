@@ -27,7 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
     },
     {
-      url: `${baseUrl}/sitemap-games-cfb.xml`,
+      url: `${baseUrl}/sitemap-games-college-football.xml`,
       lastModified: new Date(),
     },
     {

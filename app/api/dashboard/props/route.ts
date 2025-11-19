@@ -96,7 +96,12 @@ function isDoubleDoubleProp(category: any, player: any): boolean {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+    let sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
+
+    // Map college-football to cfb for backend consistency
+    if (sportParam === 'college-football') {
+      sportParam = 'cfb'
+    }
 
     if (!SUPPORTED_SPORTS.includes(sportParam as SupportedSport)) {
       return NextResponse.json({ error: 'Unsupported sport' }, { status: 400 })

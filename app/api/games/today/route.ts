@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     let requestedSport = searchParams.get('sport')?.toLowerCase()
 
-    // Map NCAAF to cfb for Trendline API
-    if (requestedSport === 'ncaaf') {
+    // Map college-football to cfb for Trendline API
+    if (requestedSport === 'college-football' || requestedSport === 'ncaaf') {
       requestedSport = 'cfb'
     }
 

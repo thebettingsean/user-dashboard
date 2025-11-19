@@ -31,8 +31,8 @@ const nextConfig: NextConfig = {
         destination: '/api/sitemap-games-nba',
       },
       {
-        source: '/sitemap-games-cfb.xml',
-        destination: '/api/sitemap-games-cfb',
+        source: '/sitemap-games-college-football.xml',
+        destination: '/api/sitemap-games-college-football',
       },
       {
         source: '/sitemap-games-nhl.xml',

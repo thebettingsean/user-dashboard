@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 // Sports content sitemap - updates frequently (hourly during season)
 export async function GET() {
   const baseUrl = 'https://thebettinginsider.com'
-  const sports = ['nfl', 'nba', 'cfb', 'nhl']
+  const sports = ['nfl', 'nba', 'college-football', 'nhl'] // SEO-friendly URL slugs
   const today = new Date().toISOString().split('T')[0]
   
   const pages = []

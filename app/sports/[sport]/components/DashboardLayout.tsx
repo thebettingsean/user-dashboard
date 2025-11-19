@@ -188,7 +188,7 @@ const subFilterLabels: Record<SubFilterKey, string> = {
 }
 
 const sportOptions: Array<{
-  id: SupportedSport | 'nhl' | 'ncaaf' | 'ncaab' | 'mlb' | 'all'
+  id: SupportedSport | 'nhl' | 'college-football' | 'ncaab' | 'mlb' | 'all'
   label: string
   logo: string
   status: 'active' | 'coming-soon' | 'season-over'
@@ -213,15 +213,15 @@ const sportOptions: Array<{
   },
   {
     id: 'nhl',
-    label: 'NHL (coming soon)',
+    label: 'NHL',
     logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg',
-    status: 'coming-soon'
+    status: 'active'
   },
   {
-    id: 'ncaaf',
-    label: 'NCAAF (coming soon)',
+    id: 'college-football',
+    label: 'NCAAF',
     logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg',
-    status: 'coming-soon'
+    status: 'active'
   },
   {
     id: 'ncaab',
@@ -463,6 +463,12 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   const { openSignUp } = useClerk()
   const { isSubscribed, isLoading: subLoading } = useSubscription()
   
+  // Map URL slug to internal sport code (college-football → cfb for API calls)
+  const mapSportSlug = (slug: string): string => {
+    if (slug === 'college-football') return 'cfb'
+    return slug
+  }
+  
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab)
   const [activeSport, setActiveSport] = useState<SupportedSport>(sport.toLowerCase() as SupportedSport)
   const [games, setGames] = useState<GameSummary[]>([])
@@ -614,7 +620,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
     async function loadGameHubData() {
       try {
-        const response = await fetch(`/api/dashboard/game-hub?sport=${activeSport}`, {
+        const apiSport = mapSportSlug(activeSport)
+        const response = await fetch(`/api/dashboard/game-hub?sport=${apiSport}`, {
           signal: controller.signal,
           cache: 'no-store'
         })
@@ -671,8 +678,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
     async function loadPicks() {
       try {
+        const apiSport = mapSportSlug(activeSport)
         const response = await fetch(
-          `/api/dashboard/picks?sport=${activeSport}&filter=${activeFilter}`,
+          `/api/dashboard/picks?sport=${apiSport}&filter=${activeFilter}`,
           {
             signal: controller.signal,
             cache: 'no-store'
@@ -713,7 +721,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
     async function loadTopProps() {
       try {
-        const response = await fetch(`/api/dashboard/props?sport=${activeSport}`, {
+        const apiSport = mapSportSlug(activeSport)
+        const response = await fetch(`/api/dashboard/props?sport=${apiSport}`, {
           signal: controller.signal,
           cache: 'no-store'
         })

@@ -103,7 +103,7 @@ export async function GET(): Promise<Response> {
       const priority = getPriority(game.start_time_utc)
       const changefreq = getChangeFrequency(game.start_time_utc)
       const lastmod = game.updated_at || game.start_time_utc
-      const sport = game.sport.toLowerCase()
+      const sportSlug = 'college-football' // SEO-friendly URL slug
       
       // Generate URLs for all game sub-pages
       const subPages = [
@@ -117,7 +117,7 @@ export async function GET(): Promise<Response> {
       for (const page of subPages) {
         urls.push(`
     <url>
-      <loc>${siteUrl}/sports/${sport}/games/${slug}${page.path}</loc>
+      <loc>${siteUrl}/sports/${sportSlug}/games/${slug}${page.path}</loc>
       <lastmod>${new Date(lastmod).toISOString()}</lastmod>
       <changefreq>${changefreq}</changefreq>
       <priority>${Math.min(1, Math.max(0, page.priority)).toFixed(1)}</priority>
