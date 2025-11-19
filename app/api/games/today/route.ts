@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // If sport is specified, fetch for that sport only
     // Otherwise, fetch for all major sports (for dashboard)
-    const sports = requestedSport ? [requestedSport] : ['nfl', 'nba', 'cfb']
+    const sports = requestedSport ? [requestedSport] : ['nfl', 'nba', 'cfb', 'nhl']
     
     let allGames: any[] = []
 

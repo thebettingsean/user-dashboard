@@ -138,8 +138,8 @@ const sportOptions = [
   { id: 'all', label: 'All Sports', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6917f63fdc8769f00b25fc23_every%20sport%20in%201-2.svg', status: 'active' },
   { id: 'nfl', label: 'NFL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg', status: 'active' },
   { id: 'nba', label: 'NBA', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg', status: 'active' },
-  { id: 'nhl', label: 'NHL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg', status: 'inactive' },
-  { id: 'ncaaf', label: 'NCAAF', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg', status: 'inactive' },
+  { id: 'nhl', label: 'NHL', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg', status: 'active' },
+  { id: 'ncaaf', label: 'NCAAF', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg', status: 'active' },
   { id: 'ncaab', label: 'NCAAB', logo: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg', status: 'inactive' },
   { id: 'mlb', label: 'MLB', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png', status: 'inactive' }
 ]
@@ -1017,108 +1017,6 @@ export default function SportsSelectorPage() {
           </div>
         ))}
         
-        {/* NHL */}
-        <div
-          style={{
-            position: 'relative',
-            background: 'rgba(15, 23, 42, 0.5)',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-            borderRadius: '16px',
-            padding: '16px',
-            opacity: 0.6
-          }}
-        >
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            background: 'rgba(148, 163, 184, 0.15)',
-            border: '1px solid rgba(148, 163, 184, 0.3)',
-            borderRadius: '6px',
-            padding: '4px 8px',
-            fontSize: '0.65rem',
-            fontWeight: '600',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textTransform: 'uppercase'
-          }}>
-            Soon
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg"
-              alt="NHL"
-              style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
-            />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
-              NHL
-            </h3>
-          </div>
-
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderRadius: '8px',
-            padding: '24px 8px',
-            fontSize: '0.75rem',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textAlign: 'center',
-            fontWeight: '600'
-          }}>
-            Coming Soon
-          </div>
-        </div>
-
-        {/* NCAAF */}
-        <div
-          style={{
-            position: 'relative',
-            background: 'rgba(15, 23, 42, 0.5)',
-            border: '1px solid rgba(148, 163, 184, 0.2)',
-            borderRadius: '16px',
-            padding: '16px',
-            opacity: 0.6
-          }}
-        >
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            background: 'rgba(148, 163, 184, 0.15)',
-            border: '1px solid rgba(148, 163, 184, 0.3)',
-            borderRadius: '6px',
-            padding: '4px 8px',
-            fontSize: '0.65rem',
-            fontWeight: '600',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textTransform: 'uppercase'
-          }}>
-            Soon
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg"
-              alt="NCAAF"
-              style={{ width: '32px', height: '32px', objectFit: 'contain', opacity: 0.5 }}
-            />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.5)', margin: 0 }}>
-              NCAAF
-            </h3>
-          </div>
-
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderRadius: '8px',
-            padding: '24px 8px',
-            fontSize: '0.75rem',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textAlign: 'center',
-            fontWeight: '600'
-          }}>
-            Coming Soon
-          </div>
-        </div>
-
         {/* NCAAB */}
         <div
           style={{
