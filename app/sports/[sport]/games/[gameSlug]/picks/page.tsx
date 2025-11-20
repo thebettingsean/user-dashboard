@@ -103,28 +103,6 @@ export default function PicksTabPage() {
     fetchPicks()
   }, [gameId])
   
-  if (!hasAccess) {
-    return (
-      <GameLayout>
-        <div className={styles.lockedContainer}>
-          <FaLock className={styles.lockIcon} />
-          <h3>Analyst Picks Locked</h3>
-          <p>
-            {!isSignedIn
-              ? 'Sign up to view expert picks for this game'
-              : 'Get a subscription to view expert picks for this game'}
-          </p>
-          <button
-            className={styles.unlockButton}
-            onClick={() => isSignedIn ? window.location.href = '/pricing' : openSignUp()}
-          >
-            {!isSignedIn ? 'Sign Up' : 'Get Subscription'}
-          </button>
-        </div>
-      </GameLayout>
-    )
-  }
-  
   if (isLoading) {
     return (
       <GameLayout>
@@ -149,8 +127,87 @@ export default function PicksTabPage() {
   
   return (
     <GameLayout>
-      <div className={styles.picksContainer}>
-        {picks.map((pick) => {
+      <div style={{ position: 'relative' }}>
+        {/* Blur + Overlay for non-subscribed users */}
+        {!hasAccess && (
+          <>
+            <div 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                zIndex: 1,
+                pointerEvents: 'none'
+              }}
+            />
+            <div 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2,
+                background: 'rgba(0, 0, 0, 0.6)',
+                gap: '1.5rem',
+                padding: '2rem'
+              }}
+            >
+              <FaLock style={{ fontSize: '3rem', color: 'rgba(255, 255, 255, 0.9)' }} />
+              <h3 style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 600, 
+                margin: 0,
+                color: 'white',
+                textAlign: 'center'
+              }}>
+                Unlock Analyst Picks
+              </h3>
+              <p style={{ 
+                fontSize: '1rem', 
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0,
+                textAlign: 'center',
+                maxWidth: '400px'
+              }}>
+                {!isSignedIn
+                  ? 'Sign up to view expert picks for this game'
+                  : 'Get a subscription to view expert picks for this game'}
+              </p>
+              <button
+                className={styles.unlockButton}
+                onClick={() => isSignedIn ? window.location.href = '/pricing' : openSignUp()}
+                style={{
+                  padding: '0.75rem 2rem',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(234, 88, 12, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                {!isSignedIn ? 'Sign Up Free' : 'View Plans'}
+              </button>
+            </div>
+          </>
+        )}
+        
+        {/* Actual Picks Content (shown but blurred if !hasAccess) */}
+        <div className={styles.picksContainer}>
+          {picks.map((pick) => {
           const isExpanded = expandedAnalysis.has(pick.id)
           return (
             <div key={pick.id} className={styles.pickCard}>
@@ -247,6 +304,7 @@ export default function PicksTabPage() {
             </div>
           )
         })}
+        </div>
       </div>
     </GameLayout>
   )
