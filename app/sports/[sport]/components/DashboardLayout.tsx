@@ -1900,8 +1900,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       if (option.id === 'all') {
                         router.push('/sports')
                         setIsSportMenuOpen(false)
-                      } else if (option.id === 'nfl' || option.id === 'nba') {
-                        // Map current tab to route path
+                      } else {
+                        // Navigate to the selected sport (works for all: nfl, nba, nhl, college-football, etc.)
                         const tabRoutes: Record<TabKey, string> = {
                           games: 'games',
                           picks: 'picks',
