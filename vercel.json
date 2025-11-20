@@ -1,8 +1,20 @@
 {
   "crons": [
     {
-      "path": "/api/cron/refresh-game-snapshots",
-      "schedule": "*/30 * * * *"
+      "path": "/api/cron/refresh-nfl-snapshots",
+      "schedule": "5 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-cfb-snapshots",
+      "schedule": "10 */2 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-nba-snapshots",
+      "schedule": "0,30 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-nhl-snapshots",
+      "schedule": "15,45 * * * *"
     },
     {
       "path": "/api/cron/sync-free-users",
