@@ -194,11 +194,26 @@ export async function GET(request: NextRequest) {
             console.log(`💰 Game ${game.game_id} odds: spread=${game.odds?.spread}, total=${game.odds?.over_under}, home_ml=${game.odds?.home_team_odds?.moneyline}, away_ml=${game.odds?.away_team_odds?.moneyline}`)
 
             // Extract team stats (includes 3-year betting data)
+            // IMPORTANT: Frontend expects teamStats.h2h_3year.competitors structure
             const teamStats = gameDetails ? {
-              h2h_3year: gameDetails.h2h?.competitors || gameDetails.h2h_3year || null,
+              h2h_3year: gameDetails.h2h_3year || (gameDetails.h2h ? {
+                competitors: gameDetails.h2h.competitors || null
+              } : null),
               season_avg: gameDetails.season_avg || null,
               team_form: gameDetails.team_form || null
             } : null
+            
+            // Debug: Log team stats structure
+            if (teamStats?.h2h_3year) {
+              console.log(`🔍 Game ${game.game_id} team_stats structure:`, {
+                has_h2h_3year: !!teamStats.h2h_3year,
+                has_competitors: !!teamStats.h2h_3year?.competitors,
+                has_away: !!teamStats.h2h_3year?.competitors?.away,
+                has_home: !!teamStats.h2h_3year?.competitors?.home
+              })
+            } else {
+              console.log(`⚠️ Game ${game.game_id} has NO team_stats`)
+            }
 
             // Calculate script strength dynamically based on available data
             const hasProps = Array.isArray(playerProps) && playerProps.length > 0
