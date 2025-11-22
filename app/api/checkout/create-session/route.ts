@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: '3-Day Trial Access',
-            description: 'One-time verification charge for trial access'
+            name: 'Try 3 Days for $1',
+            description: 'One-time charge - then regular billing after trial'
           },
           unit_amount: 100 // $1.00
         },
@@ -110,7 +110,8 @@ export async function POST(request: NextRequest) {
     if (config.type === 'subscription') {
       sessionConfig.subscription_data = {
         metadata,
-        trial_period_days: 3  // 3-day trial
+        trial_period_days: 3,  // 3-day trial
+        description: 'Try 3 days for $1 - then regular billing starts'
       }
     }
 
