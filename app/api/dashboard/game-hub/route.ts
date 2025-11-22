@@ -190,8 +190,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     let sportParam = (searchParams.get('sport') || 'nfl').toLowerCase()
 
-    // Map NCAAF to cfb for backend consistency
-    if (sportParam === 'ncaaf') {
+    // Map NCAAF/college-football to cfb for backend consistency
+    if (sportParam === 'ncaaf' || sportParam === 'college-football') {
       sportParam = 'cfb'
     }
 
@@ -240,9 +240,15 @@ export async function GET(request: NextRequest) {
 
     // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
     const tableName = sport === 'cfb' ? 'college_game_snapshots' : 'game_snapshots'
+    
+    // Select appropriate columns based on table (college_game_snapshots has 'coaching', game_snapshots has 'referee')
+    const selectColumns = sport === 'cfb'
+      ? 'game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, coaching, raw_payload'
+      : 'game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee, raw_payload'
+    
     const { data: snapshotRows, error: snapshotError} = await snapshotsClient
       .from(tableName)
-      .select('game_id, sport, away_team, home_team, start_time_utc, start_time_label, spread, totals, moneyline, script_meta, picks_meta, public_money, team_stats, props, referee, raw_payload')
+      .select(selectColumns)
       .eq('sport', sport.toUpperCase())
       .gte('start_time_utc', now.toISOString())
       .lte('start_time_utc', futureDate.toISOString())
