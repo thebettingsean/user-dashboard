@@ -983,11 +983,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     let officialLabel = 'Referee'
     
     if (isCollegeSport) {
-      // For CFB, show away coach vs home coach
+      // For CFB, show away coach at home coach
       const coaching = (displayGame as any).coaching
       const awayCoach = coaching?.away?.ATS?.coach || 'TBD'
       const homeCoach = coaching?.home?.ATS?.coach || 'TBD'
-      officialName = `${awayCoach} vs ${homeCoach}`
+      officialName = `${awayCoach} at ${homeCoach}`
       officialLabel = 'Coaches'
     } else {
       // For pro sports, show referee
