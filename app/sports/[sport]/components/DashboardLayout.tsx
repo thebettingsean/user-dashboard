@@ -1067,7 +1067,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               </div>
             ))}
           </div>
-          <div className={styles.featuredRef}>{officialLabel} · {officialName}</div>
+          {/* Show referee/coach line only for NFL and NBA */}
+          {(activeSport === 'nfl' || activeSport === 'nba') && (
+            <div className={styles.featuredRef}>{officialLabel} · {officialName}</div>
+          )}
         </div>
 
         <div className={styles.gameList}>
