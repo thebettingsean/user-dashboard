@@ -961,7 +961,26 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       },
       { label: 'Game Data', value: `${strongestDataCount}/4 retrieved` }
     ]
-    const refereeName = (displayGame.referee as any)?.referee_name || 'Ref TBD'
+    
+    // Determine if this is a college sport
+    const isCollegeSport = activeSport === 'college-football' || activeSport === 'cfb'
+    
+    // Get official name (referee for pro sports, coach for college)
+    let officialName = 'TBD'
+    let officialLabel = 'Referee'
+    
+    if (isCollegeSport) {
+      // For CFB, show away coach vs home coach
+      const coaching = (displayGame as any).coaching
+      const awayCoach = coaching?.away?.ATS?.coach || 'TBD'
+      const homeCoach = coaching?.home?.ATS?.coach || 'TBD'
+      officialName = `${awayCoach} vs ${homeCoach}`
+      officialLabel = 'Coaches'
+    } else {
+      // For pro sports, show referee
+      officialName = (displayGame.referee as any)?.referee_name || 'Ref TBD'
+      officialLabel = 'Referee'
+    }
 
     const handleGameClick = (game: GameSummary) => {
       const slug = generateGameSlug(game.awayTeam, game.homeTeam, game.kickoff)
@@ -981,12 +1000,48 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             {displayGame.awayTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.awayTeamLogo} alt={displayGame.awayTeam} className={styles.featuredLogo} />
+                {/* Ranking badge for away team (CFB only) */}
+                {isCollegeSport && (displayGame as any).awayTeamRank && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)'
+                  }}>
+                    #{(displayGame as any).awayTeamRank}
+                  </div>
+                )}
               </div>
             )}
             <span className={styles.featuredVs}>@</span>
             {displayGame.homeTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.homeTeamLogo} alt={displayGame.homeTeam} className={styles.featuredLogo} />
+                {/* Ranking badge for home team (CFB only) */}
+                {isCollegeSport && (displayGame as any).homeTeamRank && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)'
+                  }}>
+                    #{(displayGame as any).homeTeamRank}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -999,7 +1054,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               </div>
             ))}
           </div>
-          <div className={styles.featuredRef}>Referee · {refereeName}</div>
+          <div className={styles.featuredRef}>{officialLabel} · {officialName}</div>
         </div>
 
         <div className={styles.gameList}>
@@ -1016,7 +1071,31 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               >
                 <div className={styles.sbRow}>
                   <div className={styles.sbTeamRow}>
-                    {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />}
+                    {game.awayTeamLogo && (
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />
+                        {/* Ranking badge for away team (CFB only) */}
+                        {isCollegeSport && (game as any).awayTeamRank && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '-2px',
+                            left: '-6px',
+                            background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                            color: 'white',
+                            fontSize: '8px',
+                            fontWeight: 700,
+                            padding: '1px 4px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 4px rgba(234, 88, 12, 0.4)',
+                            lineHeight: '1'
+                          }}>
+                            #{(game as any).awayTeamRank}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {!game.awayTeamLogo && <span className={styles.sbTeamName}></span>}
                     <span className={styles.sbTeamName}>{game.awayTeam}</span>
                   </div>
                   <div className={styles.sbRight}>
@@ -1044,7 +1123,31 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 </div>
                 <div className={styles.sbRow}>
                   <div className={styles.sbTeamRow}>
-                    {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />}
+                    {game.homeTeamLogo && (
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />
+                        {/* Ranking badge for home team (CFB only) */}
+                        {isCollegeSport && (game as any).homeTeamRank && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '-2px',
+                            left: '-6px',
+                            background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                            color: 'white',
+                            fontSize: '8px',
+                            fontWeight: 700,
+                            padding: '1px 4px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            boxShadow: '0 1px 4px rgba(234, 88, 12, 0.4)',
+                            lineHeight: '1'
+                          }}>
+                            #{(game as any).homeTeamRank}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {!game.homeTeamLogo && <span className={styles.sbTeamName}></span>}
                     <span className={styles.sbTeamName}>{game.homeTeam}</span>
                   </div>
                   <div className={styles.sbRight}>

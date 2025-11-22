@@ -288,6 +288,10 @@ export async function GET(request: NextRequest) {
       const rawPayload = row.raw_payload as any
       const awayTeamLogo = rawPayload?.away_team_logo ?? null
       const homeTeamLogo = rawPayload?.home_team_logo ?? null
+      
+      // Extract team rankings for CFB (99 = unranked)
+      const awayTeamRank = rawPayload?.away_team_rank ?? null
+      const homeTeamRank = rawPayload?.home_team_rank ?? null
 
       return {
         id: row.game_id,
@@ -296,6 +300,8 @@ export async function GET(request: NextRequest) {
         homeTeam: row.home_team,
         awayTeamLogo,
         homeTeamLogo,
+        awayTeamRank: awayTeamRank && awayTeamRank !== 99 ? awayTeamRank : null, // Null if unranked
+        homeTeamRank: homeTeamRank && homeTeamRank !== 99 ? homeTeamRank : null, // Null if unranked
         kickoff: row.start_time_utc,
         kickoffLabel: row.start_time_label,
         spread: spreadSummary,
@@ -333,7 +339,8 @@ export async function GET(request: NextRequest) {
           : null,
         teamTrends: getTrendSummary(row.team_stats),
         teamStats: row.team_stats, // Full team stats including 3-year betting data
-        referee: row.referee ?? null, // Referee stats for O/U trends
+        referee: row.referee ?? null, // Referee stats for O/U trends (NFL/NBA)
+        coaching: (row as any).coaching ?? null, // Coach stats for college sports (CFB/CBB)
         props: row.props || [], // Player props
         propsCount
       }
