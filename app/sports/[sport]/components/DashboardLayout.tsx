@@ -837,7 +837,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       if (!isSignedIn) {
         await new Promise((resolve) => setTimeout(resolve, 5000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
-          '⚠️ **Sign In Required**\n\nOops! You need to sign in to generate AI scripts.\n\n[Click here to sign in and start your FREE trial](/pricing)'
+          '⚠️ **Sign In Required**\n\nOops! You need to sign in to generate AI scripts.\n\n[Click here to sign in and start your $1 trial](/pricing)'
         ))
         setLoadingScripts((prev) => {
           const next = new Set(prev)
@@ -855,7 +855,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       if (!hasAccess) {
         await new Promise((resolve) => setTimeout(resolve, 5000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
-          '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your FREE trial to generate AI scripts.\n\n[Start FREE Trial Now](/pricing)'
+          '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your $1 trial to generate AI scripts.\n\n[Start $1 Trial Now](/pricing)'
         ))
         setLoadingScripts((prev) => {
           const next = new Set(prev)
