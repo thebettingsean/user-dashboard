@@ -88,12 +88,25 @@ export async function POST(request: NextRequest) {
       metadata,
     }
 
-    // For subscriptions, add subscription data with FREE 3-day trial
+    // For subscriptions, add subscription data with 3-day trial + $1 upfront charge
     if (config.type === 'subscription') {
       sessionConfig.subscription_data = {
         metadata,
-        trial_period_days: 3  // 3-day FREE trial
+        trial_period_days: 3  // 3-day trial
       }
+      
+      // Add $1 one-time charge at checkout (reduces 60% failure rate by validating payment upfront)
+      sessionConfig.add_invoice_items = [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: '3-Day Trial Access',
+            description: 'One-time verification charge for trial access'
+          },
+          unit_amount: 100 // $1.00
+        },
+        quantity: 1
+      }]
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig)
