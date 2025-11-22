@@ -531,10 +531,10 @@ export default function DataTabPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  )
+      )
 
   const renderPublicBetting = () => (
     <div className={styles.accordion}>
