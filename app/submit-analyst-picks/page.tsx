@@ -949,12 +949,13 @@ export default function SubmitAnalystPicks() {
                 style={{
                   ...styles.button,
                   ...styles.buttonWarning,
-                  opacity: Object.keys(recapData).length < unrecappedPicks.length ? 0.6 : 1
+                  opacity: (Object.keys(recapData).length < unrecappedPicks.length || loading) ? 0.6 : 1,
+                  cursor: (Object.keys(recapData).length < unrecappedPicks.length || loading) ? 'not-allowed' : 'pointer'
                 }}
                 onClick={submitRecaps}
-                disabled={Object.keys(recapData).length < unrecappedPicks.length}
+                disabled={Object.keys(recapData).length < unrecappedPicks.length || loading}
               >
-                Submit Recaps
+                {loading ? 'Submitting...' : 'Submit Recaps'}
               </button>
             </div>
           </div>
@@ -1187,8 +1188,13 @@ export default function SubmitAnalystPicks() {
               
               <button
                 type="button"
-                style={styles.button}
+                style={{
+                  ...styles.button,
+                  opacity: loading ? 0.6 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
                 onClick={addPick}
+                disabled={loading}
               >
                 + Add Another Pick
               </button>
@@ -1241,8 +1247,17 @@ export default function SubmitAnalystPicks() {
             </div>
             
             <div style={styles.formActions}>
-              <button type="submit" style={{ ...styles.button, ...styles.buttonPrimary }}>
-                Submit Picks
+              <button 
+                type="submit" 
+                style={{ 
+                  ...styles.button, 
+                  ...styles.buttonPrimary,
+                  opacity: loading ? 0.6 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Submitting...' : 'Submit Picks'}
               </button>
             </div>
           </form>
