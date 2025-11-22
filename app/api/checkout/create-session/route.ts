@@ -72,31 +72,17 @@ export async function POST(request: NextRequest) {
       ? `${origin}/success/credit-purchase`
       : `${origin}/success/subscription`
 
-    // Create checkout session
-    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-      mode: config.type === 'credit_pack' ? 'payment' : 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: successUrl,
-      cancel_url: `${origin}/pricing?cancelled=true`,
-      customer_email: userEmail,
-      metadata,
-    }
+    // Build line items
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ]
 
-    // For subscriptions, add subscription data with 3-day trial + $1 upfront charge
+    // For subscriptions, add $1 upfront charge as a separate line item
     if (config.type === 'subscription') {
-      sessionConfig.subscription_data = {
-        metadata,
-        trial_period_days: 3  // 3-day trial
-      }
-      
-      // Add $1 one-time charge at checkout (reduces 60% failure rate by validating payment upfront)
-      sessionConfig.add_invoice_items = [{
+      lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
@@ -106,7 +92,26 @@ export async function POST(request: NextRequest) {
           unit_amount: 100 // $1.00
         },
         quantity: 1
-      }]
+      })
+    }
+
+    // Create checkout session
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+      mode: config.type === 'credit_pack' ? 'payment' : 'subscription',
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      success_url: successUrl,
+      cancel_url: `${origin}/pricing?cancelled=true`,
+      customer_email: userEmail,
+      metadata,
+    }
+
+    // For subscriptions, add subscription data with 3-day trial
+    if (config.type === 'subscription') {
+      sessionConfig.subscription_data = {
+        metadata,
+        trial_period_days: 3  // 3-day trial
+      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig)
