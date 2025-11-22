@@ -22,12 +22,23 @@ export async function updatePicksMetaForGame(gameId: string, sport: string) {
   try {
     console.log(`🔄 Updating picks_meta for ${gameId}...`)
 
+    // Normalize sport input (handle both 'NCAAF' and 'cfb' inputs)
+    const sportLower = sport.toLowerCase()
+    const isCollegeFootball = sportLower === 'cfb' || sportLower === 'ncaaf'
+
+    // Map sport to picks table format (picks use 'NCAAF', not 'CFB')
+    const picksSport = isCollegeFootball ? 'NCAAF' : sport.toUpperCase()
+    
+    // Map sport to snapshots table (CFB uses college_game_snapshots, others use game_snapshots)
+    const snapshotsTable = isCollegeFootball ? 'college_game_snapshots' : 'game_snapshots'
+    const snapshotsSport = isCollegeFootball ? 'CFB' : sport.toUpperCase()
+
     // Count pending picks for this game_id
     const { data, error } = await mainClient
       .from('picks')
       .select('id', { count: 'exact' })
       .eq('game_id', gameId)
-      .eq('sport', sport.toUpperCase())
+      .eq('sport', picksSport)
       .eq('result', 'pending')
 
     if (error) {
@@ -36,24 +47,24 @@ export async function updatePicksMetaForGame(gameId: string, sport: string) {
     }
 
     const pendingCount = data?.length || 0
-    console.log(`📊 Found ${pendingCount} pending picks for ${gameId}`)
+    console.log(`📊 Found ${pendingCount} pending picks for ${gameId} (sport: ${picksSport})`)
 
-    // Update the game_snapshots picks_meta
+    // Update the appropriate snapshots table
     const { error: updateError } = await snapshotsClient
-      .from('game_snapshots')
+      .from(snapshotsTable)
       .update({
         picks_meta: { pending_count: pendingCount },
         updated_at: new Date().toISOString()
       })
       .eq('game_id', gameId)
-      .eq('sport', sport.toUpperCase())
+      .eq('sport', snapshotsSport)
 
     if (updateError) {
-      console.error('❌ Error updating game_snapshots picks_meta:', updateError)
+      console.error(`❌ Error updating ${snapshotsTable} picks_meta:`, updateError)
       return
     }
 
-    console.log(`✅ Successfully updated picks_meta for ${gameId}: ${pendingCount} pending picks`)
+    console.log(`✅ Successfully updated picks_meta in ${snapshotsTable} for ${gameId}: ${pendingCount} pending picks`)
   } catch (error) {
     console.error('❌ Unexpected error updating picks_meta:', error)
   }
