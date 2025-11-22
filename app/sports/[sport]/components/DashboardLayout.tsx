@@ -167,11 +167,18 @@ const tabLabels: Record<TabKey, string> = {
   public: 'Public'
 }
 
-const subFilters: Record<TabKey, SubFilterKey[]> = {
-  games: [],
-  picks: ['upcoming', 'byCapper', 'topProps', 'results'],
-  scripts: ['scriptsInfo', 'scriptsAbout'],
-  public: ['publicMost', 'publicVegas', 'publicSharp', 'publicAbout']
+// Dynamic subfilters based on sport (no props for CFB)
+const getSubFilters = (sport: string): Record<TabKey, SubFilterKey[]> => {
+  const isCollegeSport = sport === 'college-football' || sport === 'cfb'
+  
+  return {
+    games: [],
+    picks: isCollegeSport 
+      ? ['upcoming', 'byCapper', 'results'] // No topProps for CFB
+      : ['upcoming', 'byCapper', 'topProps', 'results'],
+    scripts: ['scriptsInfo', 'scriptsAbout'],
+    public: ['publicMost', 'publicVegas', 'publicSharp', 'publicAbout']
+  }
 }
 
 const subFilterLabels: Record<SubFilterKey, string> = {
@@ -492,6 +499,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   // Determine if user has access
   const hasAccess = isSubscribed
 
+  // Get dynamic subfilters based on sport
+  const subFilters = getSubFilters(activeSport)
+
   const getDefaultFilter = (tab: TabKey): SubFilterKey | undefined => subFilters[tab][0]
 
   const [activeFilter, setActiveFilter] = useState<SubFilterKey>(
@@ -538,12 +548,15 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
   const featuredGame = useMemo(() => {
     if (sortedGames.length === 0) return undefined
+    // Prioritize games with most picks, then by most recent time
     return [...sortedGames].sort((a, b) => {
-      const strengthB = b.script.creditsRequired ?? 0
-      const strengthA = a.script.creditsRequired ?? 0
-      if (strengthB !== strengthA) {
-        return strengthB - strengthA
+      const picksB = b.picks.total ?? 0
+      const picksA = a.picks.total ?? 0
+      // First: Most picks wins
+      if (picksB !== picksA) {
+        return picksB - picksA
       }
+      // Second: Most recent time (earliest kickoff)
       return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
     })[0]
   }, [sortedGames])
@@ -1000,11 +1013,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             {displayGame.awayTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.awayTeamLogo} alt={displayGame.awayTeam} className={styles.featuredLogo} />
-                {/* Ranking badge for away team (CFB only) */}
+                {/* Ranking badge for away team (CFB only) - bottom-right */}
                 {isCollegeSport && (displayGame as any).awayTeamRank && (
                   <div style={{
                     position: 'absolute',
-                    top: '-4px',
+                    bottom: '-4px',
                     right: '-4px',
                     background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
                     color: 'white',
@@ -1024,11 +1037,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             {displayGame.homeTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.homeTeamLogo} alt={displayGame.homeTeam} className={styles.featuredLogo} />
-                {/* Ranking badge for home team (CFB only) */}
+                {/* Ranking badge for home team (CFB only) - bottom-right */}
                 {isCollegeSport && (displayGame as any).homeTeamRank && (
                   <div style={{
                     position: 'absolute',
-                    top: '-4px',
+                    bottom: '-4px',
                     right: '-4px',
                     background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
                     color: 'white',
@@ -1073,12 +1086,12 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   <div className={styles.sbTeamRow}>
                     {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.sbLogo} />}
                     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                      {/* Ranking badge for away team (CFB only) - positioned over team name */}
+                      {/* Ranking badge for away team (CFB only) - bottom-right of team name */}
                       {isCollegeSport && (game as any).awayTeamRank && (
                         <div style={{
                           position: 'absolute',
-                          top: '-8px',
-                          left: '-2px',
+                          bottom: '-8px',
+                          right: '-2px',
                           background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
                           color: 'white',
                           fontSize: '8px',
@@ -1123,12 +1136,12 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   <div className={styles.sbTeamRow}>
                     {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.sbLogo} />}
                     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                      {/* Ranking badge for home team (CFB only) - positioned over team name */}
+                      {/* Ranking badge for home team (CFB only) - bottom-right of team name */}
                       {isCollegeSport && (game as any).homeTeamRank && (
                         <div style={{
                           position: 'absolute',
-                          top: '-8px',
-                          left: '-2px',
+                          bottom: '-8px',
+                          right: '-2px',
                           background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
                           color: 'white',
                           fontSize: '8px',
