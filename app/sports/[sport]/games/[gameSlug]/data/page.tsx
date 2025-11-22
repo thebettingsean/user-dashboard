@@ -424,11 +424,10 @@ export default function DataTabPage() {
     const isNHL = sport === 'nhl'
     
     if (isCFB) {
-      // CFB order: Team Stats, Public Betting, Coach Stats, Team Betting Stats
+      // CFB order: Team Stats, Coach Stats, Team Betting Stats (no public betting)
       return (
         <>
           {renderTeamStats()}
-          {renderPublicBetting()}
           {renderCoachingStats()}
           {renderTeamBettingStats()}
         </>
@@ -547,7 +546,7 @@ export default function DataTabPage() {
   const renderCoachingStats = () => (
     <div className={styles.accordion}>
       <button
-        className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'coaching' ? styles.accordionHeaderActive : ''}`}
+        className={`${styles.accordionHeader} ${expandedSection === 'coaching' ? styles.accordionHeaderActive : ''}`}
         onClick={() => toggleSection('coaching')}
       >
         <GiWhistle className={styles.accordionIcon} />
@@ -556,7 +555,7 @@ export default function DataTabPage() {
       </button>
       
       {expandedSection === 'coaching' && hasAccess && (
-        <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
+        <div className={styles.accordionContent}>
           {gameData.referee ? (
             <>
               {/* Away Coach Stats */}
