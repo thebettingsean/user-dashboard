@@ -133,10 +133,13 @@ export async function GET(request: NextRequest) {
 
     const { start, end } = getTimeWindows(filter)
 
+    // Map sport to database format (picks table uses 'NCAAF' instead of 'CFB')
+    const dbSport = sport === 'cfb' ? 'NCAAF' : sport.toUpperCase()
+
     const baseQuery = supabase
       .from('picks')
       .select('id, sport, bet_title, units, odds, game_time, result, game_id, analysis, bettors(name, record, win_streak, profile_image, profile_initials)')
-      .eq('sport', sport.toUpperCase())
+      .eq('sport', dbSport)
 
     if (filter === 'results') {
       baseQuery.neq('result', 'pending').gte('game_time', start.toISOString()).lte('game_time', end.toISOString()).order('game_time', { ascending: false })
