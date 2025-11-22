@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       const supabase = getSupabaseClient()
       const query = supabase
         .from(tableName)
-        .select('id, game_id, sport, home_team, away_team, start_time_utc, team_rankings')
+        .select('id, game_id, sport, home_team, away_team, start_time_utc, team_rankings, raw_payload')
         .eq('sport', sport)
         .gte('start_time_utc', now.toISOString())
         .lte('start_time_utc', futureDate.toISOString())
@@ -115,7 +115,18 @@ export async function GET(request: NextRequest) {
                 }
               }
 
-              console.log(`\n📊 Fetching team stats for: ${game.away_team} @ ${game.home_team}`)
+              // For CFB, use full team names from raw_payload (e.g., "Miami Hurricanes" not "Hurricanes")
+              // For other sports, use the short names from the DB columns
+              let homeTeamName = game.home_team
+              let awayTeamName = game.away_team
+              
+              if (sport === 'CFB' && game.raw_payload) {
+                const rawPayload = game.raw_payload as any
+                homeTeamName = rawPayload.home_team || game.home_team
+                awayTeamName = rawPayload.away_team || game.away_team
+              }
+
+              console.log(`\n📊 Fetching team stats for: ${awayTeamName} @ ${homeTeamName}`)
 
               // Scrape team stats based on sport
               let homeData, awayData
@@ -123,14 +134,14 @@ export async function GET(request: NextRequest) {
               if (sport === 'NHL') {
                 // NHL uses MoneyPuck
                 [homeData, awayData] = await Promise.all([
-                  scrapeMoneyPuck(game.home_team),
-                  scrapeMoneyPuck(game.away_team)
+                  scrapeMoneyPuck(homeTeamName),
+                  scrapeMoneyPuck(awayTeamName)
                 ])
               } else {
                 // NFL, NBA, CFB use TeamRankings
                 [homeData, awayData] = await Promise.all([
-                  scrapeTeamRankings(sport.toLowerCase(), game.home_team),
-                  scrapeTeamRankings(sport.toLowerCase(), game.away_team)
+                  scrapeTeamRankings(sport.toLowerCase(), homeTeamName),
+                  scrapeTeamRankings(sport.toLowerCase(), awayTeamName)
                 ])
               }
 
