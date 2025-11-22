@@ -243,7 +243,7 @@ export async function GET(request: NextRequest) {
           moneyline,
           totals,
           public_money: publicMoney,
-          referee: refereeStats,
+          coaching: refereeStats, // Changed from 'referee' to 'coaching' for college sports
           team_stats: teamStats,
           props: playerProps && playerProps.length > 0 ? playerProps : null,
           script_meta: finalScriptMeta,
