@@ -470,71 +470,58 @@ export default function DataTabPage() {
       </button>
       
       {expandedSection === 'referee' && hasAccess && (
-          <div className={styles.accordion}>
-            <button
-              className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
-              onClick={() => toggleSection('referee')}
-            >
-              <GiWhistle className={styles.accordionIcon} />
-              <span className={styles.accordionText}>
-                {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
-              </span>
-              <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'referee' ? styles.chevronIconRotated : ''}`} />
-            </button>
-            
-            {expandedSection === 'referee' && hasAccess && (
-              <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
-              {/* Metadata */}
-              {refereeStats.totalGames && (
-                <div className={styles.refereeMetadata}>
-                  <div className={styles.refereeMetadataItem}>
-                    Total games: <strong>{refereeStats.totalGames}</strong>
-                  </div>
-                  <div className={styles.refereeMetadataItem}>
-                    Time: <strong>L6 years</strong>
-                  </div>
-                </div>
-              )}
-              
-              {/* Moneylines */}
-              <div className={styles.statGroup}>
-                <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
-                <div className={styles.statDivider}></div>
-                {refereeStats.ml.map((stat, i) => (
-                  <div key={i} className={styles.statRow}>
-                    <span className={styles.statLabel}>{stat.label}</span>
-                    <span className={styles.statValue}>{stat.value}</span>
-                  </div>
-                ))}
+        <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
+          {/* Metadata */}
+          {refereeStats.totalGames && (
+            <div className={styles.refereeMetadata}>
+              <div className={styles.refereeMetadataItem}>
+                Total games: <strong>{refereeStats.totalGames}</strong>
               </div>
-              
-              {/* Spreads */}
-              <div className={styles.statGroup}>
-                <h4 className={styles.statGroupTitle}>SPREADS</h4>
-                <div className={styles.statDivider}></div>
-                {refereeStats.spread.map((stat, i) => (
-                  <div key={i} className={styles.statRow}>
-                    <span className={styles.statLabel}>{stat.label}</span>
-                    <span className={styles.statValue}>{stat.value}</span>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Over-Unders */}
-              <div className={styles.statGroup}>
-                <h4 className={styles.statGroupTitle}>OVER-UNDERS</h4>
-                <div className={styles.statDivider}></div>
-                {refereeStats.ou.map((stat, i) => (
-                  <div key={i} className={styles.statRow}>
-                    <span className={styles.statLabel}>{stat.label}</span>
-                    <span className={styles.statValue}>{stat.value}</span>
-                  </div>
-                ))}
+              <div className={styles.refereeMetadataItem}>
+                Time: <strong>L6 years</strong>
               </div>
             </div>
           )}
+          
+          {/* Moneylines */}
+          <div className={styles.statGroup}>
+            <h4 className={styles.statGroupTitle}>MONEYLINES</h4>
+            <div className={styles.statDivider}></div>
+            {refereeStats.ml.map((stat, i) => (
+              <div key={i} className={styles.statRow}>
+                <span className={styles.statLabel}>{stat.label}</span>
+                <span className={styles.statValue}>{stat.value}</span>
+              </div>
+            ))}
+          </div>
+          
+          {/* Spreads */}
+          <div className={styles.statGroup}>
+            <h4 className={styles.statGroupTitle}>SPREADS</h4>
+            <div className={styles.statDivider}></div>
+            {refereeStats.spread.map((stat, i) => (
+              <div key={i} className={styles.statRow}>
+                <span className={styles.statLabel}>{stat.label}</span>
+                <span className={styles.statValue}>{stat.value}</span>
+              </div>
+            ))}
+          </div>
+          
+          {/* Over-Unders */}
+          <div className={styles.statGroup}>
+            <h4 className={styles.statGroupTitle}>OVER-UNDERS</h4>
+            <div className={styles.statDivider}></div>
+            {refereeStats.ou.map((stat, i) => (
+              <div key={i} className={styles.statRow}>
+                <span className={styles.statLabel}>{stat.label}</span>
+                <span className={styles.statValue}>{stat.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      )
+      )}
+    </div>
+  )
 
   const renderPublicBetting = () => (
     <div className={styles.accordion}>
