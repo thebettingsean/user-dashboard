@@ -959,7 +959,7 @@ export default function HeroNewPage() {
 
       {/* How It Works Section */}
       <section className={styles.howItWorksSection}>
-        <h2 className={styles.howItWorksTitle}>Start Your FREE 3-Day Trial</h2>
+        <h2 className={styles.howItWorksTitle}>Try 3 Days for Just $1</h2>
         <p className={styles.howItWorksSubtitle}>Get instant access to everything—picks, data, tools, and more.</p>
         <div className={styles.howItWorksContent} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
           {/* Free Trial Card */}
@@ -971,7 +971,7 @@ export default function HeroNewPage() {
               <div className={`${styles.howItWorksCardIcon} ${styles.howItWorksCardIconWhite}`}>
                 <FaRegCalendarAlt />
               </div>
-              <h3 className={styles.howItWorksCardTitle}>FREE 3-Day Trial</h3>
+              <h3 className={styles.howItWorksCardTitle}>$1 for 3 Days</h3>
               <p className={styles.howItWorksCardSubtitle}>Full access to everything—picks, data, AI tools.</p>
             </div>
             <div className={styles.howItWorksCardBody}>
@@ -1020,7 +1020,7 @@ export default function HeroNewPage() {
               <div className={styles.glassFilter}></div>
               <div className={styles.glassOverlay}></div>
               <div className={styles.glassSpecular}></div>
-              <div className={styles.glassContent}>Start FREE Trial</div>
+              <div className={styles.glassContent}>Start $1 Trial</div>
             </button>
           </div>
         </div>
@@ -1062,9 +1062,9 @@ function PricingSection() {
     <section className={styles.pricingSimpleSection}>
       <div className={styles.pricingSimpleWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <div className={styles.pricingSimpleHeader} style={{ textAlign: 'center' }}>
-          <h2 className={styles.pricingTitle}>Start Your FREE 3-Day Trial</h2>
+          <h2 className={styles.pricingTitle}>Try 3 Days for Just $1</h2>
           <p className={styles.pricingTagline}>
-            Try everything for free, then choose your plan—cancel anytime.
+            Get started for $1, then choose your plan—cancel anytime.
           </p>
         </div>
 
@@ -1086,10 +1086,10 @@ function PricingSection() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}>
-                3-Day FREE Trial Included
+                $1 3-Day Trial
               </div>
               <h3 className={styles.pricingSimpleOptionTitle}>Full Access</h3>
-              <p className={styles.pricingSimpleDescription}>Try everything FREE for 3 days. Unlimited picks, AI tools, props & stats.</p>
+              <p className={styles.pricingSimpleDescription}>Try everything for $1 for 3 days. Unlimited picks, AI tools, props & stats.</p>
 
               <div className={styles.pricingSimpleTierList}>
                 {unlimitedPlans.map((plan, index) => (
@@ -1115,7 +1115,7 @@ function PricingSection() {
                 <div className={styles.glassFilter}></div>
                 <div className={styles.glassOverlay}></div>
                 <div className={styles.glassSpecular}></div>
-                <div className={styles.glassContent}>Start FREE Trial</div>
+                <div className={styles.glassContent}>Start $1 Trial</div>
               </a>
             </div>
           </div>

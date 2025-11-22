@@ -1335,7 +1335,7 @@ export default function SportsSelectorPage() {
                                     }
                                   }}
                                 >
-                                  {!isSignedIn ? 'Sign Up for FREE Trial' : 'Unlock with FREE Trial'}
+                                  {!isSignedIn ? 'Sign Up for $1 Trial' : 'Unlock with $1 Trial'}
                                 </span>
                               </>
                             )}
@@ -1826,7 +1826,7 @@ export default function SportsSelectorPage() {
             >
               <FaLock style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.7)' }} />
               <span style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}>
-                {!isSignedIn ? 'Sign Up for FREE Trial' : 'Unlock with FREE Trial'}
+                {!isSignedIn ? 'Sign Up for $1 Trial' : 'Unlock with $1 Trial'}
               </span>
             </div>
           )}

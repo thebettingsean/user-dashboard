@@ -121,7 +121,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               display: 'inline-block'
             }}
           >
-            3-Day FREE Trial Included
+            $1 3-Day Trial
           </div>
           <h2
             style={{
@@ -487,7 +487,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
             ) : selectedPlan ? (
               <>
                 <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>
-                  START FREE TRIAL
+                  $1 FOR 3 DAYS
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 400 }}>
                   (then {selectedPlan === 'weekly' 
@@ -502,59 +502,6 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
             )}
           </button>
 
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-            <button
-              onClick={() => window.location.href = '/'}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
-              }}
-            >
-              Home
-            </button>
-            <button
-              onClick={() => router.push('/sports')}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
-              }}
-            >
-              Dashboard
-            </button>
-          </div>
-
           <div
             style={{
               marginTop: '1rem',
@@ -563,7 +510,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
               color: 'rgba(255, 255, 255, 0.35)'
             }}
           >
-            3-Day FREE Trial • Cancel anytime • Instant access
+            $1 Trial • Cancel anytime • Instant access
           </div>
         </div>
       </div>
