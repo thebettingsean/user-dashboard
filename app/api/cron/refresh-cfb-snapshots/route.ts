@@ -41,6 +41,7 @@ async function loadScriptMeta(gameIds: string[]) {
   const meta = new Map<string, { strength_label: string | null; strength_value: number | null; credits_required: number | null; generated_at: string | null }>()
   if (gameIds.length === 0) return meta
 
+  // game_scripts table uses 'CFB' (uppercase sport code)
   const { data, error} = await primarySupabase
     .from('game_scripts')
     .select('game_id, sport, generated_at')
@@ -70,11 +71,14 @@ async function loadPickMeta(gameIds: string[]) {
   const meta = new Map<string, { pending_count: number }>()
   if (gameIds.length === 0) return meta
 
+  // Map CFB to NCAAF for picks table
+  const picksSport = SPORT === 'cfb' ? 'NCAAF' : SPORT.toUpperCase()
+
   const { data, error } = await primarySupabase
     .from('picks')
     .select('game_id')
     .in('game_id', gameIds)
-    .eq('sport', SPORT.toUpperCase())
+    .eq('sport', picksSport)
     .eq('result', 'pending')
 
   if (error) {
