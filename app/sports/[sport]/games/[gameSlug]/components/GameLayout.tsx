@@ -16,6 +16,8 @@ interface GameData {
   homeTeam: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
+  awayTeamRank?: number | null
+  homeTeamRank?: number | null
   kickoff: string
   kickoffLabel: string
   spread: any
@@ -121,11 +123,49 @@ export default function GameLayout({ children }: GameLayoutProps) {
           {gameData.awayTeamLogo && (
             <div className={styles.teamLogoWrapper}>
               <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
+              {/* Ranking badge for away team (CFB only) */}
+              {(sport === 'college-football' || sport === 'cfb') && gameData.awayTeamRank && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '-6px',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  padding: '3px 7px',
+                  borderRadius: '8px',
+                  border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)',
+                  zIndex: 1
+                }}>
+                  #{gameData.awayTeamRank}
+                </div>
+              )}
             </div>
           )}
           {gameData.homeTeamLogo && (
             <div className={styles.teamLogoWrapper}>
               <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
+              {/* Ranking badge for home team (CFB only) */}
+              {(sport === 'college-football' || sport === 'cfb') && gameData.homeTeamRank && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '-6px',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  padding: '3px 7px',
+                  borderRadius: '8px',
+                  border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)',
+                  zIndex: 1
+                }}>
+                  #{gameData.homeTeamRank}
+                </div>
+              )}
             </div>
           )}
         </div>
