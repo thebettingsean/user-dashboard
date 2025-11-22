@@ -68,9 +68,11 @@ export default function DataTabPage() {
     if (!hasAccess) {
       const messages: Record<string, string> = {
         referee: 'Sign up for free to view referee data',
+        coaching: 'Sign up for free to view coaching data',
         props: 'Sign up for free to view high hit rate props',
         betting: 'Sign up for free to view historical betting data',
-        stats: 'Sign up for free to view team stats'
+        stats: 'Sign up for free to view team stats',
+        public: 'Sign up for free to view public betting data'
       }
       setModalMessage(messages[sectionId] || 'Sign up for free to unlock premium data')
       setShowSignUpModal(true)
@@ -416,11 +418,58 @@ export default function DataTabPage() {
   const topProps = getTopProps()
   const teamBettingStats = getTeamBettingStats()
 
-  return (
-    <GameLayout>
-      <div className={styles.dataContainer}>
-        {/* 1. REFEREE STATS (NFL/NBA only - NHL has no referees, CFB has coach stats) */}
-        {sport !== 'nhl' && sport !== 'college-football' && (
+  // Helper to render sections in correct order based on sport
+  const renderSections = () => {
+    const isCFB = sport === 'college-football' || sport === 'cfb'
+    const isNHL = sport === 'nhl'
+    
+    if (isCFB) {
+      // CFB order: Team Stats, Public Betting, Coach Stats, Team Betting Stats
+      return (
+        <>
+          {renderTeamStats()}
+          {renderPublicBetting()}
+          {renderCoachingStats()}
+          {renderTeamBettingStats()}
+        </>
+      )
+    } else if (isNHL) {
+      // NHL order: Team Stats, Public Betting, Props, Team Betting Stats
+      return (
+        <>
+          {renderTeamStats()}
+          {renderPublicBetting()}
+          {renderProps()}
+          {renderTeamBettingStats()}
+        </>
+      )
+    } else {
+      // NFL/NBA order: Referee, Props, Team Betting Stats, Team Stats
+      return (
+        <>
+          {renderRefereeStats()}
+          {renderProps()}
+          {renderTeamBettingStats()}
+          {renderTeamStats()}
+        </>
+      )
+    }
+  }
+
+  const renderRefereeStats = () => (
+    <div className={styles.accordion}>
+      <button
+        className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
+        onClick={() => toggleSection('referee')}
+      >
+        <GiWhistle className={styles.accordionIcon} />
+        <span className={styles.accordionText}>
+          {refereeStats.refereeName ? `${refereeStats.refereeName} Impact` : 'No Referee Announced'}
+        </span>
+        <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'referee' ? styles.chevronIconRotated : ''}`} />
+      </button>
+      
+      {expandedSection === 'referee' && hasAccess && (
           <div className={styles.accordion}>
             <button
               className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'referee' ? styles.accordionHeaderActive : ''}`}
@@ -482,13 +531,91 @@ export default function DataTabPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          </div>
-        )}
+        </div>
+      )}
+    </div>
+  )
 
-        {/* 2. TOP PROPS */}
-        <div className={styles.accordion}>
+  const renderPublicBetting = () => (
+    <div className={styles.accordion}>
+      <button
+        className={`${styles.accordionHeader} ${expandedSection === 'public' ? styles.accordionHeaderActive : ''}`}
+        onClick={() => toggleSection('public')}
+      >
+        <LuFileChartColumnIncreasing className={styles.accordionIcon} />
+        <span className={styles.accordionText}>Public Betting Data</span>
+        <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'public' ? styles.chevronIconRotated : ''}`} />
+      </button>
+      
+      {expandedSection === 'public' && hasAccess && (
+        <div className={styles.accordionContent}>
+          <div className={styles.placeholder}>
+            <p>Public betting data shown on Public Betting tab</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  const renderCoachingStats = () => (
+    <div className={styles.accordion}>
+      <button
+        className={`${styles.accordionHeader} ${styles.refereeHeader} ${expandedSection === 'coaching' ? styles.accordionHeaderActive : ''}`}
+        onClick={() => toggleSection('coaching')}
+      >
+        <GiWhistle className={styles.accordionIcon} />
+        <span className={styles.accordionText}>Coaching Stats</span>
+        <FaChevronDown className={`${styles.chevronIcon} ${expandedSection === 'coaching' ? styles.chevronIconRotated : ''}`} />
+      </button>
+      
+      {expandedSection === 'coaching' && hasAccess && (
+        <div className={`${styles.accordionContent} ${styles.refereeContent}`}>
+          {gameData.referee ? (
+            <>
+              {/* Away Coach Stats */}
+              <div className={styles.statGroup}>
+                <h4 className={styles.statGroupTitle}>{gameData.awayTeam.toUpperCase()} COACH</h4>
+                <div className={styles.statDivider}></div>
+                <div className={styles.statRow}>
+                  <span className={styles.statLabel}>Coach</span>
+                  <span className={styles.statValue}>{(gameData.referee as any)?.away?.ATS?.coach || 'TBD'}</span>
+                </div>
+                <div className={styles.statRow}>
+                  <span className={styles.statLabel}>ATS Record</span>
+                  <span className={styles.statValue}>
+                    {(gameData.referee as any)?.away?.ATS?.wins || 0}-{(gameData.referee as any)?.away?.ATS?.losses || 0} 
+                    ({((gameData.referee as any)?.away?.ATS?.win_pct || 0).toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
+              
+              {/* Home Coach Stats */}
+              <div className={styles.statGroup}>
+                <h4 className={styles.statGroupTitle}>{gameData.homeTeam.toUpperCase()} COACH</h4>
+                <div className={styles.statDivider}></div>
+                <div className={styles.statRow}>
+                  <span className={styles.statLabel}>Coach</span>
+                  <span className={styles.statValue}>{(gameData.referee as any)?.home?.ATS?.coach || 'TBD'}</span>
+                </div>
+                <div className={styles.statRow}>
+                  <span className={styles.statLabel}>ATS Record</span>
+                  <span className={styles.statValue}>
+                    {(gameData.referee as any)?.home?.ATS?.wins || 0}-{(gameData.referee as any)?.home?.ATS?.losses || 0} 
+                    ({((gameData.referee as any)?.home?.ATS?.win_pct || 0).toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className={styles.noData}>Coaching data not available</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+
+  const renderProps = () => (
+    <div className={styles.accordion}>
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'props' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('props')}
@@ -530,12 +657,13 @@ export default function DataTabPage() {
                   ))}
                 </div>
               )}
-            </div>
-          )}
         </div>
+      )}
+    </div>
+  )
 
-        {/* 3. TEAM BETTING STATS */}
-        <div className={styles.accordion}>
+  const renderTeamBettingStats = () => (
+    <div className={styles.accordion}>
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'betting' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('betting')}
@@ -628,12 +756,13 @@ export default function DataTabPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
         </div>
+      )}
+    </div>
+  )
 
-        {/* 4. TEAM STATS (Placeholder) */}
-        <div className={styles.accordion}>
+  const renderTeamStats = () => (
+    <div className={styles.accordion}>
           <button
             className={`${styles.accordionHeader} ${expandedSection === 'stats' ? styles.accordionHeaderActive : ''}`}
             onClick={() => toggleSection('stats')}
@@ -648,9 +777,15 @@ export default function DataTabPage() {
               <div className={styles.placeholder}>
                 <p>TeamRankings data coming soon...</p>
               </div>
-            </div>
-          )}
         </div>
+      )}
+    </div>
+  )
+
+  return (
+    <GameLayout>
+      <div className={styles.dataContainer}>
+        {renderSections()}
       </div>
 
       {/* Sign Up Modal */}
