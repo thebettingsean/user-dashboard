@@ -762,8 +762,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks
         }
 
-        // Auto-generate script for featured game if not already loaded
-        if (!scriptContent.has(featuredGame.id)) {
+        // Auto-generate script ONLY if user has access (to avoid redirect to pricing)
+        if (hasAccess && !scriptContent.has(featuredGame.id)) {
           await handleGenerateScript(featuredGame.id)
         }
       } catch (error) {
@@ -781,7 +781,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     return () => {
       controller.abort()
     }
-  }, [featuredGame, activeTab, activeSport])
+  }, [featuredGame, activeTab, activeSport, hasAccess])
 
   useEffect(() => {
     if (activeTab !== 'picks' || activeFilter !== 'topProps') return
@@ -1373,6 +1373,50 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 <span className={styles.dot}></span>
                 <span className={styles.dot}></span>
                 <span className={styles.dot}></span>
+              </div>
+            </div>
+          )}
+          {/* Show subscription CTA if user doesn't have access and no script loaded */}
+          {!hasAccess && !featuredScript && !isScriptLoading && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ 
+                fontSize: '11px', 
+                fontWeight: 700, 
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'rgba(226, 232, 240, 0.8)',
+                marginBottom: '10px'
+              }}>
+                Game Script
+              </div>
+              <div style={{
+                background: 'rgba(99, 102, 241, 0.15)',
+                border: '1px solid rgba(129, 140, 248, 0.3)',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '13px', color: 'rgba(226, 232, 240, 0.9)', marginBottom: '12px' }}>
+                  🔒 AI Game Scripts available with subscription
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    router.push('/pricing')
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '999px',
+                    background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Start $1 Trial
+                </button>
               </div>
             </div>
           )}
