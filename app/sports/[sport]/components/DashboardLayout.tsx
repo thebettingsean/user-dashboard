@@ -544,15 +544,25 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
   const featuredGame = useMemo(() => {
     if (sortedGames.length === 0) return undefined
-    // Prioritize games with most picks, then by most recent time
+    
+    // Prioritize: 1) Most picks, 2) Strongest data, 3) Earliest kickoff
     return [...sortedGames].sort((a, b) => {
       const picksB = b.picks.total ?? 0
       const picksA = a.picks.total ?? 0
-      // First: Most picks wins
+      
+      // First priority: Most active picks
       if (picksB !== picksA) {
         return picksB - picksA
       }
-      // Second: Most recent time (earliest kickoff)
+      
+      // Second priority: Strongest data (if no picks or tied)
+      const dataCountA = (a.publicMoney ? 1 : 0) + (a.referee ? 1 : 0) + (a.teamTrends ? 1 : 0) + (a.propsCount > 0 ? 1 : 0)
+      const dataCountB = (b.publicMoney ? 1 : 0) + (b.referee ? 1 : 0) + (b.teamTrends ? 1 : 0) + (b.propsCount > 0 ? 1 : 0)
+      if (dataCountB !== dataCountA) {
+        return dataCountB - dataCountA
+      }
+      
+      // Third priority: Earliest kickoff (soonest game)
       return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
     })[0]
   }, [sortedGames])
@@ -946,17 +956,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       return renderPlaceholder('No games found for this sport.')
     }
 
-    const displayGame = activeGame || sortedGames[0]
+    // Use featuredGame for display (not activeGame) to avoid mismatch
+    const displayGame = featuredGame || sortedGames[0]
     if (!displayGame) {
       return renderPlaceholder('No games available.')
     }
-
-    // Debug: Log all games and which one is featured
-    console.log('[GAMES TAB DEBUG]')
-    console.log('Total sorted games:', sortedGames.length)
-    console.log('Featured game:', featuredGame ? `${featuredGame.awayTeam} @ ${featuredGame.homeTeam}` : 'None')
-    console.log('Games in list (excluding featured):', sortedGames.filter((game) => !featuredGame || game.id !== featuredGame.id).length)
-    console.log('All games:', sortedGames.map(g => `${g.awayTeam} @ ${g.homeTeam}`).join(', '))
 
     const topMarkets = getTopPublicMarkets(displayGame, 3)
     const strongestDataCount = (displayGame.publicMoney ? 1 : 0) + (displayGame.referee ? 1 : 0) + (displayGame.teamTrends ? 1 : 0) + (displayGame.propsCount > 0 ? 1 : 0)
