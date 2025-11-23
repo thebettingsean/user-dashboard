@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title: 'The Betting Insider - Premium Sports Betting Analytics',
     description: 'Expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics.',
     images: ['/og-image.png'],
-    creator: '@BettingInsider',
+    creator: '@invisiblestats',
   },
   verification: {
     google: 'your-google-site-verification-code', // Replace with actual code from Google Search Console
