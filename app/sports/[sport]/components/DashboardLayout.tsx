@@ -496,6 +496,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
   
+  // Featured game specific state (for desktop enhanced view)
+  const [featuredGamePicks, setFeaturedGamePicks] = useState<DashboardPick[]>([])
+  const [featuredGamePicksLoading, setFeaturedGamePicksLoading] = useState(false)
+  
   // Determine if user has access
   const hasAccess = isSubscribed
 
@@ -730,6 +734,55 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     }
   }, [activeTab, activeFilter, activeSport])
 
+  // Load featured game picks and auto-generate script (for desktop enhanced view)
+  useEffect(() => {
+    if (!featuredGame || activeTab !== 'games') return
+
+    const controller = new AbortController()
+
+    async function loadFeaturedGameData() {
+      setFeaturedGamePicksLoading(true)
+
+      try {
+        // Load picks for featured game
+        const apiSport = mapSportSlug(activeSport)
+        const picksResponse = await fetch(
+          `/api/dashboard/picks?sport=${apiSport}&filter=upcoming`,
+          {
+            signal: controller.signal,
+            cache: 'no-store'
+          }
+        )
+
+        if (picksResponse.ok) {
+          const picksData = await picksResponse.json()
+          const allPicks = picksData.picks || []
+          // Filter to only picks for the featured game
+          const gamePicks = allPicks.filter((pick: DashboardPick) => pick.gameId === featuredGame.id)
+          setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks
+        }
+
+        // Auto-generate script for featured game if not already loaded
+        if (!scriptContent.has(featuredGame.id)) {
+          await handleGenerateScript(featuredGame.id)
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          console.error('Failed to load featured game data:', error)
+          setFeaturedGamePicks([])
+        }
+      } finally {
+        setFeaturedGamePicksLoading(false)
+      }
+    }
+
+    loadFeaturedGameData()
+
+    return () => {
+      controller.abort()
+    }
+  }, [featuredGame, activeTab, activeSport])
+
   useEffect(() => {
     if (activeTab !== 'picks' || activeFilter !== 'topProps') return
 
@@ -943,6 +996,96 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     }
   }
 
+  // Helper to render public betting splits for desktop featured game
+  const renderFeaturedPublicBetting = (game: GameSummary) => {
+    const pm = game.publicMoney
+    if (!pm) return null
+
+    const markets = [
+      {
+        id: 'spread-home',
+        label: `${game.homeTeam} Spread`,
+        bets: pm.public_money_spread_home_bets_pct,
+        stake: pm.public_money_spread_home_stake_pct
+      },
+      {
+        id: 'spread-away',
+        label: `${game.awayTeam} Spread`,
+        bets: pm.public_money_spread_away_bets_pct,
+        stake: pm.public_money_spread_away_stake_pct
+      },
+      {
+        id: 'ml-home',
+        label: `${game.homeTeam} ML`,
+        bets: pm.public_money_ml_home_bets_pct,
+        stake: pm.public_money_ml_home_stake_pct
+      },
+      {
+        id: 'ml-away',
+        label: `${game.awayTeam} ML`,
+        bets: pm.public_money_ml_away_bets_pct,
+        stake: pm.public_money_ml_away_stake_pct
+      },
+      {
+        id: 'over',
+        label: 'Over',
+        bets: pm.public_money_over_bets_pct,
+        stake: pm.public_money_over_stake_pct
+      },
+      {
+        id: 'under',
+        label: 'Under',
+        bets: pm.public_money_under_bets_pct,
+        stake: pm.public_money_under_stake_pct
+      }
+    ].filter(m => m.bets !== null && m.bets !== undefined)
+
+    if (markets.length === 0) return null
+
+    return (
+      <div style={{ marginTop: '16px' }}>
+        <div style={{ 
+          fontSize: '11px', 
+          fontWeight: 700, 
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: 'rgba(226, 232, 240, 0.8)',
+          marginBottom: '10px'
+        }}>
+          Public Betting Splits
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {markets.slice(0, 4).map(market => (
+            <div key={market.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ 
+                fontSize: '12px', 
+                fontWeight: 600,
+                color: 'rgba(226, 232, 240, 0.85)',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}>
+                <span>{market.label}</span>
+                <span style={{ color: '#81e7ff' }}>{formatPercentage(market.bets)}</span>
+              </div>
+              <div style={{ 
+                height: '6px', 
+                borderRadius: '999px',
+                background: 'rgba(148, 163, 184, 0.25)',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${market.bets}%`,
+                  background: 'linear-gradient(90deg, #22d3ee, #6366f1)'
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const renderGamesView = () => {
     if (isLoading) {
       return renderPlaceholder('Loading live data...')
@@ -1007,10 +1150,14 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       router.push(`/sports/${activeSport}/games/${slug}/data`)
     }
 
+    const featuredScript = scriptContent.get(displayGame.id)
+    const isScriptLoading = loadingScripts.has(displayGame.id)
+
     return (
       <div className={styles.gameContent}>
+        {/* MOBILE FEATURED GAME - Keep original compact design */}
         <div 
-          className={`${styles.featuredWrapper} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}
+          className={`${styles.featuredWrapper} ${styles.featuredWrapperMobile} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}
           onClick={() => handleGameClick(displayGame)}
           style={{ cursor: 'pointer' }}
         >
@@ -1020,7 +1167,6 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             {displayGame.awayTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.awayTeamLogo} alt={displayGame.awayTeam} className={styles.featuredLogo} />
-                {/* Ranking badge for away team (CFB only) - bottom-right */}
                 {isCollegeSport && (displayGame as any).awayTeamRank && (
                   <div style={{
                     position: 'absolute',
@@ -1044,7 +1190,6 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             {displayGame.homeTeamLogo && (
               <div className={styles.featuredLogoWrapper}>
                 <img src={displayGame.homeTeamLogo} alt={displayGame.homeTeam} className={styles.featuredLogo} />
-                {/* Ranking badge for home team (CFB only) - bottom-right */}
                 {isCollegeSport && (displayGame as any).homeTeamRank && (
                   <div style={{
                     position: 'absolute',
@@ -1074,9 +1219,162 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               </div>
             ))}
           </div>
-          {/* Show referee/coach line only for NFL and NBA */}
           {(activeSport === 'nfl' || activeSport === 'nba') && (
             <div className={styles.featuredRef}>{officialLabel} · {officialName}</div>
+          )}
+        </div>
+
+        {/* DESKTOP FEATURED GAME - Enhanced information-dense design */}
+        <div 
+          className={`${styles.featuredWrapper} ${styles.featuredWrapperDesktop} ${featuredGame && featuredGame.id === displayGame.id ? styles.featuredActive : ''}`}
+          onClick={() => handleGameClick(displayGame)}
+          style={{ cursor: 'pointer' }}
+        >
+          {/* Header */}
+          <div className={styles.featuredTitle}>Featured Game</div>
+          <div className={styles.featuredSeparator} />
+          
+          {/* Teams & Date */}
+          <div className={styles.featuredMatchup}>
+            {displayGame.awayTeamLogo && (
+              <div className={styles.featuredLogoWrapper}>
+                <img src={displayGame.awayTeamLogo} alt={displayGame.awayTeam} className={styles.featuredLogo} />
+                {isCollegeSport && (displayGame as any).awayTeamRank && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-4px',
+                    right: '-4px',
+                    background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)'
+                  }}>
+                    #{(displayGame as any).awayTeamRank}
+                  </div>
+                )}
+              </div>
+            )}
+            <span className={styles.featuredVs}>@</span>
+            {displayGame.homeTeamLogo && (
+              <div className={styles.featuredLogoWrapper}>
+                <img src={displayGame.homeTeamLogo} alt={displayGame.homeTeam} className={styles.featuredLogo} />
+                {isCollegeSport && (displayGame as any).homeTeamRank && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-4px',
+                    right: '-4px',
+                    background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                    border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 2px 8px rgba(234, 88, 12, 0.4)'
+                  }}>
+                    #{(displayGame as any).homeTeamRank}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className={styles.featuredDate}>{formatKickoffDate(displayGame.kickoff)} · {displayGame.kickoffLabel}</div>
+          
+          {/* Referee/Coach (NFL/NBA only) */}
+          {(activeSport === 'nfl' || activeSport === 'nba') && (
+            <div className={styles.featuredRef} style={{ marginBottom: '8px' }}>{officialLabel} · {officialName}</div>
+          )}
+
+          {/* Public Betting Splits */}
+          {renderFeaturedPublicBetting(displayGame)}
+
+          {/* Top 3 Picks */}
+          {featuredGamePicks.length > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ 
+                fontSize: '11px', 
+                fontWeight: 700, 
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'rgba(226, 232, 240, 0.8)',
+                marginBottom: '10px'
+              }}>
+                Active Picks ({featuredGamePicks.length})
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {featuredGamePicks.map((pick) => (
+                  <div key={pick.id} style={{
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(148, 163, 184, 0.18)',
+                    borderRadius: '12px',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#f8fafc'
+                  }}>
+                    <div style={{ marginBottom: '4px' }}>{pick.title}</div>
+                    <div style={{ 
+                      fontSize: '11px', 
+                      color: 'rgba(203, 213, 225, 0.7)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span>{pick.bettorName}</span>
+                      <span style={{ 
+                        background: 'rgba(99, 102, 241, 0.2)',
+                        border: '1px solid rgba(129, 140, 248, 0.35)',
+                        borderRadius: '999px',
+                        padding: '2px 8px',
+                        color: '#c7d2fe',
+                        fontWeight: 600
+                      }}>
+                        {pick.units}U
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Game Script */}
+          {featuredScript && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ 
+                fontSize: '11px', 
+                fontWeight: 700, 
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'rgba(226, 232, 240, 0.8)',
+                marginBottom: '10px'
+              }}>
+                Game Script
+              </div>
+              <div 
+                style={{ 
+                  color: 'rgba(226, 232, 240, 0.9)',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  maxHeight: '300px',
+                  overflowY: 'auto'
+                }}
+                dangerouslySetInnerHTML={{ __html: formatScript(featuredScript) }}
+              />
+            </div>
+          )}
+          {isScriptLoading && (
+            <div style={{ marginTop: '16px', padding: '20px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                <span className={styles.dot}></span>
+                <span className={styles.dot}></span>
+                <span className={styles.dot}></span>
+              </div>
+            </div>
           )}
         </div>
 

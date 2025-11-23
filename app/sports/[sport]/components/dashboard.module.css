@@ -1156,6 +1156,32 @@
   width: 100%;
 }
 
+/* Mobile version - compact design (default) */
+.featuredWrapperMobile {
+  display: flex;
+}
+
+/* Desktop version - enhanced design (hidden on mobile) */
+.featuredWrapperDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  /* Hide mobile version on desktop */
+  .featuredWrapperMobile {
+    display: none;
+  }
+  
+  /* Show desktop version on desktop */
+  .featuredWrapperDesktop {
+    display: flex;
+    align-items: stretch;
+    max-height: none;
+    overflow-y: auto;
+    padding: 24px;
+  }
+}
+
 .featuredActive {
   box-shadow: 0 0 30px rgba(99, 102, 241, 0.35);
   border-color: rgba(129, 140, 248, 0.6);
