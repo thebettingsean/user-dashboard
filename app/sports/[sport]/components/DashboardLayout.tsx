@@ -533,13 +533,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   }
 
   const upcomingGames = useMemo(() => {
-    const now = Date.now()
-    const upcoming = games.filter((game) => {
-      const kickoffTime = new Date(game.kickoff).getTime()
-      return Number.isFinite(kickoffTime) && kickoffTime >= now
-    })
-    console.log(`Upcoming games: ${upcoming.length} out of ${games.length}`)
-    return upcoming
+    // Show all games - no filtering based on kickoff time
+    console.log(`Total games available: ${games.length}`)
+    return games
   }, [games])
 
   const sortedGames = useMemo(() => {
