@@ -951,6 +951,13 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       return renderPlaceholder('No games available.')
     }
 
+    // Debug: Log all games and which one is featured
+    console.log('[GAMES TAB DEBUG]')
+    console.log('Total sorted games:', sortedGames.length)
+    console.log('Featured game:', featuredGame ? `${featuredGame.awayTeam} @ ${featuredGame.homeTeam}` : 'None')
+    console.log('Games in list (excluding featured):', sortedGames.filter((game) => !featuredGame || game.id !== featuredGame.id).length)
+    console.log('All games:', sortedGames.map(g => `${g.awayTeam} @ ${g.homeTeam}`).join(', '))
+
     const topMarkets = getTopPublicMarkets(displayGame, 3)
     const strongestDataCount = (displayGame.publicMoney ? 1 : 0) + (displayGame.referee ? 1 : 0) + (displayGame.teamTrends ? 1 : 0) + (displayGame.propsCount > 0 ? 1 : 0)
     const featuredStats = [
