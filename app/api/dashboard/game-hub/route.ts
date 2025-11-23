@@ -233,9 +233,10 @@ export async function GET(request: NextRequest) {
       now.setTime(mostRecentSunday.getTime())
       futureDate.setTime(endOfWeek.getTime())
     } else {
-      // NFL: 7 days from now
-      now.setHours(0, 0, 0, 0)
-      futureDate.setDate(now.getDate() + 7)
+      // NFL: Show all games from 12 hours ago through next 7 days
+      // This catches early afternoon games that already started
+      now.setHours(now.getHours() - 12) // Look back 12 hours to catch afternoon games
+      futureDate.setDate(futureDate.getDate() + 7)
     }
 
     // Query appropriate table based on sport (college_game_snapshots for CFB, game_snapshots for others)
