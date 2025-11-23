@@ -762,8 +762,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks
         }
 
-        // Don't auto-generate script - let users click to generate
-        // This prevents unwanted API calls and allows blurred preview for non-subscribers
+        // Auto-generate script for subscribed users only
+        if (hasAccess && !scriptContent.has(featuredGame.id)) {
+          await handleGenerateScript(featuredGame.id)
+        }
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           console.error('Failed to load featured game data:', error)
@@ -779,7 +781,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     return () => {
       controller.abort()
     }
-  }, [featuredGame, activeTab, activeSport])
+  }, [featuredGame, activeTab, activeSport, hasAccess])
 
   useEffect(() => {
     if (activeTab !== 'picks' || activeFilter !== 'topProps') return
@@ -1301,8 +1303,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   }}>
                     {/* Bettor Image */}
                     <BettorProfileImage 
-                      imageUrl={pick.bettorImageUrl}
-                      initials={pick.bettorInitials}
+                      imageUrl={pick.bettorProfileImage}
+                      initials={pick.bettorProfileInitials}
                       size={36}
                     />
                     {/* Bet Title */}
@@ -1313,7 +1315,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       color: '#f8fafc',
                       lineHeight: '1.4'
                     }}>
-                      {pick.title}
+                      {pick.betTitle}
                     </div>
                     {/* Units */}
                     <span style={{ 

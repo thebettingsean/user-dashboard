@@ -1180,6 +1180,28 @@
     overflow-y: auto;
     padding: 24px;
   }
+  
+  /* Center-align header elements on desktop */
+  .featuredWrapperDesktop .featuredTitle {
+    text-align: center;
+  }
+  
+  .featuredWrapperDesktop .featuredSeparator {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .featuredWrapperDesktop .featuredMatchup {
+    justify-content: center;
+  }
+  
+  .featuredWrapperDesktop .featuredDate {
+    text-align: center;
+  }
+  
+  .featuredWrapperDesktop .featuredRef {
+    text-align: center;
+  }
 }
 
 .featuredActive {
