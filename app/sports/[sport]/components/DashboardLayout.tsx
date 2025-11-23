@@ -762,10 +762,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks
         }
 
-        // Auto-generate script ONLY if user has access (to avoid redirect to pricing)
-        if (hasAccess && !scriptContent.has(featuredGame.id)) {
-          await handleGenerateScript(featuredGame.id)
-        }
+        // Don't auto-generate script - let users click to generate
+        // This prevents unwanted API calls and allows blurred preview for non-subscribers
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           console.error('Failed to load featured game data:', error)
@@ -781,7 +779,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     return () => {
       controller.abort()
     }
-  }, [featuredGame, activeTab, activeSport, hasAccess])
+  }, [featuredGame, activeTab, activeSport])
 
   useEffect(() => {
     if (activeTab !== 'picks' || activeFilter !== 'topProps') return
@@ -1001,46 +999,29 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     const pm = game.publicMoney
     if (!pm) return null
 
-    const markets = [
-      {
-        id: 'spread-home',
-        label: `${game.homeTeam} Spread`,
-        bets: pm.public_money_spread_home_bets_pct,
-        stake: pm.public_money_spread_home_stake_pct
-      },
-      {
-        id: 'spread-away',
-        label: `${game.awayTeam} Spread`,
-        bets: pm.public_money_spread_away_bets_pct,
-        stake: pm.public_money_spread_away_stake_pct
-      },
-      {
-        id: 'ml-home',
-        label: `${game.homeTeam} ML`,
-        bets: pm.public_money_ml_home_bets_pct,
-        stake: pm.public_money_ml_home_stake_pct
-      },
-      {
-        id: 'ml-away',
-        label: `${game.awayTeam} ML`,
-        bets: pm.public_money_ml_away_bets_pct,
-        stake: pm.public_money_ml_away_stake_pct
-      },
-      {
-        id: 'over',
-        label: 'Over',
-        bets: pm.public_money_over_bets_pct,
-        stake: pm.public_money_over_stake_pct
-      },
-      {
-        id: 'under',
-        label: 'Under',
-        bets: pm.public_money_under_bets_pct,
-        stake: pm.public_money_under_stake_pct
-      }
-    ].filter(m => m.bets !== null && m.bets !== undefined)
+    // Get the most public ML (by stake %)
+    const mlOptions = [
+      { label: `${game.homeTeam} ML`, bets: pm.public_money_ml_home_bets_pct, stake: pm.public_money_ml_home_stake_pct },
+      { label: `${game.awayTeam} ML`, bets: pm.public_money_ml_away_bets_pct, stake: pm.public_money_ml_away_stake_pct }
+    ].filter(m => m.stake !== null && m.stake !== undefined)
+    const topML = mlOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
 
-    if (markets.length === 0) return null
+    // Get the most public Spread (by stake %)
+    const spreadOptions = [
+      { label: `${game.homeTeam} Spread`, bets: pm.public_money_spread_home_bets_pct, stake: pm.public_money_spread_home_stake_pct },
+      { label: `${game.awayTeam} Spread`, bets: pm.public_money_spread_away_bets_pct, stake: pm.public_money_spread_away_stake_pct }
+    ].filter(m => m.stake !== null && m.stake !== undefined)
+    const topSpread = spreadOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
+
+    // Get the most public O/U (by stake %)
+    const ouOptions = [
+      { label: 'Over', bets: pm.public_money_over_bets_pct, stake: pm.public_money_over_stake_pct },
+      { label: 'Under', bets: pm.public_money_under_bets_pct, stake: pm.public_money_under_stake_pct }
+    ].filter(m => m.stake !== null && m.stake !== undefined)
+    const topOU = ouOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
+
+    const topMarkets = [topML, topSpread, topOU].filter(Boolean)
+    if (topMarkets.length === 0) return null
 
     return (
       <div style={{ marginTop: '16px' }}>
@@ -1052,11 +1033,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           color: 'rgba(226, 232, 240, 0.8)',
           marginBottom: '10px'
         }}>
-          Public Betting Splits
+          Most Public Bets
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {markets.slice(0, 4).map(market => (
-            <div key={market.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {topMarkets.map((market, idx) => (
+            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ 
                 fontSize: '12px', 
                 fontWeight: 600,
@@ -1064,8 +1045,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 display: 'flex',
                 justifyContent: 'space-between'
               }}>
-                <span>{market.label}</span>
-                <span style={{ color: '#81e7ff' }}>{formatPercentage(market.bets)}</span>
+                <span>{market!.label}</span>
+                <span style={{ color: '#81e7ff' }}>
+                  {formatPercentage(market!.stake)} $ · {formatPercentage(market!.bets)} bets
+                </span>
               </div>
               <div style={{ 
                 height: '6px', 
@@ -1075,7 +1058,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               }}>
                 <div style={{
                   height: '100%',
-                  width: `${market.bets}%`,
+                  width: `${market!.stake}%`,
                   background: 'linear-gradient(90deg, #22d3ee, #6366f1)'
                 }} />
               </div>
@@ -1312,30 +1295,39 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     border: '1px solid rgba(148, 163, 184, 0.18)',
                     borderRadius: '12px',
                     padding: '10px 12px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: '#f8fafc'
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
                   }}>
-                    <div style={{ marginBottom: '4px' }}>{pick.title}</div>
+                    {/* Bettor Image */}
+                    <BettorProfileImage 
+                      imageUrl={pick.bettorImageUrl}
+                      initials={pick.bettorInitials}
+                      size={36}
+                    />
+                    {/* Bet Title */}
                     <div style={{ 
-                      fontSize: '11px', 
-                      color: 'rgba(203, 213, 225, 0.7)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
+                      flex: 1,
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#f8fafc',
+                      lineHeight: '1.4'
                     }}>
-                      <span>{pick.bettorName}</span>
-                      <span style={{ 
-                        background: 'rgba(99, 102, 241, 0.2)',
-                        border: '1px solid rgba(129, 140, 248, 0.35)',
-                        borderRadius: '999px',
-                        padding: '2px 8px',
-                        color: '#c7d2fe',
-                        fontWeight: 600
-                      }}>
-                        {pick.units}U
-                      </span>
+                      {pick.title}
                     </div>
+                    {/* Units */}
+                    <span style={{ 
+                      background: 'rgba(99, 102, 241, 0.2)',
+                      border: '1px solid rgba(129, 140, 248, 0.35)',
+                      borderRadius: '999px',
+                      padding: '4px 10px',
+                      color: '#c7d2fe',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {pick.units}U
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1343,18 +1335,20 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           )}
 
           {/* Game Script */}
-          {featuredScript && (
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ 
-                fontSize: '11px', 
-                fontWeight: 700, 
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'rgba(226, 232, 240, 0.8)',
-                marginBottom: '10px'
-              }}>
-                Game Script
-              </div>
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ 
+              fontSize: '11px', 
+              fontWeight: 700, 
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(226, 232, 240, 0.8)',
+              marginBottom: '10px'
+            }}>
+              AI Game Script
+            </div>
+            
+            {/* Show actual script for subscribed users */}
+            {hasAccess && featuredScript && (
               <div 
                 style={{ 
                   color: 'rgba(226, 232, 240, 0.9)',
@@ -1365,61 +1359,85 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 }}
                 dangerouslySetInnerHTML={{ __html: formatScript(featuredScript) }}
               />
-            </div>
-          )}
-          {isScriptLoading && (
-            <div style={{ marginTop: '16px', padding: '20px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                <span className={styles.dot}></span>
-                <span className={styles.dot}></span>
-                <span className={styles.dot}></span>
-              </div>
-            </div>
-          )}
-          {/* Show subscription CTA if user doesn't have access and no script loaded */}
-          {!hasAccess && !featuredScript && !isScriptLoading && (
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ 
-                fontSize: '11px', 
-                fontWeight: 700, 
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'rgba(226, 232, 240, 0.8)',
-                marginBottom: '10px'
-              }}>
-                Game Script
-              </div>
-              <div style={{
-                background: 'rgba(99, 102, 241, 0.15)',
-                border: '1px solid rgba(129, 140, 248, 0.3)',
-                borderRadius: '12px',
-                padding: '16px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '13px', color: 'rgba(226, 232, 240, 0.9)', marginBottom: '12px' }}>
-                  🔒 AI Game Scripts available with subscription
+            )}
+            
+            {/* Loading state */}
+            {hasAccess && isScriptLoading && (
+              <div style={{ padding: '20px', textAlign: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                  <span className={styles.dot}></span>
+                  <span className={styles.dot}></span>
+                  <span className={styles.dot}></span>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    router.push('/pricing')
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '999px',
-                    background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
-                    border: 'none',
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Start $1 Trial
-                </button>
               </div>
-            </div>
-          )}
+            )}
+            
+            {/* Blurred preview + CTA for non-subscribed users */}
+            {!hasAccess && (
+              <div style={{ position: 'relative' }}>
+                {/* Blurred preview text */}
+                <div style={{
+                  filter: 'blur(8px)',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  color: 'rgba(226, 232, 240, 0.6)',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  padding: '16px',
+                  background: 'rgba(15, 23, 42, 0.5)',
+                  borderRadius: '12px'
+                }}>
+                  <p><strong>Game Analysis</strong></p>
+                  <p>This matchup features two teams with contrasting styles. The home team enters with momentum from their recent performances, while the visitors look to exploit key matchups.</p>
+                  <p><strong>Key Factors</strong></p>
+                  <p>Public betting is heavily favoring one side, creating potential value on the other. The referee's tendencies and recent team trends suggest interesting betting opportunities.</p>
+                  <p><strong>Recommendation</strong></p>
+                  <p>Based on our comprehensive analysis of betting data, team statistics, and market inefficiencies...</p>
+                </div>
+                
+                {/* Overlay CTA */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  background: 'rgba(12, 20, 37, 0.95)',
+                  border: '1px solid rgba(129, 140, 248, 0.4)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  textAlign: 'center',
+                  boxShadow: '0 12px 48px rgba(0, 0, 0, 0.5)'
+                }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.95)', marginBottom: '12px', fontWeight: 600 }}>
+                    🔒 Unlock AI Game Scripts
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (isSignedIn) {
+                        router.push('/pricing')
+                      } else {
+                        openSignUp({ redirectUrl: '/pricing' })
+                      }
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: '999px',
+                      background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)'
+                    }}
+                  >
+                    {isSignedIn ? 'Start $1 Trial' : 'Sign Up - $1 Trial'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.gameList}>
