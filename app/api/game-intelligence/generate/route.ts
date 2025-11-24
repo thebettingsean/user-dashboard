@@ -618,12 +618,24 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
       prompt += `${'-'.repeat(60)}\n\n`
     })
     
-    prompt += `🚨 **CRITICAL INSTRUCTIONS - ANALYST PICKS MUST BE YOUR PRIMARY FOCUS:**\n\n`
-    prompt += `1. **START YOUR SCRIPT WITH ANALYST PICKS** - Don't bury them at the end!\n`
-    prompt += `2. **USE THEIR EXACT PLAYER NAMES & PROPS** - If they say "Michael Porter Jr. o7.5 rebounds", that MUST be in your script\n`
-    prompt += `3. **NEVER SUGGEST DIFFERENT PROPS** - If analyst picked MPJ rebounds, DO NOT suggest Jarace Walker assists\n`
-    prompt += `4. **BUILD AROUND THEIR ANALYSIS** - Use team rankings/public money/trends to SUPPORT their picks\n\n`
-    prompt += `Write one data-dense narrative (600-700 words) where EVERY paragraph has 5-10 specific stats.\n\n`
+    prompt += `🚨 **CRITICAL INSTRUCTIONS - CREATE A NARRATIVE, DON'T REGURGITATE:**\n\n`
+    prompt += `**YOUR JOB:** Write an intelligent betting story that reveals hidden edges in this game.\n\n`
+    prompt += `**THE APPROACH:**\n`
+    prompt += `1. **START WITH A THESIS** - What's the REAL story this game? (e.g., "This line is a trap", "The total is begging to be attacked", "The market is overlooking a key injury")\n`
+    prompt += `2. **BUILD YOUR CASE** - Use team stats, public betting, injuries, trends, game script to explain WHY\n`
+    prompt += `3. **WEAVE IN ANALYST PICKS AS PROOF** - When you identify an edge, say "That's exactly why [Analyst Name] is backing [specific pick]..."\n`
+    prompt += `4. **CONNECT THE DOTS** - Show how everything ties together into a cohesive betting strategy\n\n`
+    prompt += `**HOW TO USE ANALYST PICKS:**\n`
+    prompt += `- DON'T start with "Our analysts like..." - That's boring\n`
+    prompt += `- DO build context first, THEN introduce their pick as validation\n`
+    prompt += `- Example: "The 49ers' defense ranks 4th-worst against WRs (165.2 YPG) and plays Cover 3 at the 6th-highest rate—exactly the coverage elite receivers exploit. **That's why our top analysts are hammering McMillan O65.5 receiving yards (-111)** after his 8/130/2 explosion last week. He averages 2.13 yards per route vs Cover 3 with a .25 target rate across 111 routes..."\n\n`
+    prompt += `**NARRATIVE STRUCTURE (600-700 words):**\n`
+    prompt += `• **Opening Hook** (2-3 sentences): Set the stage. What's interesting about this matchup?\n`
+    prompt += `• **Build the Case** (3-4 paragraphs): Use stats/public betting/trends to reveal the edge\n`
+    prompt += `• **Introduce Analyst Picks** (woven throughout): "This is why [Name] is backing [pick]..."\n`
+    prompt += `• **Connect to Game Script**: Show how the flow of the game supports your thesis\n`
+    prompt += `• **Strong Close**: Summarize the edge and rank the plays by confidence\n\n`
+    prompt += `Write one cohesive story where EVERY paragraph has 5-10 specific stats integrated naturally.\n\n`
     
     prompt += `❌ **BAD (FLUFFY) PARAGRAPH:**\n`
     prompt += `"The Bears have a slight edge in this matchup. Their offense has shown the ability to move the ball, while the Bengals' defense has struggled throughout the season. This creates an interesting dynamic that could favor Chicago."\n`
@@ -679,22 +691,33 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
         prompt += `---\n\n`
         prompt += `**NOW ANALYZE THE CURRENT GAME USING THESE SAME TECHNIQUES:**\n\n`
         prompt += `🚨 CRITICAL REQUIREMENTS (MUST FOLLOW):\n\n`
-        prompt += `1. **NO FLUFF INTROS**: Skip "In this NFL showdown" or "A deep dive into". START with the best data point immediately.\n`
-        prompt += `2. **NEVER MENTION "TEAMRANKINGS" OR "TEAM RANKINGS"**: Say "Statistical analysis", "Team ranks", or just cite the stat directly\n`
-        prompt += `3. **WEAVE PLAYER PROPS THROUGHOUT**: If props are provided below, integrate them into your narrative naturally. Connect game script → player roles → prop recommendations. DO NOT just list them at the end!\n`
-        prompt += `4. **NEVER INVENT PLAYER PROPS**: ONLY suggest props that exist in the data provided below\n`
-        prompt += `5. **CONNECT MULTIPLE DATA POINTS**: Always link spread → game script → team stats → props\n`
-        prompt += `   Example: "Rams -6.5 + elite rushing offense (128 YPG, #8) → early lead → run-heavy 2nd half → Stafford UNDER pass attempts (30.5 at -110, 65% hit rate)"\n`
-        prompt += `6. **USE SPREAD TO EXPLAIN GAME SCRIPT**: If a team is -7 or more, explain early lead implications\n`
-        prompt += `7. **Cite specific ranks**: "Patriots rank 28th in yards/play (4.9)" not "Patriots have a weak offense"\n`
-        prompt += `8. **Explain causal chains**: Low 3rd down % → stalled drives → fewer possessions → UNDER total → UNDER QB pass yards prop\n`
-        prompt += `9. **Identify exploitable mismatches**: When Top 10 meets Bottom 10, THIS IS WHERE VALUE EXISTS\n`
-        prompt += `10. **Bold all specific plays/bets**: Any prop, spread, or total you're highlighting (but ONLY if it exists in the data)\n`
-        prompt += `11. **MINIMUM 400 WORDS**: Deep, data-packed analysis. Every sentence has a specific stat.\n`
-        prompt += `12. **Write like a sharp texting a friend**: Direct, confident, data-heavy. Not an AI essay.\n`
-        prompt += `13. **CITE EXACT NUMBERS**: Never say "strong" or "high-scoring" - say "28.4 PPG (#3 in NFL)" or "67% ATS"\n\n`
-        prompt += `⚠️ IF PROPS ARE PROVIDED: You MUST suggest at least 2-3 prop plays woven into your analysis!\n`
-        prompt += `⚠️ IF NO PROPS EXIST IN THE DATA: Focus on spreads, totals, or general matchup analysis. DO NOT make up props!\n\n`
+        prompt += `**NARRATIVE FIRST, DATA SECOND:**\n`
+        prompt += `1. **OPEN WITH YOUR ANGLE**: What's the hidden edge? What is the market missing? Start with a thesis, not a data dump.\n`
+        prompt += `2. **BUILD THE STORY**: Use stats to SUPPORT your narrative, not BE your narrative\n`
+        prompt += `3. **WRITE LIKE A SHARP BETTOR**: Confident, direct, conversational. "This line is a trap" not "We believe there may be value"\n\n`
+        
+        prompt += `**ANALYST PICKS AS EVIDENCE:**\n`
+        prompt += `4. **NEVER LEAD WITH "OUR ANALYSTS LIKE..."**: That's boring. Build context FIRST, then introduce picks as proof\n`
+        prompt += `5. **USE THIS FORMAT**: "[Build context with stats] → That's exactly why [Analyst Name] is backing [specific pick]..."\n`
+        prompt += `6. **ONLY USE PROVIDED PICKS**: Never invent props. If analyst said "McMillan O65.5", use that exact pick\n\n`
+        
+        prompt += `**DATA INTEGRATION:**\n`
+        prompt += `7. **CONNECT THE DOTS**: Spread → Game script → Matchups → Specific picks. Show the causal chain.\n`
+        prompt += `8. **EXPLOIT MISMATCHES**: Top 10 offense vs Bottom 10 defense? THIS is where value lives. Highlight it.\n`
+        prompt += `9. **PUBLIC BETTING CONTEXT**: Use bet % vs $ % splits to show where sharps are leaning\n`
+        prompt += `10. **BOLD KEY PICKS**: Format as **[Player] OVER/UNDER [number] ([odds])**\n\n`
+        
+        prompt += `**WRITING STYLE:**\n`
+        prompt += `11. **NO FLUFF INTROS**: Skip "In this matchup" or "A deep dive". Start with impact.\n`
+        prompt += `12. **SPECIFIC NUMBERS ONLY**: Never "strong offense" - say "28.4 PPG (#3)"\n`
+        prompt += `13. **NEVER MENTION "TEAMRANKINGS"**: Just cite stats directly or say "team ranks"\n`
+        prompt += `14. **MINIMUM 500 WORDS**: This is an intelligent breakdown, not a tweet\n\n`
+        
+        prompt += `**STRUCTURE:**\n`
+        prompt += `• Hook (1-2 sentences): The angle\n`
+        prompt += `• Build the case (60% of script): Stats, trends, matchups\n`
+        prompt += `• Introduce picks naturally (30%): Woven into the narrative\n`
+        prompt += `• Close strong (10%): Rank plays by confidence\n\n`
       }
     }
   } catch (error) {
@@ -711,11 +734,14 @@ async function buildGameScriptPrompt(data: GameIntelligenceData, league: string,
     minute: '2-digit'
   })}\n\n`
   
-  // NARRATIVE FLOW - NO SEPARATE INTRO
-  prompt += `**🎯 START YOUR NARRATIVE:**\n`
-  prompt += `Begin naturally by setting context - what's the spread, why is this game interesting, what immediately jumps out from the data?\n`
-  prompt += `Then flow into your analysis, introducing plays as they emerge from the story you're telling.\n\n`
-  prompt += `Example opening: "The Bears are 2.5-point favorites visiting Cincinnati, and this line feels tight until you see the defensive numbers. The Bengals are allowing 31.6 PPG (#32 in the league) while Chicago, despite being middle-of-the-pack at 24 PPG (#15), has shown the ability to exploit weak defenses..."\n\n`
+  // NARRATIVE FLOW - STORY FIRST
+  prompt += `**🎯 YOUR NARRATIVE APPROACH:**\n`
+  prompt += `Think like an investigative reporter uncovering a betting edge, not a robot reciting stats.\n\n`
+  prompt += `**BAD OPENING (boring data dump):**\n`
+  prompt += `"The 49ers are 7-point favorites at home against Carolina. San Francisco's offense ranks 2nd in passing (254.5 YPG) while Carolina allows 212.8 passing yards (#16). George Kittle over 56.5 receiving yards is a strong play..."\n\n`
+  prompt += `**GOOD OPENING (narrative with angle):**\n`
+  prompt += `"This game is setting up as a pass-funnel nightmare for Carolina disguised as a routine blowout. The public sees 49ers -7 at home and assumes a run-heavy beatdown, but the underlying matchup data tells a completely different story. The 49ers' 254.5 passing yards per game (#2) meets a Panthers defense that ranks 4th-worst against WRs (165.2 YPG) while deploying Cover 3 at the 6th-highest rate—exactly the coverage elite pass-catchers destroy..."\n\n`
+  prompt += `See the difference? The second version creates intrigue, sets up WHY the edge exists, then flows into specific plays naturally.\n\n`
 
   // Odds (with null checks)
   if (game.odds && game.odds.spread !== undefined) {
