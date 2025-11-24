@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { supabaseUsers } from '@/lib/supabase-users';
 
 export async function POST(request: Request) {
   try {
@@ -46,10 +46,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-
     // Insert event into simulator_events table
-    const { error } = await supabase
+    const { error } = await supabaseUsers
       .from('simulator_events')
       .insert({
         session_id: sessionId,
@@ -97,10 +95,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-
     // Count simulation_ran events for this session
-    const { count, error } = await supabase
+    const { count, error } = await supabaseUsers
       .from('simulator_events')
       .select('*', { count: 'exact', head: true })
       .eq('session_id', sessionId)

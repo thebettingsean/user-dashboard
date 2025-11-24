@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useUser } from '@clerk/nextjs';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '@/lib/hooks/useSubscription';
 import {
   getSessionId,
   getGenerationCount,
@@ -15,7 +15,7 @@ import styles from './simulator.module.css';
 
 // Dynamically import Spline to avoid SSR issues
 const Spline = dynamic(
-  () => import('@splinetool/react-spline').then((mod) => mod.default),
+  () => import('@splinetool/react-spline'),
   { ssr: false }
 );
 
