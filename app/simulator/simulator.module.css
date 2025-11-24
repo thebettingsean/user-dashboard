@@ -1,0 +1,676 @@
+/* Simulator Page Styles */
+
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: rgb(16, 21, 26);
+  pointer-events: auto;
+}
+
+/* ============================================================================
+   Spline Background
+   ============================================================================ */
+
+.splineBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+/* ============================================================================
+   Content Overlay
+   ============================================================================ */
+
+.contentOverlay {
+  position: relative;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  pointer-events: auto;
+}
+
+/* ============================================================================
+   Header
+   ============================================================================ */
+
+.header {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20px 40px;
+  z-index: 1001;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 300;
+  margin: 0;
+  text-align: center;
+  color: #ffffff;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 10px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.versusLink {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.versusLink:hover {
+  color: rgba(255, 255, 255, 1);
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   Main Content
+   ============================================================================ */
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 100px;
+  padding: 0;
+}
+
+.generationCounter {
+  padding: 12px 24px;
+  margin-bottom: 20px;
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: rgba(255, 215, 0, 0.9);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   Selection Row
+   ============================================================================ */
+
+.selectionRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdownWrapper {
+  position: relative;
+  z-index: 1001;
+}
+
+.selectionButton {
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1001;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 150px;
+}
+
+.selectionButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.selectionButtonActive {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================================
+   Dropdowns
+   ============================================================================ */
+
+.dropdown {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 0;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 150px;
+  z-index: 1003;
+  pointer-events: auto;
+}
+
+.dropdownLarge {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 0;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 250px;
+  max-height: 200px;
+  overflow: auto;
+  z-index: 1003;
+  pointer-events: auto;
+}
+
+.dropdownSearch {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.dropdownSearch::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dropdownItem {
+  padding: 12px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1004;
+  pointer-events: auto;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdownItemActive {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dropdownLoading,
+.dropdownEmpty {
+  padding: 20px;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* ============================================================================
+   Results
+   ============================================================================ */
+
+.resultsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+  align-items: center;
+}
+
+.scoreCard {
+  font-size: 42px;
+  font-weight: 300;
+  color: #ffffff;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  padding: 24px 48px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.teamLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.teamAbbr {
+  font-size: 12px;
+}
+
+.teamVenue {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 300;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score {
+  font-size: 42px;
+}
+
+.statsRow {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.statCard {
+  padding: 16px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.statLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 300;
+  color: #ffffff;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+}
+
+/* ============================================================================
+   Simulate Button
+   ============================================================================ */
+
+.simulateButton {
+  padding: 16px 48px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 40px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1001;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.simulateButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.simulateButton:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   Sliders
+   ============================================================================ */
+
+.slidersWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 240px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: none;
+  font-size: 12px;
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.sliderSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sliderTeamName {
+  font-size: 12px;
+  font-weight: 400;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sliderGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sliderItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sliderHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slider {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  outline: none;
+  cursor: pointer;
+}
+
+/* ============================================================================
+   Modal
+   ============================================================================ */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: rgba(20, 25, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+}
+
+.modalText {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.modalList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+
+.modalList li {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 0;
+  padding-left: 24px;
+  position: relative;
+}
+
+.modalList li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.modalButton {
+  width: 100%;
+  padding: 16px 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.modalButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.modalButtonSecondary {
+  width: 100%;
+  padding: 16px 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modalButtonSecondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   Mobile Responsive
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .header {
+    top: 20px;
+    width: calc(100% - 40px);
+    padding: 12px 20px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 8px;
+  }
+
+  .mainContent {
+    margin-top: 80px;
+    padding: 0 16px;
+  }
+
+  .selectionRow {
+    gap: 8px;
+    width: 100%;
+  }
+
+  .selectionButton {
+    padding: 12px 16px;
+    font-size: 11px;
+    min-width: 100px;
+    width: calc(33.33% - 6px);
+  }
+
+  .dropdownLarge {
+    right: 0;
+    min-width: 100%;
+    max-height: 300px;
+  }
+
+  .scoreCard {
+    font-size: 28px;
+    padding: 16px 24px;
+    width: 100%;
+  }
+
+  .score {
+    font-size: 28px;
+  }
+
+  .statsRow {
+    gap: 8px;
+    width: 100%;
+  }
+
+  .statCard {
+    padding: 12px 16px;
+    flex: 1;
+    min-width: calc(33.33% - 6px);
+  }
+
+  .statLabel {
+    font-size: 9px;
+  }
+
+  .statValue {
+    font-size: 16px;
+  }
+
+  .simulateButton {
+    padding: 18px 32px;
+    font-size: 13px;
+    width: calc(100% - 32px);
+    min-height: 48px;
+  }
+
+  .slidersWrapper {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: 16px;
+    width: calc(100% - 32px);
+    margin-top: 24px;
+    margin-bottom: 24px;
+    max-height: none;
+  }
+
+  .modal {
+    padding: 30px 20px;
+  }
+
+  .modalTitle {
+    font-size: 20px;
+  }
+
+  .modalText {
+    font-size: 14px;
+  }
+
+  .modalList li {
+    font-size: 13px;
+  }
+}
+
