@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import dynamic from 'next/dynamic';
 import { useUser } from '@clerk/nextjs';
 import { useSubscription } from '@/lib/hooks/useSubscription';
 import {
@@ -11,13 +10,8 @@ import {
   hasReachedGenerationLimit,
   getRemainingGenerations,
 } from '@/utils/simulator-cookies';
+import SplineBackground from '@/components/SplineBackground';
 import styles from './simulator.module.css';
-
-// Dynamically import Spline (Next.js version)
-const Spline = dynamic(
-  () => import('@splinetool/react-spline/next'),
-  { ssr: false }
-);
 
 type Sport = 'nfl' | 'nba' | 'college-football' | 'college-basketball';
 
@@ -522,7 +516,7 @@ export default function SimulatorPage() {
     <div className={styles.container}>
       {/* Spline Background */}
       <div className={styles.splineBackground}>
-        <Spline 
+        <SplineBackground
           scene="https://prod.spline.design/I9cBnG1M2TY0k9XG/scene.splinecode"
           onLoad={(spline: any) => {
             setSplineLoaded(true);
