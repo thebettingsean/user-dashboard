@@ -5,7 +5,11 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: rgb(16, 21, 26);
+  background: linear-gradient(135deg, 
+    #000000 0%,      /* Black (top-left) */
+    #0a1018 40%,     /* Transition zone */
+    #0e172a 100%     /* Dark blue (bottom-right) */
+  );
   pointer-events: auto;
 }
 
@@ -92,6 +96,18 @@
 .versusLink:hover {
   color: rgba(255, 255, 255, 1);
   text-decoration: underline;
+}
+
+.versusArrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s ease;
+}
+
+.versusLink:hover + .versusArrow {
+  transform: translate(2px, -2px);
 }
 
 /* ============================================================================
@@ -386,6 +402,15 @@
   opacity: 0.5;
 }
 
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  display: inline-block;
+  vertical-align: middle;
+  filter: brightness(0) invert(1);
+}
+
 /* ============================================================================
    Sliders
    ============================================================================ */
@@ -486,6 +511,18 @@
   max-width: 500px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modalLogoContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.modalLogo {
+  width: 60px;
+  height: 60px;
+  filter: brightness(0) invert(1);
 }
 
 .modalTitle {

@@ -7,27 +7,70 @@ const API_KEY = 'YS0FH0UPXDT7HP70JXJCMEHRHKR1GI7Q';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const sport = searchParams.get('sport') || 'nfl';
+    const frontendSport = searchParams.get('sport') || 'nfl';
 
-    console.log('[Simulator Teams API] Fetching teams for sport:', sport);
+    // Map frontend sport names to Versus API sport identifiers
+    // Try multiple possible identifiers for college sports
+    const sportMap: Record<string, string[]> = {
+      'nfl': ['nfl'],
+      'nba': ['nba'],
+      'college-football': ['cfb', 'college-football', 'cf'],  // Try multiple variations
+      'college-basketball': ['cbb', 'college-basketball', 'ncaab', 'cb'], // Try multiple variations
+    };
 
-    // Versus API: teams/:sport/:premium
-    // Use 'true' for premium (all teams)
-    const premium = 'true';
-    const response = await fetch(`${VERSUS_API_BASE}/teams/${sport}/${premium}`, {
-      method: 'GET',
-      headers: {
-        'app-id': APP_ID,
-        'api-key': API_KEY,
-        'Content-Type': 'application/json',
-        'cache-control': 'no-cache',
-      },
-    });
+    const possibleSports = sportMap[frontendSport] || [frontendSport];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Simulator Teams API] Versus API error:', response.status, errorText);
-      throw new Error(`Versus API error: ${response.status} - ${errorText}`);
+    // Versus API uses path parameters: teams/:sport/:premium
+    // Use 'true' for premium (all teams) or 'false' for freemium teams
+    const premium = 'true'; // Set to 'false' for freemium access
+    
+    let response: Response | null = null;
+    let lastError: string = '';
+    let apiSport = '';
+
+    // Try each possible sport identifier until one works
+    for (const sport of possibleSports) {
+      apiSport = sport;
+      const endpoint = `${VERSUS_API_BASE}/teams/${apiSport}/${premium}`;
+      console.log('[Simulator Teams API] Trying endpoint:', endpoint);
+
+      response = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'app-id': APP_ID,
+          'api-key': API_KEY,
+          'Content-Type': 'application/json',
+          'cache-control': 'no-cache',
+        },
+      });
+
+      console.log('[Simulator Teams API] Response status:', response.status, response.statusText);
+
+      if (response.ok) {
+        console.log('[Simulator Teams API] Success with sport identifier:', apiSport);
+        break; // Success! Exit the loop
+      }
+
+      // If not OK, try to get error message
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const errorData = await response.json();
+          lastError = JSON.stringify(errorData);
+        } catch {
+          lastError = await response.text();
+        }
+      } else {
+        // HTML error page - this endpoint doesn't exist
+        lastError = `Endpoint not found (${response.status})`;
+      }
+      
+      console.log(`[Simulator Teams API] Failed with ${apiSport}, trying next...`);
+    }
+
+    if (!response || !response.ok) {
+      console.error('[Simulator Teams API] All sport identifiers failed. Last error:', lastError);
+      throw new Error(`Versus API error: Could not find valid endpoint. Tried: ${possibleSports.join(', ')}. Last error: ${lastError}`);
     }
 
     const data = await response.json();

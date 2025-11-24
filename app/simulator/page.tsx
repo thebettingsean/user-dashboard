@@ -348,18 +348,27 @@ export default function SimulatorPage() {
       return;
     }
 
-    // Check if already have originalRatings (slider adjustment mode)
-    if (originalRatings) {
-      return;
-    }
-
-    // Check generation limit for free users
-    if (!hasAccess) {
+    // Check generation limit for free users BEFORE checking if we have originalRatings
+    // This ensures the popup shows even if they're trying to re-run with same teams
+    if (!hasAccess && !isSignedIn) {
+      // For non-signed-in users
       if (hasReachedGenerationLimit()) {
         setShowLimitModal(true);
         trackEvent('popup_shown', null, null);
         return;
       }
+    } else if (!hasAccess && isSignedIn) {
+      // For signed-in users without subscription
+      if (hasReachedGenerationLimit()) {
+        setShowLimitModal(true);
+        trackEvent('popup_shown', null, null);
+        return;
+      }
+    }
+
+    // Check if already have originalRatings (slider adjustment mode)
+    if (originalRatings) {
+      return;
     }
 
     // First time simulation - call the API
@@ -545,6 +554,8 @@ export default function SimulatorPage() {
             >
               Versus Sports Simulator
             </a>
+            {' '}
+            <span className={styles.versusArrow}>↗</span>
           </div>
         </div>
 
@@ -613,7 +624,7 @@ export default function SimulatorPage() {
                 }}
                 className={`${styles.selectionButton} ${awayTeam ? styles.selectionButtonActive : ''}`}
               >
-                {awayTeam ? awayTeam.name : 'Away Team'}
+                {awayTeam ? awayTeam.name : 'Away'}
               </button>
 
               {showAwayDropdown && (
@@ -666,7 +677,7 @@ export default function SimulatorPage() {
                 }}
                 className={`${styles.selectionButton} ${homeTeam ? styles.selectionButtonActive : ''}`}
               >
-                {homeTeam ? homeTeam.name : 'Home Team'}
+                {homeTeam ? homeTeam.name : 'Home'}
               </button>
 
               {showHomeDropdown && (
@@ -762,6 +773,11 @@ export default function SimulatorPage() {
             disabled={loading || !awayTeam || !homeTeam}
             className={styles.simulateButton}
           >
+            <img 
+              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6924cdabc1de5d32938673a9_VERSUS%20SPORTS%20(VS).svg" 
+              alt="VS" 
+              className={styles.buttonIcon}
+            />
             {loading ? 'Running Simulation...' : 'Run Simulation'}
           </button>
         </div>
@@ -862,6 +878,13 @@ export default function SimulatorPage() {
       {showLimitModal && (
         <div className={styles.modalOverlay} onClick={() => setShowLimitModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalLogoContainer}>
+              <img 
+                src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6924cdabc1de5d32938673a9_VERSUS%20SPORTS%20(VS).svg" 
+                alt="Versus Sports" 
+                className={styles.modalLogo}
+              />
+            </div>
             <h2 className={styles.modalTitle}>Free Simulation Limit Reached</h2>
             <p className={styles.modalText}>
               You've used all 3 free simulations. Upgrade to get unlimited access to the simulator, plus:
