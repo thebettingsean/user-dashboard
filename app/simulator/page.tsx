@@ -310,7 +310,7 @@ export default function SimulatorPage() {
   };
 
   const handleVersusLinkClick = () => {
-    trackEvent('versus_link_clicked', null, null);
+    trackEvent('versus_link_clicked', null, { source: 'powered_by_link' });
   };
 
   // ============================================================================
@@ -345,6 +345,12 @@ export default function SimulatorPage() {
   const runSimulation = async () => {
     if (!awayTeam || !homeTeam) {
       alert('Please select both away and home teams');
+      return;
+    }
+
+    // Prevent same team from being selected for both away and home
+    if (awayTeam.id === homeTeam.id) {
+      alert('Please select different teams for away and home');
       return;
     }
 
@@ -736,6 +742,17 @@ export default function SimulatorPage() {
                   </div>
                 </div>
               </div>
+              
+              <a
+                href="https://www.versussportssimulator.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.fullSimulatorLink}
+                onClick={() => trackEvent('versus_link_clicked', null, { source: 'get_full_simulator' })}
+              >
+                Get Full Simulator
+                <span className={styles.fullSimulatorArrow}>→</span>
+              </a>
 
               <div className={styles.statsRow}>
                 <div className={styles.statCard}>

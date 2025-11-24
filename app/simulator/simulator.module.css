@@ -3,13 +3,10 @@
 .container {
   position: relative;
   width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: linear-gradient(135deg, 
-    #000000 0%,      /* Black (top-left) */
-    #0a1018 40%,     /* Transition zone */
-    #0e172a 100%     /* Dark blue (bottom-right) */
-  );
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: transparent;
   pointer-events: auto;
 }
 
@@ -50,7 +47,7 @@
 
 .header {
   position: absolute;
-  top: 40px;
+  top: 180px;
   left: 50%;
   transform: translateX(-50%);
   padding: 20px 40px;
@@ -100,8 +97,8 @@
 
 .versusArrow {
   display: inline-block;
-  margin-left: 4px;
-  font-size: 14px;
+  margin-left: 2px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.8);
   transition: transform 0.2s ease;
 }
@@ -119,7 +116,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 100px;
+  margin-top: 240px;
   padding: 0;
 }
 
@@ -367,6 +364,36 @@
   font-family: 'Helvetica Neue', 'Arial', sans-serif;
 }
 
+.fullSimulatorLink {
+  margin-top: 16px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.fullSimulatorLink:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
+
+.fullSimulatorArrow {
+  font-size: 10px;
+}
+
 /* ============================================================================
    Simulate Button
    ============================================================================ */
@@ -611,7 +638,7 @@
 
 @media (max-width: 768px) {
   .header {
-    top: 20px;
+    top: 120px;
     width: calc(100% - 40px);
     padding: 12px 20px;
   }
@@ -625,7 +652,7 @@
   }
 
   .mainContent {
-    margin-top: 80px;
+    margin-top: 180px;
     padding: 0 16px;
   }
 
@@ -708,6 +735,11 @@
 
   .modalList li {
     font-size: 13px;
+  }
+
+  .fullSimulatorLink {
+    font-size: 11px;
+    padding: 6px 12px;
   }
 }
 
