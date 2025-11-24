@@ -13,9 +13,9 @@ import {
 } from '@/utils/simulator-cookies';
 import styles from './simulator.module.css';
 
-// Dynamically import Spline to avoid SSR issues
+// Dynamically import Spline (Next.js version)
 const Spline = dynamic(
-  () => import('@splinetool/react-spline'),
+  () => import('@splinetool/react-spline/next'),
   { ssr: false }
 );
 
