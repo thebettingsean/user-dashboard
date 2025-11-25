@@ -114,11 +114,36 @@ export default function SimulatorPage() {
   useEffect(() => {
     const sid = getSessionId();
     setSessionId(sid);
-    setGenerationCount(getGenerationCount());
+    const currentCount = getGenerationCount();
+    setGenerationCount(currentCount);
+    
+    console.log('[Simulator] Session initialized:', {
+      sessionId: sid,
+      generationCount: currentCount,
+      hasAccess,
+      isSignedIn,
+      remainingGens: getRemainingGenerations(),
+    });
     
     // Track page view
     trackEvent('page_view', null, null);
   }, []);
+
+  // Update generation count display when it changes
+  useEffect(() => {
+    const updateCount = () => {
+      const currentCount = getGenerationCount();
+      setGenerationCount(currentCount);
+    };
+    
+    // Update immediately
+    updateCount();
+    
+    // Update every second to catch cookie changes
+    const interval = setInterval(updateCount, 1000);
+    
+    return () => clearInterval(interval);
+  }, [hasAccess]);
 
   // Fetch teams when sport changes
   useEffect(() => {
@@ -356,16 +381,19 @@ export default function SimulatorPage() {
 
     // Check generation limit for free users BEFORE checking if we have originalRatings
     // This ensures the popup shows even if they're trying to re-run with same teams
-    if (!hasAccess && !isSignedIn) {
-      // For non-signed-in users
+    const currentGenCount = getGenerationCount();
+    
+    console.log('[Simulator] Pre-simulation check:', {
+      hasAccess,
+      isSignedIn,
+      currentGenCount,
+      hasReachedLimit: hasReachedGenerationLimit(),
+      willBlock: !hasAccess && hasReachedGenerationLimit(),
+    });
+    
+    if (!hasAccess) {
       if (hasReachedGenerationLimit()) {
-        setShowLimitModal(true);
-        trackEvent('popup_shown', null, null);
-        return;
-      }
-    } else if (!hasAccess && isSignedIn) {
-      // For signed-in users without subscription
-      if (hasReachedGenerationLimit()) {
+        console.log('[Simulator] BLOCKING - Limit reached!');
         setShowLimitModal(true);
         trackEvent('popup_shown', null, null);
         return;
@@ -491,6 +519,11 @@ export default function SimulatorPage() {
       if (!hasAccess) {
         const newCount = incrementGenerationCount();
         setGenerationCount(newCount);
+        console.log('[Simulator] Generation count incremented:', {
+          previousCount: newCount - 1,
+          newCount,
+          remainingGens: getRemainingGenerations(),
+        });
       }
       
       trackEvent('simulation_ran', sport, {

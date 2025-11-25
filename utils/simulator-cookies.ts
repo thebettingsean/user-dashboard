@@ -34,7 +34,16 @@ export function getGenerationCount(): number {
   if (typeof document === 'undefined') return 0;
   
   const count = getCookie(GENERATION_COUNT_COOKIE);
-  return count ? parseInt(count, 10) : 0;
+  const parsed = count ? parseInt(count, 10) : 0;
+  
+  // Debug: Log count retrieval
+  console.log('[Simulator Cookies] Get generation count:', { 
+    cookieValue: count, 
+    parsed,
+    allCookies: document.cookie 
+  });
+  
+  return parsed;
 }
 
 /**
@@ -93,7 +102,13 @@ function setCookie(name: string, value: string, days: number): void {
   
   const expires = new Date();
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  
+  // Set cookie with explicit path and SameSite for better compatibility
+  // Remove Secure flag to work in dev environment
   document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  
+  // Debug: Log cookie setting
+  console.log('[Simulator Cookies] Set cookie:', { name, value, success: getCookie(name) === value });
 }
 
 function deleteCookie(name: string): void {
