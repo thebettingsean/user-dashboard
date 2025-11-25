@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
@@ -237,7 +237,7 @@ function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: strin
   )
 }
 
-export default function SportsSelectorPage() {
+function SportsSelectorPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -2114,5 +2114,13 @@ export default function SportsSelectorPage() {
         {renderContent()}
       </div>
     </div>
+  )
+}
+
+export default function SportsSelectorPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Loading...</div>}>
+      <SportsSelectorPageContent />
+    </Suspense>
   )
 }
