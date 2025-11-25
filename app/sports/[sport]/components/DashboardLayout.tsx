@@ -2458,20 +2458,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         {/* Toolkit Button */}
         <button
           type="button"
-          className={`${styles.sportChip} ${isToolkitOpen ? styles.toolkitActive : ''}`}
+          className={`${styles.toolkitButton} ${isToolkitOpen ? styles.toolkitActive : ''}`}
           onClick={handleToolkitToggle}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            width: 'auto',
-            padding: '0 18px',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            transition: 'all 0.2s ease'
-          }}
         >
-          <BsWrenchAdjustable size={18} />
+          <BsWrenchAdjustable size={16} />
           <span>Toolkit</span>
         </button>
       </div>

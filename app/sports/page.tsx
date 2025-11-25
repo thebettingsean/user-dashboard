@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
 import { useSubscription } from '@/lib/hooks/useSubscription'
-import { BsClipboard2Data } from "react-icons/bs"
+import { BsClipboard2Data, BsWrenchAdjustable } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
@@ -14,6 +14,10 @@ import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import styles from './sportSelector.module.css'
 import dashboardStyles from './[sport]/components/dashboard.module.css'
+import DiscordWidget from '@/components/DiscordWidget'
+import AffiliateWidget from '@/components/AffiliateWidget'
+import MaximizeProfitWidget from '@/components/MaximizeProfitWidget'
+import TopRatedBooksWidget from '@/components/TopRatedBooksWidget'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 type SubFilterKey = 'scriptsAbout' | 'publicAbout'
@@ -236,6 +240,7 @@ function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: strin
 export default function SportsSelectorPage() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
   const { hasAccess } = useSubscription()
@@ -251,6 +256,9 @@ export default function SportsSelectorPage() {
   const [activeFilter, setActiveFilter] = useState<SubFilterKey | undefined>(undefined)
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Toolkit state
+  const isToolkitOpen = searchParams?.get('toolkit') === 'true'
   
   // Games tab state
   const [sportsData, setSportsData] = useState<SportGameData[]>([])
@@ -291,7 +299,19 @@ export default function SportsSelectorPage() {
       scripts: '/sports/ai-scripts',
       public: '/sports/public-betting'
     }
+    // Close toolkit when switching tabs
     router.push(routes[tab])
+  }
+
+  const handleToolkitToggle = () => {
+    if (isToolkitOpen) {
+      // Close toolkit - remove query param
+      router.push(pathname || '/sports')
+    } else {
+      // Open toolkit - add query param
+      const currentPath = pathname || '/sports'
+      router.push(`${currentPath}?toolkit=true`)
+    }
   }
 
   // Calculate current NFL week (resets every Tuesday)
@@ -1956,7 +1976,30 @@ export default function SportsSelectorPage() {
     )
   }
 
+  const renderToolkitView = () => {
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1.5rem',
+        padding: '1rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        <DiscordWidget />
+        <AffiliateWidget />
+        <MaximizeProfitWidget />
+        <TopRatedBooksWidget />
+      </div>
+    )
+  }
+
   const renderContent = () => {
+    // If toolkit is open, show toolkit view
+    if (isToolkitOpen) {
+      return renderToolkitView()
+    }
+
     if (activeFilter === 'scriptsAbout') {
       return renderAboutScripts()
     }
@@ -2024,9 +2067,19 @@ export default function SportsSelectorPage() {
             </div>
           )}
         </div>
+
+        {/* Toolkit Button */}
+        <button
+          type="button"
+          className={`${dashboardStyles.toolkitButton} ${isToolkitOpen ? dashboardStyles.toolkitActive : ''}`}
+          onClick={handleToolkitToggle}
+        >
+          <BsWrenchAdjustable size={16} />
+          <span>Toolkit</span>
+        </button>
       </div>
 
-      <nav className={styles.tabBar}>
+      <nav className={`${styles.tabBar} ${isToolkitOpen ? dashboardStyles.tabBarDimmed : ''}`}>
         {Object.entries(tabLabels).map(([key, label]) => {
           const typedKey = key as TabKey
           return (
@@ -2034,6 +2087,8 @@ export default function SportsSelectorPage() {
               key={key}
               className={`${styles.tabButton} ${activeTab === typedKey ? styles.tabButtonActive : ''}`}
               onClick={() => handleTabSelect(typedKey)}
+              disabled={isToolkitOpen}
+              style={isToolkitOpen ? { cursor: 'not-allowed' } : {}}
             >
               {label.toUpperCase()}
             </button>
@@ -2041,7 +2096,7 @@ export default function SportsSelectorPage() {
         })}
       </nav>
 
-      {availableFilters.length > 0 && (
+      {availableFilters.length > 0 && !isToolkitOpen && (
         <div className={styles.subFilterBar}>
           {availableFilters.map((filter) => (
             <button

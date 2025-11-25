@@ -48,10 +48,34 @@
   box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
 }
 
+.toolkitButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  background: rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.toolkitButton:hover {
+  background: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+}
+
 .toolkitActive {
   border: 1px solid rgba(16, 185, 129, 0.6) !important;
   background: rgba(16, 185, 129, 0.25) !important;
-  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
 }
 
 .sportChipLogo {
