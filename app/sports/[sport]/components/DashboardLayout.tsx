@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
@@ -12,6 +12,11 @@ import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
 import { GiTwoCoins } from 'react-icons/gi'
 import { PiMoneyWavy } from 'react-icons/pi'
 import { LuArrowBigUpDash } from 'react-icons/lu'
+import { BsWrenchAdjustable } from 'react-icons/bs'
+import DiscordWidget from '../../../../components/DiscordWidget'
+import AffiliateWidget from '../../../../components/AffiliateWidget'
+import MaximizeProfitWidget from '../../../../components/MaximizeProfitWidget'
+import TopRatedBooksWidget from '../../../../components/TopRatedBooksWidget'
 
 type TabKey = 'games' | 'picks' | 'scripts' | 'public'
 
@@ -464,6 +469,8 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ sport, initialTab, initialFilter }: DashboardLayoutProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   
   // Auth hooks
   const { isSignedIn } = useUser()
@@ -495,6 +502,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
   const [expandedAnalysis, setExpandedAnalysis] = useState<Set<string>>(new Set())
   const [isSportMenuOpen, setIsSportMenuOpen] = useState(false)
   const sportMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Toolkit state - detect from URL
+  const isToolkitOpen = searchParams?.get('toolkit') === 'true'
   
   // Featured game specific state (for desktop enhanced view)
   const [featuredGamePicks, setFeaturedGamePicks] = useState<DashboardPick[]>([])
@@ -533,7 +543,19 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       if (defaultFilter) setActiveFilter(defaultFilter)
     }
     
+    // Close toolkit when switching tabs
     router.push(`/sports/${activeSport}/${route}`)
+  }
+
+  const handleToolkitToggle = () => {
+    if (isToolkitOpen) {
+      // Close toolkit - remove query param
+      router.push(pathname || `/sports/${activeSport}`)
+    } else {
+      // Open toolkit - add query param
+      const currentPath = pathname || `/sports/${activeSport}`
+      router.push(`${currentPath}?toolkit=true`)
+    }
   }
 
   const upcomingGames = useMemo(() => {
@@ -2340,7 +2362,31 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     }
   }
 
+  const renderToolkitView = () => {
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1.5rem',
+        padding: '1rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        <DiscordWidget />
+        <AffiliateWidget />
+        <MaximizeProfitWidget />
+        <TopRatedBooksWidget />
+      </div>
+    )
+  }
+
   const renderContent = () => {
+    // If toolkit is open, show toolkit view
+    if (isToolkitOpen) {
+      return renderToolkitView()
+    }
+
+    // Otherwise, show normal dashboard content
     switch (activeTab) {
       case 'picks':
         return renderPicksView()
@@ -2386,6 +2432,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                         setIsSportMenuOpen(false)
                       } else {
                         // Navigate to the selected sport (works for all: nfl, nba, nhl, college-football, etc.)
+                        // Close toolkit when changing sports
                         const tabRoutes: Record<TabKey, string> = {
                           games: 'games',
                           picks: 'picks',
@@ -2407,9 +2454,29 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             </div>
           )}
         </div>
+
+        {/* Toolkit Button */}
+        <button
+          type="button"
+          className={`${styles.sportChip} ${isToolkitOpen ? styles.toolkitActive : ''}`}
+          onClick={handleToolkitToggle}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: 'auto',
+            padding: '0 18px',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <BsWrenchAdjustable size={18} />
+          <span>Toolkit</span>
+        </button>
       </div>
 
-      <nav className={styles.tabBar}>
+      <nav className={`${styles.tabBar} ${isToolkitOpen ? styles.tabBarDimmed : ''}`}>
         {Object.entries(tabLabels).map(([key, label]) => {
           const typedKey = key as TabKey
           return (
@@ -2417,6 +2484,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
               key={key}
               className={`${styles.tabButton} ${activeTab === typedKey ? styles.tabButtonActive : ''}`}
               onClick={() => handleTabSelect(typedKey)}
+              disabled={isToolkitOpen}
+              style={isToolkitOpen ? { cursor: 'not-allowed' } : {}}
             >
               {label.toUpperCase()}
             </button>
@@ -2424,7 +2493,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         })}
       </nav>
 
-      {availableFilters.length > 0 && (
+      {availableFilters.length > 0 && !isToolkitOpen && (
         <div className={styles.subFilterRow}>
           {availableFilters.map((filterKey) => (
             <button
