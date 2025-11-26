@@ -7,12 +7,11 @@ import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
-import { FaFireAlt, FaLock } from 'react-icons/fa'
+import { FaFireAlt, FaLock, FaWrench } from 'react-icons/fa'
 import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
 import { GiTwoCoins } from 'react-icons/gi'
 import { PiMoneyWavy } from 'react-icons/pi'
 import { LuArrowBigUpDash } from 'react-icons/lu'
-import { BsWrenchAdjustable } from 'react-icons/bs'
 import DiscordWidget from '../../../../components/DiscordWidget'
 import AffiliateWidget from '../../../../components/AffiliateWidget'
 import MaximizeProfitWidget from '../../../../components/MaximizeProfitWidget'
@@ -2461,7 +2460,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           className={`${styles.toolkitButton} ${isToolkitOpen ? styles.toolkitActive : ''}`}
           onClick={handleToolkitToggle}
         >
-          <BsWrenchAdjustable size={16} />
+          <FaWrench size={16} />
           <span>Toolkit</span>
         </button>
       </div>

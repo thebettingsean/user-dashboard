@@ -5,11 +5,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
 import { useSubscription } from '@/lib/hooks/useSubscription'
-import { BsClipboard2Data, BsWrenchAdjustable } from "react-icons/bs"
+import { BsClipboard2Data } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
-import { FaDice, FaLock, FaFireAlt } from 'react-icons/fa'
+import { FaDice, FaLock, FaFireAlt, FaWrench } from 'react-icons/fa'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import styles from './sportSelector.module.css'
@@ -2074,7 +2074,7 @@ function SportsSelectorPageContent() {
           className={`${dashboardStyles.toolkitButton} ${isToolkitOpen ? dashboardStyles.toolkitActive : ''}`}
           onClick={handleToolkitToggle}
         >
-          <BsWrenchAdjustable size={16} />
+          <FaWrench size={16} />
           <span>Toolkit</span>
         </button>
       </div>
