@@ -7,11 +7,12 @@ import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
-import { FaFireAlt, FaLock, FaWrench } from 'react-icons/fa'
+import { FaFireAlt, FaLock, FaWrench, FaStar } from 'react-icons/fa'
 import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
-import { GiTwoCoins } from 'react-icons/gi'
+import { GiTwoCoins, GiReceiveMoney } from 'react-icons/gi'
 import { PiMoneyWavy } from 'react-icons/pi'
 import { LuArrowBigUpDash } from 'react-icons/lu'
+import { MdAddLink } from 'react-icons/md'
 import DiscordWidget from '../../../../components/DiscordWidget'
 import AffiliateWidget from '../../../../components/AffiliateWidget'
 import MaximizeProfitWidget from '../../../../components/MaximizeProfitWidget'
@@ -2367,7 +2368,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     {
       id: 'discord',
       title: 'Pick Notifications',
-      icon: '🔔',
+      icon: <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" style={{ width: '20px', height: '20px' }} alt="Discord" />,
       iconBg: 'rgba(88, 100, 241, 0.15)',
       iconBorder: 'rgba(88, 100, 241, 0.4)',
       component: <DiscordWidget />
@@ -2375,7 +2376,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     {
       id: 'affiliate',
       title: 'Affiliate Program',
-      icon: '💰',
+      icon: <MdAddLink size={20} />,
       iconBg: 'rgba(16, 185, 129, 0.15)',
       iconBorder: 'rgba(16, 185, 129, 0.4)',
       component: <AffiliateWidget />
@@ -2383,7 +2384,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     {
       id: 'profit',
       title: 'Profit Guide',
-      icon: '📖',
+      icon: <GiReceiveMoney size={20} />,
       iconBg: 'rgba(0, 87, 45, 0.15)',
       iconBorder: 'rgba(0, 87, 45, 0.4)',
       component: <MaximizeProfitWidget />
@@ -2391,7 +2392,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     {
       id: 'books',
       title: 'Top Rated Books',
-      icon: '⭐',
+      icon: <FaStar size={20} />,
       iconBg: 'rgba(234, 179, 8, 0.15)',
       iconBorder: 'rgba(234, 179, 8, 0.4)',
       component: <TopRatedBooksWidget />
@@ -2417,7 +2418,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       border: `1.5px solid ${item.iconBorder}`
                     }}
                   >
-                    <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                    {item.icon}
                   </div>
                   <span>{item.title}</span>
                 </div>

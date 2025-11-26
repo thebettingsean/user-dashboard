@@ -9,9 +9,11 @@ import { BsClipboard2Data } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
-import { FaDice, FaLock, FaFireAlt, FaWrench } from 'react-icons/fa'
+import { FaDice, FaLock, FaFireAlt, FaWrench, FaStar } from 'react-icons/fa'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
+import { GiReceiveMoney } from 'react-icons/gi'
+import { MdAddLink } from 'react-icons/md'
 import styles from './sportSelector.module.css'
 import dashboardStyles from './[sport]/components/dashboard.module.css'
 import DiscordWidget from '@/components/DiscordWidget'
@@ -1981,7 +1983,7 @@ function SportsSelectorPageContent() {
     {
       id: 'discord',
       title: 'Pick Notifications',
-      icon: '🔔',
+      icon: <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" style={{ width: '20px', height: '20px' }} alt="Discord" />,
       iconBg: 'rgba(88, 100, 241, 0.15)',
       iconBorder: 'rgba(88, 100, 241, 0.4)',
       component: <DiscordWidget />
@@ -1989,7 +1991,7 @@ function SportsSelectorPageContent() {
     {
       id: 'affiliate',
       title: 'Affiliate Program',
-      icon: '💰',
+      icon: <MdAddLink size={20} />,
       iconBg: 'rgba(16, 185, 129, 0.15)',
       iconBorder: 'rgba(16, 185, 129, 0.4)',
       component: <AffiliateWidget />
@@ -1997,7 +1999,7 @@ function SportsSelectorPageContent() {
     {
       id: 'profit',
       title: 'Profit Guide',
-      icon: '📖',
+      icon: <GiReceiveMoney size={20} />,
       iconBg: 'rgba(0, 87, 45, 0.15)',
       iconBorder: 'rgba(0, 87, 45, 0.4)',
       component: <MaximizeProfitWidget />
@@ -2005,7 +2007,7 @@ function SportsSelectorPageContent() {
     {
       id: 'books',
       title: 'Top Rated Books',
-      icon: '⭐',
+      icon: <FaStar size={20} />,
       iconBg: 'rgba(234, 179, 8, 0.15)',
       iconBorder: 'rgba(234, 179, 8, 0.4)',
       component: <TopRatedBooksWidget />
@@ -2031,7 +2033,7 @@ function SportsSelectorPageContent() {
                       border: `1.5px solid ${item.iconBorder}`
                     }}
                   >
-                    <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                    {item.icon}
                   </div>
                   <span>{item.title}</span>
                 </div>
