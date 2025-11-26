@@ -2361,13 +2361,78 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     }
   }
 
+  const [expandedToolkitItem, setExpandedToolkitItem] = useState<string | null>(null)
+
+  const toolkitItems = [
+    {
+      id: 'discord',
+      title: 'Pick Notifications',
+      icon: '🔔',
+      iconBg: 'rgba(88, 100, 241, 0.15)',
+      iconBorder: 'rgba(88, 100, 241, 0.4)',
+      component: <DiscordWidget />
+    },
+    {
+      id: 'affiliate',
+      title: 'Affiliate Program',
+      icon: '💰',
+      iconBg: 'rgba(16, 185, 129, 0.15)',
+      iconBorder: 'rgba(16, 185, 129, 0.4)',
+      component: <AffiliateWidget />
+    },
+    {
+      id: 'profit',
+      title: 'Profit Guide',
+      icon: '📖',
+      iconBg: 'rgba(0, 87, 45, 0.15)',
+      iconBorder: 'rgba(0, 87, 45, 0.4)',
+      component: <MaximizeProfitWidget />
+    },
+    {
+      id: 'books',
+      title: 'Top Rated Books',
+      icon: '⭐',
+      iconBg: 'rgba(234, 179, 8, 0.15)',
+      iconBorder: 'rgba(234, 179, 8, 0.4)',
+      component: <TopRatedBooksWidget />
+    }
+  ]
+
   const renderToolkitView = () => {
     return (
       <div className={styles.toolkitGrid}>
-        <DiscordWidget />
-        <AffiliateWidget />
-        <MaximizeProfitWidget />
-        <TopRatedBooksWidget />
+        {toolkitItems.map((item) => {
+          const isOpen = expandedToolkitItem === item.id
+          return (
+            <div key={item.id} className={styles.toolkitItem}>
+              <div 
+                className={styles.toolkitItemHeader}
+                onClick={() => setExpandedToolkitItem(isOpen ? null : item.id)}
+              >
+                <div className={styles.toolkitItemTitle}>
+                  <div 
+                    className={styles.toolkitItemIcon}
+                    style={{
+                      background: item.iconBg,
+                      border: `1.5px solid ${item.iconBorder}`
+                    }}
+                  >
+                    <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                  </div>
+                  <span>{item.title}</span>
+                </div>
+                <div className={`${styles.toolkitItemChevron} ${isOpen ? styles.toolkitItemChevronOpen : ''}`}>
+                  ▼
+                </div>
+              </div>
+              {isOpen && (
+                <div className={styles.toolkitItemContent}>
+                  {item.component}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     )
   }

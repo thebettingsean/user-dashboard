@@ -259,6 +259,7 @@ function SportsSelectorPageContent() {
   
   // Toolkit state
   const isToolkitOpen = searchParams?.get('toolkit') === 'true'
+  const [expandedToolkitItem, setExpandedToolkitItem] = useState<string | null>(null)
   
   // Games tab state
   const [sportsData, setSportsData] = useState<SportGameData[]>([])
@@ -1976,13 +1977,76 @@ function SportsSelectorPageContent() {
     )
   }
 
+  const toolkitItems = [
+    {
+      id: 'discord',
+      title: 'Pick Notifications',
+      icon: '🔔',
+      iconBg: 'rgba(88, 100, 241, 0.15)',
+      iconBorder: 'rgba(88, 100, 241, 0.4)',
+      component: <DiscordWidget />
+    },
+    {
+      id: 'affiliate',
+      title: 'Affiliate Program',
+      icon: '💰',
+      iconBg: 'rgba(16, 185, 129, 0.15)',
+      iconBorder: 'rgba(16, 185, 129, 0.4)',
+      component: <AffiliateWidget />
+    },
+    {
+      id: 'profit',
+      title: 'Profit Guide',
+      icon: '📖',
+      iconBg: 'rgba(0, 87, 45, 0.15)',
+      iconBorder: 'rgba(0, 87, 45, 0.4)',
+      component: <MaximizeProfitWidget />
+    },
+    {
+      id: 'books',
+      title: 'Top Rated Books',
+      icon: '⭐',
+      iconBg: 'rgba(234, 179, 8, 0.15)',
+      iconBorder: 'rgba(234, 179, 8, 0.4)',
+      component: <TopRatedBooksWidget />
+    }
+  ]
+
   const renderToolkitView = () => {
     return (
       <div className={dashboardStyles.toolkitGrid}>
-        <DiscordWidget />
-        <AffiliateWidget />
-        <MaximizeProfitWidget />
-        <TopRatedBooksWidget />
+        {toolkitItems.map((item) => {
+          const isOpen = expandedToolkitItem === item.id
+          return (
+            <div key={item.id} className={dashboardStyles.toolkitItem}>
+              <div 
+                className={dashboardStyles.toolkitItemHeader}
+                onClick={() => setExpandedToolkitItem(isOpen ? null : item.id)}
+              >
+                <div className={dashboardStyles.toolkitItemTitle}>
+                  <div 
+                    className={dashboardStyles.toolkitItemIcon}
+                    style={{
+                      background: item.iconBg,
+                      border: `1.5px solid ${item.iconBorder}`
+                    }}
+                  >
+                    <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                  </div>
+                  <span>{item.title}</span>
+                </div>
+                <div className={`${dashboardStyles.toolkitItemChevron} ${isOpen ? dashboardStyles.toolkitItemChevronOpen : ''}`}>
+                  ▼
+                </div>
+              </div>
+              {isOpen && (
+                <div className={dashboardStyles.toolkitItemContent}>
+                  {item.component}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     )
   }

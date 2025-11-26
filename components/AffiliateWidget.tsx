@@ -283,7 +283,19 @@ export default function AffiliateWidget() {
           <div style={iconWrapper}>{iconImg}</div>
           
           <h2 style={titleStyle}>Affiliate Program</h2>
-          <p style={taglineStyle}>Loading...</p>
+          <p style={taglineStyle}>Earn 50% recurring revenue</p>
+
+          <div style={infoBoxStyle}>
+            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5' }}>
+              Premium subscribers get a <strong>50% lifetime revenue share</strong> on every member they refer!
+            </p>
+            <ul style={{ margin: '0', paddingLeft: '1.25rem', fontSize: '0.8rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.8)' }}>
+              <li>50% per sale, forever</li>
+              <li>$50-$150 per customer</li>
+              <li>Track live earnings</li>
+            </ul>
+          </div>
+
           <div style={{ flex: 1 }} />
         </div>
       </>
