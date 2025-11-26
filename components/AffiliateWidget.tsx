@@ -26,7 +26,7 @@ interface SalesData {
   thisMonthSales: number
 }
 
-export default function AffiliateWidget() {
+export default function AffiliateWidget({ compact = false }: { compact?: boolean }) {
   // Development mode bypass
   const isDevelopment = process.env.NODE_ENV === 'development'
   
@@ -276,7 +276,25 @@ export default function AffiliateWidget() {
 
   const iconImg = <MdAddLink size={28} />
 
+  const loadingContent = (
+    <>
+      {!compact && <div style={iconWrapper}>{iconImg}</div>}
+      
+      <p style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem', color: 'rgba(255,255,255,0.9)' }}>
+        Premium subscribers get a <strong>50% lifetime revenue share</strong> on every member they refer!
+      </p>
+      <ul style={{ margin: '0', paddingLeft: '1.25rem', fontSize: '0.8rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.8)' }}>
+        <li>50% per sale, forever</li>
+        <li>$50-$150 per customer</li>
+        <li>Track live earnings</li>
+      </ul>
+    </>
+  )
+
   if (isLoading || !isLoaded) {
+    if (compact) {
+      return <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{loadingContent}</div>
+    }
     return (
       <>
         <div style={widgetStyle}>
@@ -303,7 +321,35 @@ export default function AffiliateWidget() {
   }
 
   // NON-AFFILIATE VIEW
+  const nonAffiliateContent = (
+    <>
+      {!compact && <div style={iconWrapper}>{iconImg}</div>}
+      
+      <p style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem', color: 'rgba(255,255,255,0.9)' }}>
+        Refer customers, earn lifetime commissions!
+      </p>
+      <ul style={{ margin: '0 0 0.75rem 0', paddingLeft: '1.25rem', fontSize: '0.8rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.8)' }}>
+        <li>50% per sale, forever</li>
+        <li>$50-$150 per customer</li>
+        <li>Track live earnings</li>
+      </ul>
+
+      {error && (
+        <p style={{ color: '#ef4444', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+          {error}
+        </p>
+      )}
+
+      <button onClick={becomeAffiliate} disabled={isCreating} style={buttonStyle}>
+        {isCreating ? 'Creating Account...' : 'Become an Affiliate'}
+      </button>
+    </>
+  )
+
   if (!isAffiliate) {
+    if (compact) {
+      return <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{nonAffiliateContent}</div>
+    }
     return (
       <>
         <div style={widgetStyle}>
@@ -430,62 +476,64 @@ export default function AffiliateWidget() {
     document.body
   ) : null
 
-  return (
+  const activeAffiliateContent = (
     <>
-      {modalContent}
-      <div style={widgetStyle}>
-        <div style={iconWrapper}>{iconImg}</div>
-        
-        <h2 style={titleStyle}>Affiliate Dashboard</h2>
-        <p style={taglineStyle}>Active • {affiliateData.commissionRate}% commission</p>
+      {!compact && <div style={iconWrapper}>{iconImg}</div>}
+      
+      {!compact && (
+        <>
+          <h2 style={titleStyle}>Affiliate Dashboard</h2>
+          <p style={taglineStyle}>Active • {affiliateData.commissionRate}% commission</p>
+        </>
+      )}
 
-        {/* Two columns: This Month / All Time */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
-          <div style={statBoxStyle}>
-            <div style={statLabelStyle}>This Month</div>
-            <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(0)}</div>
-          </div>
-          <div style={statBoxStyle}>
-            <div style={statLabelStyle}>All Time</div>
-            <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(0)}</div>
-          </div>
+      {/* Two columns: This Month / All Time */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
+        <div style={statBoxStyle}>
+          <div style={statLabelStyle}>This Month</div>
+          <div style={statValueStyle}>${(salesData?.thisMonthEarnings || 0).toFixed(0)}</div>
         </div>
-
-        {/* Three columns: Referrals / Active / Clicks */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
-          <div style={miniStatStyle}>
-            <div style={miniStatValueStyle}>{affiliateData.numberOfReferredUsers || 0}</div>
-            <div style={miniStatLabelStyle}>Referrals</div>
-          </div>
-          <div style={miniStatStyle}>
-            <div style={miniStatValueStyle}>{salesData?.totalSales || 0}</div>
-            <div style={miniStatLabelStyle}>Active</div>
-          </div>
-          <div style={miniStatStyle}>
-            <div style={miniStatValueStyle}>{affiliateData.numberOfClicks || 0}</div>
-            <div style={miniStatLabelStyle}>Clicks</div>
-          </div>
+        <div style={statBoxStyle}>
+          <div style={statLabelStyle}>All Time</div>
+          <div style={statValueStyle}>${(affiliateData.totalCommissionEarned || 0).toFixed(0)}</div>
         </div>
+      </div>
 
-        {/* My Links Button */}
-        {affiliateData.link ? (
-          <button 
-            onClick={() => setShowLinksModal(true)} 
-            style={copyLinkButtonStyle}
-          >
-            <span style={{ marginRight: '6px' }}>🔗</span>
-            My Links
-          </button>
-        ) : (
-          <div style={infoBoxStyle}>
-            <p style={{ margin: '0', fontSize: '0.8rem', lineHeight: '1.5', textAlign: 'center' }}>
-              📧 Your referral link is ready!<br />
-              <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                Email support@thebettinginsider.com to get your personal tracking link.
-              </span>
-            </p>
-          </div>
-        )}
+      {/* Three columns: Referrals / Active / Clicks */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '0.75rem' }}>
+        <div style={miniStatStyle}>
+          <div style={miniStatValueStyle}>{affiliateData.numberOfReferredUsers || 0}</div>
+          <div style={miniStatLabelStyle}>Referrals</div>
+        </div>
+        <div style={miniStatStyle}>
+          <div style={miniStatValueStyle}>{salesData?.totalSales || 0}</div>
+          <div style={miniStatLabelStyle}>Active</div>
+        </div>
+        <div style={miniStatStyle}>
+          <div style={miniStatValueStyle}>{affiliateData.numberOfClicks || 0}</div>
+          <div style={miniStatLabelStyle}>Clicks</div>
+        </div>
+      </div>
+
+      {/* My Links Button */}
+      {affiliateData.link ? (
+        <button 
+          onClick={() => setShowLinksModal(true)} 
+          style={copyLinkButtonStyle}
+        >
+          <span style={{ marginRight: '6px' }}>🔗</span>
+          My Links
+        </button>
+      ) : (
+        <div style={compact ? {} : infoBoxStyle}>
+          <p style={{ margin: '0', fontSize: '0.8rem', lineHeight: '1.5', textAlign: compact ? 'left' : 'center' }}>
+            📧 Your referral link is ready!<br />
+            <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+              Email support@thebettinginsider.com to get your personal tracking link.
+            </span>
+          </p>
+        </div>
+      )}
 
       {/* Links Modal - Renders OUTSIDE widget */}
       {showLinksModal && (
@@ -563,21 +611,38 @@ export default function AffiliateWidget() {
         </div>
       )}
 
-        {/* Two buttons side by side */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
-          <button 
-            onClick={() => alert('More info page coming soon!')}
-            style={smallButtonStyle}
-          >
-            More Info
-          </button>
-          <button 
-            onClick={() => alert('Contact support@thebettinginsider.com to set up your Pushlap login and manage payouts.')}
-            style={smallButtonStyle}
-          >
-            Need Login?
-          </button>
-        </div>
+      {/* Two buttons side by side */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '0.75rem' }}>
+        <button 
+          onClick={() => alert('More info page coming soon!')}
+          style={smallButtonStyle}
+        >
+          More Info
+        </button>
+        <button 
+          onClick={() => alert('Contact support@thebettinginsider.com to set up your Pushlap login and manage payouts.')}
+          style={smallButtonStyle}
+        >
+          Need Login?
+        </button>
+      </div>
+    </>
+  )
+
+  if (compact) {
+    return (
+      <>
+        {modalContent}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{activeAffiliateContent}</div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      {modalContent}
+      <div style={widgetStyle}>
+        {activeAffiliateContent}
       </div>
     </>
   )

@@ -3,50 +3,85 @@
 import Link from 'next/link'
 import { GiReceiveMoney } from 'react-icons/gi'
 
-export default function MaximizeProfitWidget() {
-  return (
+export default function MaximizeProfitWidget({ compact = false }: { compact?: boolean }) {
+  const content = (
     <>
-      <Link 
-        href="/maximize-profit"
-        style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-      >
-        <div style={widgetStyle}>
+      {!compact && (
         <div style={iconWrapper}>
           <GiReceiveMoney size={28} />
         </div>
-        
-        <h2 style={titleStyle}>
-          Maximize Profit
-        </h2>
-        
-        <p style={taglineStyle}>
-          Learn how to win with our tools
-        </p>
+      )}
+      
+      {!compact && (
+        <>
+          <h2 style={titleStyle}>Maximize Profit</h2>
+          <p style={taglineStyle}>Learn how to win with our tools</p>
+        </>
+      )}
 
-        <div style={usernameBoxStyle}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          Complete member profit guide
-        </div>
+      <p style={{ fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '0.75rem', color: 'rgba(255,255,255,0.9)' }}>
+        Complete member profit guide
+      </p>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between' }}>
-          <div style={chaptersBoxStyle}>
-            <h3 style={chaptersHeaderStyle}>Quick Chapters:</h3>
-            <ol style={chaptersListStyle}>
-              <li>Analyst Picks & Notifications</li>
-              <li>Premium Data Suite</li>
-              <li>Tools & Playbooks</li>
-              <li>Best Practices & Routines</li>
-            </ol>
+      <div>
+        <h3 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '0.5rem', color: 'rgba(255, 255, 255, 0.95)' }}>Quick Chapters:</h3>
+        <ol style={{ margin: '0', paddingLeft: '1.25rem', fontSize: '0.8rem', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.75)' }}>
+          <li>Analyst Picks & Notifications</li>
+          <li>Premium Data Suite</li>
+          <li>Tools & Playbooks</li>
+          <li>Best Practices & Routines</li>
+        </ol>
+      </div>
+
+      <button style={viewButtonStyle}>
+        View Full Guide
+      </button>
+    </>
+  )
+
+  if (compact) {
+    return (
+      <Link href="/maximize-profit" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{content}</div>
+      </Link>
+    )
+  }
+
+  return (
+    <>
+      <Link href="/maximize-profit" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+        <div style={widgetStyle}>
+          <div style={iconWrapper}>
+            <GiReceiveMoney size={28} />
+          </div>
+          
+          <h2 style={titleStyle}>Maximize Profit</h2>
+          <p style={taglineStyle}>Learn how to win with our tools</p>
+
+          <div style={usernameBoxStyle}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            Complete member profit guide
           </div>
 
-          <button style={viewButtonStyle}>
-            View Full Guide
-          </button>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'space-between' }}>
+            <div style={chaptersBoxStyle}>
+              <h3 style={chaptersHeaderStyle}>Quick Chapters:</h3>
+              <ol style={chaptersListStyle}>
+                <li>Analyst Picks & Notifications</li>
+                <li>Premium Data Suite</li>
+                <li>Tools & Playbooks</li>
+                <li>Best Practices & Routines</li>
+              </ol>
+            </div>
+
+            <button style={viewButtonStyle}>
+              View Full Guide
+            </button>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
     </>
   )
 }

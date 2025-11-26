@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { supabase } from '../lib/supabase'
 
-export default function DiscordWidget() {
+export default function DiscordWidget({ compact = false }: { compact?: boolean }) {
   // Development mode bypass
   const isDevelopment = process.env.NODE_ENV === 'development'
   
@@ -116,15 +116,15 @@ export default function DiscordWidget() {
     )
   }
 
-  return (
+  const content = (
     <>
-      <div style={widgetStyle}>
-        {showSuccess && (
-          <div style={successBannerStyle}>
-          ✓ Discord Connected Successfully!
-        </div>
-      )}
-      
+      {showSuccess && (
+        <div style={successBannerStyle}>
+        ✓ Discord Connected Successfully!
+      </div>
+    )}
+    
+    {!compact && (
       <div style={iconWrapper}>
         <img 
           src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
@@ -132,52 +132,62 @@ export default function DiscordWidget() {
           alt="Discord" 
         />
       </div>
-      
-      <h2 style={titleStyle}>
-        {isConnected ? 'Discord Connected' : 'Connect Discord'}
-      </h2>
-      
-      <p style={taglineStyle}>
-        {isConnected ? `You will receive live pick notifications` : 'Receive live pick alerts'}
-      </p>
+    )}
+    
+    <h2 style={compact ? compactTitleStyle : titleStyle}>
+      {isConnected ? 'Discord Connected' : 'Connect Discord'}
+    </h2>
+    
+    <p style={compact ? compactTaglineStyle : taglineStyle}>
+      {isConnected ? `You will receive live pick notifications` : 'Receive live pick alerts'}
+    </p>
 
-      {isConnected && discordUsername && (
-        <div style={usernameStyle}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-          </svg>
-          {discordUsername}
-        </div>
-      )}
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'flex-end' }}>
-        {isConnected && (
-          <div style={instructionsStyle}>
-            <h3 style={instructionsTitleStyle}>Quick Directions:</h3>
-            <ol style={instructionsListStyle}>
-              <li>Visit the #get-notifications channel</li>
-              <li>Select the Insider you'd like notifications for</li>
-              <li>Relax knowing you'll get notified for our top picks immediately</li>
-            </ol>
-          </div>
-        )}
-        
-        <button
-          onClick={handleConnect}
-          style={buttonStyle}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = isConnected ? 'rgba(88, 100, 241, 0.35)' : 'rgba(88, 100, 241, 0.35)'
-            e.currentTarget.style.transform = 'translateY(-1px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = isConnected ? 'rgba(88, 100, 241, 0.3)' : 'rgba(88, 100, 241, 0.25)'
-            e.currentTarget.style.transform = 'translateY(0)'
-          }}
-        >
-          {isConnected ? 'Manage Notifications' : 'Connect Discord'}
-        </button>
+    {isConnected && discordUsername && (
+      <div style={usernameStyle}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+        </svg>
+        {discordUsername}
       </div>
-    </div>
+    )}
+
+    {isConnected && (
+      <div style={instructionsStyle}>
+        <h3 style={instructionsTitleStyle}>Quick Directions:</h3>
+        <ol style={instructionsListStyle}>
+          <li>Visit the #get-notifications channel</li>
+          <li>Select the Insider you'd like notifications for</li>
+          <li>Relax knowing you'll get notified for our top picks immediately</li>
+        </ol>
+      </div>
+    )}
+    
+    <button
+      onClick={handleConnect}
+      style={buttonStyle}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = isConnected ? 'rgba(88, 100, 241, 0.35)' : 'rgba(88, 100, 241, 0.35)'
+        e.currentTarget.style.transform = 'translateY(-1px)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isConnected ? 'rgba(88, 100, 241, 0.3)' : 'rgba(88, 100, 241, 0.25)'
+        e.currentTarget.style.transform = 'translateY(0)'
+      }}
+    >
+      {isConnected ? 'Manage Notifications' : 'Connect Discord'}
+    </button>
+  </>
+  )
+
+  if (compact) {
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{content}</div>
+  }
+
+  return (
+    <>
+      <div style={widgetStyle}>
+        {content}
+      </div>
     </>
   )
 }
@@ -222,10 +232,24 @@ const titleStyle = {
   color: '#fff'
 }
 
+const compactTitleStyle = {
+  fontSize: '0.95rem',
+  fontWeight: '700',
+  marginBottom: '0.5rem',
+  color: '#fff'
+}
+
 const taglineStyle = {
   fontSize: '0.75rem',
   opacity: 0.6,
   marginBottom: '1rem'
+}
+
+const compactTaglineStyle = {
+  fontSize: '0.8rem',
+  opacity: 0.7,
+  marginBottom: '0.75rem',
+  lineHeight: '1.4'
 }
 
 const buttonStyle = {

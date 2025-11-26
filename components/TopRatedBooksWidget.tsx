@@ -2,7 +2,50 @@
 
 import { FaStar } from 'react-icons/fa'
 
-export default function TopRatedBooksWidget() {
+export default function TopRatedBooksWidget({ compact = false }: { compact?: boolean }) {
+  const content = (
+    <>
+      {!compact && (
+        <div style={iconWrapper}>
+          <FaStar size={28} />
+        </div>
+      )}
+      
+      {!compact && (
+        <>
+          <h2 style={titleStyle}>Top Rated Books</h2>
+          <p style={taglineStyle}>Our favorite sportsbooks</p>
+        </>
+      )}
+
+      <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5', color: 'rgba(255,255,255,0.9)' }}>
+        📊 Coming Soon!<br />
+        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+          We're curating the best sportsbooks with exclusive offers for members.
+        </span>
+      </p>
+
+      <button 
+        onClick={() => alert('Top sportsbook recommendations coming soon!')}
+        style={buttonStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
+          e.currentTarget.style.transform = 'translateY(-1px)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
+          e.currentTarget.style.transform = 'translateY(0)'
+        }}
+      >
+        View Books
+      </button>
+    </>
+  )
+
+  if (compact) {
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{content}</div>
+  }
+
   return (
     <>
       <div style={widgetStyle}>
@@ -10,13 +53,8 @@ export default function TopRatedBooksWidget() {
           <FaStar size={28} />
         </div>
         
-        <h2 style={titleStyle}>
-          Top Rated Books
-        </h2>
-        
-        <p style={taglineStyle}>
-          Our favorite sportsbooks
-        </p>
+        <h2 style={titleStyle}>Top Rated Books</h2>
+        <p style={taglineStyle}>Our favorite sportsbooks</p>
 
         <div style={infoBoxStyle}>
           <p style={{ margin: '0', fontSize: '0.85rem', lineHeight: '1.5', textAlign: 'center' }}>

@@ -1986,7 +1986,7 @@ function SportsSelectorPageContent() {
       icon: <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" style={{ width: '20px', height: '20px' }} alt="Discord" />,
       iconBg: 'rgba(88, 100, 241, 0.15)',
       iconBorder: 'rgba(88, 100, 241, 0.4)',
-      component: <DiscordWidget />
+      component: <DiscordWidget compact={true} />
     },
     {
       id: 'affiliate',
@@ -1994,7 +1994,7 @@ function SportsSelectorPageContent() {
       icon: <MdAddLink size={20} />,
       iconBg: 'rgba(16, 185, 129, 0.15)',
       iconBorder: 'rgba(16, 185, 129, 0.4)',
-      component: <AffiliateWidget />
+      component: <AffiliateWidget compact={true} />
     },
     {
       id: 'profit',
@@ -2002,7 +2002,7 @@ function SportsSelectorPageContent() {
       icon: <GiReceiveMoney size={20} />,
       iconBg: 'rgba(0, 87, 45, 0.15)',
       iconBorder: 'rgba(0, 87, 45, 0.4)',
-      component: <MaximizeProfitWidget />
+      component: <MaximizeProfitWidget compact={true} />
     },
     {
       id: 'books',
@@ -2010,7 +2010,7 @@ function SportsSelectorPageContent() {
       icon: <FaStar size={20} />,
       iconBg: 'rgba(234, 179, 8, 0.15)',
       iconBorder: 'rgba(234, 179, 8, 0.4)',
-      component: <TopRatedBooksWidget />
+      component: <TopRatedBooksWidget compact={true} />
     }
   ]
 
