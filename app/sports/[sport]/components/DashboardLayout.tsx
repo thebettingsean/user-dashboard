@@ -2363,14 +2363,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
 
   const renderToolkitView = () => {
     return (
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '1.5rem',
-        padding: '1rem',
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
+      <div className={styles.toolkitGrid}>
         <DiscordWidget />
         <AffiliateWidget />
         <MaximizeProfitWidget />
