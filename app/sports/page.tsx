@@ -2041,11 +2041,9 @@ function SportsSelectorPageContent() {
                   ▼
                 </div>
               </div>
-              {isOpen && (
-                <div className={dashboardStyles.toolkitItemContent}>
-                  {item.component}
-                </div>
-              )}
+              <div className={dashboardStyles.toolkitItemContent} data-open={isOpen}>
+                {isOpen && item.component}
+              </div>
             </div>
           )
         })}

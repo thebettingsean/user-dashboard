@@ -48,6 +48,51 @@ type GameData = {
   props: any[]
 }
 
+// PropCard component with image error handling
+function PropCard({ prop }: { prop: Prop }) {
+  const [imgError, setImgError] = useState(false)
+  const initials = prop.playerName?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'
+  
+  return (
+    <div className={styles.propCard}>
+      {/* Player Image with fallback */}
+      {prop.headshot && !imgError ? (
+        <img 
+          src={prop.headshot} 
+          alt={prop.playerName}
+          className={styles.propHeadshot}
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div className={styles.propHeadshot} style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3))',
+          color: 'white',
+          fontSize: '1.2rem',
+          fontWeight: '700'
+        }}>
+          {initials}
+        </div>
+      )}
+      
+      {/* Player Info */}
+      <div className={styles.propInfo}>
+        <div className={styles.propHeader}>
+          <span className={styles.propPlayer}>{prop.playerName}</span>
+          <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
+        </div>
+        <div className={styles.propDetails}>
+          <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
+          <span className={styles.propRecord}>{prop.record}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DataTabPage() {
   const params = useParams()
   const { isSignedIn } = useUser()
@@ -618,28 +663,7 @@ export default function DataTabPage() {
               ) : (
                 <div className={styles.propsGrid}>
                   {topProps.map((prop) => (
-                    <div key={prop.id} className={styles.propCard}>
-                      {/* Player Image */}
-                      {prop.headshot && (
-                        <img 
-                          src={prop.headshot} 
-                          alt={prop.playerName}
-                          className={styles.propHeadshot}
-                        />
-                      )}
-                      
-                      {/* Player Info */}
-                      <div className={styles.propInfo}>
-                        <div className={styles.propHeader}>
-                          <span className={styles.propPlayer}>{prop.playerName}</span>
-                          <span className={styles.propHitRate}>{prop.hitRate?.toFixed(1)}%</span>
-                        </div>
-                        <div className={styles.propDetails}>
-                          <span className={styles.propBet}>{prop.betTitle} {prop.line}</span>
-                          <span className={styles.propRecord}>{prop.record}</span>
-                        </div>
-                      </div>
-                    </div>
+                    <PropCard key={prop.id} prop={prop} />
                   ))}
                 </div>
               )}

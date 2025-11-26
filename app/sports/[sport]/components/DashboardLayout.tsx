@@ -2426,11 +2426,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                   ▼
                 </div>
               </div>
-              {isOpen && (
-                <div className={styles.toolkitItemContent}>
-                  {item.component}
-                </div>
-              )}
+              <div className={styles.toolkitItemContent} data-open={isOpen}>
+                {isOpen && item.component}
+              </div>
             </div>
           )
         })}
