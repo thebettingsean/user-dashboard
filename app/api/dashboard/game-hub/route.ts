@@ -265,13 +265,19 @@ export async function GET(request: NextRequest) {
     }
 
     const summaries: DashboardGameSummary[] = snapshotRows.map((row) => {
+      // Debug spread structure
+      if (row.spread && (row.away_team?.toLowerCase().includes('chief') || row.home_team?.toLowerCase().includes('chief'))) {
+        console.log('[SPREAD DEBUG] Game:', row.away_team, '@', row.home_team)
+        console.log('[SPREAD DEBUG] Full spread object:', JSON.stringify(row.spread, null, 2))
+      }
+
       const spreadSummary: SpreadSummary | null = row.spread
         ? {
             label: formatSpreadLabel(row.home_team, row.away_team, row.spread),
-            homeLine: row.spread.home ?? null,
-            homeOdds: row.spread.home_odds ?? null,
-            awayLine: row.spread.away ?? null,
-            awayOdds: row.spread.away_odds ?? null
+            homeLine: row.spread.home ?? row.spread.home_line ?? row.spread.homeLine ?? null,
+            homeOdds: row.spread.home_odds ?? row.spread.homeOdds ?? null,
+            awayLine: row.spread.away ?? row.spread.away_line ?? row.spread.awayLine ?? null,
+            awayOdds: row.spread.away_odds ?? row.spread.awayOdds ?? null
           }
         : null
 
