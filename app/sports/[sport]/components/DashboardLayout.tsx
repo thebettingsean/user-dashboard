@@ -7,9 +7,10 @@ import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
-import { FaFireAlt, FaLock, FaWrench, FaStar } from 'react-icons/fa'
+import { FaFireAlt, FaLock, FaWrench } from 'react-icons/fa'
 import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
 import { GiTwoCoins, GiReceiveMoney } from 'react-icons/gi'
+import { IoIosGift } from 'react-icons/io'
 import { PiMoneyWavy } from 'react-icons/pi'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import { MdAddLink } from 'react-icons/md'
@@ -2391,10 +2392,10 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     },
     {
       id: 'books',
-      title: 'Top Rated Books',
-      icon: <FaStar size={20} />,
-      iconBg: 'rgba(234, 179, 8, 0.15)',
-      iconBorder: 'rgba(234, 179, 8, 0.4)',
+      title: 'Get a Free 30 Days',
+      icon: <IoIosGift size={20} />,
+      iconBg: 'rgba(16, 185, 129, 0.15)',
+      iconBorder: 'rgba(16, 185, 129, 0.4)',
       component: <TopRatedBooksWidget compact={true} />
     }
   ]

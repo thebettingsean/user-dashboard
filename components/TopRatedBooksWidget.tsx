@@ -1,28 +1,29 @@
 'use client'
 
 import Link from 'next/link'
-import { IoBookSharp } from 'react-icons/io5'
+import { IoIosGift } from 'react-icons/io'
 
 export default function TopRatedBooksWidget({ compact = false }: { compact?: boolean }) {
   const content = (
     <>
       {!compact && (
         <div style={iconWrapper}>
-          <IoBookSharp size={28} />
+          <IoIosGift size={28} />
         </div>
       )}
       
       {!compact && (
         <>
-          <h2 style={titleStyle}>Top Rated Books</h2>
-          <p style={taglineStyle}>Our favorite sportsbooks</p>
+          <h2 style={titleStyle}>Get a Free 30 Days</h2>
+          <p style={taglineStyle}>Premium dashboard access</p>
         </>
       )}
 
       <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5', color: 'rgba(255,255,255,0.9)' }}>
-        Get exclusive offers from top-rated sportsbooks.<br />
-        <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-          Plus 30 days free when you sign up!
+        Get a free 30 days of our premium dashboard when you sign up with one of our top rated sportsbooks.
+        <br />
+        <span style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.5rem', display: 'block' }}>
+          Click below to get started
         </span>
       </p>
 
@@ -30,15 +31,15 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
         <button 
           style={buttonStyle}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
+            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.35)'
             e.currentTarget.style.transform = 'translateY(-1px)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
+            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'
             e.currentTarget.style.transform = 'translateY(0)'
           }}
         >
-          View Offers
+          Claim Your Free 30 Days
         </button>
       </Link>
     </>
@@ -52,17 +53,18 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
     <>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
-          <IoBookSharp size={28} />
+          <IoIosGift size={28} />
         </div>
         
-        <h2 style={titleStyle}>Top Rated Books</h2>
-        <p style={taglineStyle}>Our favorite sportsbooks</p>
+        <h2 style={titleStyle}>Get a Free 30 Days</h2>
+        <p style={taglineStyle}>Premium dashboard access</p>
 
         <div style={infoBoxStyle}>
           <p style={{ margin: '0', fontSize: '0.85rem', lineHeight: '1.5', textAlign: 'center' }}>
-            Get exclusive offers from top-rated sportsbooks.<br />
-            <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-              Plus 30 days free when you sign up!
+            Get a free 30 days of our premium dashboard when you sign up with one of our top rated sportsbooks.
+            <br />
+            <span style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.5rem', display: 'block' }}>
+              Click below to get started
             </span>
           </p>
         </div>
@@ -73,15 +75,15 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
           <button 
             style={buttonStyle}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.35)'
               e.currentTarget.style.transform = 'translateY(-1px)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
-            View Offers
+            Claim Your Free 30 Days
           </button>
         </Link>
       </div>
@@ -111,17 +113,17 @@ const iconWrapper = {
   right: '1rem',
   width: '52px',
   height: '52px',
-  border: '1.5px solid rgba(234, 179, 8, 0.4)',
+  border: '1.5px solid rgba(16, 185, 129, 0.4)',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(234, 179, 8, 0.15)',
+  background: 'rgba(16, 185, 129, 0.15)',
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
-  boxShadow: '0 4px 16px rgba(234, 179, 8, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   zIndex: 2,
-  color: '#eab308'
+  color: '#10b981'
 }
 
 const titleStyle = {
@@ -139,20 +141,20 @@ const taglineStyle = {
 }
 
 const infoBoxStyle = {
-  background: 'rgba(234, 179, 8, 0.08)',
+  background: 'rgba(16, 185, 129, 0.08)',
   borderRadius: '10px',
   padding: '1rem',
-  border: '1px solid rgba(234, 179, 8, 0.2)',
+  border: '1px solid rgba(16, 185, 129, 0.2)',
   marginBottom: '1rem',
   color: 'rgba(255, 255, 255, 0.9)'
 }
 
 const buttonStyle = {
   width: '100%',
-  background: 'rgba(234, 179, 8, 0.25)',
+  background: 'rgba(16, 185, 129, 0.25)',
   backdropFilter: 'blur(8px)',
   WebkitBackdropFilter: 'blur(8px)',
-  border: '1px solid rgba(234, 179, 8, 0.3)',
+  border: '1px solid rgba(16, 185, 129, 0.3)',
   borderRadius: '10px',
   padding: '0.875rem 1.5rem',
   color: '#ffffff',
@@ -160,7 +162,7 @@ const buttonStyle = {
   fontWeight: '600',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  boxShadow: '0 2px 8px rgba(234, 179, 8, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   textAlign: 'center' as const,
   marginTop: 'auto'
 }

@@ -9,9 +9,10 @@ import { BsClipboard2Data } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
-import { FaDice, FaLock, FaFireAlt, FaWrench, FaStar } from 'react-icons/fa'
+import { FaDice, FaLock, FaFireAlt, FaWrench } from 'react-icons/fa'
 import { FaWandMagicSparkles } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
+import { IoIosGift } from 'react-icons/io'
 import { GiReceiveMoney } from 'react-icons/gi'
 import { MdAddLink } from 'react-icons/md'
 import styles from './sportSelector.module.css'
@@ -2006,10 +2007,10 @@ function SportsSelectorPageContent() {
     },
     {
       id: 'books',
-      title: 'Top Rated Books',
-      icon: <FaStar size={20} />,
-      iconBg: 'rgba(234, 179, 8, 0.15)',
-      iconBorder: 'rgba(234, 179, 8, 0.4)',
+      title: 'Get a Free 30 Days',
+      icon: <IoIosGift size={20} />,
+      iconBg: 'rgba(16, 185, 129, 0.15)',
+      iconBorder: 'rgba(16, 185, 129, 0.4)',
       component: <TopRatedBooksWidget compact={true} />
     }
   ]
