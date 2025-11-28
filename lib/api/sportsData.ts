@@ -166,10 +166,14 @@ export interface GameDetailsSummary {
 export async function fetchGames(
   league: League,
   from: string,
-  to: string
+  to: string,
+  filter?: string // Optional filter parameter (e.g., "All", "Top 25")
 ): Promise<Game[]> {
   try {
-    const url = `${API_BASE_URL}/api/${league}/games?from=${from}&to=${to}`
+    let url = `${API_BASE_URL}/api/${league}/games?from=${from}&to=${to}`
+    if (filter) {
+      url += `&filter=${encodeURIComponent(filter)}`
+    }
     console.log(`🎮 Fetching games: ${url}`)
     
     const response = await fetch(url, {

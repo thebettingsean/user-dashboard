@@ -780,10 +780,24 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         if (picksResponse.ok) {
           const picksData = await picksResponse.json()
           const allPicks = picksData.picks || []
+          console.log('[FEATURED GAME DEBUG] Featured game ID:', featuredGame.id)
+          console.log('[FEATURED GAME DEBUG] Total picks fetched:', allPicks.length)
+          console.log('[FEATURED GAME DEBUG] Featured game picks.total from snapshot:', featuredGame.picks.total)
+          
           // Filter to only picks for the featured game and sort by units (highest first)
           const gamePicks = allPicks
-            .filter((pick: DashboardPick) => pick.gameId === featuredGame.id)
+            .filter((pick: DashboardPick) => {
+              const matches = pick.gameId === featuredGame.id
+              if (!matches && pick.gameId?.includes(featuredGame.awayTeam) && pick.gameId?.includes(featuredGame.homeTeam)) {
+                console.log('[FEATURED GAME DEBUG] Possible ID mismatch:', pick.gameId, 'vs', featuredGame.id)
+              }
+              return matches
+            })
             .sort((a: DashboardPick, b: DashboardPick) => b.units - a.units)
+          
+          console.log('[FEATURED GAME DEBUG] Filtered picks count:', gamePicks.length)
+          console.log('[FEATURED GAME DEBUG] Top 3 picks:', gamePicks.slice(0, 3).map(p => ({ title: p.betTitle, units: p.units })))
+          
           setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks by units
         }
 
@@ -1313,7 +1327,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 color: 'rgba(226, 232, 240, 0.8)',
                 marginBottom: '4px'
               }}>
-                {featuredGamePicks.length} Active Picks
+                {displayGame.picks.total} Active Picks
               </div>
               <div style={{ 
                 fontSize: '9px', 

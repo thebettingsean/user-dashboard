@@ -115,9 +115,9 @@ export async function GET(request: NextRequest) {
     const { from, to } = getDateRangeForSport()
     console.log(`📅 Date range: ${from} to ${to}`)
 
-    // Fetch games from Trendline API
-    const games = await fetchGames(SPORT, from, to)
-    console.log(`📊 Found ${games.length} CFB games`)
+    // Fetch ALL CFB games (not just Top 25)
+    const games = await fetchGames(SPORT, from, to, 'All')
+    console.log(`📊 Found ${games.length} CFB games (All teams)`)
 
     if (games.length === 0) {
       console.log(`⏭️  No CFB games to process`)

@@ -218,20 +218,10 @@ export async function GET(request: NextRequest) {
       now.setHours(now.getHours() - 6) // Look back 6 hours
       futureDate.setHours(futureDate.getHours() + 30) // Look ahead 30 hours
     } else if (sport === 'cfb') {
-      // CFB: Show games from most recent Sunday + 7 days (this week's games)
-      const dayOfWeek = now.getDay() // 0 = Sunday
-      const daysSinceSunday = dayOfWeek === 0 ? 0 : dayOfWeek
-      const mostRecentSunday = new Date()
-      mostRecentSunday.setDate(mostRecentSunday.getDate() - daysSinceSunday)
-      mostRecentSunday.setHours(0, 0, 0, 0)
-      
-      // Set start to most recent Sunday, end 7 days later
-      const endOfWeek = new Date(mostRecentSunday)
-      endOfWeek.setDate(endOfWeek.getDate() + 7)
-      
-      // Update now and futureDate
-      now.setTime(mostRecentSunday.getTime())
-      futureDate.setTime(endOfWeek.getTime())
+      // CFB: Show games from NOW (not old games) through next 7 days
+      // Look back 6 hours to catch games that just started, then forward 7 days
+      now.setHours(now.getHours() - 6) // Look back 6 hours
+      futureDate.setDate(futureDate.getDate() + 7) // Look forward 7 days
     } else {
       // NFL: Show all games from 12 hours ago through next 7 days
       // This catches early afternoon games that already started
