@@ -265,10 +265,17 @@ export async function GET(request: NextRequest) {
     }
 
     const summaries: DashboardGameSummary[] = snapshotRows.map((row) => {
-      // Debug spread structure
-      if (row.spread && (row.away_team?.toLowerCase().includes('chief') || row.home_team?.toLowerCase().includes('chief'))) {
+      // Debug spread structure for Bears or Eagles games
+      if (row.spread && (row.away_team?.toLowerCase().includes('bear') || row.away_team?.toLowerCase().includes('eagle') || row.home_team?.toLowerCase().includes('bear') || row.home_team?.toLowerCase().includes('eagle'))) {
         console.log('[SPREAD DEBUG] Game:', row.away_team, '@', row.home_team)
-        console.log('[SPREAD DEBUG] Full spread object:', JSON.stringify(row.spread, null, 2))
+        console.log('[SPREAD DEBUG] Raw spread object:', JSON.stringify(row.spread, null, 2))
+        console.log('[SPREAD DEBUG] Checking fields:')
+        console.log('  - row.spread.home:', row.spread.home)
+        console.log('  - row.spread.away:', row.spread.away)
+        console.log('  - row.spread.home_line:', row.spread.home_line)
+        console.log('  - row.spread.away_line:', row.spread.away_line)
+        console.log('  - row.spread.homeLine:', row.spread.homeLine)
+        console.log('  - row.spread.awayLine:', row.spread.awayLine)
       }
 
       const spreadSummary: SpreadSummary | null = row.spread
@@ -280,6 +287,11 @@ export async function GET(request: NextRequest) {
             awayOdds: row.spread.away_odds ?? row.spread.awayOdds ?? null
           }
         : null
+      
+      // Log the final spread summary for debugging
+      if (spreadSummary && (row.away_team?.toLowerCase().includes('bear') || row.away_team?.toLowerCase().includes('eagle') || row.home_team?.toLowerCase().includes('bear') || row.home_team?.toLowerCase().includes('eagle'))) {
+        console.log('[SPREAD DEBUG] Final spreadSummary:', spreadSummary)
+      }
 
       const totalsSummary: TotalsSummary | null = row.totals
         ? {
