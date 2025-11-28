@@ -62,6 +62,14 @@ export default function GameLayout({ children }: GameLayoutProps) {
         })
         
         if (game) {
+          // Debug spread data
+          if (game.awayTeam?.toLowerCase().includes('bear') || game.awayTeam?.toLowerCase().includes('eagle') || 
+              game.homeTeam?.toLowerCase().includes('bear') || game.homeTeam?.toLowerCase().includes('eagle')) {
+            console.log('[GAME LAYOUT DEBUG] Game:', game.awayTeam, '@', game.homeTeam)
+            console.log('[GAME LAYOUT DEBUG] Spread object:', game.spread)
+            console.log('[GAME LAYOUT DEBUG] spread.awayLine:', game.spread?.awayLine)
+            console.log('[GAME LAYOUT DEBUG] spread.homeLine:', game.spread?.homeLine)
+          }
           setGameData(game)
         }
       } catch (error) {
