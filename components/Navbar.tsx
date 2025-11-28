@@ -102,18 +102,43 @@ export default function Navbar() {
               >
                 <div style={styles.dropdownSection}>
                   <Link href="/sports/nfl/games" style={styles.dropdownLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg" 
+                      alt="NFL" 
+                      style={styles.sportLogo}
+                    />
                     NFL
                   </Link>
                   <Link href="/sports/nba/games" style={styles.dropdownLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg" 
+                      alt="NBA" 
+                      style={styles.sportLogo}
+                    />
                     NBA
                   </Link>
                   <Link href="/sports/nhl/games" style={styles.dropdownLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg" 
+                      alt="NHL" 
+                      style={styles.sportLogo}
+                    />
                     NHL
                   </Link>
                   <Link href="/sports/college-football/games" style={styles.dropdownLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg" 
+                      alt="NCAAF" 
+                      style={styles.sportLogo}
+                    />
                     NCAAF
                   </Link>
                   <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg" 
+                      alt="NCAAB" 
+                      style={{...styles.sportLogo, opacity: 0.5}}
+                    />
                     NCAAB (soon)
                   </div>
                   <div style={{...styles.dropdownLink, opacity: 0.3, cursor: 'default'}}>
@@ -425,18 +450,43 @@ export default function Navbar() {
               {openDropdown === 'sports' && (
                 <div style={styles.mobileSubMenu}>
                   <Link href="/sports/nfl/games" style={styles.mobileSubLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg" 
+                      alt="NFL" 
+                      style={styles.sportLogo}
+                    />
                     NFL
                   </Link>
                   <Link href="/sports/nba/games" style={styles.mobileSubLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg" 
+                      alt="NBA" 
+                      style={styles.sportLogo}
+                    />
                     NBA
                   </Link>
                   <Link href="/sports/nhl/games" style={styles.mobileSubLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg" 
+                      alt="NHL" 
+                      style={styles.sportLogo}
+                    />
                     NHL
                   </Link>
                   <Link href="/sports/college-football/games" style={styles.mobileSubLink}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg" 
+                      alt="NCAAF" 
+                      style={styles.sportLogo}
+                    />
                     NCAAF
                   </Link>
                   <div style={styles.mobileSubLink} onClick={(e) => e.preventDefault()}>
+                    <img 
+                      src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg" 
+                      alt="NCAAB" 
+                      style={{...styles.sportLogo, opacity: 0.5}}
+                    />
                     NCAAB (soon)
                   </div>
                   <div style={{...styles.mobileSubLink, opacity: 0.5}} onClick={(e) => e.preventDefault()}>
@@ -565,7 +615,9 @@ const styles = {
   },
 
   dropdownLink: {
-    display: 'block',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
     padding: '10px 12px',
     color: '#ffffff',
     fontSize: '0.875rem',
@@ -574,6 +626,12 @@ const styles = {
     borderRadius: '8px',
     background: 'rgba(255, 255, 255, 0.02)',
     transition: 'all 0.2s ease'
+  },
+
+  sportLogo: {
+    width: '20px',
+    height: '20px',
+    objectFit: 'contain'
   },
 
   signInButton: {
@@ -707,7 +765,9 @@ const styles = {
   },
 
   mobileSubLink: {
-    display: 'block',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
     padding: '10px 12px',
     color: '#ffffff',
     fontSize: '0.875rem',
