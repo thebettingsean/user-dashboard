@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { FaArrowLeft } from 'react-icons/fa'
 import styles from './sportsbooks.module.css'
 
-// SEO Metadata is exported from metadata.ts
-
 const API_BASE_URL = 'https://sportsbookbonus.onrender.com/api'
 
 interface State {
@@ -110,8 +108,8 @@ export default function SportsbooksPage() {
       <div className={styles.content}>
         {/* Hero Section */}
         <div className={styles.hero}>
-          <div className={styles.badge}>Your Ticket to Winning</div>
-          <h1 className={styles.title}>Claim Your Free Money</h1>
+          <div className={styles.badge}>Top Rated Sportsbooks</div>
+          <h1 className={styles.title}>Join & Get Free Access</h1>
 
           {/* State Selector */}
           <div className={styles.selectorWrapper}>

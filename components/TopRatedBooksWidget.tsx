@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { FaStar } from 'react-icons/fa'
+import { IoBookSharp } from 'react-icons/io5'
 
 export default function TopRatedBooksWidget({ compact = false }: { compact?: boolean }) {
   const content = (
     <>
       {!compact && (
         <div style={iconWrapper}>
-          <FaStar size={28} />
+          <IoBookSharp size={28} />
         </div>
       )}
       
@@ -52,7 +52,7 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
     <>
       <div style={widgetStyle}>
         <div style={iconWrapper}>
-          <FaStar size={28} />
+          <IoBookSharp size={28} />
         </div>
         
         <h2 style={titleStyle}>Top Rated Books</h2>
