@@ -1,0 +1,547 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a1628 0%, #111827 50%, #1a1f3a 100%);
+  color: white;
+  padding-bottom: 4rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 2rem 2rem 0 2rem;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-2px);
+}
+
+.content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 8rem 1rem 4rem 1rem;
+}
+
+.badge {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #60a5fa;
+  margin-bottom: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+}
+
+.selectorWrapper {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.stateSelector {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  min-width: 256px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  transition: all 0.2s ease;
+}
+
+.stateSelector:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.stateSelector:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.valueFlowWrapper {
+  margin-top: 2rem;
+}
+
+.valueFlow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  overflow-x: auto;
+}
+
+.valueCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  width: 176px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.valueCard:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.valueCardCompact {
+  width: 144px;
+  padding: 1rem;
+}
+
+.valueCardHighlight {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(6, 78, 59, 0.8));
+  border-color: #34d399;
+}
+
+.valueIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.valueTitle {
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.valueSubtitle {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.arrow {
+  color: #60a5fa;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.offersSection {
+  margin-top: 3rem;
+}
+
+.offersHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.sectionSubtitle {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.sortButton {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  color: #d1d5db;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sortButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.sortButtonActive {
+  background: rgba(30, 64, 175, 0.6);
+  border-color: #2563eb;
+  color: white;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  padding: 3rem 0;
+  color: #9ca3af;
+  font-size: 1.125rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  background-color: #000000;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(6, 78, 59, 0.6);
+  color: #6ee7b7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.activeDot {
+  width: 8px;
+  height: 8px;
+  background-color: #34d399;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.rating {
+  background-color: rgba(30, 64, 175, 0.6);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 48px;
+  border: 1px solid rgba(37, 99, 235, 0.4);
+}
+
+.cardSection {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.cardLabel {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.cardValue {
+  color: white;
+  font-weight: 500;
+}
+
+.highlight {
+  text-decoration: underline;
+  text-decoration-color: #3b82f6;
+}
+
+.claimButton {
+  background: linear-gradient(135deg, #1e293b, #1e40af);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  font-size: 0.9375rem;
+}
+
+.claimButton:hover {
+  background: linear-gradient(135deg, #334155, #2563eb);
+  transform: translateY(-1px);
+}
+
+.howItWorks {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.howItWorksTitle {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modalContent {
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  max-width: 28rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+  color: white;
+}
+
+.modalDetails {
+  background: rgba(17, 24, 39, 0.6);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modalDetailsTitle {
+  font-weight: 600;
+  color: white;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+}
+
+.modalDetailRow {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.modalDetailRow:last-child {
+  margin-bottom: 0;
+}
+
+.modalDetailLabel {
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.modalDetailValue {
+  color: white;
+  font-weight: 500;
+}
+
+.modalDetailValueHighlight {
+  color: #60a5fa;
+  font-weight: 500;
+}
+
+.promoCode {
+  background: rgba(69, 26, 3, 0.6);
+  border: 1px solid #92400e;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.promoCodeLabel {
+  color: #fbbf24;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.promoCodeText {
+  font-size: 1.5rem;
+  font-family: monospace;
+  font-weight: bold;
+  color: #fef3c7;
+  background-color: rgba(146, 64, 14, 0.8);
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.instructions {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.instructionsTitle {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.instructionsText {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.email {
+  font-family: monospace;
+  background-color: rgba(31, 41, 55, 0.8);
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #60a5fa;
+  font-size: 0.8125rem;
+}
+
+.modalClaimButton {
+  background: linear-gradient(135deg, #1e293b, #1e40af);
+  color: white;
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.modalClaimButton:hover {
+  background: linear-gradient(135deg, #334155, #2563eb);
+  transform: translateY(-1px);
+}
+

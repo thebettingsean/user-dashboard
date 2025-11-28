@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { FaStar } from 'react-icons/fa'
 
 export default function TopRatedBooksWidget({ compact = false }: { compact?: boolean }) {
@@ -19,26 +20,27 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
       )}
 
       <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', lineHeight: '1.5', color: 'rgba(255,255,255,0.9)' }}>
-        📊 Coming Soon!<br />
+        Get exclusive offers from top-rated sportsbooks.<br />
         <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-          We're curating the best sportsbooks with exclusive offers for members.
+          Plus 30 days free when you sign up!
         </span>
       </p>
 
-      <button 
-        onClick={() => alert('Top sportsbook recommendations coming soon!')}
-        style={buttonStyle}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
-          e.currentTarget.style.transform = 'translateY(-1px)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
-          e.currentTarget.style.transform = 'translateY(0)'
-        }}
-      >
-        View Books
-      </button>
+      <Link href="/sportsbooks" style={{ textDecoration: 'none' }}>
+        <button 
+          style={buttonStyle}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
+            e.currentTarget.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
+            e.currentTarget.style.transform = 'translateY(0)'
+          }}
+        >
+          View Offers
+        </button>
+      </Link>
     </>
   )
 
@@ -58,29 +60,30 @@ export default function TopRatedBooksWidget({ compact = false }: { compact?: boo
 
         <div style={infoBoxStyle}>
           <p style={{ margin: '0', fontSize: '0.85rem', lineHeight: '1.5', textAlign: 'center' }}>
-            📊 Coming Soon!<br />
+            Get exclusive offers from top-rated sportsbooks.<br />
             <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-              We're curating the best sportsbooks with exclusive offers for members.
+              Plus 30 days free when you sign up!
             </span>
           </p>
         </div>
 
         <div style={{ flex: 1 }} />
 
-        <button 
-          onClick={() => alert('Top sportsbook recommendations coming soon!')}
-          style={buttonStyle}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
-            e.currentTarget.style.transform = 'translateY(-1px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
-            e.currentTarget.style.transform = 'translateY(0)'
-          }}
-        >
-          View Books
-        </button>
+        <Link href="/sportsbooks" style={{ textDecoration: 'none' }}>
+          <button 
+            style={buttonStyle}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(234, 179, 8, 0.35)'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(234, 179, 8, 0.25)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
+            View Offers
+          </button>
+        </Link>
       </div>
     </>
   )
