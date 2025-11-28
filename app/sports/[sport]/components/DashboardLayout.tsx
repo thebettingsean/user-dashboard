@@ -780,9 +780,11 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         if (picksResponse.ok) {
           const picksData = await picksResponse.json()
           const allPicks = picksData.picks || []
-          // Filter to only picks for the featured game
-          const gamePicks = allPicks.filter((pick: DashboardPick) => pick.gameId === featuredGame.id)
-          setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks
+          // Filter to only picks for the featured game and sort by units (highest first)
+          const gamePicks = allPicks
+            .filter((pick: DashboardPick) => pick.gameId === featuredGame.id)
+            .sort((a: DashboardPick, b: DashboardPick) => b.units - a.units)
+          setFeaturedGamePicks(gamePicks.slice(0, 3)) // Top 3 picks by units
         }
 
         // Auto-generate script for subscribed users only
@@ -1309,9 +1311,18 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 color: 'rgba(226, 232, 240, 0.8)',
+                marginBottom: '4px'
+              }}>
+                {featuredGamePicks.length} Active Picks
+              </div>
+              <div style={{ 
+                fontSize: '9px', 
+                fontWeight: 500, 
+                letterSpacing: '0.04em',
+                color: 'rgba(148, 163, 184, 0.7)',
                 marginBottom: '10px'
               }}>
-                Active Picks ({featuredGamePicks.length})
+                Top 3 units at risk:
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {featuredGamePicks.map((pick) => (
