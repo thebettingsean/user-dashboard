@@ -171,7 +171,7 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
   }
 
   const getTrackingLinks = () => {
-    if (!affiliateData?.link) return { mainPages: [], landingPages: [], liveTools: [] }
+    if (!affiliateData?.link) return { mainPages: [], landingPages: [], nfl: [], nba: [], nhl: [], ncaaf: [], ncaab: [], mlb: [] }
     
     // Extract the ref slug from the link
     const refMatch = affiliateData.link.match(/ref=([^&]+)/)
@@ -180,56 +180,173 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
     return {
       mainPages: [
         {
+          name: 'Home',
+          url: `https://thebettinginsider.com/?ref=${refSlug}`,
+          disabled: false
+        },
+        {
           name: 'Dashboard',
-          url: `dashboard.thebettinginsider.com/?ref=${refSlug}`
+          url: `https://dashboard.thebettinginsider.com/sports?ref=${refSlug}`,
+          disabled: false
         },
         {
-          name: 'Home Page',
-          url: `https://thebettinginsider.com/?ref=${refSlug}`
+          name: 'Picks',
+          url: `https://dashboard.thebettinginsider.com/sports/picks?ref=${refSlug}`,
+          disabled: false
         },
         {
-          name: 'Stats Site',
-          url: `app.thebettinginsider.com/?ref=${refSlug}`
+          name: 'Scripts',
+          url: `https://dashboard.thebettinginsider.com/sports/ai-scripts?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Public',
+          url: `https://dashboard.thebettinginsider.com/sports/public-betting?ref=${refSlug}`,
+          disabled: false
         }
       ],
       landingPages: [
         {
-          name: 'Bets',
-          url: `https://www.thebettinginsider.com/betting/about?ref=${refSlug}`
+          name: 'Betting',
+          url: `https://thebettinginsider.com/betting/about?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Stats',
+          url: `#`,
+          disabled: true
+        }
+      ],
+      nfl: [
+        {
+          name: 'Games',
+          url: `https://dashboard.thebettinginsider.com/sports/nfl/games?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Picks',
+          url: `https://dashboard.thebettinginsider.com/sports/nfl/picks?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Scripts',
+          url: `https://dashboard.thebettinginsider.com/sports/nfl/scripts?ref=${refSlug}`,
+          disabled: false
         },
         {
           name: 'Public Betting',
-          url: `https://www.thebettinginsider.com/public-betting?ref=${refSlug}`
-        },
-        {
-          name: 'Player Props',
-          url: `https://www.thebettinginsider.com/player-props?ref=${refSlug}`
-        },
-        {
-          name: 'Referee',
-          url: `https://www.thebettinginsider.com/referee-data?ref=${refSlug}`
-        },
-        {
-          name: 'Fantasy',
-          url: `https://www.thebettinginsider.com/fantasy/home?ref=${refSlug}`
-        },
-        {
-          name: 'Pricing',
-          url: `https://www.thebettinginsider.com/pricing?ref=${refSlug}`
+          url: `https://dashboard.thebettinginsider.com/sports/nfl/public?ref=${refSlug}`,
+          disabled: false
         }
       ],
-      liveTools: [
+      nba: [
         {
-          name: 'Analyst Picks',
-          url: `dashboard.thebettinginsider.com/analyst-picks?ref=${refSlug}`
+          name: 'Games',
+          url: `https://dashboard.thebettinginsider.com/sports/nba/games?ref=${refSlug}`,
+          disabled: false
         },
         {
-          name: 'Prop Parlays',
-          url: `dashboard.thebettinginsider.com/prop-parlay-tool?ref=${refSlug}`
+          name: 'Picks',
+          url: `https://dashboard.thebettinginsider.com/sports/nba/picks?ref=${refSlug}`,
+          disabled: false
         },
         {
-          name: 'Fantasy',
-          url: `dashboard.thebettinginsider.com/fantasy?ref=${refSlug}`
+          name: 'Scripts',
+          url: `https://dashboard.thebettinginsider.com/sports/nba/scripts?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Public Betting',
+          url: `https://dashboard.thebettinginsider.com/sports/nba/public?ref=${refSlug}`,
+          disabled: false
+        }
+      ],
+      nhl: [
+        {
+          name: 'Games',
+          url: `https://dashboard.thebettinginsider.com/sports/nhl/games?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Picks',
+          url: `https://dashboard.thebettinginsider.com/sports/nhl/picks?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Scripts',
+          url: `https://dashboard.thebettinginsider.com/sports/nhl/scripts?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Public Betting',
+          url: `https://dashboard.thebettinginsider.com/sports/nhl/public?ref=${refSlug}`,
+          disabled: false
+        }
+      ],
+      ncaaf: [
+        {
+          name: 'Games',
+          url: `https://dashboard.thebettinginsider.com/sports/college-football/games?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Picks',
+          url: `https://dashboard.thebettinginsider.com/sports/college-football/picks?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Scripts',
+          url: `https://dashboard.thebettinginsider.com/sports/college-football/scripts?ref=${refSlug}`,
+          disabled: false
+        },
+        {
+          name: 'Public Betting',
+          url: `https://dashboard.thebettinginsider.com/sports/college-football/public?ref=${refSlug}`,
+          disabled: false
+        }
+      ],
+      ncaab: [
+        {
+          name: 'Games',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Picks',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Scripts',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Public Betting',
+          url: `#`,
+          disabled: true
+        }
+      ],
+      mlb: [
+        {
+          name: 'Games',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Picks',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Scripts',
+          url: `#`,
+          disabled: true
+        },
+        {
+          name: 'Public Betting',
+          url: `#`,
+          disabled: true
         }
       ]
     }
@@ -416,14 +533,18 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
           <div style={sectionStyle}>
             <h4 style={sectionTitleStyle}>Main Pages</h4>
             {getTrackingLinks().mainPages.map((link, index) => (
-              <div key={`main-${index}`} style={compactLinkItemStyle}>
-                <span style={compactLinkNameStyle}>{link.name}</span>
-                <button
-                  onClick={() => copySpecificLink(link.url, index)}
-                  style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
-                >
-                  {copiedLinkIndex === index ? '✓' : '📋'}
-                </button>
+              <div key={`main-${index}`} style={link.disabled ? disabledLinkItemStyle : compactLinkItemStyle}>
+                <span style={link.disabled ? disabledLinkNameStyle : compactLinkNameStyle}>
+                  {link.name}{link.disabled && ' (Coming Soon)'}
+                </span>
+                {!link.disabled && (
+                  <button
+                    onClick={() => copySpecificLink(link.url, index)}
+                    style={copiedLinkIndex === index ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                  >
+                    {copiedLinkIndex === index ? '✓' : '📋'}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -432,23 +553,27 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
           <div style={sectionStyle}>
             <h4 style={sectionTitleStyle}>Landing / Sales Pages</h4>
             {getTrackingLinks().landingPages.map((link, index) => (
-              <div key={`landing-${index}`} style={compactLinkItemStyle}>
-                <span style={compactLinkNameStyle}>{link.name}</span>
-                <button
-                  onClick={() => copySpecificLink(link.url, index + 10)}
-                  style={copiedLinkIndex === (index + 10) ? copiedSmallButtonStyle : smallCopyButtonStyle}
-                >
-                  {copiedLinkIndex === (index + 10) ? '✓' : '📋'}
-                </button>
+              <div key={`landing-${index}`} style={link.disabled ? disabledLinkItemStyle : compactLinkItemStyle}>
+                <span style={link.disabled ? disabledLinkNameStyle : compactLinkNameStyle}>
+                  {link.name}{link.disabled && ' (Coming Soon)'}
+                </span>
+                {!link.disabled && (
+                  <button
+                    onClick={() => copySpecificLink(link.url, index + 10)}
+                    style={copiedLinkIndex === (index + 10) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                  >
+                    {copiedLinkIndex === (index + 10) ? '✓' : '📋'}
+                  </button>
+                )}
               </div>
             ))}
           </div>
 
-          {/* Live Tools */}
+          {/* NFL */}
           <div style={sectionStyle}>
-            <h4 style={sectionTitleStyle}>Live Tools</h4>
-            {getTrackingLinks().liveTools.map((link, index) => (
-              <div key={`tools-${index}`} style={compactLinkItemStyle}>
+            <h4 style={sectionTitleStyle}>NFL</h4>
+            {getTrackingLinks().nfl.map((link, index) => (
+              <div key={`nfl-${index}`} style={compactLinkItemStyle}>
                 <span style={compactLinkNameStyle}>{link.name}</span>
                 <button
                   onClick={() => copySpecificLink(link.url, index + 20)}
@@ -456,6 +581,94 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
                 >
                   {copiedLinkIndex === (index + 20) ? '✓' : '📋'}
                 </button>
+              </div>
+            ))}
+          </div>
+
+          {/* NBA */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>NBA</h4>
+            {getTrackingLinks().nba.map((link, index) => (
+              <div key={`nba-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index + 30)}
+                  style={copiedLinkIndex === (index + 30) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === (index + 30) ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* NHL */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>NHL</h4>
+            {getTrackingLinks().nhl.map((link, index) => (
+              <div key={`nhl-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index + 40)}
+                  style={copiedLinkIndex === (index + 40) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === (index + 40) ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* NCAAF */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>NCAAF</h4>
+            {getTrackingLinks().ncaaf.map((link, index) => (
+              <div key={`ncaaf-${index}`} style={compactLinkItemStyle}>
+                <span style={compactLinkNameStyle}>{link.name}</span>
+                <button
+                  onClick={() => copySpecificLink(link.url, index + 50)}
+                  style={copiedLinkIndex === (index + 50) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                >
+                  {copiedLinkIndex === (index + 50) ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* NCAAB */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>NCAAB</h4>
+            {getTrackingLinks().ncaab.map((link, index) => (
+              <div key={`ncaab-${index}`} style={link.disabled ? disabledLinkItemStyle : compactLinkItemStyle}>
+                <span style={link.disabled ? disabledLinkNameStyle : compactLinkNameStyle}>
+                  {link.name}{link.disabled && ' (Coming Soon)'}
+                </span>
+                {!link.disabled && (
+                  <button
+                    onClick={() => copySpecificLink(link.url, index + 60)}
+                    style={copiedLinkIndex === (index + 60) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                  >
+                    {copiedLinkIndex === (index + 60) ? '✓' : '📋'}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* MLB */}
+          <div style={sectionStyle}>
+            <h4 style={sectionTitleStyle}>MLB</h4>
+            {getTrackingLinks().mlb.map((link, index) => (
+              <div key={`mlb-${index}`} style={link.disabled ? disabledLinkItemStyle : compactLinkItemStyle}>
+                <span style={link.disabled ? disabledLinkNameStyle : compactLinkNameStyle}>
+                  {link.name}{link.disabled && ' (Coming Soon)'}
+                </span>
+                {!link.disabled && (
+                  <button
+                    onClick={() => copySpecificLink(link.url, index + 70)}
+                    style={copiedLinkIndex === (index + 70) ? copiedSmallButtonStyle : smallCopyButtonStyle}
+                  >
+                    {copiedLinkIndex === (index + 70) ? '✓' : '📋'}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -922,4 +1135,24 @@ const copiedSmallButtonStyle = {
   flexShrink: 0,
   color: '#10b981',
   boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)'
+}
+
+const disabledLinkItemStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+  background: 'rgba(255, 255, 255, 0.01)',
+  border: '1px solid rgba(255, 255, 255, 0.04)',
+  borderRadius: '6px',
+  padding: '0.5rem 0.75rem',
+  marginBottom: '0.35rem',
+  opacity: 0.4
+}
+
+const disabledLinkNameStyle = {
+  fontSize: '0.75rem',
+  fontWeight: '500',
+  color: 'rgba(255, 255, 255, 0.4)',
+  fontStyle: 'italic'
 }
