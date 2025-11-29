@@ -821,12 +821,10 @@ export default function HeroNewPage() {
           {/* Central message */}
           <div className={styles.centralMessage}>
             <h1 className={styles.heroTitle}>
-              <DecryptedText text="we " delay={0} />
-              <FaHeart className={styles.heartIcon} />
-              <DecryptedText text=" the sportsbooks" delay={0} />
+              we <FaHeart className={styles.heartIcon} /> the sportsbooks
               <br />
               <span className={styles.heroSubtitle}>
-                <DecryptedText text="because we've figured out how to beat them" delay={500} />
+                because we've figured out how to beat them
               </span>
             </h1>
           </div>
