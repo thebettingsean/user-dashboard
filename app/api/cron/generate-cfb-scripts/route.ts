@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
 
     const gamesData = await gamesResponse.json()
     
-    // Filter for CFB games only
-    const allGames = (gamesData.games || []).filter((game: any) => game.sport === 'CFB')
+    // Filter for CFB games only (sport comes back as 'NCAAF' from /api/games/today)
+    const allGames = (gamesData.games || []).filter((game: any) => game.sport === 'NCAAF' || game.sport === 'CFB')
     
     console.log(`📊 Found ${allGames.length} CFB games to process`)
     
