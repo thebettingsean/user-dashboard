@@ -318,20 +318,40 @@ function SportsSelectorPageContent() {
     }
   }
 
-  // Calculate current NFL week (resets every Tuesday)
+  // Calculate current NFL week based on actual 2024 season schedule
   const getCurrentNFLWeek = (): number => {
     const now = new Date()
-    const seasonStart = new Date('2024-09-05') // NFL 2024 Season Start (Thursday, Sept 5)
     
-    // Calculate weeks since season start
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000
-    const weeksSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / msPerWeek)
+    // NFL 2024 Season Week Start Dates (all weeks start on Tuesday after the games)
+    const weekStarts = [
+      new Date('2024-09-03'),  // Week 1 (Sept 5 kickoff)
+      new Date('2024-09-10'),  // Week 2
+      new Date('2024-09-17'),  // Week 3
+      new Date('2024-09-24'),  // Week 4
+      new Date('2024-10-01'),  // Week 5
+      new Date('2024-10-08'),  // Week 6
+      new Date('2024-10-15'),  // Week 7
+      new Date('2024-10-22'),  // Week 8
+      new Date('2024-10-29'),  // Week 9
+      new Date('2024-11-05'),  // Week 10
+      new Date('2024-11-12'),  // Week 11
+      new Date('2024-11-19'),  // Week 12 (Thanksgiving)
+      new Date('2024-11-26'),  // Week 13
+      new Date('2024-12-03'),  // Week 14
+      new Date('2024-12-10'),  // Week 15
+      new Date('2024-12-17'),  // Week 16
+      new Date('2024-12-24'),  // Week 17
+      new Date('2024-12-31'),  // Week 18
+    ]
     
-    // Week 1 started Sept 5, so add 1
-    const currentWeek = weeksSinceStart + 1
+    // Find which week we're in
+    for (let i = weekStarts.length - 1; i >= 0; i--) {
+      if (now >= weekStarts[i]) {
+        return i + 1 // Weeks are 1-indexed
+      }
+    }
     
-    // Cap at 18 (max regular season weeks)
-    return Math.max(1, Math.min(18, currentWeek))
+    return 1 // Default to Week 1 if before season
   }
 
   // Fetch games data
