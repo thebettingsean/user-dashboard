@@ -950,37 +950,29 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
     try {
       // Check authentication after showing loading
       if (!isSignedIn) {
-        await new Promise((resolve) => setTimeout(resolve, 5000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
-          '⚠️ **Sign In Required**\n\nOops! You need to sign in to generate AI scripts.\n\n[Click here to sign in and start your $1 trial](/pricing)'
+          '__SIGN_IN_REQUIRED__' // Special marker for rendering custom component
         ))
         setLoadingScripts((prev) => {
           const next = new Set(prev)
           next.delete(gameId)
           return next
         })
-        
-        setTimeout(() => {
-          openSignUp({ redirectUrl: '/pricing' })
-        }, 500)
         return
       }
 
       // Check subscription access
       if (!hasAccess) {
-        await new Promise((resolve) => setTimeout(resolve, 5000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
         setScriptContent((prev) => new Map(prev).set(gameId, 
-          '🔒 **Subscription Required**\n\nOops! You don\'t have an active subscription.\n\nPlease sign in or start your $1 trial to generate AI scripts.\n\n[Start $1 Trial Now](/pricing)'
+          '__SUBSCRIPTION_REQUIRED__' // Special marker for rendering custom component
         ))
         setLoadingScripts((prev) => {
           const next = new Set(prev)
           next.delete(gameId)
           return next
         })
-        
-        setTimeout(() => {
-          router.push('/pricing')
-        }, 500)
         return
       }
 
@@ -997,6 +989,21 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
       if (!response.ok) {
         const errorText = await response.text()
         console.error(`❌ Script API failed: ${response.status} - ${errorText}`)
+        console.error(`❌ CFB DEBUG: gameId=${gameId}, apiSport=${apiSport}, activeSport=${activeSport}`)
+        
+        // If 404, the script doesn't exist yet - show a friendly message
+        if (response.status === 404) {
+          setScriptContent((prev) => new Map(prev).set(gameId, 
+            '📝 **Script Not Ready Yet**\n\nThis game script hasn\'t been generated yet. Our AI generates scripts closer to game time when more data is available.\n\nCheck back later for the full analysis!'
+          ))
+          setLoadingScripts((prev) => {
+            const next = new Set(prev)
+            next.delete(gameId)
+            return next
+          })
+          return
+        }
+        
         throw new Error(`API returned ${response.status}: ${errorText}`)
       }
       
@@ -1402,7 +1409,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
             </div>
             
             {/* Show actual script for subscribed users */}
-            {hasAccess && featuredScript && (
+            {hasAccess && featuredScript && featuredScript !== '__SIGN_IN_REQUIRED__' && featuredScript !== '__SUBSCRIPTION_REQUIRED__' && (
               <div 
                 style={{ 
                   color: 'rgba(226, 232, 240, 0.9)',
@@ -1413,6 +1420,68 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                 }}
                 dangerouslySetInnerHTML={{ __html: formatScript(featuredScript) }}
               />
+            )}
+            
+            {/* Sign In Required State */}
+            {featuredScript === '__SIGN_IN_REQUIRED__' && (
+              <div style={{ padding: '24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#fbbf24', marginBottom: '8px' }}>
+                  ⚠️ Sign In Required
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.8)', marginBottom: '16px' }}>
+                  Oops! You need to sign in to generate AI scripts.
+                </div>
+                <button
+                  onClick={() => openSignUp({ redirectUrl: '/pricing' })}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '999px',
+                    background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  Sign In & Start $1 Trial
+                </button>
+              </div>
+            )}
+            
+            {/* Subscription Required State */}
+            {featuredScript === '__SUBSCRIPTION_REQUIRED__' && (
+              <div style={{ padding: '24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#f97316', marginBottom: '8px' }}>
+                  🔒 Subscription Required
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.8)', marginBottom: '16px' }}>
+                  Oops! You don't have an active subscription.
+                </div>
+                <button
+                  onClick={() => router.push('/pricing')}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '999px',
+                    background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  Start $1 Trial Now
+                </button>
+              </div>
             )}
             
             {/* Loading state */}
@@ -2140,6 +2209,62 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       <span className={styles.dot}></span>
                       <span className={styles.dot}></span>
                       <span className={styles.dot}></span>
+                    </div>
+                  ) : content === '__SIGN_IN_REQUIRED__' ? (
+                    <div style={{ padding: '24px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 600, color: '#fbbf24', marginBottom: '8px' }}>
+                        ⚠️ Sign In Required
+                      </div>
+                      <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.8)', marginBottom: '16px' }}>
+                        Oops! You need to sign in to generate AI scripts.
+                      </div>
+                      <button
+                        onClick={() => openSignUp({ redirectUrl: '/pricing' })}
+                        style={{
+                          padding: '12px 24px',
+                          borderRadius: '999px',
+                          background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                          border: 'none',
+                          color: 'white',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        Sign In & Start $1 Trial
+                      </button>
+                    </div>
+                  ) : content === '__SUBSCRIPTION_REQUIRED__' ? (
+                    <div style={{ padding: '24px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 600, color: '#f97316', marginBottom: '8px' }}>
+                        🔒 Subscription Required
+                      </div>
+                      <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.8)', marginBottom: '16px' }}>
+                        Oops! You don't have an active subscription.
+                      </div>
+                      <button
+                        onClick={() => router.push('/pricing')}
+                        style={{
+                          padding: '12px 24px',
+                          borderRadius: '999px',
+                          background: 'linear-gradient(90deg, #6366f1, #0ea5e9)',
+                          border: 'none',
+                          color: 'white',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        Start $1 Trial Now
+                      </button>
                     </div>
                   ) : (
                     <>
