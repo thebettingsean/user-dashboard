@@ -318,30 +318,30 @@ function SportsSelectorPageContent() {
     }
   }
 
-  // Calculate current NFL week based on actual 2024 season schedule
+  // Calculate current NFL week based on actual 2025 season schedule
   const getCurrentNFLWeek = (): number => {
     const now = new Date()
     
-    // NFL 2024 Season Week Start Dates (all weeks start on Tuesday after the games)
+    // NFL 2025 Season Week Start Dates (all weeks start on Tuesday after the games)
     const weekStarts = [
-      new Date('2024-09-03'),  // Week 1 (Sept 5 kickoff)
-      new Date('2024-09-10'),  // Week 2
-      new Date('2024-09-17'),  // Week 3
-      new Date('2024-09-24'),  // Week 4
-      new Date('2024-10-01'),  // Week 5
-      new Date('2024-10-08'),  // Week 6
-      new Date('2024-10-15'),  // Week 7
-      new Date('2024-10-22'),  // Week 8
-      new Date('2024-10-29'),  // Week 9
-      new Date('2024-11-05'),  // Week 10
-      new Date('2024-11-12'),  // Week 11
-      new Date('2024-11-19'),  // Week 12 (Thanksgiving)
-      new Date('2024-11-26'),  // Week 13
-      new Date('2024-12-03'),  // Week 14
-      new Date('2024-12-10'),  // Week 15
-      new Date('2024-12-17'),  // Week 16
-      new Date('2024-12-24'),  // Week 17
-      new Date('2024-12-31'),  // Week 18
+      new Date('2025-09-02'),  // Week 1 (Sept 4 kickoff)
+      new Date('2025-09-09'),  // Week 2
+      new Date('2025-09-16'),  // Week 3
+      new Date('2025-09-23'),  // Week 4
+      new Date('2025-09-30'),  // Week 5
+      new Date('2025-10-07'),  // Week 6
+      new Date('2025-10-14'),  // Week 7
+      new Date('2025-10-21'),  // Week 8
+      new Date('2025-10-28'),  // Week 9
+      new Date('2025-11-04'),  // Week 10
+      new Date('2025-11-11'),  // Week 11
+      new Date('2025-11-18'),  // Week 12 (Thanksgiving)
+      new Date('2025-11-25'),  // Week 13
+      new Date('2025-12-02'),  // Week 14
+      new Date('2025-12-09'),  // Week 15
+      new Date('2025-12-16'),  // Week 16
+      new Date('2025-12-23'),  // Week 17
+      new Date('2025-12-30'),  // Week 18
     ]
     
     // Find which week we're in
