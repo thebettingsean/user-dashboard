@@ -32,6 +32,8 @@ type SubFilterKey =
   | 'publicVegas'
   | 'publicSharp'
   | 'publicAbout'
+  | 'allGames'
+  | 'top25'
 
 type SupportedSport = 'nfl' | 'nba'
 
@@ -178,7 +180,7 @@ const getSubFilters = (sport: string): Record<TabKey, SubFilterKey[]> => {
   const isCollegeSport = sport === 'college-football' || sport === 'cfb'
   
   return {
-    games: [],
+    games: isCollegeSport ? ['allGames', 'top25'] : [], // Top 25 filter for CFB only
     picks: isCollegeSport 
       ? ['upcoming', 'byCapper', 'results'] // No topProps for CFB
       : ['upcoming', 'byCapper', 'topProps', 'results'],
@@ -197,7 +199,9 @@ const subFilterLabels: Record<SubFilterKey, string> = {
   publicMost: 'Most Public',
   publicVegas: 'Vegas Backed',
   publicSharp: 'Big Money',
-  publicAbout: 'About'
+  publicAbout: 'About',
+  allGames: 'All Games',
+  top25: 'Top 25'
 }
 
 const sportOptions: Array<{
@@ -1493,6 +1497,16 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
         <div className={styles.gameList}>
           {sortedGames
             .filter((game) => !featuredGame || game.id !== featuredGame.id)
+            .filter((game) => {
+              // Apply Top 25 filter for CFB if active
+              if (isCollegeSport && activeFilter === 'top25') {
+                const awayRank = (game as any).awayTeamRank
+                const homeRank = (game as any).homeTeamRank
+                // Show game if either team is ranked in Top 25
+                return (awayRank && awayRank <= 25) || (homeRank && homeRank <= 25)
+              }
+              return true // Show all games for 'allGames' or other filters
+            })
             .map((game) => {
             const dataCount = (game.publicMoney ? 1 : 0) + (game.referee ? 1 : 0) + (game.teamTrends ? 1 : 0) + (game.propsCount > 0 ? 1 : 0)
             return (
