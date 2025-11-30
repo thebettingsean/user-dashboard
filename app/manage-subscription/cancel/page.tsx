@@ -65,8 +65,15 @@ export default function CancelPage() {
       }
 
       const data = await response.json()
-      setOffer(data)
-      setStep('offer')
+      
+      // Check if user has already used their one-time extension offer
+      if (data.skipToFinalOffer || !data.offer) {
+        console.log('[Cancel Flow] User has already accepted an extension. Skipping to reasons.')
+        setStep('reasons')
+      } else {
+        setOffer(data)
+        setStep('offer')
+      }
     } catch (err: any) {
       console.error('Load offer error:', err)
       alert(`Error: ${err.message}`)

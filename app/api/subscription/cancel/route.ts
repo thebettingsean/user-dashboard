@@ -142,6 +142,30 @@ async function handleGetOffer(subscription: Stripe.Subscription, userId: string,
   const currentDate = Math.floor(Date.now() / 1000)
   const tenureDays = Math.floor((currentDate - startDate) / 86400)
 
+  // ⚠️ ABUSE PREVENTION: Check if user has EVER accepted an extension before
+  const { data: previousOffers, error: checkError } = await supabaseFunnel
+    .from('cancellation_feedback')
+    .select('id, first_offer_accepted')
+    .eq('user_id', userId)
+    .eq('first_offer_accepted', true)
+    .limit(1)
+
+  if (checkError) {
+    console.error('[Cancel API] Error checking previous offers:', checkError)
+  }
+
+  // If user has accepted an offer before, they get NO MORE OFFERS
+  if (previousOffers && previousOffers.length > 0) {
+    console.log('[Cancel API] User has already accepted an extension. No offer available.')
+    
+    // Return "no offer" response - frontend should skip to final offer or cancellation
+    return NextResponse.json({
+      offer: null,
+      message: 'No extension available',
+      skipToFinalOffer: true
+    })
+  }
+
   let offerType = ''
   let offerDays = 0
   let offerMessage = ''
