@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
 import styles from './dashboard.module.css'
 
 interface KPIs {
@@ -69,18 +67,10 @@ interface AnalyticsData {
 }
 
 export default function CancellationDashboard() {
-  const { user, isLoaded } = useUser()
-  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [filterTrial, setFilterTrial] = useState<'all' | 'trial' | 'paid'>('all')
   const [filterCompleted, setFilterCompleted] = useState<'all' | 'completed' | 'saved'>('all')
-
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.push('/')
-    }
-  }, [isLoaded, user, router])
 
   useEffect(() => {
     fetchData()
@@ -100,10 +90,6 @@ export default function CancellationDashboard() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!isLoaded || !user) {
-    return null
   }
 
   if (loading || !data) {
