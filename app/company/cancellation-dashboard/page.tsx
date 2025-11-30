@@ -28,6 +28,7 @@ interface ReasonData {
   count: number
   saved: number
   saveRate: string
+  percentage: string
 }
 
 interface OfferData {
@@ -215,6 +216,7 @@ export default function CancellationDashboard() {
               <tr>
                 <th>Reason</th>
                 <th>Count</th>
+                <th>% of Total</th>
                 <th>Saved</th>
                 <th>Save Rate</th>
               </tr>
@@ -224,6 +226,11 @@ export default function CancellationDashboard() {
                 <tr key={idx}>
                   <td><strong>{item.reason}</strong></td>
                   <td>{item.count}</td>
+                  <td>
+                    <span className={styles.badge} style={{ backgroundColor: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa' }}>
+                      {item.percentage}%
+                    </span>
+                  </td>
                   <td>{item.saved}</td>
                   <td>
                     <span className={styles.badge}>{item.saveRate}%</span>

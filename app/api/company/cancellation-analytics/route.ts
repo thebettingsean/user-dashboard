@@ -113,15 +113,19 @@ export async function GET() {
       }
     })
 
-    // Calculate save rates for reasons
+    // Calculate save rates and percentages for reasons
     Object.keys(reasonAnalysis).forEach(reason => {
       const data = reasonAnalysis[reason]
       data.saveRate = data.count > 0 ? ((data.saved / data.count) * 100).toFixed(1) : '0.0'
     })
 
-    // Sort by count
+    // Sort by count and add percentage of total
     const reasonAnalysisSorted = Object.entries(reasonAnalysis)
-      .map(([reason, data]) => ({ reason, ...data }))
+      .map(([reason, data]) => ({ 
+        reason, 
+        ...data,
+        percentage: total > 0 ? ((data.count / total) * 100).toFixed(1) : '0.0'
+      }))
       .sort((a, b) => b.count - a.count)
 
     // Offer performance
