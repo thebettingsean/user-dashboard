@@ -8,7 +8,6 @@ interface Bettor {
   name: string
   profile_image: string | null
   profile_initials: string
-  is_active: boolean
 }
 
 interface DayStats {
@@ -35,28 +34,69 @@ interface BettorStat {
   days: DayStats[]
 }
 
+interface Pick {
+  id: string
+  bettor_id: string
+  sport: string
+  bet_title: string
+  units: string
+  odds: string
+  sportsbook: string
+  game_time: string
+  result: 'won' | 'lost'
+  units_result: string
+}
+
 interface AnalyticsData {
   bettors: Bettor[]
   collective: BettorStat
   bettorStats: Record<string, BettorStat>
-  recentDates: string[]
+  selectedDates: string[]
+  availableDates: string[]
+  picks: Pick[]
 }
+
+type QuickPeriod = 3 | 5 | 7 | 14 | 30 | 60 | 90 | 180 | 365
 
 export default function AnalystPicksDashboard() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<AnalyticsData | null>(null)
-  const [sport, setSport] = useState('all')
-  const [days, setDays] = useState(3)
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['collective']))
+  
+  // Filters
+  const [selectedBettor, setSelectedBettor] = useState('collective')
+  const [selectedSport, setSelectedSport] = useState('all')
+  
+  // Date selection
+  const [dateMode, setDateMode] = useState<'quick' | 'custom'>('quick')
+  const [quickPeriod, setQuickPeriod] = useState<QuickPeriod>(3)
+  const [customDates, setCustomDates] = useState<string[]>([])
+  
+  // View mode
+  const [viewMode, setViewMode] = useState<'calendar' | 'details'>('calendar')
 
   useEffect(() => {
     fetchData()
-  }, [sport, days])
+  }, [selectedBettor, selectedSport, dateMode, quickPeriod, customDates])
 
   const fetchData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/company/analyst-picks-analytics?sport=${sport}&days=${days}`)
+      
+      let url = `/api/company/analyst-picks-analytics?sport=${selectedSport}`
+      
+      if (selectedBettor !== 'collective') {
+        url += `&bettor_id=${selectedBettor}`
+      }
+      
+      if (dateMode === 'quick') {
+        url += `&days=${quickPeriod}`
+      } else if (customDates.length > 0) {
+        url += `&dates=${customDates.join(',')}`
+      } else {
+        url += `&days=3` // Default if no custom dates selected
+      }
+      
+      const response = await fetch(url)
       const result = await response.json()
       
       if (result.success) {
@@ -69,31 +109,45 @@ export default function AnalystPicksDashboard() {
     }
   }
 
-  const toggleSection = (id: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
+  const handleQuickPeriod = (period: QuickPeriod) => {
+    setDateMode('quick')
+    setQuickPeriod(period)
+    setCustomDates([])
+  }
+
+  const toggleCustomDate = (date: string) => {
+    setDateMode('custom')
+    setCustomDates(prev => {
+      if (prev.includes(date)) {
+        return prev.filter(d => d !== date)
       } else {
-        newSet.add(id)
+        return [...prev, date].sort((a, b) => b.localeCompare(a))
       }
-      return newSet
     })
+  }
+
+  const formatDateLabel = (dates: string[]) => {
+    if (dates.length === 0) return ''
+    if (dates.length === 1) return formatDate(dates[0])
+    
+    // Check if consecutive
+    const sortedDates = [...dates].sort((a, b) => a.localeCompare(b))
+    const firstDate = new Date(sortedDates[0])
+    const lastDate = new Date(sortedDates[sortedDates.length - 1])
+    
+    const daysDiff = Math.floor((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (daysDiff + 1 === dates.length) {
+      // Consecutive dates
+      return `${formatDate(sortedDates[0])} - ${formatDate(sortedDates[sortedDates.length - 1])}`
+    } else {
+      // Non-consecutive
+      return dates.map(d => formatDate(d)).join(', ')
+    }
   }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    
-    const dateOnly = dateStr
-    const todayStr = today.toISOString().split('T')[0]
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
-    
-    if (dateOnly === todayStr) return 'Today'
-    if (dateOnly === yesterdayStr) return 'Yesterday'
-    
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
@@ -105,117 +159,37 @@ export default function AnalystPicksDashboard() {
     )
   }
 
-  const renderStatsCard = (id: string, title: string, stats: BettorStat, imageUrl?: string | null) => {
-    const isExpanded = expandedSections.has(id)
-    const { overall, days: dayStats } = stats
-
-    if (overall.wins === 0 && overall.losses === 0) return null
-
-    return (
-      <div key={id} className={styles.statsCard}>
-        <div className={styles.statsHeader} onClick={() => toggleSection(id)}>
-          <div className={styles.statsHeaderLeft}>
-            {imageUrl && (
-              <img src={imageUrl} alt={title} className={styles.bettorImage} />
-            )}
-            <div>
-              <h3 className={styles.statsTitle}>{title}</h3>
-              <div className={styles.statsOverview}>
-                <span className={styles.sport}>{sport === 'all' ? 'All Sports' : sport.toUpperCase()}</span>
-                <span className={styles.divider}>•</span>
-                <span className={styles.period}>L{days}</span>
-                <span className={styles.divider}>•</span>
-                <span className={overall.wins > overall.losses ? styles.recordGood : styles.recordBad}>
-                  {overall.wins}-{overall.losses} ({overall.winRate}%)
-                </span>
-                <span className={styles.divider}>•</span>
-                <span className={parseFloat(overall.roi) >= 0 ? styles.roiGood : styles.roiBad}>
-                  ROI: {overall.roi}%
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className={styles.expandIcon}>
-            {isExpanded ? '▼' : '▶'}
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className={styles.statsContent}>
-            <div className={styles.dayBreakdown}>
-              {dayStats.map((day, idx) => (
-                <div key={idx} className={styles.dayCard}>
-                  <div className={styles.dayDate}>{formatDate(day.date)}</div>
-                  <div className={styles.dayStats}>
-                    <div className={styles.dayStat}>
-                      <span className={styles.dayStatLabel}>Record:</span>
-                      <span className={day.wins > day.losses ? styles.recordGood : styles.recordBad}>
-                        {day.wins}-{day.losses} ({day.winRate}%)
-                      </span>
-                    </div>
-                    <div className={styles.dayStat}>
-                      <span className={styles.dayStatLabel}>ROI:</span>
-                      <span className={parseFloat(day.roi) >= 0 ? styles.roiGood : styles.roiBad}>
-                        {day.roi}%
-                      </span>
-                    </div>
-                    <div className={styles.dayStat}>
-                      <span className={styles.dayStatLabel}>Units:</span>
-                      <span className={parseFloat(day.unitsWon) >= 0 ? styles.unitsGood : styles.unitsBad}>
-                        {day.unitsWon > 0 ? '+' : ''}{day.unitsWon}u
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.overallSummary}>
-              <h4 className={styles.summaryTitle}>Overall Summary</h4>
-              <div className={styles.summaryGrid}>
-                <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Total Record</span>
-                  <span className={styles.summaryValue}>
-                    {overall.wins}-{overall.losses} ({overall.winRate}%)
-                  </span>
-                </div>
-                <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>ROI</span>
-                  <span className={parseFloat(overall.roi) >= 0 ? styles.summaryValueGood : styles.summaryValueBad}>
-                    {overall.roi}%
-                  </span>
-                </div>
-                <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Units Won</span>
-                  <span className={parseFloat(overall.unitsWon) >= 0 ? styles.summaryValueGood : styles.summaryValueBad}>
-                    {overall.unitsWon > 0 ? '+' : ''}{overall.unitsWon}u
-                  </span>
-                </div>
-                <div className={styles.summaryItem}>
-                  <span className={styles.summaryLabel}>Units Risked</span>
-                  <span className={styles.summaryValue}>{overall.unitsRisked}u</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
+  const currentStats = selectedBettor === 'collective' ? data.collective : data.bettorStats[selectedBettor]
+  const currentBettor = data.bettors.find(b => b.id === selectedBettor)
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Analyst Picks Analytics</h1>
-        <p className={styles.subtitle}>Performance tracking for marketing & internal review</p>
+        <p className={styles.subtitle}>Marketing-ready performance cards & detailed pick breakdowns</p>
       </div>
 
-      <div className={styles.filters}>
+      {/* Row 1: Bettor & Sport Filters */}
+      <div className={styles.filterRow}>
+        <div className={styles.filterGroup}>
+          <label className={styles.filterLabel}>Analyst</label>
+          <select 
+            value={selectedBettor} 
+            onChange={(e) => setSelectedBettor(e.target.value)}
+            className={styles.filterSelect}
+          >
+            <option value="collective">Collective (All Analysts)</option>
+            {data.bettors.map(bettor => (
+              <option key={bettor.id} value={bettor.id}>{bettor.name}</option>
+            ))}
+          </select>
+        </div>
+
         <div className={styles.filterGroup}>
           <label className={styles.filterLabel}>Sport</label>
           <select 
-            value={sport} 
-            onChange={(e) => setSport(e.target.value)}
+            value={selectedSport} 
+            onChange={(e) => setSelectedSport(e.target.value)}
             className={styles.filterSelect}
           >
             <option value="all">All Sports</option>
@@ -225,34 +199,155 @@ export default function AnalystPicksDashboard() {
             <option value="ncaaf">NCAAF</option>
           </select>
         </div>
+      </div>
 
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Time Period</label>
-          <select 
-            value={days} 
-            onChange={(e) => setDays(parseInt(e.target.value))}
-            className={styles.filterSelect}
-          >
-            <option value={3}>Last 3 Days</option>
-            <option value={7}>Last 7 Days</option>
-            <option value={14}>Last 14 Days</option>
-            <option value={30}>Last 30 Days</option>
-          </select>
+      {/* Row 2: Quick Periods */}
+      <div className={styles.periodSection}>
+        <label className={styles.sectionLabel}>Quick Periods</label>
+        <div className={styles.quickPeriods}>
+          {[3, 5, 7, 14, 30, 60, 90, 180, 365].map(period => (
+            <button
+              key={period}
+              onClick={() => handleQuickPeriod(period as QuickPeriod)}
+              className={dateMode === 'quick' && quickPeriod === period ? styles.periodButtonActive : styles.periodButton}
+            >
+              L{period === 365 ? 'Year' : period}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className={styles.statsContainer}>
-        {/* Collective Stats */}
-        {renderStatsCard('collective', 'Collective (All Analysts)', data.collective)}
-
-        {/* Individual Bettor Stats */}
-        {data.bettors.map(bettor => {
-          const stats = data.bettorStats[bettor.id]
-          if (!stats) return null
-          return renderStatsCard(bettor.id, bettor.name, stats, bettor.profile_image)
-        })}
+      {/* Row 2b: OR divider */}
+      <div className={styles.orDivider}>
+        <span>OR</span>
       </div>
+
+      {/* Row 3: Custom Date Picker */}
+      <div className={styles.datePickerSection}>
+        <label className={styles.sectionLabel}>Select Specific Days</label>
+        <div className={styles.dateGrid}>
+          {data.availableDates.slice(0, 30).map(date => (
+            <button
+              key={date}
+              onClick={() => toggleCustomDate(date)}
+              className={customDates.includes(date) ? styles.dateButtonActive : styles.dateButton}
+            >
+              {formatDate(date)}
+            </button>
+          ))}
+        </div>
+        {customDates.length > 0 && (
+          <div className={styles.selectedDatesInfo}>
+            Selected: {formatDateLabel(customDates)}
+          </div>
+        )}
+      </div>
+
+      {/* Row 4: View Mode Toggle */}
+      <div className={styles.viewModeSection}>
+        <button
+          onClick={() => setViewMode('calendar')}
+          className={viewMode === 'calendar' ? styles.viewButtonActive : styles.viewButton}
+        >
+          📅 Calendar View
+        </button>
+        <button
+          onClick={() => setViewMode('details')}
+          className={viewMode === 'details' ? styles.viewButtonActive : styles.viewButton}
+        >
+          📋 Details View
+        </button>
+      </div>
+
+      {/* Display Area */}
+      {viewMode === 'calendar' ? (
+        <div className={styles.calendarViewContainer}>
+          {currentStats && (
+            <div className={styles.marketingCard}>
+              <div className={styles.cardHeader}>
+                {selectedBettor !== 'collective' && currentBettor?.profile_image && (
+                  <img src={currentBettor.profile_image} alt={currentBettor.name} className={styles.cardImage} />
+                )}
+                <h2 className={styles.cardName}>
+                  {selectedBettor === 'collective' ? 'Collective' : currentBettor?.name}
+                </h2>
+              </div>
+              
+              <div className={styles.cardMainStat}>
+                {selectedSport === 'all' ? 'All Sports' : selectedSport.toUpperCase()}, L{dateMode === 'quick' ? quickPeriod : customDates.length}: <span className={styles.recordHighlight}>{currentStats.overall.wins}-{currentStats.overall.losses} ({currentStats.overall.winRate}%)</span>, <span className={parseFloat(currentStats.overall.roi) >= 0 ? styles.roiGood : styles.roiBad}>ROI: {currentStats.overall.roi}%</span>
+              </div>
+
+              <div className={styles.cardDaysGrid}>
+                {currentStats.days.map((day, idx) => (
+                  <div key={idx} className={styles.cardDay}>
+                    <div className={styles.cardDayDate}>{formatDate(day.date)}</div>
+                    <div className={styles.cardDayRecord}>{day.wins}-{day.losses}</div>
+                    <div className={parseFloat(day.roi) >= 0 ? styles.cardDayRoiGood : styles.cardDayRoiBad}>
+                      {day.roi}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={styles.detailsViewContainer}>
+          {currentStats && currentStats.days.map((day, idx) => {
+            const dayPicks = data.picks.filter(p => {
+              const gameTime = new Date(p.game_time)
+              const estDate = new Date(gameTime.getTime() - (5 * 60 * 60 * 1000))
+              return estDate.toISOString().split('T')[0] === day.date
+            })
+
+            if (dayPicks.length === 0) return null
+
+            return (
+              <div key={idx} className={styles.daySection}>
+                <div className={styles.daySectionHeader}>
+                  <h3 className={styles.daySectionTitle}>{formatDate(day.date)}</h3>
+                  <div className={styles.daySectionStats}>
+                    <span className={day.wins > day.losses ? styles.recordGood : styles.recordBad}>
+                      {day.wins}-{day.losses} ({day.winRate}%)
+                    </span>
+                    <span className={styles.divider}>•</span>
+                    <span className={parseFloat(day.roi) >= 0 ? styles.roiGood : styles.roiBad}>
+                      ROI: {day.roi}%
+                    </span>
+                    <span className={styles.divider}>•</span>
+                    <span className={parseFloat(day.unitsWon) >= 0 ? styles.unitsGood : styles.unitsBad}>
+                      {parseFloat(day.unitsWon) > 0 ? '+' : ''}{day.unitsWon}u
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.picksGrid}>
+                  {dayPicks.map(pick => (
+                    <div key={pick.id} className={styles.pickCard}>
+                      <div className={styles.pickHeader}>
+                        <span className={pick.result === 'won' ? styles.resultWon : styles.resultLost}>
+                          {pick.result === 'won' ? '✓ WON' : '✗ LOST'}
+                        </span>
+                        <span className={styles.pickSport}>{pick.sport}</span>
+                      </div>
+                      <div className={styles.pickTitle}>{pick.bet_title}</div>
+                      <div className={styles.pickDetails}>
+                        <span>{pick.odds} • {pick.sportsbook}</span>
+                        <span className={styles.pickUnits}>{pick.units}u risked</span>
+                      </div>
+                      <div className={styles.pickResult}>
+                        Result: <span className={parseFloat(pick.units_result) >= 0 ? styles.unitsGood : styles.unitsBad}>
+                          {parseFloat(pick.units_result) > 0 ? '+' : ''}{pick.units_result}u
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
-

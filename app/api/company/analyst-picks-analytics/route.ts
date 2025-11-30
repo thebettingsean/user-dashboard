@@ -10,17 +10,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const sport = searchParams.get('sport') || 'all'
-    const days = parseInt(searchParams.get('days') || '3')
-    const bettorId = searchParams.get('bettor_id') // Optional: for specific bettor
-
-    console.log('[Analyst Picks Analytics] Fetching data:', { sport, days, bettorId })
+    const bettorId = searchParams.get('bettor_id') || 'collective'
+    
+    // Handle both quick periods (days) and custom dates
+    const daysParam = searchParams.get('days')
+    const datesParam = searchParams.get('dates') // Comma-separated dates: "2025-11-29,2025-11-28"
+    
+    console.log('[Analyst Picks Analytics] Fetching data:', { sport, bettorId, daysParam, datesParam })
     console.log('[Analyst Picks Analytics] Using Supabase URL:', SUPABASE_URL)
 
-    // Fetch all active bettors
+    // Fetch all bettors (temporarily without is_active filter for debugging)
     const { data: bettors, error: bettorsError } = await supabase
       .from('bettors')
-      .select('id, name, profile_image, profile_initials, is_active')
-      .eq('is_active', true)
+      .select('id, name, profile_image, profile_initials')
       .order('name')
 
     if (bettorsError) {
@@ -68,7 +70,10 @@ export async function GET(request: Request) {
         success: true,
         bettors: bettors || [],
         collective: { days: [], overall: { wins: 0, losses: 0, winRate: '0.0', roi: '0.0', unitsWon: '0.00', unitsRisked: '0.00' } },
-        bettorStats: {}
+        bettorStats: {},
+        selectedDates: [],
+        availableDates: [],
+        picks: []
       })
     }
 
@@ -80,10 +85,22 @@ export async function GET(request: Request) {
       return estDate.toISOString().split('T')[0]
     }))].sort((a, b) => b.localeCompare(a)) // Most recent first
 
-    // Get the last X days with recapped picks
-    const recentDates = gameDates.slice(0, days)
-
-    console.log('[Analyst Picks Analytics] Recent dates:', recentDates)
+    let recentDates: string[]
+    
+    // Check if custom dates were provided
+    if (datesParam) {
+      recentDates = datesParam.split(',').filter(d => gameDates.includes(d))
+      console.log('[Analyst Picks Analytics] Using custom dates:', recentDates)
+    } else if (daysParam) {
+      // Use quick period (last X days with picks)
+      const numDays = parseInt(daysParam)
+      recentDates = gameDates.slice(0, numDays)
+      console.log('[Analyst Picks Analytics] Using quick period L', numDays, ':', recentDates)
+    } else {
+      // Default to L3
+      recentDates = gameDates.slice(0, 3)
+      console.log('[Analyst Picks Analytics] Using default L3:', recentDates)
+    }
 
     // Filter picks to only include recent dates
     const recentPicks = picks.filter(p => {
@@ -110,7 +127,9 @@ export async function GET(request: Request) {
       bettors,
       collective: collectiveStats,
       bettorStats,
-      recentDates
+      selectedDates: recentDates,
+      availableDates: gameDates, // All dates with picks for calendar
+      picks: recentPicks // For details view
     })
   } catch (error) {
     console.error('[Analyst Picks Analytics] Unexpected error:', error)

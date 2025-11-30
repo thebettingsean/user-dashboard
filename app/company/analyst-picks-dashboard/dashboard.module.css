@@ -1,8 +1,10 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  padding: 2rem;
+  background: linear-gradient(135deg, #0a1628 0%, #0f1729 50%, #1a1f35 100%);
+  padding: 2rem 1rem;
   color: #fff;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .loading {
@@ -10,16 +12,17 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .header {
   margin-bottom: 2rem;
+  text-align: center;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   background: linear-gradient(90deg, #60a5fa, #a78bfa);
@@ -29,135 +32,438 @@
 }
 
 .subtitle {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
 }
 
-/* Filters */
-.filters {
+/* Filter Row */
+.filterRow {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .filterGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .filterLabel {
-  font-size: 0.875rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .filterSelect {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  font-size: 1rem;
-  min-width: 180px;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .filterSelect:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .filterSelect:focus {
   outline: none;
   border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
 }
 
-/* Stats Container */
-.statsContainer {
+/* Quick Periods */
+.periodSection {
+  margin-bottom: 1rem;
+}
+
+.sectionLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.quickPeriods {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 1200px;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.statsCard {
+.periodButton {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.statsCard:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.statsHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.statsHeader:hover {
-  background: rgba(255, 255, 255, 0.03);
+.periodButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-.statsHeaderLeft {
+.periodButtonActive {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  border: 1px solid #60a5fa;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+/* OR Divider */
+.orDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.orDivider::before,
+.orDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.orDivider span {
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Custom Date Picker */
+.datePickerSection {
+  margin-bottom: 1.5rem;
+}
+
+.dateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.dateButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dateButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.dateButtonActive {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  border: 1px solid #a78bfa;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+}
+
+.selectedDatesInfo {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 0.75rem;
+  background: rgba(167, 139, 250, 0.1);
+  border-left: 3px solid #a78bfa;
+  border-radius: 4px;
+}
+
+/* View Mode Toggle */
+.viewModeSection {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.viewButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.viewButtonActive {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* CALENDAR VIEW (Marketing Card) */
+.calendarViewContainer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.marketingCard {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.cardHeader {
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex: 1;
+  margin-bottom: 1.5rem;
 }
 
-.bettorImage {
-  width: 48px;
-  height: 48px;
+.cardImage {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.statsTitle {
-  font-size: 1.25rem;
+.cardName {
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
   color: white;
+  margin: 0;
 }
 
-.statsOverview {
+.cardMainStat {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.recordHighlight {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.cardDaysGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardDay {
+  text-align: center;
+}
+
+.cardDayDate {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.cardDayRecord {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.cardDayRoiGood {
+  font-size: 0.85rem;
+  color: #34d399;
+  font-weight: 600;
+}
+
+.cardDayRoiBad {
+  font-size: 0.85rem;
+  color: #f87171;
+  font-weight: 600;
+}
+
+/* DETAILS VIEW */
+.detailsViewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.daySection {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.daySectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.daySectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.daySectionStats {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
-.sport {
-  color: #60a5fa;
+.picksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.pickCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.pickCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pickHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.resultWon {
+  background: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.resultLost {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pickSport {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.85rem;
 }
 
-.period {
-  color: #a78bfa;
+.pickTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.pickDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.pickUnits {
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
 }
 
+.pickResult {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Utility Classes */
 .divider {
   color: rgba(255, 255, 255, 0.3);
+  font-weight: 400;
 }
 
 .recordGood {
@@ -180,59 +486,6 @@
   font-weight: 600;
 }
 
-.expandIcon {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.875rem;
-  transition: transform 0.2s ease;
-}
-
-.statsContent {
-  padding: 0 1.5rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Day Breakdown */
-.dayBreakdown {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.dayCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-.dayDate {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #60a5fa;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.dayStats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dayStat {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-}
-
-.dayStatLabel {
-  color: rgba(255, 255, 255, 0.6);
-}
-
 .unitsGood {
   color: #34d399;
   font-weight: 600;
@@ -243,89 +496,55 @@
   font-weight: 600;
 }
 
-/* Overall Summary */
-.overallSummary {
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.summaryTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.summaryGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.summaryItem {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.summaryLabel {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.summaryValue {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: white;
-}
-
-.summaryValueGood {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #34d399;
-}
-
-.summaryValueBad {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #f87171;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: 1rem 0.5rem;
   }
 
   .title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
-  .filters {
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .filterRow {
     flex-direction: column;
   }
 
-  .filterSelect {
-    width: 100%;
+  .filterGroup {
+    min-width: 100%;
   }
 
-  .dayBreakdown {
+  .quickPeriods {
+    gap: 0.4rem;
+  }
+
+  .periodButton,
+  .periodButtonActive {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .dateGrid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+
+  .picksGrid {
     grid-template-columns: 1fr;
   }
 
-  .summaryGrid {
-    grid-template-columns: repeat(2, 1fr);
+  .marketingCard {
+    padding: 1.5rem;
   }
 
-  .statsHeaderLeft {
-    flex-direction: column;
-    align-items: flex-start;
+  .cardMainStat {
+    font-size: 1rem;
+  }
+
+  .cardDaysGrid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
 }
-
