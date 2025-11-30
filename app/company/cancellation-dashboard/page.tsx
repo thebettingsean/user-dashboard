@@ -44,12 +44,19 @@ interface TimelineData {
   completed: number
 }
 
+interface OtherReason {
+  email: string
+  text: string
+  date: string
+}
+
 interface CancellationData {
   id: string
   user_email: string
   subscription_tenure_days: number
   was_on_trial: boolean
   reason_codes: string[] | null
+  reason_other_text: string | null
   first_offer_type: string | null
   first_offer_accepted: boolean
   cancellation_completed: boolean
@@ -63,6 +70,7 @@ interface AnalyticsData {
   reasonAnalysis: ReasonData[]
   offerPerformance: OfferData[]
   timeline: TimelineData[]
+  otherReasons: OtherReason[]
   rawData: CancellationData[]
 }
 
@@ -227,6 +235,38 @@ export default function CancellationDashboard() {
         </div>
       </div>
 
+      {/* Other Reasons Detail */}
+      {data.otherReasons.length > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>Other Cancellation Reasons (Verbatim)</h2>
+          <p className={styles.subtitle} style={{ marginBottom: '1rem' }}>
+            {data.otherReasons.length} user{data.otherReasons.length !== 1 ? 's' : ''} selected "Other" and provided custom feedback
+          </p>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Email</th>
+                  <th>Feedback</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.otherReasons.map((reason, idx) => (
+                  <tr key={idx}>
+                    <td>{reason.date}</td>
+                    <td className={styles.emailCell}>{reason.email}</td>
+                    <td style={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.9)' }}>
+                      "{reason.text}"
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Offer Performance */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Offer Performance</h2>
@@ -343,7 +383,14 @@ export default function CancellationDashboard() {
                     </span>
                   </td>
                   <td>{item.subscription_tenure_days}d</td>
-                  <td>{item.reason_codes?.join(', ') || '-'}</td>
+                  <td>
+                    {item.reason_codes?.join(', ') || '-'}
+                    {item.reason_codes?.includes('H') && item.reason_other_text && (
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginTop: '4px', fontStyle: 'italic' }}>
+                        "{item.reason_other_text}"
+                      </div>
+                    )}
+                  </td>
                   <td>{item.first_offer_type || '-'}</td>
                   <td>
                     {item.first_offer_accepted ? (

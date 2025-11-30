@@ -84,15 +84,15 @@ export async function GET() {
       saveRate: data.length > 0 ? ((data.filter(c => !c.cancellation_completed).length / data.length) * 100).toFixed(1) : '0.0'
     }))
 
-    // Reason code analysis
+    // Reason code analysis (must match /manage-subscription/cancel/page.tsx)
     const reasonCodeMap: Record<string, string> = {
-      'A': 'Too Expensive',
-      'B': 'Not Using Enough',
-      'C': 'Missing Features',
-      'D': 'Technical Issues',
-      'E': 'Found Alternative',
-      'F': 'Just Testing',
-      'G': 'Seasonal (Off-season)',
+      'A': 'Too expensive',
+      'B': 'Data not useful',
+      'C': 'Data not accurate',
+      'D': 'Poor analyst picks',
+      'E': 'Moving to a competitor',
+      'F': 'Not used enough',
+      'G': 'Too much info',
       'H': 'Other'
     }
 
@@ -167,6 +167,15 @@ export async function GET() {
 
     const timeline = Object.values(timelineMap).sort((a, b) => a.date.localeCompare(b.date))
 
+    // Collect "Other" reason texts
+    const otherReasons = cancellations
+      .filter(c => c.reason_codes?.includes('H') && c.reason_other_text)
+      .map(c => ({
+        email: c.user_email,
+        text: c.reason_other_text,
+        date: new Date(c.created_at).toLocaleDateString()
+      }))
+
     return NextResponse.json({
       success: true,
       kpis: {
@@ -191,6 +200,7 @@ export async function GET() {
       reasonAnalysis: reasonAnalysisSorted,
       offerPerformance,
       timeline,
+      otherReasons,
       rawData: cancellations
     })
   } catch (error) {
