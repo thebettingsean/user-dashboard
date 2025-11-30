@@ -14,18 +14,27 @@ export async function GET(request: Request) {
     const bettorId = searchParams.get('bettor_id') // Optional: for specific bettor
 
     console.log('[Analyst Picks Analytics] Fetching data:', { sport, days, bettorId })
+    console.log('[Analyst Picks Analytics] Using Supabase URL:', SUPABASE_URL)
 
-    // Fetch all bettors
+    // Fetch all active bettors
     const { data: bettors, error: bettorsError } = await supabase
       .from('bettors')
-      .select('id, name, image_url')
+      .select('id, name, profile_image, profile_initials, is_active')
       .eq('is_active', true)
       .order('name')
 
     if (bettorsError) {
-      console.error('[Analyst Picks Analytics] Bettors error:', bettorsError)
-      return NextResponse.json({ error: 'Failed to fetch bettors' }, { status: 500 })
+      console.error('[Analyst Picks Analytics] Bettors error:', JSON.stringify(bettorsError, null, 2))
+      return NextResponse.json({ 
+        error: 'Failed to fetch bettors',
+        details: bettorsError.message,
+        code: bettorsError.code,
+        hint: bettorsError.hint,
+        supabaseUrl: SUPABASE_URL
+      }, { status: 500 })
     }
+    
+    console.log('[Analyst Picks Analytics] Fetched', bettors?.length || 0, 'bettors')
 
     // Build picks query
     let picksQuery = supabase

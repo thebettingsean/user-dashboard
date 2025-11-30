@@ -6,7 +6,9 @@ import styles from './dashboard.module.css'
 interface Bettor {
   id: string
   name: string
-  image_url: string | null
+  profile_image: string | null
+  profile_initials: string
+  is_active: boolean
 }
 
 interface DayStats {
@@ -247,7 +249,7 @@ export default function AnalystPicksDashboard() {
         {data.bettors.map(bettor => {
           const stats = data.bettorStats[bettor.id]
           if (!stats) return null
-          return renderStatsCard(bettor.id, bettor.name, stats, bettor.image_url)
+          return renderStatsCard(bettor.id, bettor.name, stats, bettor.profile_image)
         })}
       </div>
     </div>
