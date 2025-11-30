@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a1628 0%, #0f1729 50%, #1a1f35 100%);
+  background: transparent;
   padding: 2rem 1rem;
   color: #fff;
   max-width: 1400px;
