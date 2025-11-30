@@ -51,8 +51,8 @@ export async function GET(request: Request) {
       picksQuery = picksQuery.eq('sport', sport.toUpperCase())
     }
 
-    // Filter by bettor if specified
-    if (bettorId) {
+    // Filter by bettor if specified (but not for 'collective')
+    if (bettorId && bettorId !== 'collective') {
       picksQuery = picksQuery.eq('bettor_id', bettorId)
     }
 
