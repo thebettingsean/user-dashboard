@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUsers = createClient(
-  process.env.SUPABASE_USERS_URL || '',
-  process.env.SUPABASE_USERS_SERVICE_KEY || ''
-)
+import { supabaseUsers } from '@/lib/supabase-users'
 
 export async function GET() {
   try {
