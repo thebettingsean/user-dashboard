@@ -3,6 +3,8 @@ import { supabaseUsers } from '@/lib/supabase-users'
 
 export async function GET() {
   try {
+    console.log('[Cancellation Analytics] Starting data fetch...')
+    
     // Fetch all cancellation tracking data
     const { data: cancellations, error } = await supabaseUsers
       .from('cancellation_tracking')
@@ -10,8 +12,38 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching cancellation data:', error)
-      return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+      console.error('[Cancellation Analytics] Supabase error:', error)
+      return NextResponse.json({ 
+        error: 'Failed to fetch data', 
+        details: error.message,
+        code: error.code 
+      }, { status: 500 })
+    }
+    
+    console.log('[Cancellation Analytics] Fetched', cancellations?.length || 0, 'records')
+    
+    if (!cancellations || cancellations.length === 0) {
+      console.log('[Cancellation Analytics] No data found, returning empty response')
+      return NextResponse.json({
+        success: true,
+        kpis: {
+          total: 0,
+          completed: 0,
+          saved: 0,
+          saveRate: '0.0',
+          firstOfferWinRate: '0.0',
+          finalOfferWinRate: '0.0'
+        },
+        segmentation: {
+          trial: { count: 0, saveRate: '0.0' },
+          paid: { count: 0, saveRate: '0.0' }
+        },
+        tenureAnalysis: [],
+        reasonAnalysis: [],
+        offerPerformance: [],
+        timeline: [],
+        rawData: []
+      })
     }
 
     // Calculate aggregated metrics
@@ -162,8 +194,12 @@ export async function GET() {
       rawData: cancellations
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Cancellation Analytics] Unexpected error:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    }, { status: 500 })
   }
 }
 
