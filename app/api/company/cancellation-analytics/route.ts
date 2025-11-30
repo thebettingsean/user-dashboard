@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { supabaseUsers } from '@/lib/supabase-users'
+import { supabaseFunnel } from '@/lib/supabase-funnel'
 
 export async function GET() {
   try {
     console.log('[Cancellation Analytics] Starting data fetch...')
     
-    // Fetch all cancellation tracking data
-    const { data: cancellations, error } = await supabaseUsers
-      .from('cancellation_tracking')
+    // Fetch all cancellation feedback data from the funnel analytics project
+    const { data: cancellations, error } = await supabaseFunnel
+      .from('cancellation_feedback')
       .select('*')
       .order('created_at', { ascending: false })
 
