@@ -142,11 +142,12 @@ async function handleGetOffer(subscription: Stripe.Subscription, userId: string,
   const currentDate = Math.floor(Date.now() / 1000)
   const tenureDays = Math.floor((currentDate - startDate) / 86400)
 
-  // ⚠️ ABUSE PREVENTION: Check if user has EVER accepted an extension before
+  // ⚠️ ABUSE PREVENTION: Check if user has accepted an extension on THIS subscription before
   const { data: previousOffers, error: checkError } = await supabaseFunnel
     .from('cancellation_feedback')
-    .select('id, first_offer_accepted')
+    .select('id, first_offer_accepted, subscription_id')
     .eq('user_id', userId)
+    .eq('subscription_id', subscription.id)
     .eq('first_offer_accepted', true)
     .limit(1)
 
@@ -154,9 +155,9 @@ async function handleGetOffer(subscription: Stripe.Subscription, userId: string,
     console.error('[Cancel API] Error checking previous offers:', checkError)
   }
 
-  // If user has accepted an offer before, they get NO MORE OFFERS
+  // If user has accepted an offer on THIS subscription before, they get NO MORE OFFERS
   if (previousOffers && previousOffers.length > 0) {
-    console.log('[Cancel API] User has already accepted an extension. No offer available.')
+    console.log('[Cancel API] User has already accepted an extension on this subscription. No offer available.')
     
     // Return "no offer" response - frontend should skip to final offer or cancellation
     return NextResponse.json({
