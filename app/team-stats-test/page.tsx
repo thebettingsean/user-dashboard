@@ -55,12 +55,18 @@ export default function TeamStatsTestPage() {
       setError('')
       
       const response = await fetch(`/api/team-rankings?gameId=${gameId}`)
-      if (!response.ok) throw new Error('Failed to fetch')
-      
       const result = await response.json()
-      setData(result)
+      
+      if (!response.ok) {
+        // Show detailed error from API
+        setError(result.error || 'Failed to fetch team rankings')
+        console.error('API Error:', result)
+      } else {
+        setData(result)
+      }
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Network error')
+      console.error('Fetch error:', err)
     } finally {
       setLoading(false)
     }
@@ -175,16 +181,31 @@ export default function TeamStatsTestPage() {
     return (
       <div className={styles.container}>
         <div className={styles.error}>
-          {error || 'No team rankings data available for this game'}
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>⚠️ {error || 'No team rankings data available'}</h2>
+          
+          {error?.includes('not available yet') && (
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              This game hasn&apos;t been scraped yet. Team rankings are updated via cron jobs.
+            </p>
+          )}
+          
+          <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+            Try a game that&apos;s already been scraped, or wait for the cron job to run.
+          </p>
+          
           <div className={styles.inputGroup}>
             <input 
               type="text" 
               value={gameId}
               onChange={(e) => setGameId(e.target.value)}
-              placeholder="Enter gameId (e.g., NFL-20241229-NYG-NE-401671802)"
+              placeholder="Enter gameId (e.g., NFL-20241201-LAC-ATL-401671759)"
               className={styles.input}
             />
             <button onClick={fetchData} className={styles.button}>Try Again</button>
+          </div>
+          
+          <div style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+            <p>Tip: Try a game from earlier this week that has likely been scraped</p>
           </div>
         </div>
       </div>
