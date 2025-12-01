@@ -43,7 +43,7 @@ export default function TeamStatsTestPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'matchups' | 'stats' | 'trends'>('matchups')
-  const [gameId, setGameId] = useState('NFL-20241229-NYG-NE-401671802') // Default: Giants @ Patriots
+  const [gameId, setGameId] = useState('NFL-20251201-NYG-NE') // Default: Giants @ Patriots
 
   useEffect(() => {
     fetchData()
@@ -198,7 +198,7 @@ export default function TeamStatsTestPage() {
               type="text" 
               value={gameId}
               onChange={(e) => setGameId(e.target.value)}
-              placeholder="Enter gameId (e.g., NFL-20241201-LAC-ATL-401671759)"
+              placeholder="Enter gameId (e.g., NFL-20251201-NYG-NE)"
               className={styles.input}
             />
             <button onClick={fetchData} className={styles.button}>Try Again</button>
