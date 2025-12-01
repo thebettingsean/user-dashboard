@@ -256,9 +256,8 @@ async function handleAcceptFirstOffer(
         }
       })
     } else {
-      // Log trial/time extension acceptance
-      // Note: Manual fulfillment required - extend via Stripe dashboard
-      console.log('Trial/time extension accepted (manual fulfillment required):', {
+      // ACTUALLY EXTEND THE SUBSCRIPTION IN STRIPE
+      console.log('🔧 Applying trial/time extension in Stripe:', {
         subscriptionId: subscription.id,
         offerType,
         offerDays,
@@ -266,6 +265,71 @@ async function handleAcceptFirstOffer(
         email
       })
 
+      const isTrial = subscription.status === 'trialing'
+      const currentPeriodEnd = (subscription as any).current_period_end as number
+      const extensionSeconds = offerDays * 86400
+      const newPeriodEnd = currentPeriodEnd + extensionSeconds
+
+      console.log('📅 Extending subscription:', {
+        isTrial,
+        status: subscription.status,
+        currentPeriodEnd: new Date(currentPeriodEnd * 1000),
+        newPeriodEnd: new Date(newPeriodEnd * 1000),
+        extensionDays: offerDays
+      })
+
+      let updatedSubscription: Stripe.Subscription
+
+      if (isTrial) {
+        // ✅ For TRIAL subscriptions: Simply extend the trial_end
+        console.log('✅ Extending trial period')
+        updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+          trial_end: newPeriodEnd,
+          proration_behavior: 'none'
+        })
+      } else {
+        // ✅ For PAID subscriptions: Use Subscription Schedules to extend billing cycle
+        console.log('✅ Using Subscription Schedule to extend paid subscription')
+        
+        try {
+          // Create a subscription schedule from the current subscription
+          const schedule = await stripe.subscriptionSchedules.create({
+            from_subscription: subscription.id
+          })
+          
+          console.log('📋 Created schedule:', schedule.id)
+          
+          // Update the schedule to extend the current phase
+          const currentPhase = schedule.phases[schedule.phases.length - 1]
+          const extendedPhase = {
+            items: currentPhase.items.map(item => ({
+              price: item.price as string,
+              quantity: item.quantity
+            })),
+            start_date: currentPhase.start_date,
+            end_date: newPeriodEnd, // Extended end date
+          }
+          
+          await stripe.subscriptionSchedules.update(schedule.id, {
+            end_behavior: 'release', // Return to normal subscription after schedule
+            phases: [extendedPhase],
+            proration_behavior: 'none'
+          })
+          
+          console.log('✅ Schedule updated with extended end date')
+          
+          // Fetch the updated subscription
+          updatedSubscription = await stripe.subscriptions.retrieve(subscription.id)
+        } catch (scheduleError: any) {
+          console.error('❌ Subscription Schedule error:', scheduleError)
+          // Fallback: Just log to Supabase and notify user manually
+          throw new Error(`Failed to apply extension: ${scheduleError.message}. Please contact support.`)
+        }
+      }
+
+      console.log('✅ Extension applied successfully! New period end:', new Date(((updatedSubscription as any).current_period_end as number) * 1000))
+
+      // Log to Supabase
       await supabaseFunnel.from('cancellation_feedback').insert({
         user_id: userId,
         user_email: email,
@@ -279,12 +343,20 @@ async function handleAcceptFirstOffer(
         first_offer_accepted: true,
         final_offer_shown: false,
         cancellation_completed: false,
+        new_subscription_id: updatedSubscription.id,
+      })
+
+      const newRenewalDate = new Date(((updatedSubscription as any).current_period_end as number) * 1000).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
       })
 
       return NextResponse.json({
         success: true,
-        message: `Great! We'll extend your subscription by ${offerDays} days. Please allow 24 hours for this to be applied.`,
-        requiresManualFulfillment: true
+        message: `Perfect! Your ${isTrial ? 'trial has been extended' : 'subscription has been extended'} by ${offerDays} days. Your new renewal date is ${newRenewalDate}.`,
+        newRenewalDate,
+        extensionApplied: true
       })
     }
   } catch (error: any) {
