@@ -179,6 +179,9 @@ export default function Navbar() {
                   <Link href="/anytime-td" style={styles.dropdownLink}>
                     Anytime TD's
                   </Link>
+                  <Link href="/sportsbooks" style={styles.dropdownLink}>
+                    Top Sportsbooks
+                  </Link>
                 </div>
               </div>
             )}
@@ -524,6 +527,9 @@ export default function Navbar() {
                   </Link>
                   <Link href="/anytime-td" style={styles.mobileSubLink}>
                     Anytime TD's
+                  </Link>
+                  <Link href="/sportsbooks" style={styles.mobileSubLink}>
+                    Top Sportsbooks
                   </Link>
                 </div>
               )}
