@@ -17,13 +17,24 @@ export async function GET() {
     const schemaPath = join(process.cwd(), 'clickhouse', 'schema.sql')
     const schemaSQL = readFileSync(schemaPath, 'utf-8')
     
-    // Split by semicolons and filter out comments/empty lines
-    const statements = schemaSQL
+    // Remove comment lines but keep statements with inline comments
+    const cleanedSQL = schemaSQL
+      .split('\n')
+      .filter(line => {
+        const trimmed = line.trim()
+        // Keep line if it's not ONLY a comment or empty
+        return trimmed !== '' && !trimmed.startsWith('--')
+      })
+      .join('\n')
+    
+    // Split by semicolons
+    const statements = cleanedSQL
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'))
+      .filter(s => s.length > 0 && (s.includes('CREATE') || s.includes('ALTER')))
     
     console.log(`[Schema Init] Found ${statements.length} SQL statements`)
+    console.log('[Schema Init] Statements:', statements.map(s => s.substring(0, 50)))
     
     const results = []
     
