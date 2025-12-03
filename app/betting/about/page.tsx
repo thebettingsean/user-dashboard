@@ -8,8 +8,8 @@ import { gsap } from 'gsap'
 import styles from './about.module.css'
 import ScrollStack, { ScrollStackItem } from '@/components/ScrollStack'
 import SplitText from '@/components/SplitText'
-import ChromaGrid from '../../hero-new/ChromaGrid'
-import '../../hero-new/ChromaGrid.css'
+import ChromaGrid from '@/components/hero/ChromaGrid'
+import '@/components/hero/ChromaGrid.css'
 
 gsap.registerPlugin(ScrollTrigger)
 import { LuBrainCircuit } from "react-icons/lu"

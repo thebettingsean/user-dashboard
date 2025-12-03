@@ -2830,3 +2830,563 @@
   }
 }
 
+/* Inside the Insider Edge Section */
+.insiderEdgeSection {
+  position: relative;
+  width: 100%;
+  padding: 3rem 2rem 6rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  z-index: 4;
+  margin-bottom: 2rem;
+}
+
+.insiderEdgeContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.insiderEdgeLeftColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.insiderEdgeRightColumn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.insiderEdgeHeader {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.insiderEdgeTitle {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.insiderEdgeSubtitle {
+  font-size: clamp(0.9375rem, 1.5vw, 1.125rem);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.insiderEdgePills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insiderEdgePill {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.insiderEdgePill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(96, 165, 250, 0.4);
+  transform: translateX(8px);
+}
+
+.insiderEdgePill.active {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.insiderEdgePillIcon {
+  font-size: 1.25rem;
+  color: #60a5fa;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.insiderEdgePill.active .insiderEdgePillIcon {
+  color: #60a5fa;
+}
+
+.insiderEdgePillText {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.insiderEdgeDevice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.insiderEdgeDeviceFrame {
+  position: relative;
+  width: 100%;
+  max-width: 375px;
+  aspect-ratio: 9/16;
+  background: transparent;
+  border: none;
+  border-radius: 32px;
+  padding: 0;
+  box-shadow: none;
+  overflow: visible;
+  margin: 0 auto;
+}
+
+.insiderEdgeDeviceImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+.insiderEdgeDeviceImage.active {
+  opacity: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.insiderEdgeDeviceBlurb {
+  position: absolute;
+  bottom: -3rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  width: calc(100% - 2rem);
+  max-width: 400px;
+  padding: 0.875rem 1.25rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+  z-index: 2;
+}
+
+.insiderEdgeDeviceBlurb.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 1024px) {
+  .insiderEdgeContainer {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .insiderEdgeHeader {
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .insiderEdgeSubtitle {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .insiderEdgePills {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .insiderEdgeRightColumn {
+    justify-content: center;
+  }
+
+  .insiderEdgeDeviceFrame {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .insiderEdgeSection {
+    padding: 2rem 1.5rem 4rem 1.5rem;
+  }
+
+  .insiderEdgeContainer {
+    gap: 1.5rem;
+  }
+
+  .insiderEdgePills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .insiderEdgePill {
+    padding: 0.75rem 1rem;
+  }
+
+  .insiderEdgePillIcon {
+    font-size: 1.125rem;
+    width: 28px;
+    height: 28px;
+  }
+
+  .insiderEdgePillText {
+    font-size: 0.9375rem;
+  }
+
+  .insiderEdgeRightColumn {
+    justify-content: center;
+  }
+
+  .insiderEdgeDeviceFrame {
+    max-width: 240px;
+    padding: 0;
+  }
+
+  .insiderEdgeDeviceBlurb {
+    font-size: 0.75rem;
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+/* Ticket-Style Pricing Card Section */
+.ticketPricingSection {
+  position: relative;
+  width: 100%;
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  z-index: 4;
+}
+
+.ticketPricingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.ticketCard {
+  width: 100%;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+}
+
+.ticketTopStrip {
+  padding: 2rem 2rem 1.5rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ticketOfferPill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.ticketOfferLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ticketOfferPrice {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.ticketOfferSubtext {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+.ticketMiddle {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.ticketColumnTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+.ticketItemsGrid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem 0.75rem;
+  width: 100%;
+  max-width: 600px;
+  align-items: center;
+}
+
+.ticketItemLeft {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  text-align: right;
+}
+
+.ticketItemRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  text-align: left;
+}
+
+.ticketItemText {
+  flex: 0 1 auto;
+}
+
+.ticketDotCenter {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  flex-shrink: 0;
+  width: 1rem;
+}
+
+.ticketBottomStrip {
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.ticketPostTrial {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ticketCTAButton {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.ticketCTAButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.ticketCTASubtext {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .ticketPricingSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .ticketCard {
+    border-radius: 20px;
+  }
+
+  .ticketTopStrip {
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+
+  .ticketMiddle {
+    padding: 2rem 1.5rem;
+  }
+
+  .ticketItemsGrid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+    max-width: 100%;
+  }
+
+  .ticketBottomStrip {
+    padding: 1.5rem;
+  }
+
+  .ticketCTAButton {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Chicago Tribune Quote Section */
+.quoteBarSection {
+  width: 100%;
+  padding: 3rem 2rem 5rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  z-index: 4;
+}
+
+.quoteBar {
+  width: 100%;
+  padding: 2rem 3rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quoteBar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(248, 250, 252, 0.05), transparent 55%),
+    radial-gradient(ellipse at 80% 85%, rgba(16, 185, 129, 0.05), transparent 60%);
+  opacity: 0.6;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.quoteText {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  font-family: 'Georgia', 'Times New Roman', 'Palatino', 'Book Antiqua', serif;
+  font-style: normal;
+  position: relative;
+  z-index: 2;
+  letter-spacing: 0.01em;
+}
+
+.quoteAttribution {
+  display: inline-block;
+  text-align: center;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.quoteAttribution:hover {
+  opacity: 0.8;
+}
+
+.chicagoTribuneLogo {
+  height: 22.5px;
+  width: auto;
+  max-width: 200px;
+  opacity: 1;
+  filter: brightness(0) invert(1);
+  transition: opacity 0.3s ease;
+  display: block;
+  margin: 0 auto;
+  margin-top: 10px;
+  object-fit: contain;
+}
+
+.quoteAttribution:hover .chicagoTribuneLogo {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .quoteBarSection {
+    padding: 0 1rem 2rem 1rem;
+  }
+
+  .quoteBar {
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+  }
+
+  .quoteText {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin-bottom: 0.75rem;
+  }
+
+  .chicagoTribuneLogo {
+    height: 20px;
+    max-width: 175px;
+  }
+}
+

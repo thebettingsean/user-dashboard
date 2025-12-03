@@ -665,6 +665,218 @@ function ChromaVisualization({ item }: { item: (typeof chromaGridDemo)[number] }
   )
 }
 
+// Inside the Insider Edge Section Component
+function InsiderEdgeSection() {
+  const [activePill, setActivePill] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const features = [
+    {
+      id: 'expertpicks',
+      label: 'Analyst Picks',
+      icon: <PiListChecksBold />,
+      image: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69309effc3ea7eea344d9f6c_Untitled%20design%20(60).svg',
+      blurb: 'Daily picks from true experts with full write-ups and units at risk. Track every bet and see what the pros are playing.'
+    },
+    {
+      id: 'matchupdata',
+      label: 'Historical Matchup Info',
+      icon: <LuBrainCircuit />,
+      image: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69309eff2e5aa32413855934_Untitled%20design%20(59).svg',
+      blurb: 'Referee data, team betting data, and prop hit rates all in one place. Get the complete historical context for every game.'
+    },
+    {
+      id: 'publicbetting',
+      label: 'Public Betting',
+      icon: <IoPieChart />,
+      image: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6930ab189c2c945b29b719a1_Untitled%20design%20(61).svg',
+      blurb: 'Betting splits from every major book with custom indicators show you where the smart money is going.'
+    },
+    {
+      id: 'scripts',
+      label: 'Scripts',
+      icon: <FaWandMagicSparkles />,
+      image: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6930b567a0ca05ec1c32ee65_Untitled%20design%20(62).svg',
+      blurb: 'Take a 2 minute read and get the full picture for any game you want. All from data directly on our site.'
+    }
+  ]
+
+  const handlePillInteraction = (featureId: string) => {
+    setActivePill(activePill === featureId ? null : featureId)
+  }
+
+  return (
+    <section className={styles.insiderEdgeSection}>
+      <div className={styles.insiderEdgeContainer}>
+        {/* Left Column - Pills */}
+        <div className={styles.insiderEdgeLeftColumn}>
+          <div className={styles.insiderEdgeHeader}>
+            <h2 className={styles.insiderEdgeTitle}>Our Dashboard</h2>
+            <p className={styles.insiderEdgeSubtitle}>
+              One dashboard that has every single sports betting resource you will ever need.
+            </p>
+          </div>
+          <div className={styles.insiderEdgePills}>
+            {features.map((feature) => (
+              <div
+                key={feature.id}
+                className={`${styles.insiderEdgePill} ${activePill === feature.id ? styles.active : ''}`}
+                onMouseEnter={() => !isMobile && handlePillInteraction(feature.id)}
+                onClick={() => isMobile && handlePillInteraction(feature.id)}
+              >
+                <div className={styles.insiderEdgePillIcon}>{feature.icon}</div>
+                <div className={styles.insiderEdgePillText}>{feature.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column - Device Mock */}
+        <div className={styles.insiderEdgeRightColumn}>
+          <div className={styles.insiderEdgeDevice}>
+            <div className={styles.insiderEdgeDeviceFrame}>
+              {/* Default image shown when no pill is active */}
+              <img
+                src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6930b14956b009af4a7e26ed_mock0.png"
+                alt="Dashboard Preview"
+                className={`${styles.insiderEdgeDeviceImage} ${activePill === null ? styles.active : ''}`}
+              />
+              {features.map((feature) => (
+                <img
+                  key={feature.id}
+                  src={feature.image}
+                  alt={feature.label}
+                  className={`${styles.insiderEdgeDeviceImage} ${activePill === feature.id ? styles.active : ''}`}
+                />
+              ))}
+            </div>
+            {features.map((feature) => (
+              <div
+                key={`blurb-${feature.id}`}
+                className={`${styles.insiderEdgeDeviceBlurb} ${activePill === feature.id ? styles.active : ''}`}
+              >
+                {feature.blurb}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Ticket-Style Pricing Card Section
+function TicketPricingSection() {
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const router = useRouter()
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (cardRef.current) {
+      gsap.fromTo(
+        cardRef.current,
+        {
+          opacity: 0,
+          y: 30
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none none'
+          }
+        }
+      )
+    }
+  }, [])
+
+  const handleTrialClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isSignedIn) {
+      openSignUp({
+        redirectUrl: '/pricing'
+      })
+    } else {
+      router.push('/pricing')
+    }
+  }
+
+  return (
+    <section className={styles.ticketPricingSection}>
+      <div className={styles.ticketPricingContainer}>
+        <div ref={cardRef} className={styles.ticketCard}>
+          {/* Top Strip - Offer Pill */}
+          <div className={styles.ticketTopStrip}>
+            <div className={styles.ticketOfferPill}>
+              <span className={styles.ticketOfferLabel}>ALL-ACCESS PASS</span>
+              <div className={styles.ticketOfferPrice}>$1 for 3 Days</div>
+              <div className={styles.ticketOfferSubtext}>Unlock everything. Cancel anytime.</div>
+            </div>
+          </div>
+
+          {/* Middle - What You Get */}
+          <div className={styles.ticketMiddle}>
+            <h3 className={styles.ticketColumnTitle}>What's Included</h3>
+            <div className={styles.ticketItemsGrid}>
+              <div className={styles.ticketItemLeft}>
+                <span className={styles.ticketItemText}>Expert Analyst Picks</span>
+              </div>
+              <div className={styles.ticketDotCenter}>•</div>
+              <div className={styles.ticketItemRight}>
+                <span className={styles.ticketItemText}>Public Betting Splits</span>
+              </div>
+              <div className={styles.ticketItemLeft}>
+                <span className={styles.ticketItemText}>Perfect Parlay Builder</span>
+              </div>
+              <div className={styles.ticketDotCenter}>•</div>
+              <div className={styles.ticketItemRight}>
+                <span className={styles.ticketItemText}>Full Referee Trends</span>
+              </div>
+              <div className={styles.ticketItemLeft}>
+                <span className={styles.ticketItemText}>Game Script Writer</span>
+              </div>
+              <div className={styles.ticketDotCenter}>•</div>
+              <div className={styles.ticketItemRight}>
+                <span className={styles.ticketItemText}>Custom Query Builder</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Strip - Post-Trial + CTA */}
+          <div className={styles.ticketBottomStrip}>
+            <p className={styles.ticketPostTrial}>
+              After your trial, continue at your normal member rate (cancel anytime in a few clicks).
+            </p>
+            <button 
+              className={styles.ticketCTAButton}
+              onClick={handleTrialClick}
+            >
+              Start $1 All-Access Trial
+            </button>
+            <p className={styles.ticketCTASubtext}>
+              No long-term lock-ins. If it's not for you, just cancel.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function HeroNewPage() {
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
@@ -890,139 +1102,32 @@ export default function HeroNewPage() {
         </div>
       </section>
 
-      {/* ChromaGrid Scroll Stack Cards - Alternating Layout */}
-      <section className={styles.scrollStackSection}>
-        {/* Light ball gradients */}
-        <div className={styles.gradientOrbs}>
-          <div className={styles.orb1}></div>
-          <div className={styles.orb2}></div>
-          <div className={styles.orb3}></div>
-          <div className={styles.orb4}></div>
-        </div>
-        
-        <div className={styles.chromaCardsGridWrapper}>
-          <ScrollStack 
-            useWindowScroll={true}
-            stackPosition={isMobile ? "15%" : "20%"}
-            itemDistance={150}
-            itemStackDistance={5}
-            baseScale={0.9}
-            scaleEndPosition="10%"
+      {/* Inside the Insider Edge Section */}
+      <InsiderEdgeSection />
+
+      {/* Chicago Tribune Quote Section */}
+      <section className={styles.quoteBarSection}>
+        <div className={styles.quoteBar}>
+          <p className={styles.quoteText}>
+            "If you're ready to take your sports betting game to the next level, look no further than the Insider."
+          </p>
+          <a 
+            href="https://www.chicagotribune.com/2024/06/10/the-daily-ref-a-sports-bettors-dream/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={styles.quoteAttribution}
           >
-            {chromaGridDemo.map((item, index) => {
-              if ((item as any).dashboardPreview) {
-                return (
-                  <ScrollStackItem 
-                    key={index}
-                    itemClassName={styles.chromaCardLeft}
-                    style={{
-                      '--card-border': item.borderColor || 'transparent',
-                      '--card-gradient': item.gradient,
-                      background: item.gradient
-                    } as React.CSSProperties}
-                  >
-                    <div className={styles.chromaCardGrid}>
-                      <ChromaVisualization item={item} />
-                    </div>
-                  </ScrollStackItem>
-                )
-              }
-              return (
-                <ScrollStackItem 
-                  key={index}
-                  itemClassName={styles.chromaCardLeft}
-                  style={{
-                    '--card-border': item.borderColor || 'transparent',
-                    '--card-gradient': item.gradient,
-                    background: item.gradient
-                  } as React.CSSProperties}
-                >
-                  <div className={styles.chromaCardGrid}>
-                    <div className={styles.chromaCardTextColumn}>
-                      <h2 className={styles.chromaCardTitle}>{item.title}</h2>
-                      <p className={styles.chromaCardSubtitle}>{item.subtitle}</p>
-                    </div>
-                    <div className={styles.chromaCardImageColumn}>
-                      <div className={styles.chromaCardImage}>
-                        <ChromaVisualization item={item} />
-                      </div>
-                    </div>
-                  </div>
-                </ScrollStackItem>
-              )
-            })}
-          </ScrollStack>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Chicago_Tribune_Logo.svg/2560px-Chicago_Tribune_Logo.svg.png" 
+              alt="Chicago Tribune" 
+              className={styles.chicagoTribuneLogo}
+            />
+          </a>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className={styles.howItWorksSection}>
-        <h2 className={styles.howItWorksTitle}>Try 3 Days for Just $1</h2>
-        <p className={styles.howItWorksSubtitle}>Get instant access to everything—picks, data, tools, and more.</p>
-        <div className={styles.howItWorksContent} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-          {/* Free Trial Card */}
-          <div className={`${styles.howItWorksCard} ${styles.glassCard}`}>
-            <div className={styles.glassFilter}></div>
-            <div className={styles.glassOverlay}></div>
-            <div className={styles.glassSpecular}></div>
-            <div className={styles.howItWorksCardHeader}>
-              <div className={`${styles.howItWorksCardIcon} ${styles.howItWorksCardIconWhite}`}>
-                <FaRegCalendarAlt />
-              </div>
-              <h3 className={styles.howItWorksCardTitle}>$1 for 3 Days</h3>
-              <p className={styles.howItWorksCardSubtitle}>Full access to everything—picks, data, AI tools.</p>
-            </div>
-            <div className={styles.howItWorksCardBody}>
-              <div className={styles.howItWorksFeature}>
-                <div className={styles.howItWorksFeatureImage}>
-                  <PiListChecksBold className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconYellow}`} />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Analyst Picks</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Unlimited access to every single pick with instant notifications pushed right to your phone.</p>
-                </div>
-              </div>
-              <div className={styles.howItWorksFeature}>
-                <div className={styles.howItWorksFeatureImage}>
-                  <IoPieChart className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconBlue}`} />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Advanced Data</h4>
-                  <p className={styles.howItWorksFeatureDesc}>All matchup analytics, betting splits, and referee trends—fully accessible on our stats dashboard.</p>
-                </div>
-              </div>
-              <div className={styles.howItWorksFeature}>
-                <div className={styles.howItWorksFeatureImage}>
-                  <LuBrainCircuit className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconPurple}`} />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Automated Tools</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Full access to the prop engine, perfect parlay builder, Vegas-backed fantasy optimizer, and AI script writer.</p>
-                </div>
-              </div>
-              <div className={styles.howItWorksFeature}>
-                <div className={styles.howItWorksFeatureImage}>
-                  <MdOutlineSportsHandball className={`${styles.howItWorksFeatureIconLarge} ${styles.howItWorksFeatureIconRed}`} />
-                </div>
-                <div className={styles.howItWorksFeatureText}>
-                  <h4 className={styles.howItWorksFeatureTitle}>Fantasy Football</h4>
-                  <p className={styles.howItWorksFeatureDesc}>Start/sit recommendations, waiver wire analysis, and trade insights to dominate your fantasy leagues.</p>
-                </div>
-              </div>
-            </div>
-            <button
-              className={`${styles.howItWorksButtonSecondary} ${styles.glassButton}`}
-              onClick={handlePricingClick}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className={styles.glassFilter}></div>
-              <div className={styles.glassOverlay}></div>
-              <div className={styles.glassSpecular}></div>
-              <div className={styles.glassContent}>Start $1 Trial</div>
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* Ticket-Style Pricing Card Section */}
+      <TicketPricingSection />
 
       {/* Reviews Section */}
       <ReviewsReelSection />
