@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     description: 'Expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics and real-time insights.',
     images: [
       {
-        url: '/og-image.png',
+        url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
         width: 1200,
         height: 630,
         alt: 'The Betting Insider - Sports Betting Analytics',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'The Betting Insider - Premium Sports Betting Analytics',
     description: 'Expert NFL, NBA, CFB, and NHL betting picks with AI-powered analytics.',
-    images: ['/og-image.png'],
+    images: ['https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png'],
     creator: '@invisiblestats',
   },
   verification: {

@@ -811,7 +811,8 @@ function TicketPricingSection() {
         redirectUrl: '/pricing'
       })
     } else {
-      router.push('/pricing')
+      // Redirect to Stripe checkout for monthly plan with trial
+      window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1SIZoN07WIhZOuSIm8hTDjy4?trial=true'
     }
   }
 
@@ -1104,8 +1105,6 @@ export default function HeroNewPage() {
 
       {/* Inside the Insider Edge Section */}
       <InsiderEdgeSection />
-
-      {/* Chicago Tribune Quote Section */}
       <section className={styles.quoteBarSection}>
         <div className={styles.quoteBar}>
           <p className={styles.quoteText}>

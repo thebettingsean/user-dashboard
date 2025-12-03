@@ -2834,11 +2834,10 @@
 .insiderEdgeSection {
   position: relative;
   width: 100%;
-  padding: 3rem 2rem 6rem 2rem;
+  padding: 0 2rem 6rem 2rem;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: -2rem auto 2rem auto;
   z-index: 4;
-  margin-bottom: 2rem;
 }
 
 .insiderEdgeContainer {
@@ -2858,6 +2857,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin-top: -2rem;
 }
 
 .insiderEdgeHeader {
@@ -2980,13 +2980,13 @@
 
 .insiderEdgeDeviceBlurb {
   position: absolute;
-  bottom: -3rem;
+  bottom: 0.5rem;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   width: calc(100% - 2rem);
   max-width: 400px;
   padding: 0.875rem 1.25rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   color: #ffffff;
@@ -3281,11 +3281,11 @@
 /* Chicago Tribune Quote Section */
 .quoteBarSection {
   width: 100%;
-  padding: 3rem 2rem 5rem 2rem;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0;
+  margin: 3rem 0 5rem 0;
   z-index: 4;
 }
 
@@ -3295,14 +3295,14 @@
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  border: none;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+  box-shadow: none;
   position: relative;
   overflow: hidden;
-  margin: 0 auto;
+  margin: 0;
   box-sizing: border-box;
   text-align: center;
   display: flex;
@@ -3314,7 +3314,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: inherit;
+  border-radius: 0;
   background:
     radial-gradient(ellipse at 20% 15%, rgba(248, 250, 252, 0.05), transparent 55%),
     radial-gradient(ellipse at 80% 85%, rgba(16, 185, 129, 0.05), transparent 60%);
@@ -3371,12 +3371,13 @@
 
 @media (max-width: 768px) {
   .quoteBarSection {
-    padding: 0 1rem 2rem 1rem;
+    padding: 0;
+    margin: 3rem 0 5rem 0;
   }
 
   .quoteBar {
     padding: 1.5rem 2rem;
-    border-radius: 16px;
+    border-radius: 0;
   }
 
   .quoteText {
