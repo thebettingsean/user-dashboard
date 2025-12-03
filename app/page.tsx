@@ -811,8 +811,7 @@ function TicketPricingSection() {
         redirectUrl: '/pricing'
       })
     } else {
-      // Redirect to Stripe checkout for monthly plan with trial
-      window.location.href = 'https://stripe.thebettinginsider.com/checkout/price_1SIZoN07WIhZOuSIm8hTDjy4?trial=true'
+      router.push('/pricing')
     }
   }
 
@@ -863,6 +862,7 @@ function TicketPricingSection() {
               After your trial, continue at your normal member rate (cancel anytime in a few clicks).
             </p>
             <button 
+              type="button"
               className={styles.ticketCTAButton}
               onClick={handleTrialClick}
             >
