@@ -348,11 +348,17 @@
   font-size: 0.8rem !important;
 }
 
+/* Action Buttons Container */
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 /* Run Button - matches Load More Button */
 .runBtn {
-  width: 100%;
+  flex: 1;
   padding: 0.75rem;
-  margin-top: 1rem;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 8px;
@@ -380,6 +386,25 @@
 .runBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Clear Button - Red accent */
+.clearBtn {
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+.clearBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 /* Results Panel */

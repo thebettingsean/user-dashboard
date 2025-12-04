@@ -190,11 +190,11 @@ export default function SportsEnginePage() {
   const [visibleGames, setVisibleGames] = useState(10)
   const [expandedGameId, setExpandedGameId] = useState<number | null>(null)
   
-  // Collapsible filter sections
+  // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
-    matchup: true,
-    betting: true,
-    teamStats: true
+    matchup: false,
+    betting: false,
+    teamStats: false
   })
   
   // Referees from database
@@ -294,6 +294,85 @@ export default function SportsEnginePage() {
     }
     setQueryType(type) // Update state immediately for instant UI feedback
     router.push(paths[type], { scroll: false }) // Navigate without scroll reset
+  }
+  
+  // Clear all filters to defaults
+  const clearFilters = () => {
+    // Time & basic filters
+    setTimePeriod('since_2022')
+    setLocation('any')
+    setDivision('any')
+    setConference('any')
+    setPlayoff('any')
+    setFavorite('any')
+    
+    // Defense/Offense ranks
+    setDefenseRank('any')
+    setDefenseStat('pass')
+    setOffenseRank('any')
+    setOffenseStat('points')
+    
+    // Ranges
+    setSpreadMin('')
+    setSpreadMax('')
+    setTotalMin('')
+    setTotalMax('')
+    setMlMin('')
+    setMlMax('')
+    
+    // Line movement
+    setSpreadMoveMin('')
+    setSpreadMoveMax('')
+    setTotalMoveMin('')
+    setTotalMoveMax('')
+    setMlMoveMin('')
+    setMlMoveMax('')
+    
+    // O/U specific
+    setHomeFavDog('any')
+    setHomeTeamDefenseRank('any')
+    setHomeTeamDefenseStat('overall')
+    setHomeTeamOffenseRank('any')
+    setHomeTeamOffenseStat('overall')
+    setAwayTeamDefenseRank('any')
+    setAwayTeamDefenseStat('overall')
+    setAwayTeamOffenseRank('any')
+    setAwayTeamOffenseStat('overall')
+    
+    // Momentum
+    setStreak('')
+    setPrevGameMarginMin('')
+    setPrevGameMarginMax('')
+    setAwayStreak('')
+    setAwayPrevGameMarginMin('')
+    setAwayPrevGameMarginMax('')
+    
+    // Bet type
+    setBetType('spread')
+    setSide('over')
+    
+    // Team search
+    setTeamSearch('')
+    setSelectedTeam(null)
+    setTeamLocation('any')
+    setVersusTeamSearch('')
+    setSelectedVersusTeam(null)
+    
+    // Referee
+    setRefereeSearch('')
+    setSelectedReferee(null)
+    setRefereeId('')
+    
+    // Props
+    setPropPosition('any')
+    setPlayerSearch('')
+    setSelectedPlayer(null)
+    setPropStat('pass_yards')
+    setPropLine('250')
+    
+    // Clear results
+    setResult(null)
+    setError(null)
   }
   
   // Sync query type with URL when path changes (for browser back/forward)
@@ -2031,14 +2110,23 @@ export default function SportsEnginePage() {
             )}
           </div>
 
-          {/* Run Query Button */}
-          <button
-            className={styles.runBtn}
-            onClick={runQuery}
-            disabled={loading}
-          >
-            {loading ? 'Running...' : <><IoRocketOutline /> Run Query</>}
-          </button>
+          {/* Action Buttons */}
+          <div className={styles.actionButtons}>
+            <button
+              className={styles.runBtn}
+              onClick={runQuery}
+              disabled={loading}
+            >
+              {loading ? 'Running...' : <><IoRocketOutline /> Run Query</>}
+            </button>
+            <button
+              className={styles.clearBtn}
+              onClick={clearFilters}
+              type="button"
+            >
+              Clear
+            </button>
+          </div>
         </div>
 
         {/* Results Panel */}
