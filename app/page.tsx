@@ -923,12 +923,49 @@ export default function HeroNewPage() {
       styleTag = document.createElement('style')
       styleTag.id = styleId
       styleTag.textContent = `
-        body.hero-new-page .desktop-nav,
-        body.hero-new-page .mobile-nav {
+        body.hero-new-page {
+          position: relative !important;
+        }
+        body.hero-new-page > nav.mobile-nav {
+          position: relative !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        body.hero-new-page .desktop-nav {
           margin: 20px auto 0 !important;
           padding: 0 !important;
           display: flex !important;
           justify-content: center !important;
+          width: 100% !important;
+        }
+        body.hero-new-page .mobile-nav {
+          margin: 20px 0 0 0 !important;
+          padding: 0 !important;
+          display: block !important;
+          width: calc(100% - 40px) !important;
+          max-width: 500px !important;
+        }
+        body.hero-new-page .mobile-nav > div:first-child {
+          display: flex !important;
+          flex-direction: row !important;
+        }
+        @media (max-width: 767px) {
+          body.hero-new-page .desktop-nav {
+            display: none !important;
+          }
+          body.hero-new-page .mobile-nav {
+            display: block !important;
+          }
+        }
+        @media (min-width: 768px) {
+          body.hero-new-page .desktop-nav {
+            display: flex !important;
+          }
+          body.hero-new-page .mobile-nav {
+            display: none !important;
+          }
         }
         body.hero-new-page .desktop-nav > div:first-child,
         body.hero-new-page .mobile-nav > div:first-child {
@@ -1254,13 +1291,7 @@ function PricingSection() {
 // Reviews Reel Section Component
 function ReviewsReelSection() {
   const trackRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchOffset, setTouchOffset] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const animationRef = useRef<number | null>(null)
 
   const reviews = [
     {
@@ -1320,8 +1351,6 @@ function ReviewsReelSection() {
   ]
 
   useEffect(() => {
-    if (isPaused || isDragging) return
-    
     const animate = () => {
       setPosition((prev: number) => {
         const cardWidth = 420 + 32 // card width + gap
@@ -1333,78 +1362,18 @@ function ReviewsReelSection() {
         
         return prev - 0.5
       })
-      animationRef.current = requestAnimationFrame(animate)
+      requestAnimationFrame(animate)
     }
     
-    animationRef.current = requestAnimationFrame(animate)
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
-  }, [reviews.length, isPaused, isDragging])
+    const animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
+  }, [reviews.length])
 
   useEffect(() => {
     if (trackRef.current) {
-      trackRef.current.style.transform = `translateX(${position + touchOffset}px)`
-      trackRef.current.style.transition = isDragging ? 'none' : 'transform 0.3s ease-out'
+      trackRef.current.style.transform = `translateX(${position}px)`
     }
-  }, [position, touchOffset, isDragging])
-
-  // Touch event handlers for mobile swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (window.innerWidth > 768) return // Only on mobile
-    setIsPaused(true)
-    setIsDragging(true)
-    setTouchStart(e.touches[0].clientX)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (window.innerWidth > 768 || !isDragging) return
-    e.preventDefault() // Prevent page scroll while swiping
-    const currentX = e.touches[0].clientX
-    const diff = currentX - touchStart
-    setTouchOffset(diff)
-  }
-
-  const handleTouchEnd = () => {
-    if (window.innerWidth > 768 || !isDragging) return
-    
-    const isMobile = window.innerWidth <= 768
-    const cardWidth = isMobile ? 320 : 420
-    const gap = 32
-    const actualCardWidth = cardWidth + gap
-    
-    // Only snap if swipe was significant (more than 30% of card width)
-    const threshold = actualCardWidth * 0.3
-    let snapOffset = 0
-    
-    if (Math.abs(touchOffset) > threshold) {
-      // Snap to nearest card
-      snapOffset = Math.round(touchOffset / actualCardWidth) * actualCardWidth
-    }
-    
-    setPosition((prev) => {
-      const newPos = prev + snapOffset
-      const setWidth = actualCardWidth * reviews.length
-      // Keep position within bounds
-      if (Math.abs(newPos) >= setWidth) {
-        return 0
-      }
-      if (newPos > 0) {
-        return 0
-      }
-      return newPos
-    })
-    
-    setTouchOffset(0)
-    setIsDragging(false)
-    
-    // Resume auto-scroll after a delay
-    setTimeout(() => {
-      setIsPaused(false)
-    }, 3000)
-  }
+  }, [position])
 
   return (
     <div className={styles.reviewsReel}>
@@ -1414,14 +1383,7 @@ function ReviewsReelSection() {
         </h2>
       </div>
       
-      <div 
-        ref={containerRef}
-        className={styles.reviewsContainer}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{ touchAction: 'pan-x' }}
-      >
+      <div className={styles.reviewsContainer}>
         <div ref={trackRef} className={styles.reviewsTrack}>
           {/* Triple the content for seamless loop */}
           {[...Array(3)].map((_, setIndex) => (

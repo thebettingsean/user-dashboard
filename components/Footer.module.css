@@ -115,11 +115,22 @@
   }
 
   .linksGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
     max-width: 100%;
   }
 
+  .footerSection {
+    gap: 8px;
+  }
+
+  .footerHeading {
+    font-size: 0.75rem;
+  }
+
+  .footerLink {
+    font-size: 0.75rem;
+  }
 
   .footerLink:hover {
     transform: none;

@@ -7,17 +7,20 @@ export default function Footer() {
       <div className={styles.footerContent}>
         {/* Links Grid */}
         <div className={styles.linksGrid}>
-          {/* Company Section */}
+          {/* Tools Section */}
           <div className={styles.footerSection}>
-            <h4 className={styles.footerHeading}>Company</h4>
-            <Link href="/company" className={styles.footerLink}>
-              Company
+            <h4 className={styles.footerHeading}>Our Tools</h4>
+            <Link href="/bankroll-calculator" className={styles.footerLink}>
+              Bankroll Calculator
             </Link>
-            <Link href="/contact" className={styles.footerLink}>
-              Contact
+            <Link href="/parlay-calculator" className={styles.footerLink}>
+              Parlay Calculator
             </Link>
-            <Link href="/faq" className={styles.footerLink}>
-              FAQ
+            <Link href="/roi-calculator" className={styles.footerLink}>
+              ROI Calculator
+            </Link>
+            <Link href="/betting-guide" className={styles.footerLink}>
+              Betting Guide
             </Link>
           </div>
 
@@ -38,20 +41,17 @@ export default function Footer() {
             </Link>
           </div>
 
-          {/* Tools Section */}
+          {/* Company Section */}
           <div className={styles.footerSection}>
-            <h4 className={styles.footerHeading}>Our Tools</h4>
-            <Link href="/bankroll-calculator" className={styles.footerLink}>
-              Bankroll Calculator
+            <h4 className={styles.footerHeading}>Company</h4>
+            <Link href="/company" className={styles.footerLink}>
+              Company
             </Link>
-            <Link href="/parlay-calculator" className={styles.footerLink}>
-              Parlay Calculator
+            <Link href="/contact" className={styles.footerLink}>
+              Contact
             </Link>
-            <Link href="/roi-calculator" className={styles.footerLink}>
-              ROI Calculator
-            </Link>
-            <Link href="/betting-guide" className={styles.footerLink}>
-              Betting Guide
+            <Link href="/faq" className={styles.footerLink}>
+              FAQ
             </Link>
           </div>
 

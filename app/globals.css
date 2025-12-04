@@ -70,10 +70,14 @@ body {
   z-index: 1000;
   width: calc(100% - 40px);
   max-width: 500px;
+  display: block;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.mobile-nav > div:first-child {
   display: flex;
-  flex-direction: column;
-  left: 50%;
-  transform: translateX(-50%);
+  flex-direction: row;
 }
 
 @media (max-width: 767px) {
