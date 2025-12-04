@@ -165,7 +165,7 @@ export default function Navbar() {
               >
                 <div style={styles.dropdownSection}>
                   <Link href="/sports-engine" style={styles.dropdownLinkGold}>
-                    ⚡ Sports Engine
+                    Sports Engine
                   </Link>
                   <Link href="/prop-parlay-tool" style={styles.dropdownLink}>
                     Perfect Parlays
@@ -517,7 +517,7 @@ export default function Navbar() {
               {openDropdown === 'tools' && (
                 <div style={styles.mobileSubMenu}>
                   <Link href="/sports-engine" style={styles.mobileSubLinkGold}>
-                    ⚡ Sports Engine
+                    Sports Engine
                   </Link>
                   <Link href="/prop-parlay-tool" style={styles.mobileSubLink}>
                     Perfect Parlays
@@ -645,13 +645,12 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    color: '#fef3c7',
+    color: '#fbbf24',
     fontSize: '0.875rem',
-    fontWeight: '600',
+    fontWeight: '500',
     textDecoration: 'none',
     borderRadius: '8px',
-    background: 'rgba(180, 130, 20, 0.35)',
-    border: '1px solid rgba(234, 179, 8, 0.4)',
+    background: 'rgba(251, 191, 36, 0.15)',
     transition: 'all 0.2s ease'
   },
 
@@ -810,13 +809,12 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    color: '#fef3c7',
+    color: '#fbbf24',
     fontSize: '0.875rem',
-    fontWeight: '600',
+    fontWeight: '500',
     textDecoration: 'none',
     borderRadius: '8px',
-    background: 'rgba(180, 130, 20, 0.35)',
-    border: '1px solid rgba(234, 179, 8, 0.4)',
+    background: 'rgba(251, 191, 36, 0.15)',
     transition: 'all 0.2s ease'
   }
 }
