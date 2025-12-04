@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { clickhouseQuery } from '@/lib/clickhouse'
+import { clickhouseQuery, clickhouseCommand } from '@/lib/clickhouse'
 
 export const maxDuration = 300 // 5 minutes
 
@@ -261,7 +261,7 @@ async function insertPropLines(lines: PropLine[]): Promise<void> {
     ) VALUES ${values}
   `
   
-  await clickhouseQuery(sql)
+  await clickhouseCommand(sql)
 }
 
 export async function POST(request: NextRequest) {

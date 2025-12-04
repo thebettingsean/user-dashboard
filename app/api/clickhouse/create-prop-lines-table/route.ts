@@ -62,12 +62,17 @@ export async function POST() {
 
 export async function GET() {
   try {
-    const count = await clickhouseQuery('SELECT count() as cnt FROM nfl_prop_lines')
+    const count = await clickhouseQuery('SELECT count() as cnt, countDistinct(player_name) as unique_players, countDistinct(prop_type) as prop_types, countDistinct(game_id) as games FROM nfl_prop_lines')
     const sample = await clickhouseQuery('SELECT * FROM nfl_prop_lines LIMIT 5')
+    const propTypes = await clickhouseQuery('SELECT prop_type, count() as cnt FROM nfl_prop_lines GROUP BY prop_type ORDER BY cnt DESC')
     
     return NextResponse.json({
-      count: count[0]?.cnt || 0,
-      sample
+      total_lines: count.data[0]?.cnt || 0,
+      unique_players: count.data[0]?.unique_players || 0,
+      prop_types: count.data[0]?.prop_types || 0,
+      games: count.data[0]?.games || 0,
+      prop_type_breakdown: propTypes.data,
+      sample: sample.data
     })
   } catch (error: any) {
     return NextResponse.json(
