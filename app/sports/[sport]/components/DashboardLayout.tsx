@@ -7,8 +7,8 @@ import { useSubscription } from '../../../../lib/hooks/useSubscription'
 import { generateGameSlug } from '../../../../lib/utils/gameSlug'
 import { formatScript } from '../../../../lib/utils/formatScript'
 import styles from './dashboard.module.css'
-import { FaFireAlt, FaLock, FaWrench } from 'react-icons/fa'
-import { FaDice, FaWandMagicSparkles } from 'react-icons/fa6'
+import { FaFireAlt, FaLock, FaHammer } from 'react-icons/fa'
+import { FaDice, FaWandMagicSparkles, FaToolbox } from 'react-icons/fa6'
 import { GiTwoCoins, GiReceiveMoney } from 'react-icons/gi'
 import { IoIosGift } from 'react-icons/io'
 import { PiMoneyWavy } from 'react-icons/pi'
@@ -2676,14 +2676,24 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           )}
         </div>
 
-        {/* Toolkit Button */}
+        {/* Builder Button - links to Sports Engine */}
+        <button
+          type="button"
+          className={styles.builderButton}
+          onClick={() => router.push('/sports-engine')}
+        >
+          <FaHammer size={14} />
+          <span>Builder</span>
+        </button>
+
+        {/* Toolkit Button - icon only */}
         <button
           type="button"
           className={`${styles.toolkitButton} ${isToolkitOpen ? styles.toolkitActive : ''}`}
           onClick={handleToolkitToggle}
+          title="Toolkit"
         >
-          <FaWrench size={16} />
-          <span>Toolkit</span>
+          <FaToolbox size={16} />
         </button>
       </div>
 

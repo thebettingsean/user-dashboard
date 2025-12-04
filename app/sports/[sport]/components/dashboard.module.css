@@ -48,11 +48,37 @@
   box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
 }
 
-.toolkitButton {
+/* Builder Button - links to Sports Engine */
+.builderButton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.builderButton:hover {
+  background: rgba(245, 158, 11, 0.25);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Toolkit Button - icon only */
+.toolkitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid rgba(129, 140, 248, 0.35);
   background: rgba(99, 102, 241, 0.15);
