@@ -15,7 +15,13 @@ export async function GET() {
     })
   } catch (error: any) {
     console.error('Error fetching team logos:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    // Return empty array instead of error to prevent breaking the page
+    // Team logos are optional - the page works fine without them
+    return NextResponse.json({
+      success: false,
+      logos: [],
+      error: error.message
+    })
   }
 }
 

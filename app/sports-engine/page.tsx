@@ -11,7 +11,7 @@ import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy } from "react-icons/pi"
-import { GiWhistle, Gi3dGlasses } from "react-icons/gi"
+import { GiWhistle } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess } from "react-icons/md"
 
 // Types
@@ -1521,7 +1521,7 @@ export default function SportsEnginePage() {
       <div className={styles.headerSpacer} />
       <header className={styles.header}>
         <h1>
-          <Gi3dGlasses className={styles.titleIcon} /> Simple Sports Engine
+          Simple Sports Engine
           <span className={styles.betaTag}>BETA</span>
         </h1>
         <p className={styles.tagline}>Test historical trends with any filter combination. For premium subs only.</p>
