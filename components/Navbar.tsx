@@ -651,6 +651,7 @@ const styles = {
     textDecoration: 'none',
     borderRadius: '8px',
     background: 'rgba(251, 191, 36, 0.15)',
+    border: '1px solid rgba(251, 191, 36, 0.35)',
     transition: 'all 0.2s ease'
   },
 
@@ -815,6 +816,7 @@ const styles = {
     textDecoration: 'none',
     borderRadius: '8px',
     background: 'rgba(251, 191, 36, 0.15)',
+    border: '1px solid rgba(251, 191, 36, 0.35)',
     transition: 'all 0.2s ease'
   }
 }
