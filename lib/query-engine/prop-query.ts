@@ -20,10 +20,12 @@ const STAT_COLUMNS: Record<PropStatType, string> = {
   rush_yards: 'rush_yards',
   rush_tds: 'rush_tds',
   rush_attempts: 'rush_attempts',
+  rush_long: 'rush_long',
   yards_per_carry: 'yards_per_carry',
   receiving_yards: 'receiving_yards',
   receptions: 'receptions',
   receiving_tds: 'receiving_tds',
+  receiving_long: 'receiving_long',
   targets: 'targets',
   // Combo stats - calculated
   fantasy_points: '(pass_yards * 0.04 + pass_tds * 4 - interceptions * 2 + rush_yards * 0.1 + rush_tds * 6 + receiving_yards * 0.1 + receiving_tds * 6 + receptions * 0.5)',
@@ -40,10 +42,12 @@ const STAT_TO_DEFENSE: Record<PropStatType, 'pass' | 'rush' | 'receiving'> = {
   rush_yards: 'rush',
   rush_tds: 'rush',
   rush_attempts: 'rush',
+  rush_long: 'rush',
   yards_per_carry: 'rush',
   receiving_yards: 'receiving',
   receptions: 'receiving',
   receiving_tds: 'receiving',
+  receiving_long: 'receiving',
   targets: 'receiving',
   fantasy_points: 'pass',  // Default to pass for combo stats
   completions_plus_rush_yards: 'pass'

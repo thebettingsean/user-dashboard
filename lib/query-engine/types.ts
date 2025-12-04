@@ -136,8 +136,8 @@ export type QueryType = 'prop' | 'team' | 'referee' | 'trend'
 // Prop stat types
 export type PropStatType = 
   | 'pass_yards' | 'pass_tds' | 'pass_attempts' | 'pass_completions' | 'interceptions'
-  | 'rush_yards' | 'rush_tds' | 'rush_attempts' | 'yards_per_carry'
-  | 'receiving_yards' | 'receptions' | 'receiving_tds' | 'targets'
+  | 'rush_yards' | 'rush_tds' | 'rush_attempts' | 'rush_long' | 'yards_per_carry'
+  | 'receiving_yards' | 'receptions' | 'receiving_tds' | 'receiving_long' | 'targets'
   | 'fantasy_points' | 'completions_plus_rush_yards'  // combo stats
 
 // Team bet types
