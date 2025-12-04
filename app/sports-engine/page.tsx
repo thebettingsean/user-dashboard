@@ -1860,7 +1860,8 @@ export default function SportsEnginePage() {
             {/* Non-O/U: Simple vs Defense/Offense + Streak */}
             {expandedSections.teamStats && !isOUQuery && (
               <>
-                <div className={styles.filterGrid3}>
+                {/* Row 1: vs Defense & vs Offense */}
+                <div className={styles.filterGrid}>
                   <div>
                     <span>vs Defense</span>
                     <select value={defenseRank} onChange={(e) => setDefenseRank(e.target.value)}>
@@ -1901,19 +1902,21 @@ export default function SportsEnginePage() {
                       </select>
                     )}
                   </div>
-                  <div>
-                    <span>Streak</span>
-                    <input type="text" inputMode="numeric" placeholder="e.g. 2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} />
-                    <div className={styles.hint}>+ wins, - losses</div>
-                  </div>
                 </div>
                 
-                {/* Prev Game Margin */}
-                <div className={styles.marginSection}>
-                  <span>Prev Game Margin</span>
-                  <div className={styles.rangeRow}>
-                    <input type="text" inputMode="numeric" placeholder="Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
-                    <input type="text" inputMode="numeric" placeholder="Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
+                {/* Row 2: Prev Game Margin & W/L Streak */}
+                <div className={styles.filterGrid}>
+                  <div>
+                    <span>Prev Game Margin</span>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="numeric" placeholder="Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
+                      <input type="text" inputMode="numeric" placeholder="Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
+                    </div>
+                  </div>
+                  <div>
+                    <span>W/L Streak</span>
+                    <input type="text" inputMode="numeric" placeholder="2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} />
+                    <div className={styles.hint}>+ wins, - losses</div>
                   </div>
                 </div>
               </>
