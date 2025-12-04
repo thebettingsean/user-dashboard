@@ -251,6 +251,11 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.filterGrid:last-child {
+  margin-bottom: 0;
 }
 
 .filterGrid > div {
@@ -269,6 +274,11 @@
 .filterGrid select,
 .filterGrid input {
   margin-bottom: 0;
+}
+
+/* Streak input - constrained width to match dropdowns */
+.streakInput {
+  max-width: 140px;
 }
 
 /* Range Inputs */

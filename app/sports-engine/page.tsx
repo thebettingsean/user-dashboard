@@ -1915,7 +1915,7 @@ export default function SportsEnginePage() {
                   </div>
                   <div>
                     <span>W/L Streak</span>
-                    <input type="text" inputMode="numeric" placeholder="2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} />
+                    <input type="text" inputMode="numeric" placeholder="2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} className={styles.streakInput} />
                     <div className={styles.hint}>+ wins, - losses</div>
                   </div>
                 </div>
