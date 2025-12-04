@@ -76,19 +76,23 @@ const PROP_STATS_BY_POSITION: Record<string, { value: string; label: string }[]>
     { value: 'interceptions', label: 'Interceptions' },
     { value: 'rush_yards', label: 'Rush Yards' },
     { value: 'rush_tds', label: 'Rush TDs' },
+    { value: 'rush_long', label: 'Longest Rush' },
   ],
   RB: [
     { value: 'rush_yards', label: 'Rush Yards' },
     { value: 'rush_tds', label: 'Rush TDs' },
     { value: 'rush_attempts', label: 'Rush Attempts' },
+    { value: 'rush_long', label: 'Longest Rush' },
     { value: 'receiving_yards', label: 'Receiving Yards' },
     { value: 'receptions', label: 'Receptions' },
+    { value: 'receiving_long', label: 'Longest Reception' },
     { value: 'targets', label: 'Targets' },
   ],
   WR: [
     { value: 'receiving_yards', label: 'Receiving Yards' },
     { value: 'receptions', label: 'Receptions' },
     { value: 'receiving_tds', label: 'Receiving TDs' },
+    { value: 'receiving_long', label: 'Longest Reception' },
     { value: 'targets', label: 'Targets' },
     { value: 'rush_yards', label: 'Rush Yards' },
   ],
@@ -96,6 +100,7 @@ const PROP_STATS_BY_POSITION: Record<string, { value: string; label: string }[]>
     { value: 'receiving_yards', label: 'Receiving Yards' },
     { value: 'receptions', label: 'Receptions' },
     { value: 'receiving_tds', label: 'Receiving TDs' },
+    { value: 'receiving_long', label: 'Longest Reception' },
     { value: 'targets', label: 'Targets' },
   ],
   K: [
@@ -280,6 +285,11 @@ export default function SportsEnginePage() {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerResult | null>(null)
   const [playerSearchLoading, setPlayerSearchLoading] = useState(false)
   
+  // Props - Versus Team filter
+  const [propVersusTeamSearch, setPropVersusTeamSearch] = useState<string>('')
+  const [propVersusTeamResults, setPropVersusTeamResults] = useState<typeof NFL_TEAMS>([])
+  const [selectedPropVersusTeam, setSelectedPropVersusTeam] = useState<typeof NFL_TEAMS[0] | null>(null)
+  
   // Get available stats based on position (use selected player's position if available)
   const effectivePosition = selectedPlayer?.position || propPosition
   const availablePropStats = PROP_STATS_BY_POSITION[effectivePosition] || PROP_STATS_BY_POSITION['any']
@@ -369,6 +379,9 @@ export default function SportsEnginePage() {
     setSelectedPlayer(null)
     setPropStat('pass_yards')
     setPropLine('250')
+    setPropVersusTeamSearch('')
+    setPropVersusTeamResults([])
+    setSelectedPropVersusTeam(null)
     
     // Clear results
     setResult(null)
@@ -432,6 +445,12 @@ export default function SportsEnginePage() {
   const handleVersusTeamSearch = (query: string) => {
     setVersusTeamSearch(query)
     setVersusTeamSearchResults(searchTeams(query))
+  }
+  
+  // Handle prop versus team search input
+  const handlePropVersusTeamSearch = (query: string) => {
+    setPropVersusTeamSearch(query)
+    setPropVersusTeamResults(searchTeams(query))
   }
   
   // Helper to check if current bet type is O/U
@@ -925,6 +944,15 @@ export default function SportsEnginePage() {
         }
         body.stat = propStat
         body.line = parseFloat(propLine) || 0
+        
+        // Versus team filter for props
+        if (selectedPropVersusTeam) {
+          body.opponent_team_id = selectedPropVersusTeam.id
+        }
+        // Include location filter if not 'any'
+        if (location !== 'any') {
+          body.location = location
+        }
       }
 
       const response = await fetch('/api/query-engine', {
@@ -1319,9 +1347,50 @@ export default function SportsEnginePage() {
     }
   }
 
+  // Get dynamic stat label based on query type and selected stat
+  const getAvgStatLabel = () => {
+    if (queryType === 'prop') {
+      // Find the label for the selected prop stat
+      const statConfig = availablePropStats.find(s => s.value === propStat)
+      return `Avg ${statConfig?.label || propStat}`
+    }
+    if (betType === 'total') {
+      return 'Avg Total Points'
+    }
+    return 'Avg Win Margin'
+  }
+
   // Render stats based on bet type
   const renderAdditionalStats = () => {
     if (!result) return null
+
+    // Props have different stats display
+    if (queryType === 'prop') {
+      return (
+        <div className={styles.additionalStats}>
+          <div>
+            <span>{getAvgStatLabel()}:</span>
+            <strong>{result.avg_value}</strong>
+          </div>
+          <div>
+            <span>Avg vs Line:</span>
+            <strong className={result.avg_differential > 0 ? styles.positive : styles.negative}>
+              {result.avg_differential > 0 ? '+' : ''}{result.avg_differential}
+            </strong>
+          </div>
+          <div>
+            <span>Current Streak:</span>
+            <strong className={result.current_streak > 0 ? styles.positive : styles.negative}>
+              {result.current_streak > 0 ? `${result.current_streak}W` : `${Math.abs(result.current_streak)}L`}
+            </strong>
+          </div>
+          <div>
+            <span>Best Streak:</span>
+            <strong>{result.longest_hit_streak}W</strong>
+          </div>
+        </div>
+      )
+    }
 
     if (betType === 'moneyline') {
       return (
@@ -1348,7 +1417,7 @@ export default function SportsEnginePage() {
       return (
         <div className={styles.additionalStats}>
           <div>
-            <span>Avg Points:</span>
+            <span>Avg Total Points:</span>
             <strong>{result.avg_value}</strong>
           </div>
           <div>
@@ -1797,6 +1866,54 @@ export default function SportsEnginePage() {
                       <option value="home">Home</option>
                       <option value="away">Away</option>
                     </select>
+                  </div>
+                )}
+                
+                {/* Versus Team - for Props */}
+                {queryType === 'prop' && (
+                  <div>
+                    <span>Versus Team</span>
+                    <div className={styles.teamSearchWrapper}>
+                      <input
+                        type="text"
+                        placeholder={selectedPropVersusTeam ? selectedPropVersusTeam.name : "Any team"}
+                        value={propVersusTeamSearch}
+                        onChange={(e) => handlePropVersusTeamSearch(e.target.value)}
+                        onFocus={() => {
+                          if (!propVersusTeamSearch) setPropVersusTeamResults(NFL_TEAMS.slice(0, 10))
+                        }}
+                        onBlur={() => setTimeout(() => setPropVersusTeamResults([]), 200)}
+                        className={styles.teamSearchInput}
+                      />
+                      {propVersusTeamResults.length > 0 && (
+                        <div className={styles.teamSearchDropdown}>
+                          {propVersusTeamResults.map((team) => (
+                            <div
+                              key={team.id}
+                              className={styles.teamSearchOption}
+                              onClick={() => {
+                                setSelectedPropVersusTeam(team)
+                                setPropVersusTeamSearch('')
+                                setPropVersusTeamResults([])
+                              }}
+                            >
+                              {teamLogos[team.id] && (
+                                <img src={teamLogos[team.id]} alt="" className={styles.teamOptionLogo} />
+                              )}
+                              <span className={styles.teamOptionName}>{team.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {selectedPropVersusTeam && (
+                        <button 
+                          className={styles.clearVersusBtn}
+                          onClick={() => setSelectedPropVersusTeam(null)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div>

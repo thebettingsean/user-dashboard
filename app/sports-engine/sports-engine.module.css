@@ -1381,6 +1381,14 @@
   border-left: 3px solid transparent;
 }
 
+.propGameRow.clickable {
+  cursor: pointer;
+}
+
+.propGameRow.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .propGameRow.hit {
   border-left-color: #22c55e;
 }
