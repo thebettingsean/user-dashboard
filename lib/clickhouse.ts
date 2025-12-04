@@ -3,9 +3,9 @@
  * Uses REST API with API keys for authentication
  */
 
-const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST || 'https://queries.clickhouse.cloud/service/a54845b1-196e-4d49-9972-3cd55e6766b1/run'
-const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID || 'NhCacNZ17p6tH1xv5VcZ'
-const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET || '4b1dxwoWH7vdq5hczTJUJjepfko718M8PfiQen8xWP'
+const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST!
+const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID!
+const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET!
 
 export interface ClickHouseQueryResult<T = any> {
   data: T[]
@@ -104,7 +104,7 @@ export async function clickhouseCommand(sql: string): Promise<void> {
 }
 
 /**
- * Insert data into ClickHouse (bulk insert)
+ * Insert data into ClickHouse (bulk insert using VALUES syntax)
  */
 export async function clickhouseInsert<T extends Record<string, any>>(
   table: string,
@@ -115,22 +115,35 @@ export async function clickhouseInsert<T extends Record<string, any>>(
     return
   }
 
-  const columns = Object.keys(data[0])
-  const values = data.map(row => 
-    `(${columns.map(col => {
-      const val = row[col]
-      if (val === null || val === undefined) return 'NULL'
-      if (typeof val === 'string') return `'${val.replace(/'/g, "\\'")}'`
-      if (typeof val === 'boolean') return val ? 1 : 0
-      if (val instanceof Date) return `'${val.toISOString()}'`
-      return val
-    }).join(', ')})`
-  ).join(',\n')
-
-  const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${values}`
-  
-  console.log(`[ClickHouse] Inserting ${data.length} rows into ${table}`)
-  await clickhouseCommand(sql)
+  try {
+    console.log(`[ClickHouse] Inserting ${data.length} rows into ${table}`)
+    
+    const columns = Object.keys(data[0])
+    
+    // Build VALUES rows
+    const valueRows = data.map(row => {
+      const values = columns.map(col => {
+        const val = row[col]
+        if (val === null || val === undefined) return '0'
+        if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`  // Escape single quotes
+        if (typeof val === 'boolean') return val ? '1' : '0'
+        if (val instanceof Date) return `'${val.toISOString().split('T')[0]}'`
+        return val
+      })
+      return `(${values.join(', ')})`
+    })
+    
+    // Build INSERT statement
+    const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${valueRows.join(', ')}`
+    
+    // Execute as command
+    await clickhouseCommand(sql)
+    
+    console.log(`[ClickHouse] ✅ Successfully inserted ${data.length} rows into ${table}`)
+  } catch (error) {
+    console.error('[ClickHouse] Insert error:', error)
+    throw error
+  }
 }
 
 /**

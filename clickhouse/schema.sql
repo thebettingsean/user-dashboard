@@ -14,12 +14,16 @@
 -- Players table
 CREATE TABLE IF NOT EXISTS players (
     player_id UInt32,
+    espn_player_id UInt32,  -- ESPN's athlete ID for syncing
     sport LowCardinality(String),  -- 'nfl', 'nba', 'nhl'
     name String,
     team_id UInt16,
     position LowCardinality(String),
     jersey_number UInt8,
+    height String,  -- e.g. "6-2" or "6'2\""
+    weight UInt16,  -- in pounds
     is_active UInt8,
+    injury_status LowCardinality(String),  -- 'healthy', 'questionable', 'doubtful', 'out', 'injured'
     headshot_url String,
     created_at DateTime DEFAULT now(),
     updated_at DateTime DEFAULT now()
@@ -29,6 +33,7 @@ ORDER BY (sport, player_id);
 -- Teams table
 CREATE TABLE IF NOT EXISTS teams (
     team_id UInt16,
+    espn_team_id UInt16,  -- ESPN's team ID for syncing
     sport LowCardinality(String),
     name String,
     abbreviation String,
@@ -36,8 +41,11 @@ CREATE TABLE IF NOT EXISTS teams (
     division LowCardinality(String),     -- 'AFC East', 'Atlantic', etc.
     conference LowCardinality(String),   -- 'AFC', 'NFC', 'Eastern', 'Western'
     logo_url String,
-    created_at DateTime DEFAULT now()
-) ENGINE = ReplacingMergeTree(created_at)
+    primary_color String,   -- Hex color code
+    secondary_color String, -- Hex color code
+    created_at DateTime DEFAULT now(),
+    updated_at DateTime DEFAULT now()
+) ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (sport, team_id);
 
 -- Games table
