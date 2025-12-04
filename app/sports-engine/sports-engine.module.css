@@ -40,6 +40,27 @@
   font-size: 1rem;
 }
 
+/* Beta Tag */
+.betaTag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.75rem;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+  -webkit-text-fill-color: #fff;
+}
+
+/* Tagline */
+.tagline {
+  font-size: 0.85rem !important;
+  margin-top: 0.75rem !important;
+  color: #666 !important;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 380px 1fr;

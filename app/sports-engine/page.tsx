@@ -1404,8 +1404,11 @@ export default function SportsEnginePage() {
     <div className={styles.container}>
       <div className={styles.headerSpacer} />
       <header className={styles.header}>
-        <h1><Gi3dGlasses className={styles.titleIcon} /> Simple Sports Engine</h1>
-        <p>Test historical trends with any filter combination</p>
+        <h1>
+          <Gi3dGlasses className={styles.titleIcon} /> Simple Sports Engine
+          <span className={styles.betaTag}>BETA</span>
+        </h1>
+        <p className={styles.tagline}>Test historical trends with any filter combination. For premium subs only.</p>
       </header>
 
       <div className={styles.layout}>
