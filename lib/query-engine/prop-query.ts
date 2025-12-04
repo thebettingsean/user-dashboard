@@ -105,6 +105,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     appliedFilters.push(filters.location === 'home' ? 'Home' : 'Away')
   }
   
+  // Opponent team filter (versus team) - use box_scores.opponent_id
+  if (filters.opponent_id && filters.opponent_id > 0) {
+    boxConditions.push(`b.opponent_id = ${filters.opponent_id}`)
+    appliedFilters.push('vs Specific Opponent')
+  }
+  
   // Defense rank filter - use box_scores columns
   if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
     const rankCol = defenseStat === 'pass' ? 'opp_def_rank_pass_yards'

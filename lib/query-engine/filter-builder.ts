@@ -728,7 +728,45 @@ export function buildFilterConditions(
     }
   }
   
-  // Defense rank (for non-O/U, opponent's defense)
+  // Subject team's OWN defense rank (Team Defense)
+  if (!isOUQuery && filters.own_defense_rank && filters.own_defense_rank !== 'any') {
+    requiresRankingsJoin = true
+    // The subject team's defense ranking - use home_rankings if filtering for home, away_rankings for away
+    // For general trends (no location), this applies to the favored or perspective team
+    const rankingsAlias = isHomeTeam !== false ? homeRankingsAlias : awayRankingsAlias
+    const rankFilter = buildTeamRankingFilter(
+      filters.own_defense_rank,
+      filters.own_defense_stat || 'overall',
+      'defense',
+      rankingsAlias
+    )
+    if (rankFilter) {
+      conditions.push(rankFilter)
+      const statLabel = filters.own_defense_stat && filters.own_defense_stat !== 'overall' 
+        ? ` (${filters.own_defense_stat})` : ''
+      appliedFilters.push(`Team ${filters.own_defense_rank.replace('_', ' ')} Defense${statLabel}`)
+    }
+  }
+  
+  // Subject team's OWN offense rank (Team Offense)
+  if (!isOUQuery && filters.own_offense_rank && filters.own_offense_rank !== 'any') {
+    requiresRankingsJoin = true
+    const rankingsAlias = isHomeTeam !== false ? homeRankingsAlias : awayRankingsAlias
+    const rankFilter = buildTeamRankingFilter(
+      filters.own_offense_rank,
+      filters.own_offense_stat || 'overall',
+      'offense',
+      rankingsAlias
+    )
+    if (rankFilter) {
+      conditions.push(rankFilter)
+      const statLabel = filters.own_offense_stat && filters.own_offense_stat !== 'overall' 
+        ? ` (${filters.own_offense_stat})` : ''
+      appliedFilters.push(`Team ${filters.own_offense_rank.replace('_', ' ')} Offense${statLabel}`)
+    }
+  }
+  
+  // Opponent's defense rank (vs Defense)
   if (!isOUQuery && filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
     const defFilter = buildDefenseRankFilter(
       filters.vs_defense_rank, 

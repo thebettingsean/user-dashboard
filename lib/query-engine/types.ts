@@ -57,7 +57,16 @@ export interface QueryFilters {
   spread_range?: Range        // e.g., { min: -7, max: -3 } for favorites -3 to -7
   total_range?: Range         // e.g., { min: 45, max: 50 }
   
-  // Defense ranking filters (for spread/ML - opponent's defense)
+  // Opponent team filter (for props - versus team)
+  opponent_id?: number        // ESPN team ID for opponent filtering
+  
+  // Subject team's OWN rankings (Team Defense/Offense)
+  own_defense_rank?: DefenseRankFilter  // Team's own defense ranking
+  own_defense_stat?: RankStatType       // which stat for own defense ranking
+  own_offense_rank?: OpponentRankFilter // Team's own offense ranking  
+  own_offense_stat?: RankStatType       // which stat for own offense ranking
+  
+  // Opponent's rankings (vs Defense/Offense)
   vs_defense_rank?: DefenseRankFilter  // vs top/bottom X defense
   defense_stat?: 'pass' | 'rush' | 'receiving'  // which stat to use for defense ranking
   
@@ -213,6 +222,25 @@ export interface GameDetail {
   away_team_id?: number
   home_abbr?: string
   away_abbr?: string
+  // Full box score stats (for prop queries expanded view)
+  pass_attempts?: number
+  pass_completions?: number
+  pass_yards?: number
+  pass_tds?: number
+  interceptions?: number
+  sacks?: number
+  qb_rating?: number
+  rush_attempts?: number
+  rush_yards?: number
+  rush_tds?: number
+  rush_long?: number
+  yards_per_carry?: number
+  receptions?: number
+  receiving_yards?: number
+  receiving_tds?: number
+  receiving_long?: number
+  targets?: number
+  yards_per_reception?: number
 }
 
 export interface QueryResult {

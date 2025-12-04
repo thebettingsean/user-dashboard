@@ -215,6 +215,13 @@ export default function SportsEnginePage() {
   const [conference, setConference] = useState<string>('any')
   const [playoff, setPlayoff] = useState<string>('any')
   const [favorite, setFavorite] = useState<string>('any')
+  // Subject team's own rankings (Team Defense/Offense)
+  const [ownDefenseRank, setOwnDefenseRank] = useState<string>('any')
+  const [ownDefenseStat, setOwnDefenseStat] = useState<string>('overall')
+  const [ownOffenseRank, setOwnOffenseRank] = useState<string>('any')
+  const [ownOffenseStat, setOwnOffenseStat] = useState<string>('overall')
+  
+  // Opponent's rankings (vs Defense/Offense)
   const [defenseRank, setDefenseRank] = useState<string>('any')
   const [defenseStat, setDefenseStat] = useState<string>('pass')
   const [offenseRank, setOffenseRank] = useState<string>('any')
@@ -316,7 +323,13 @@ export default function SportsEnginePage() {
     setPlayoff('any')
     setFavorite('any')
     
-    // Defense/Offense ranks
+    // Subject team's own rankings
+    setOwnDefenseRank('any')
+    setOwnDefenseStat('overall')
+    setOwnOffenseRank('any')
+    setOwnOffenseStat('overall')
+    
+    // Opponent rankings (vs Defense/Offense)
     setDefenseRank('any')
     setDefenseStat('pass')
     setOffenseRank('any')
@@ -543,6 +556,16 @@ export default function SportsEnginePage() {
     
     // Team stats - different for O/U
     if (!isOUQuery) {
+      // Subject team's own rankings
+      if (ownDefenseRank !== 'any') {
+        const statLabel = ownDefenseStat !== 'overall' ? ` (${ownDefenseStat})` : ''
+        filters.push(`Team ${ownDefenseRank.replace('_', ' ')} Defense${statLabel}`)
+      }
+      if (ownOffenseRank !== 'any') {
+        const statLabel = ownOffenseStat !== 'overall' ? ` (${ownOffenseStat})` : ''
+        filters.push(`Team ${ownOffenseRank.replace('_', ' ')} Offense${statLabel}`)
+      }
+      // Opponent rankings
       if (defenseRank !== 'any') {
         const statLabel = defenseStat === 'overall' ? '' : ` (${defenseStat})`
         filters.push(`vs ${defenseRank.replace('_', ' ')} Defense${statLabel}`)
@@ -728,6 +751,18 @@ export default function SportsEnginePage() {
       }
     }
     
+    // Prop-specific filters
+    if (queryType === 'prop') {
+      if (selectedPlayer) {
+        filters.push(selectedPlayer.name)
+      } else if (propPosition && propPosition !== 'any') {
+        filters.push(`All ${propPosition}s`)
+      }
+      if (selectedPropVersusTeam) {
+        filters.push(`vs ${selectedPropVersusTeam.name}`)
+      }
+    }
+    
     return filters
   }
 
@@ -794,6 +829,18 @@ export default function SportsEnginePage() {
       if (!isOUQuery) {
         if (location !== 'any') filters.location = location
         if (favorite !== 'any') filters.is_favorite = favorite
+        
+        // Subject team's own rankings (Team Defense/Offense)
+        if (ownDefenseRank !== 'any') {
+          filters.own_defense_rank = ownDefenseRank
+          filters.own_defense_stat = ownDefenseStat
+        }
+        if (ownOffenseRank !== 'any') {
+          filters.own_offense_rank = ownOffenseRank
+          filters.own_offense_stat = ownOffenseStat
+        }
+        
+        // Opponent rankings (vs Defense/Offense)
         if (defenseRank !== 'any') {
           filters.vs_defense_rank = defenseRank
           filters.defense_stat = defenseStat
@@ -945,13 +992,13 @@ export default function SportsEnginePage() {
         body.stat = propStat
         body.line = parseFloat(propLine) || 0
         
-        // Versus team filter for props
+        // Versus team filter for props - goes into filters
         if (selectedPropVersusTeam) {
-          body.opponent_team_id = selectedPropVersusTeam.id
+          filters.opponent_id = selectedPropVersusTeam.id
         }
         // Include location filter if not 'any'
         if (location !== 'any') {
-          body.location = location
+          filters.location = location
         }
       }
 
@@ -2056,10 +2103,54 @@ export default function SportsEnginePage() {
               {expandedSections.teamStats ? <MdExpandLess className={styles.chevron} /> : <MdExpandMore className={styles.chevron} />}
             </div>
             
-            {/* Non-O/U: Simple vs Defense/Offense + Streak */}
+            {/* Non-O/U: Team Rankings + vs Opponent Rankings + Streak */}
             {expandedSections.teamStats && !isOUQuery && (
               <>
-                {/* Row 1: vs Defense & vs Offense */}
+                {/* Row 1: Team Defense & Team Offense (Subject team's own rankings) */}
+                <div className={styles.filterGrid}>
+                  <div>
+                    <span>Team Defense</span>
+                    <select value={ownDefenseRank} onChange={(e) => setOwnDefenseRank(e.target.value)}>
+                      <option value="any">Any</option>
+                      <option value="top_5">Top 5</option>
+                      <option value="top_10">Top 10</option>
+                      <option value="top_15">Top 15</option>
+                      <option value="bottom_15">Bottom 15</option>
+                      <option value="bottom_10">Bottom 10</option>
+                      <option value="bottom_5">Bottom 5</option>
+                    </select>
+                    {ownDefenseRank !== 'any' && (
+                      <select value={ownDefenseStat} onChange={(e) => setOwnDefenseStat(e.target.value)}>
+                        <option value="overall">Any Stat</option>
+                        <option value="pass">Pass D</option>
+                        <option value="rush">Rush D</option>
+                        <option value="points">Points Allowed</option>
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <span>Team Offense</span>
+                    <select value={ownOffenseRank} onChange={(e) => setOwnOffenseRank(e.target.value)}>
+                      <option value="any">Any</option>
+                      <option value="top_5">Top 5</option>
+                      <option value="top_10">Top 10</option>
+                      <option value="top_15">Top 15</option>
+                      <option value="bottom_15">Bottom 15</option>
+                      <option value="bottom_10">Bottom 10</option>
+                      <option value="bottom_5">Bottom 5</option>
+                    </select>
+                    {ownOffenseRank !== 'any' && (
+                      <select value={ownOffenseStat} onChange={(e) => setOwnOffenseStat(e.target.value)}>
+                        <option value="overall">Any Stat</option>
+                        <option value="points">Points</option>
+                        <option value="pass">Passing</option>
+                        <option value="rush">Rushing</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Row 2: vs Defense & vs Offense (Opponent rankings) */}
                 <div className={styles.filterGrid}>
                   <div>
                     <span>vs Defense</span>
