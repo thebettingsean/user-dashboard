@@ -12,7 +12,7 @@ import { NextResponse } from 'next/server'
  * Can run unattended - will process everything sequentially
  */
 
-export const maxDuration = 3600 // 1 hour max
+export const maxDuration = 300 // 5 minutes (Pro plan max is 800s)
 
 export async function POST() {
   const startTime = Date.now()
