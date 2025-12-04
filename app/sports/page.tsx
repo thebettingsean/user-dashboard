@@ -9,8 +9,8 @@ import { BsClipboard2Data } from "react-icons/bs"
 import { IoTicketOutline } from "react-icons/io5"
 import { GiSelect } from "react-icons/gi"
 import { PiMoneyWavy } from 'react-icons/pi'
-import { FaDice, FaLock, FaFireAlt, FaWrench } from 'react-icons/fa'
-import { FaWandMagicSparkles } from 'react-icons/fa6'
+import { FaDice, FaLock, FaFireAlt, FaHammer } from 'react-icons/fa'
+import { FaWandMagicSparkles, FaToolbox } from 'react-icons/fa6'
 import { LuArrowBigUpDash } from 'react-icons/lu'
 import { IoIosGift } from 'react-icons/io'
 import { GiReceiveMoney } from 'react-icons/gi'
@@ -2148,15 +2148,28 @@ function SportsSelectorPageContent() {
           )}
         </div>
 
-        {/* Toolkit Button */}
-        <button
-          type="button"
-          className={`${dashboardStyles.toolkitButton} ${isToolkitOpen ? dashboardStyles.toolkitActive : ''}`}
-          onClick={handleToolkitToggle}
-        >
-          <FaWrench size={16} />
-          <span>Toolkit</span>
-        </button>
+        {/* Right side buttons */}
+        <div className={dashboardStyles.topBarRight}>
+          {/* Builder Button - links to Sports Engine */}
+          <button
+            type="button"
+            className={dashboardStyles.builderButton}
+            onClick={() => router.push('/sports-engine')}
+          >
+            <FaHammer size={14} />
+            <span>Builder</span>
+          </button>
+
+          {/* Toolkit Button - icon only */}
+          <button
+            type="button"
+            className={`${dashboardStyles.toolkitButton} ${isToolkitOpen ? dashboardStyles.toolkitActive : ''}`}
+            onClick={handleToolkitToggle}
+            title="Toolkit"
+          >
+            <FaToolbox size={16} />
+          </button>
+        </div>
       </div>
 
       <nav className={`${styles.tabBar} ${isToolkitOpen ? dashboardStyles.tabBarDimmed : ''}`}>
