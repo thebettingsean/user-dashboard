@@ -1,28 +1,31 @@
 .container {
   min-height: 100vh;
   color: #e6e6e6;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
 }
 
 .headerSpacer {
-  height: 20px;
+  height: 80px;
 }
 
 .header {
-  padding: 1rem 2rem;
+  padding: 2rem;
   text-align: center;
   background: transparent;
 }
 
 .header h1 {
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin: 0 0 0.25rem;
-  color: #fff;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .titleIcon {
@@ -34,7 +37,7 @@
 .header p {
   color: #888;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 /* Beta Tag */
@@ -61,8 +64,8 @@
 .layout {
   display: grid;
   grid-template-columns: 380px 1fr;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
   max-width: 1600px;
   margin: 0 auto;
 }
@@ -78,34 +81,15 @@
   background: rgba(20, 20, 30, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.5rem;
   backdrop-filter: blur(10px);
-}
-
-/* Custom scrollbar for sticky panel */
-.panel::-webkit-scrollbar {
-  width: 6px;
-}
-
-.panel::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.panel::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 .panelHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .panelHeader h2 {
@@ -133,9 +117,9 @@
 }
 
 .panel h2 {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin: 0 0 1rem;
+  margin: 0 0 1.5rem;
   color: #fff;
   display: flex;
   align-items: center;
@@ -143,7 +127,7 @@
 }
 
 .section {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .section label {
@@ -170,13 +154,13 @@
 .teamRow input,
 .marginSection input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.65rem;
   background: rgba(15, 15, 25, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   color: #e6e6e6;
-  font-size: 0.75rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   transition: border-color 0.2s, background 0.2s;
 }
 
@@ -234,8 +218,8 @@
 /* Smaller inputs for compact areas */
 .teamRow select,
 .teamRow input {
-  padding: 0.4rem;
-  font-size: 0.65rem;
+  padding: 0.5rem;
+  font-size: 0.7rem;
 }
 
 .rangeRow input {
@@ -255,21 +239,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.4rem;
+  gap: 0.35rem;
+  padding: 0.75rem 0.5rem;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: #888;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
-  min-height: 50px;
+  min-height: 65px;
 }
 
 .btnIcon {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
 }
 
 .typeBtn:hover {
@@ -287,8 +271,8 @@
 .filterGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
 }
 
 .filterGrid:last-child {
@@ -345,10 +329,10 @@
 }
 
 .hint {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: #555;
-  margin-top: 0.2rem;
-  margin-bottom: 0.4rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
   font-style: italic;
 }
 
@@ -362,20 +346,20 @@
 .teamStatColumn {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.6rem;
+  gap: 0.5rem;
+  padding: 0.75rem;
   background: rgba(59, 130, 246, 0.05);
   border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 8px;
 }
 
 .columnHeader {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #93c5fd;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
 .statSelect {
@@ -389,26 +373,26 @@
 .actionButtons {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 1rem;
 }
 
 /* Run Button - matches Load More Button */
 .runBtn {
   flex: 1;
-  padding: 0.6rem;
+  padding: 0.75rem;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 8px;
   color: #93c5fd;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .runBtn svg {
@@ -427,16 +411,16 @@
 
 /* Clear Button - Red accent */
 .clearBtn {
-  padding: 0.6rem 0.85rem;
+  padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
   color: #fca5a5;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
 }
 
 .clearBtn:hover {
@@ -449,14 +433,14 @@
   background: rgba(20, 20, 30, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.5rem;
   backdrop-filter: blur(10px);
 }
 
 .resultsPanel h2 {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin: 0 0 1rem;
+  margin: 0 0 1.5rem;
   color: #fff;
 }
 
@@ -464,8 +448,8 @@
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 @media (max-width: 768px) {
@@ -478,7 +462,7 @@
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  padding: 0.85rem;
+  padding: 1.25rem;
   text-align: center;
 }
 
@@ -493,11 +477,11 @@
 }
 
 .statValue {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #fff;
   line-height: 1;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.5rem;
 }
 
 .statCard.hot .statValue {
@@ -525,11 +509,11 @@
 .additionalStats {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 0.75rem;
+  gap: 1.5rem;
+  padding: 1rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .additionalStats > div {
@@ -562,12 +546,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.75rem;
+  gap: 0.5rem;
+  padding: 1rem;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .filtersApplied strong {
@@ -587,20 +571,20 @@
 
 /* Games Section */
 .gamesSection {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .gamesSection h3 {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   color: #888;
 }
 
 .gamesList {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .gameRowWrapper {
@@ -610,13 +594,13 @@
 .gameRow {
   display: grid;
   grid-template-columns: 70px 1fr auto 36px;
-  gap: 0.6rem;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.6rem 0.75rem;
+  padding: 0.75rem 1rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   border-left: 3px solid transparent;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   transition: background 0.15s;
 }
 
@@ -655,7 +639,7 @@
 .gameDetailsExpanded {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 0 0 8px 8px;
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   margin-top: -4px;
   border-left: 3px solid rgba(59, 130, 246, 0.3);
   animation: slideDown 0.2s ease-out;
@@ -676,7 +660,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.3rem 0;
+  padding: 0.4rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -701,7 +685,7 @@
 .propDetailsExpanded {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 0 0 8px 8px;
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   margin-top: -4px;
   border-left: 3px solid rgba(59, 130, 246, 0.3);
   animation: slideDown 0.2s ease-out;
@@ -711,8 +695,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -734,7 +718,7 @@
 }
 
 .boxScoreSection {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .boxScoreSection:last-child {
@@ -743,25 +727,25 @@
 
 .boxScoreSectionTitle {
   color: #666;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   font-weight: 600;
 }
 
 .boxScoreGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .boxScoreStat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.1rem;
-  padding: 0.4rem;
+  gap: 0.15rem;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
 }
@@ -906,13 +890,13 @@
 /* Load More Button */
 .loadMoreBtn {
   width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.75rem;
+  padding: 0.75rem;
+  margin-top: 1rem;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 8px;
   color: #93c5fd;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
@@ -971,21 +955,21 @@
 /* ============================================ */
 
 .filterBlock {
-  padding-top: 0.75rem;
+  padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .filterBlockHeader {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #888;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .filterBlockHeader svg {
@@ -999,15 +983,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.4rem;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #888;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
   cursor: pointer;
-  padding: 0.4rem 0.5rem;
-  margin: -0.4rem -0.5rem 0.5rem;
+  padding: 0.5rem 0.6rem;
+  margin: -0.5rem -0.6rem 0.65rem;
   border-radius: 6px;
   transition: background-color 0.15s ease;
 }
@@ -1038,12 +1022,12 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #666;
   text-transform: uppercase;
-  margin-top: 0.6rem;
-  margin-bottom: 0.4rem;
+  margin-top: 0.85rem;
+  margin-bottom: 0.5rem;
 }
 
 .subHeader svg {
@@ -1055,7 +1039,7 @@
 .filterGrid3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .filterGrid3 > div {
@@ -1075,8 +1059,8 @@
 .rangeGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
 }
 
 .rangeGrid > div {
@@ -1100,18 +1084,16 @@
 .rangeRow input {
   flex: 1;
   min-width: 0;
-  padding: 0.4rem;
-  font-size: 0.7rem;
 }
 
 /* Team Row (for O/U 4-way stats) */
 .teamRow {
   display: grid;
   grid-template-columns: 50px repeat(4, 1fr);
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: end;
-  margin-bottom: 0.5rem;
-  padding: 0.4rem;
+  margin-bottom: 0.65rem;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 6px;
 }
@@ -1139,10 +1121,10 @@
 
 /* Margin Section */
 .marginSection {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .marginSection > span {
@@ -1163,7 +1145,7 @@
 .propsSection {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .propRow {
@@ -1183,13 +1165,13 @@
 .propRow select,
 .propRow input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.65rem;
   background: rgba(15, 15, 25, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   color: #e6e6e6;
-  font-size: 0.75rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   transition: border-color 0.2s, background 0.2s;
 }
 
@@ -1310,12 +1292,12 @@
 .resultHeader {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.85rem;
+  gap: 1.5rem;
+  padding: 1.25rem;
   background: rgba(59, 130, 246, 0.05);
   border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 12px;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .resultImageWrapper {
@@ -1323,16 +1305,16 @@
 }
 
 .resultPlayerImage {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   object-fit: cover;
 }
 
 .resultTeamImage {
-  width: 55px;
-  height: 55px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
 }
 
@@ -1344,17 +1326,17 @@
 }
 
 .resultRecord {
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: #fff;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
 }
 
 .resultHitRate {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #93c5fd;
-  padding: 0.3rem 0.6rem;
+  padding: 0.35rem 0.75rem;
   background: rgba(59, 130, 246, 0.15);
   border-radius: 6px;
 }
@@ -1377,10 +1359,10 @@
 /* Query Time Footer */
 .queryTimeFooter {
   text-align: right;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: #555;
-  padding-top: 0.5rem;
-  margin-top: 0.4rem;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -1392,8 +1374,8 @@
   display: grid;
   grid-template-columns: 80px 1fr auto auto;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.65rem;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
   border-left: 3px solid transparent;
@@ -1418,7 +1400,7 @@
 .propGameDate {
   font-size: 0.7rem;
   color: #666;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
 }
 
 .propMatchup {
@@ -1528,7 +1510,7 @@
   border-radius: 6px;
   color: #fff;
   font-size: 0.8rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   box-sizing: border-box;
 }
 
@@ -1564,7 +1546,7 @@
   padding: 0.6rem 0.65rem;
   cursor: pointer;
   font-size: 0.8rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   color: #ccc;
   transition: background 0.15s;
 }
@@ -1604,7 +1586,7 @@
   border-radius: 6px;
   color: #888;
   font-size: 0.8rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
