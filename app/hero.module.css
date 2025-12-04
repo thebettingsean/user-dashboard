@@ -840,6 +840,8 @@
     black 95%,
     transparent 100%
   );
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .reviewsTrack {
@@ -3035,7 +3037,9 @@
 
 @media (max-width: 768px) {
   .insiderEdgeSection {
-    padding: 2rem 1.5rem 4rem 1.5rem;
+    padding: 0.5rem 1.5rem 3rem 1.5rem;
+    margin-bottom: 1rem;
+    margin-top: -5rem;
   }
 
   .insiderEdgeContainer {
@@ -3064,6 +3068,7 @@
 
   .insiderEdgeRightColumn {
     justify-content: center;
+    margin-top: 1.25rem;
   }
 
   .insiderEdgeDeviceFrame {
@@ -3172,6 +3177,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 0.5rem;
   font-size: 0.9375rem;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
@@ -3182,10 +3188,18 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  gap: 0.5rem;
   font-size: 0.9375rem;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
   text-align: left;
+}
+
+.ticketItemBullet {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+  display: none; /* Hidden on desktop */
 }
 
 .ticketItemText {
@@ -3266,6 +3280,23 @@
     grid-template-columns: 1fr;
     gap: 0.875rem;
     max-width: 100%;
+    justify-items: center;
+  }
+
+  .ticketItemLeft,
+  .ticketItemRight {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    grid-column: 1;
+  }
+
+  .ticketItemBullet {
+    display: inline;
+  }
+
+  .ticketDotCenter {
+    display: none;
   }
 
   .ticketBottomStrip {
