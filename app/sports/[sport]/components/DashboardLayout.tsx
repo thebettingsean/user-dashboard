@@ -298,7 +298,7 @@ function formatPercentage(value: number | null | undefined) {
 
 function getPublicMarkets(game: GameSummary) {
   const pm = game.publicMoney
-  if (!pm) return [] as Array<{ id: string; label: string; bets: number | null; stake: number | null; lineMovement: number | null }>
+  if (!pm) return [] as Array<{ id: string; label: string; odds: string; bets: number | null; stake: number | null; lineMovement: number | null }>
 
   // Extract RLM stats for line movement
   const rlmStats = Array.isArray(pm.rlm_stats) ? pm.rlm_stats.filter(Boolean) : []
@@ -307,12 +307,20 @@ function getPublicMarkets(game: GameSummary) {
     return stat?.line_movement !== undefined && stat?.line_movement !== null ? toNumber(stat.line_movement) : null
   }
 
-  const markets: Array<{ id: string; label: string; bets: number | null; stake: number | null; lineMovement: number | null }> = []
+  const markets: Array<{ id: string; label: string; odds: string; bets: number | null; stake: number | null; lineMovement: number | null }> = []
+
+  // Build odds strings
+  const awayMlOdds = formatOdds(game.moneyline?.away)
+  const homeMlOdds = formatOdds(game.moneyline?.home)
+  const awaySpreadLine = game.spread?.awayLine
+  const homeSpreadLine = game.spread?.homeLine
+  const totalLine = game.totals?.number
 
   markets.push(
     {
       id: 'ml_away',
       label: `${game.awayTeam} ML`,
+      odds: awayMlOdds ? `(${awayMlOdds})` : '',
       bets: toNumber(pm.public_money_ml_away_bets_pct),
       stake: toNumber(pm.public_money_ml_away_stake_pct),
       lineMovement: getRlmForBetType('moneyline_away')
@@ -320,20 +328,23 @@ function getPublicMarkets(game: GameSummary) {
     {
       id: 'ml_home',
       label: `${game.homeTeam} ML`,
+      odds: homeMlOdds ? `(${homeMlOdds})` : '',
       bets: toNumber(pm.public_money_ml_home_bets_pct),
       stake: toNumber(pm.public_money_ml_home_stake_pct),
       lineMovement: getRlmForBetType('moneyline_home')
     },
     {
       id: 'spread_away',
-      label: `${game.awayTeam} Spread`,
+      label: `${game.awayTeam}`,
+      odds: awaySpreadLine !== null && awaySpreadLine !== undefined ? `(${awaySpreadLine > 0 ? '+' : ''}${awaySpreadLine})` : '',
       bets: toNumber(pm.public_money_spread_away_bets_pct),
       stake: toNumber(pm.public_money_spread_away_stake_pct),
       lineMovement: getRlmForBetType('spread_away')
     },
     {
       id: 'spread_home',
-      label: `${game.homeTeam} Spread`,
+      label: `${game.homeTeam}`,
+      odds: homeSpreadLine !== null && homeSpreadLine !== undefined ? `(${homeSpreadLine > 0 ? '+' : ''}${homeSpreadLine})` : '',
       bets: toNumber(pm.public_money_spread_home_bets_pct),
       stake: toNumber(pm.public_money_spread_home_stake_pct),
       lineMovement: getRlmForBetType('spread_home')
@@ -341,6 +352,7 @@ function getPublicMarkets(game: GameSummary) {
     {
       id: 'total_over',
       label: 'Over',
+      odds: totalLine !== null && totalLine !== undefined ? `(${totalLine})` : '',
       bets: toNumber(pm.public_money_over_bets_pct),
       stake: toNumber(pm.public_money_over_stake_pct),
       lineMovement: getRlmForBetType('over')
@@ -348,6 +360,7 @@ function getPublicMarkets(game: GameSummary) {
     {
       id: 'total_under',
       label: 'Under',
+      odds: totalLine !== null && totalLine !== undefined ? `(${totalLine})` : '',
       bets: toNumber(pm.public_money_under_bets_pct),
       stake: toNumber(pm.public_money_under_stake_pct),
       lineMovement: getRlmForBetType('under')
@@ -406,7 +419,7 @@ function extractTeamTrend(trends: TeamTrendsSummary, side: 'home' | 'away') {
   }
 }
 
-function formatBetTypeLabel(betType: string | undefined, game: GameSummary) {
+function formatBetTypeLabel(betType: string | undefined, game: GameSummary): string {
   if (!betType) return 'Market'
   switch (betType) {
     case 'moneyline_home':
@@ -414,15 +427,37 @@ function formatBetTypeLabel(betType: string | undefined, game: GameSummary) {
     case 'moneyline_away':
       return `${game.awayTeam} ML`
     case 'spread_home':
-      return `${game.homeTeam} Spread`
+      return `${game.homeTeam}`
     case 'spread_away':
-      return `${game.awayTeam} Spread`
+      return `${game.awayTeam}`
     case 'over':
       return 'Over'
     case 'under':
       return 'Under'
     default:
       return betType.replace(/_/g, ' ')
+  }
+}
+
+function getOddsForBetType(betType: string | undefined, game: GameSummary): string {
+  if (!betType) return ''
+  switch (betType) {
+    case 'moneyline_home':
+      return game.moneyline?.home ? `(${formatOdds(game.moneyline.home)})` : ''
+    case 'moneyline_away':
+      return game.moneyline?.away ? `(${formatOdds(game.moneyline.away)})` : ''
+    case 'spread_home':
+      const homeLine = game.spread?.homeLine
+      return homeLine !== null && homeLine !== undefined ? `(${homeLine > 0 ? '+' : ''}${homeLine})` : ''
+    case 'spread_away':
+      const awayLine = game.spread?.awayLine
+      return awayLine !== null && awayLine !== undefined ? `(${awayLine > 0 ? '+' : ''}${awayLine})` : ''
+    case 'over':
+    case 'under':
+      const total = game.totals?.number
+      return total !== null && total !== undefined ? `(${total})` : ''
+    default:
+      return ''
   }
 }
 
@@ -457,6 +492,7 @@ function getBigMoneyStats(game: GameSummary) {
       return {
         id: market.id,
         label: market.label,
+        odds: market.odds,
         bets,
         stake,
         diff
@@ -2423,7 +2459,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                         {mostMarkets.map((market) => (
                           <div key={market.id} className={styles.publicMetric}>
                             <div className={styles.publicMetricLabel}>
-                              {market.label}
+                              {market.label} {market.odds && <span className={styles.oddsLabel}>{market.odds}</span>}
                               {market.lineMovement !== null && (
                                 <span className={styles.lineMovementBadge}>
                                   {market.lineMovement > 0 ? '-' : '+'}{Math.abs(market.lineMovement).toFixed(1)}
@@ -2450,11 +2486,12 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                         {rlmStats.map((stat, index) => {
                           const rlmValue = toNumber(stat.percentage || (stat as any).percentage2)
                           const lineMove = toNumber(stat.line_movement)
+                          const betTypeOdds = getOddsForBetType(stat.bet_type, game)
                           
                           return (
                             <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
                               <div className={styles.publicMetricLabel}>
-                                {formatBetTypeLabel(stat.bet_type as string | undefined, game)}
+                                {formatBetTypeLabel(stat.bet_type as string | undefined, game)} {betTypeOdds && <span className={styles.oddsLabel}>{betTypeOdds}</span>}
                                 {lineMove !== null && (
                                   <span className={styles.lineMovementBadge}>
                                     {lineMove > 0 ? '-' : '+'}{Math.abs(lineMove).toFixed(1)}
@@ -2462,7 +2499,8 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                                 )}
                               </div>
                               <div className={styles.publicMetricValues}>
-                                <span>{Math.round(rlmValue ?? 0)}% value</span>
+                                <span>{formatPercentage(rlmValue)} bets</span>
+                                <span className={styles.publicStake}>{formatPercentage(100 - (rlmValue ?? 0))} money</span>
                               </div>
                               <div className={styles.publicMetricBar}>
                                 <div
@@ -2480,7 +2518,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                       <div className={styles.publicMetrics}>
                         {bigMoney.slice(0, 3).map((stat) => (
                           <div key={`${game.id}-big-${stat.id}`} className={styles.publicMetric}>
-                            <div className={styles.publicMetricLabel}>{stat.label}</div>
+                            <div className={styles.publicMetricLabel}>
+                              {stat.label} {stat.odds && <span className={styles.oddsLabel}>{stat.odds}</span>}
+                            </div>
                             <div className={styles.publicMetricValues}>
                               <span>{formatPercentage(stat.bets)} bets</span>
                               <span className={styles.publicStake}>{formatPercentage(stat.stake)} money</span>

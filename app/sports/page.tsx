@@ -175,15 +175,41 @@ function formatBetTypeLabel(betType: string | undefined, awayTeam: string, homeT
     case 'moneyline_away':
       return `${awayTeam} ML`
     case 'spread_home':
-      return `${homeTeam} Spread`
+      return `${homeTeam}`
     case 'spread_away':
-      return `${awayTeam} Spread`
+      return `${awayTeam}`
     case 'over':
       return 'Over'
     case 'under':
       return 'Under'
     default:
       return betType.replace(/_/g, ' ')
+  }
+}
+
+function getOddsForBetType(betType: string | undefined, pm: PublicMoneySummary | null): string {
+  if (!betType || !pm) return ''
+  const formatOddsValue = (odds: number | null | undefined): string => {
+    if (odds === null || odds === undefined) return ''
+    return odds > 0 ? `+${odds}` : `${odds}`
+  }
+  
+  switch (betType) {
+    case 'moneyline_home':
+      return pm.home_team_ml ? `(${formatOddsValue(pm.home_team_ml)})` : ''
+    case 'moneyline_away':
+      return pm.away_team_ml ? `(${formatOddsValue(pm.away_team_ml)})` : ''
+    case 'spread_home':
+      const homeLine = pm.home_team_point_spread
+      return homeLine !== null && homeLine !== undefined ? `(${homeLine > 0 ? '+' : ''}${homeLine})` : ''
+    case 'spread_away':
+      const awayLine = pm.away_team_point_spread
+      return awayLine !== null && awayLine !== undefined ? `(${awayLine > 0 ? '+' : ''}${awayLine})` : ''
+    case 'over':
+    case 'under':
+      return ''
+    default:
+      return ''
   }
 }
 
@@ -765,10 +791,17 @@ function SportsSelectorPageContent() {
       return stat?.line_movement !== undefined && stat?.line_movement !== null ? toNumber(stat.line_movement) : null
     }
 
+    // Build odds strings from publicMoney data
+    const awayMlOdds = pm.away_team_ml ? formatOdds(pm.away_team_ml) : ''
+    const homeMlOdds = pm.home_team_ml ? formatOdds(pm.home_team_ml) : ''
+    const awaySpread = pm.away_team_point_spread
+    const homeSpread = pm.home_team_point_spread
+
     const markets = [
       {
         id: 'ml_away',
         label: `${game.awayTeam} ML`,
+        odds: awayMlOdds ? `(${awayMlOdds})` : '',
         bets: toNumber(pm.public_money_ml_away_bets_pct),
         stake: toNumber(pm.public_money_ml_away_stake_pct),
         lineMovement: getRlmForBetType('moneyline_away')
@@ -776,20 +809,23 @@ function SportsSelectorPageContent() {
       {
         id: 'ml_home',
         label: `${game.homeTeam} ML`,
+        odds: homeMlOdds ? `(${homeMlOdds})` : '',
         bets: toNumber(pm.public_money_ml_home_bets_pct),
         stake: toNumber(pm.public_money_ml_home_stake_pct),
         lineMovement: getRlmForBetType('moneyline_home')
       },
       {
         id: 'spread_away',
-        label: `${game.awayTeam} Spread`,
+        label: `${game.awayTeam}`,
+        odds: awaySpread !== null && awaySpread !== undefined ? `(${awaySpread > 0 ? '+' : ''}${awaySpread})` : '',
         bets: toNumber(pm.public_money_spread_away_bets_pct),
         stake: toNumber(pm.public_money_spread_away_stake_pct),
         lineMovement: getRlmForBetType('spread_away')
       },
       {
         id: 'spread_home',
-        label: `${game.homeTeam} Spread`,
+        label: `${game.homeTeam}`,
+        odds: homeSpread !== null && homeSpread !== undefined ? `(${homeSpread > 0 ? '+' : ''}${homeSpread})` : '',
         bets: toNumber(pm.public_money_spread_home_bets_pct),
         stake: toNumber(pm.public_money_spread_home_stake_pct),
         lineMovement: getRlmForBetType('spread_home')
@@ -797,6 +833,7 @@ function SportsSelectorPageContent() {
       {
         id: 'total_over',
         label: 'Over',
+        odds: '',
         bets: toNumber(pm.public_money_over_bets_pct),
         stake: toNumber(pm.public_money_over_stake_pct),
         lineMovement: getRlmForBetType('over')
@@ -804,6 +841,7 @@ function SportsSelectorPageContent() {
       {
         id: 'total_under',
         label: 'Under',
+        odds: '',
         bets: toNumber(pm.public_money_under_bets_pct),
         stake: toNumber(pm.public_money_under_stake_pct),
         lineMovement: getRlmForBetType('under')
@@ -833,6 +871,7 @@ function SportsSelectorPageContent() {
         return {
           id: market.id,
           label: market.label,
+          odds: market.odds,
           bets,
           stake,
           diff
@@ -1717,7 +1756,7 @@ function SportsSelectorPageContent() {
                       alignItems: 'center',
                       gap: '8px'
                     }}>
-                      {market.label}
+                      {market.label} {market.odds && <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(148, 163, 184, 0.9)' }}>{market.odds}</span>}
                       {market.lineMovement !== null && (
                         <span style={{
                           fontSize: '10px',
@@ -1766,6 +1805,7 @@ function SportsSelectorPageContent() {
                 {rlmStats.slice(0, 3).map((stat, index) => {
                   const rlmValue = toNumber(stat.percentage || (stat as any).percentage2)
                   const lineMove = toNumber(stat.line_movement)
+                  const betTypeOdds = getOddsForBetType(stat.bet_type, pm)
                   
                   return (
                     <div key={`${game.id}-rlm-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1777,7 +1817,7 @@ function SportsSelectorPageContent() {
                         alignItems: 'center',
                         gap: '8px'
                       }}>
-                        {formatBetTypeLabel(stat.bet_type as string | undefined, game.awayTeam, game.homeTeam)}
+                        {formatBetTypeLabel(stat.bet_type as string | undefined, game.awayTeam, game.homeTeam)} {betTypeOdds && <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(148, 163, 184, 0.9)' }}>{betTypeOdds}</span>}
                         {lineMove !== null && (
                           <span style={{
                             fontSize: '10px',
@@ -1797,7 +1837,8 @@ function SportsSelectorPageContent() {
                         fontSize: '11px',
                         color: 'rgba(226, 232, 240, 0.7)'
                       }}>
-                        <span>{Math.round(rlmValue ?? 0)}% value</span>
+                        <span>{formatPercentage(rlmValue)} bets</span>
+                        <span style={{ color: 'rgba(129, 231, 255, 0.95)' }}>{formatPercentage(100 - (rlmValue ?? 0))} money</span>
                       </div>
                       <div style={{
                         height: '6px',
@@ -1824,9 +1865,12 @@ function SportsSelectorPageContent() {
                     <div style={{
                       fontSize: '12px',
                       fontWeight: '600',
-                      color: 'rgba(226, 232, 240, 0.85)'
+                      color: 'rgba(226, 232, 240, 0.85)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
-                      {stat.label}
+                      {stat.label} {stat.odds && <span style={{ fontSize: '11px', fontWeight: '500', color: 'rgba(148, 163, 184, 0.9)' }}>{stat.odds}</span>}
                     </div>
                     <div style={{
                       display: 'flex',

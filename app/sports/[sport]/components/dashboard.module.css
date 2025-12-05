@@ -1134,6 +1134,12 @@
   gap: 8px;
 }
 
+.oddsLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.9);
+}
+
 .lineMovementBadge {
   display: inline-block;
   padding: 2px 6px;
