@@ -479,18 +479,43 @@ async function processCompletedGames(): Promise<SyncResult> {
     
     console.log(`[NFL Sync] Found ${gamesNeedingSync.length} games needing sync`)
     
-    // Step 2: Update game scores and derived fields
+    let oddsFetched = 0
+    
+    // Step 2: Update game scores, odds (if missing), and derived fields
     for (const game of gamesNeedingSync) {
       if (game.needsScoreUpdate) {
         try {
-          // First check if game exists
+          // First check if game exists and get current odds
           const gameExists = await clickhouseQuery(`
             SELECT game_id, spread_close, total_close FROM nfl_games WHERE game_id = ${game.gameId}
           `)
           
           if (gameExists.data[0]) {
-            const spread = gameExists.data[0].spread_close || 0
-            const total = gameExists.data[0].total_close || 0
+            let spread = gameExists.data[0].spread_close || 0
+            let total = gameExists.data[0].total_close || 0
+            
+            // SELF-HEALING: If odds are missing, fetch from ESPN
+            if (spread === 0 || total === 0) {
+              try {
+                const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.gameId}`)
+                if (summaryResponse.ok) {
+                  const summaryData = await summaryResponse.json()
+                  const pickcenter = summaryData.pickcenter || []
+                  
+                  if (pickcenter.length > 0) {
+                    // Get odds from first provider (usually DraftKings or ESPN BET)
+                    const odds = pickcenter[0]
+                    spread = parseFloat(odds.spread) || 0
+                    total = parseFloat(odds.overUnder) || 0
+                    oddsFetched++
+                    console.log(`[NFL Sync] Fetched missing odds for game ${game.gameId}: spread=${spread}, total=${total}`)
+                  }
+                }
+              } catch (oddsErr) {
+                console.error(`[NFL Sync] Failed to fetch odds for game ${game.gameId}:`, oddsErr)
+              }
+            }
+            
             const totalPoints = game.homeScore + game.awayScore
             const margin = game.homeScore - game.awayScore
             
@@ -507,6 +532,8 @@ async function processCompletedGames(): Promise<SyncResult> {
                 home_score = ${game.homeScore},
                 away_score = ${game.awayScore},
                 total_points = ${totalPoints},
+                spread_close = ${spread},
+                total_close = ${total},
                 home_won = ${homeWon},
                 home_covered = ${homeCovered},
                 spread_push = ${spreadPush},
@@ -592,13 +619,82 @@ async function processCompletedGames(): Promise<SyncResult> {
       }
     }
     
+    // Step 4: Fix any games in DB with scores but missing odds (self-healing)
+    let gamesFixedOdds = 0
+    try {
+      const gamesMissingOdds = await clickhouseQuery(`
+        SELECT game_id FROM nfl_games 
+        WHERE home_score > 0 
+          AND (spread_close = 0 OR total_close = 0)
+          AND season >= 2024
+        LIMIT 10
+      `)
+      
+      for (const game of gamesMissingOdds.data) {
+        try {
+          const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.game_id}`)
+          if (summaryResponse.ok) {
+            const summaryData = await summaryResponse.json()
+            const pickcenter = summaryData.pickcenter || []
+            
+            if (pickcenter.length > 0) {
+              const odds = pickcenter[0]
+              const spread = parseFloat(odds.spread) || 0
+              const total = parseFloat(odds.overUnder) || 0
+              
+              if (spread !== 0 || total !== 0) {
+                // Get scores to recalculate derived fields
+                const gameData = await clickhouseQuery(`
+                  SELECT home_score, away_score FROM nfl_games WHERE game_id = ${game.game_id}
+                `)
+                
+                if (gameData.data[0]) {
+                  const homeScore = gameData.data[0].home_score
+                  const awayScore = gameData.data[0].away_score
+                  const totalPoints = homeScore + awayScore
+                  const margin = homeScore - awayScore
+                  
+                  const homeWon = margin > 0 ? 1 : 0
+                  const homeCovered = spread !== 0 ? (margin + spread > 0 ? 1 : 0) : 0
+                  const spreadPush = spread !== 0 && margin + spread === 0 ? 1 : 0
+                  const wentOver = total > 0 && totalPoints > total ? 1 : 0
+                  const wentUnder = total > 0 && totalPoints < total ? 1 : 0
+                  const totalPush = total > 0 && totalPoints === total ? 1 : 0
+                  
+                  await clickhouseCommand(`
+                    ALTER TABLE nfl_games UPDATE
+                      spread_close = ${spread},
+                      total_close = ${total},
+                      home_covered = ${homeCovered},
+                      spread_push = ${spreadPush},
+                      went_over = ${wentOver},
+                      went_under = ${wentUnder},
+                      total_push = ${totalPush}
+                    WHERE game_id = ${game.game_id}
+                  `)
+                  gamesFixedOdds++
+                  console.log(`[NFL Sync] Fixed missing odds for game ${game.game_id}: spread=${spread}, total=${total}`)
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error(`[NFL Sync] Failed to fix odds for game ${game.game_id}:`, e)
+        }
+      }
+    } catch (e) {
+      console.error('[NFL Sync] Error in self-healing odds check:', e)
+    }
+    
     return {
       task: 'process_completed',
       success: true,
       details: { 
         games_checked: events.filter((e: any) => e.status?.type?.state === 'post').length,
         games_needing_sync: gamesNeedingSync.length,
-        games_updated: gamesUpdated, 
+        games_updated: gamesUpdated,
+        odds_fetched_from_espn: oddsFetched,
+        games_fixed_missing_odds: gamesFixedOdds,
         box_scores_added: boxScoresAdded 
       }
     }
