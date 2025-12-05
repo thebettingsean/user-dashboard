@@ -264,6 +264,45 @@ export function buildDefenseRankFilter(
 }
 
 /**
+ * Build opponent offense rank filter
+ * Uses nfl_team_rankings table for opponent's offensive ranking
+ * @param rankingsAlias - alias for opponent's rankings table (e.g., 'opp_rank')
+ */
+export function buildVsOffenseRankFilter(
+  rank: OpponentRankFilter | undefined,
+  stat: 'points' | 'total_yards' | 'passing' | 'rushing' | 'overall' = 'overall',
+  rankingsAlias: string
+): string | null {
+  if (!rank || rank === 'any') return null
+  
+  // Map stat to offensive ranking column
+  const column = stat === 'points' ? 'rank_points_per_game'
+    : stat === 'passing' ? 'rank_passing_yards_per_game'
+    : stat === 'rushing' ? 'rank_rushing_yards_per_game'
+    : stat === 'total_yards' ? 'rank_total_yards_per_game'
+    : 'rank_total_yards_per_game' // overall defaults to total yards
+  
+  const fullColumn = `${rankingsAlias}.${column}`
+  
+  switch (rank) {
+    case 'top_5':
+      return `${fullColumn} <= 5 AND ${fullColumn} > 0`
+    case 'top_10':
+      return `${fullColumn} <= 10 AND ${fullColumn} > 0`
+    case 'top_15':
+      return `${fullColumn} <= 15 AND ${fullColumn} > 0`
+    case 'bottom_5':
+      return `${fullColumn} >= 28 AND ${fullColumn} <= 32`
+    case 'bottom_10':
+      return `${fullColumn} >= 23 AND ${fullColumn} <= 32`
+    case 'bottom_15':
+      return `${fullColumn} >= 18 AND ${fullColumn} <= 32`
+    default:
+      return null
+  }
+}
+
+/**
  * Build team result filter (won/lost)
  */
 export function buildTeamResultFilter(
@@ -778,6 +817,25 @@ export function buildFilterConditions(
     if (defFilter) {
       conditions.push(defFilter)
       appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} Defense`)
+    }
+  }
+  
+  // Opponent's offense rank (vs Offense) - requires opponent rankings join
+  if (!isOUQuery && filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
+    requiresRankingsJoin = true
+    // Use away rankings alias for opponent (when subject is home) or home rankings (when subject is away)
+    // For general trends, use the opposite of the subject team
+    const oppRankingsAlias = isHomeTeam !== false ? awayRankingsAlias : homeRankingsAlias
+    const offFilter = buildVsOffenseRankFilter(
+      filters.vs_offense_rank,
+      (filters.offense_stat as 'points' | 'total_yards' | 'passing' | 'rushing' | 'overall') || 'overall',
+      oppRankingsAlias
+    )
+    if (offFilter) {
+      conditions.push(offFilter)
+      const statLabel = filters.offense_stat && filters.offense_stat !== 'overall' 
+        ? ` (${filters.offense_stat})` : ''
+      appliedFilters.push(`vs ${filters.vs_offense_rank.replace('_', ' ')} Offense${statLabel}`)
     }
   }
   

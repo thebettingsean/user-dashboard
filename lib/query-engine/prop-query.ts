@@ -333,17 +333,67 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     appliedFilters.push(`ML Movement ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}`)
   }
   
+  // Track if we need opponent rankings join
+  let needsOppRankingsJoin = false
+  const oppRankConditions: string[] = []
+  
+  // vs Offense filter - opponent's offensive ranking
+  if (filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
+    needsOppRankingsJoin = true
+    const stat = (filters.offense_stat as string) || 'overall'
+    const column = stat === 'points' ? 'rank_points_per_game'
+      : stat === 'passing' ? 'rank_passing_yards_per_game'
+      : stat === 'rushing' ? 'rank_rushing_yards_per_game'
+      : stat === 'total_yards' ? 'rank_total_yards_per_game'
+      : 'rank_total_yards_per_game'
+    
+    switch (filters.vs_offense_rank) {
+      case 'top_5':
+        oppRankConditions.push(`opp_rank.${column} <= 5 AND opp_rank.${column} > 0`)
+        appliedFilters.push('vs Top 5 Offense')
+        break
+      case 'top_10':
+        oppRankConditions.push(`opp_rank.${column} <= 10 AND opp_rank.${column} > 0`)
+        appliedFilters.push('vs Top 10 Offense')
+        break
+      case 'top_15':
+        oppRankConditions.push(`opp_rank.${column} <= 15 AND opp_rank.${column} > 0`)
+        appliedFilters.push('vs Top 15 Offense')
+        break
+      case 'bottom_5':
+        oppRankConditions.push(`opp_rank.${column} >= 28 AND opp_rank.${column} <= 32`)
+        appliedFilters.push('vs Bottom 5 Offense')
+        break
+      case 'bottom_10':
+        oppRankConditions.push(`opp_rank.${column} >= 23 AND opp_rank.${column} <= 32`)
+        appliedFilters.push('vs Bottom 10 Offense')
+        break
+      case 'bottom_15':
+        oppRankConditions.push(`opp_rank.${column} >= 18 AND opp_rank.${column} <= 32`)
+        appliedFilters.push('vs Bottom 15 Offense')
+        break
+    }
+  }
+  
   // Build the query
   // Join box_scores with games and players for complete filtering
   // Filter out anomalous values (data overflow issues - 65535 is UInt16 max)
   const allConditions = [
     ...boxConditions,
     ...gameConditions,
+    ...oppRankConditions,
     // Exclude obvious data errors
     'b.pass_yards < 1000',
     'b.rush_yards < 500',
     'b.receiving_yards < 500'
   ]
+  
+  // Build opponent rankings JOIN clause if needed
+  const oppRankingsJoin = needsOppRankingsJoin ? `
+    LEFT JOIN nfl_team_rankings opp_rank ON b.opponent_id = opp_rank.team_id 
+      AND g.season = opp_rank.season 
+      AND g.week = opp_rank.week + 1
+  ` : ''
   
   // Add book line conditions if using book lines
   if (use_book_lines && propType) {
@@ -417,6 +467,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
     JOIN nfl_prop_lines pl ON p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)
+    ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
     ${limitClause}
@@ -462,6 +513,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
+    ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
     ${limitClause}
