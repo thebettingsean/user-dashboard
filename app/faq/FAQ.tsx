@@ -25,7 +25,7 @@ export default function FAQ() {
       items: [
         {
           question: 'What are the different subscription packages?',
-          answer: 'We offer three main subscription packages: Insider Weekly ($29/week), Insider Monthly ($99/month), and Insider Seasonal ($299/6 months). All packages include full dashboard access with unlimited AI game scripts, all Insider best bets, historical betting data, and public betting data. Each package starts with a $1, 3-day trial period.'
+          answer: 'We offer two main subscription packages: Insider Monthly ($99/month) and Insider Seasonal ($299/6 months). All packages include full dashboard access with unlimited AI game scripts, all Insider best bets, historical betting data, and public betting data. Each package starts with a $1, 3-day trial period.'
         },
         {
           question: 'How do I manage my subscription?',
@@ -111,7 +111,7 @@ export default function FAQ() {
         },
         {
           question: 'Can I upgrade or downgrade my subscription?',
-          answer: 'Yes, you can upgrade your subscription at any time from the "Manage Subscription" page. Upgrades take effect immediately, and you\'ll be charged the prorated difference. Currently, we only offer upgrades to longer-term plans (weekly to monthly, monthly to 6-month).'
+          answer: 'Yes, you can upgrade your subscription at any time from the "Manage Subscription" page. Upgrades take effect immediately, and you\'ll be charged the prorated difference. Currently, we only offer upgrades to longer-term plans (monthly to 6-month).'
         },
         {
           question: 'What happens if I forget to cancel during the trial?',
@@ -119,7 +119,7 @@ export default function FAQ() {
         },
         {
           question: 'Do subscriptions auto-renew?',
-          answer: 'Yes, all subscriptions automatically renew at the end of each billing period (weekly, monthly, or 6-month) unless you cancel. You can cancel anytime from your dashboard, and your access will continue until the end of your current paid period.'
+          answer: 'Yes, all subscriptions automatically renew at the end of each billing period (monthly or 6-month) unless you cancel. You can cancel anytime from your dashboard, and your access will continue until the end of your current paid period.'
         }
       ]
     }

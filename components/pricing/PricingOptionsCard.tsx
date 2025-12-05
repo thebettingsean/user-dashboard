@@ -9,13 +9,6 @@ const CREDIT_PACK_PRICE = 'price_1SPoAC07WIhZOuSIkWA98Qwy'
 
 const subscriptionPlans = [
   {
-    id: 'weekly',
-    price: '$29',
-    period: 'Weekly Sub',
-    priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU',
-    paymentLink: 'https://buy.stripe.com/cNi14fbn1ghhbnR6zoenS0i'
-  },
-  {
     id: 'monthly',
     price: '$99',
     period: 'Monthly Sub',
@@ -42,7 +35,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
   const [showInfoModal, setShowInfoModal] = useState(false)
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null)
 
-  const isSubscriptionSelected = ['weekly', 'monthly', '6month'].includes(selectedPlan || '')
+  const isSubscriptionSelected = ['monthly', '6month'].includes(selectedPlan || '')
 
   const handleContinue = async () => {
     if (!selectedPlan) return
@@ -408,7 +401,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                           color: 'rgba(255, 255, 255, 0.5)'
                         }}
                       >
-                        / {plan.id === 'weekly' ? 'weekly' : plan.id === 'monthly' ? 'monthly' : '6-month'}
+                        / {plan.id === 'monthly' ? 'monthly' : '6-month'}
                       </span>
                     </div>
                     <div
@@ -490,9 +483,7 @@ export default function PricingOptionsCard({ variant = 'default' }: PricingOptio
                   $1 FOR 3 DAYS
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 400 }}>
-                  (then {selectedPlan === 'weekly' 
-                    ? '$29/week' 
-                    : selectedPlan === 'monthly' 
+                  (then {selectedPlan === 'monthly' 
                     ? '$99/month' 
                     : '$299/6-months'})
                 </span>

@@ -1183,12 +1183,6 @@ export default function HeroNewPage() {
 function PricingSection() {
   const unlimitedPlans = [
     {
-      label: 'week',
-      price: '$29',
-      cadence: '/ week',
-      checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoo07WIhZOuSIJB8OGgVU?trial=true'
-    },
-    {
       label: 'month',
       price: '$99',
       cadence: '/ month',

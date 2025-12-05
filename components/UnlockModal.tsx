@@ -17,13 +17,6 @@ export default function UnlockModal({ isOpen, onClose }: UnlockModalProps) {
 
   const subscriptionPlans = [
     { 
-      id: 'weekly', 
-      price: '$29', 
-      period: '/week',
-      priceId: 'price_1SIZoo07WIhZOuSIJB8OGgVU',
-      checkoutUrl: 'https://stripe.thebettinginsider.com/checkout/price_1SIZoo07WIhZOuSIJB8OGgVU'
-    },
-    { 
       id: 'monthly', 
       price: '$99', 
       period: '/month',
@@ -39,7 +32,7 @@ export default function UnlockModal({ isOpen, onClose }: UnlockModalProps) {
     }
   ]
 
-  const isSubscriptionSelected = ['weekly', 'monthly', '6month'].includes(selectedPlan || '')
+  const isSubscriptionSelected = ['monthly', '6month'].includes(selectedPlan || '')
 
   const handleContinue = async () => {
     if (!selectedPlan) return
@@ -211,8 +204,6 @@ export default function UnlockModal({ isOpen, onClose }: UnlockModalProps) {
           >
             {selectedPlan === 'credits' 
               ? 'Continue for $10' 
-              : selectedPlan === 'weekly'
-              ? 'Continue for $29'
               : selectedPlan === 'monthly'
               ? 'Continue for $99'
               : selectedPlan === '6month'
