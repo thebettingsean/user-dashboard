@@ -1248,10 +1248,10 @@ export default function SportsEnginePage() {
             <span className={game.hit ? styles.statHit : styles.statMiss}>
               {game.actual_value}
             </span>
-            {/* Show book line if using book lines mode */}
+            {/* Show book line with bookmaker name if using book lines mode */}
             {game.book_line !== undefined && (
               <span className={styles.bookLineValue}>
-                Line: {game.book_line}
+                {formatBookmaker(game.bookmaker)}: o{game.book_line}
               </span>
             )}
             {game.book_line === undefined && (
@@ -1285,6 +1285,25 @@ export default function SportsEnginePage() {
     } catch {
       return dateStr.split('T')[0]
     }
+  }
+  
+  // Helper to format bookmaker name nicely
+  const formatBookmaker = (bookmaker?: string): string => {
+    if (!bookmaker) return 'Book'
+    const formatMap: Record<string, string> = {
+      'fanduel': 'FanDuel',
+      'draftkings': 'DraftKings',
+      'betmgm': 'BetMGM',
+      'williamhill_us': 'Caesars',
+      'betrivers': 'BetRivers',
+      'fanatics': 'Fanatics',
+      'bovada': 'Bovada',
+      'pointsbetus': 'PointsBet',
+      'barstool': 'Barstool',
+      'betonlineag': 'BetOnline',
+      'unibet_us': 'Unibet',
+    }
+    return formatMap[bookmaker.toLowerCase()] || bookmaker
   }
 
   // Toggle expanded game details

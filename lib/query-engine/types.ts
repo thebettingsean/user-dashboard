@@ -206,6 +206,7 @@ export interface GameDetail {
   actual_value: number
   line?: number               // The line used (either input line or book line)
   book_line?: number          // Actual sportsbook line (from nfl_prop_lines)
+  bookmaker?: string          // Sportsbook name (e.g., 'fanduel', 'draftkings')
   hit: boolean
   differential: number        // actual - line (cover margin)
   spread?: number             // from subject team's perspective

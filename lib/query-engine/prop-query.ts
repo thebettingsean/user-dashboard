@@ -253,6 +253,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.is_home,
       ${statColumn} as stat_value,
       pl.line as book_line,
+      pl.bookmaker as bookmaker,
       -- Full box score stats for expanded view
       b.pass_attempts,
       b.pass_completions,
@@ -420,6 +421,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       actual_value: value,
       line: effectiveLine,
       book_line: bookLine !== null ? bookLine : undefined,
+      bookmaker: row.bookmaker || undefined,
       hit,
       differential: diff,
       spread: row.spread_close,
