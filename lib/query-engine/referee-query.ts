@@ -82,7 +82,7 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
   const sql = `
     SELECT 
       g.game_id,
-      g.game_date,
+      toString(g.game_date) as game_date,
       g.home_team_id,
       g.away_team_id,
       g.home_score,

@@ -194,7 +194,8 @@ export default function SportsEnginePage() {
   const [error, setError] = useState<string | null>(null)
   const [teamLogos, setTeamLogos] = useState<Record<number, string>>({})
   const [visibleGames, setVisibleGames] = useState(10)
-  const [expandedGameId, setExpandedGameId] = useState<number | null>(null)
+  // Use string to allow composite keys like "gameId_playerId" for props
+  const [expandedGameId, setExpandedGameId] = useState<string | null>(null)
   
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
@@ -1188,6 +1189,33 @@ export default function SportsEnginePage() {
             </div>
           </div>
         )}
+        
+        {/* Book Lines section - show when book line data is available */}
+        {game.book_line !== undefined && (
+          <div className={styles.boxScoreSection}>
+            <div className={styles.boxScoreSectionTitle}>BOOK LINE</div>
+            <div className={styles.boxScoreGrid}>
+              <div className={styles.boxScoreStat}>
+                <span className={styles.boxScoreValue}>{formatBookmaker(game.bookmaker)}</span>
+                <span className={styles.boxScoreLabel}>BOOK</span>
+              </div>
+              <div className={`${styles.boxScoreStat} ${game.hit ? styles.boxScoreHighlight : ''}`}>
+                <span className={styles.boxScoreValue}>o{game.book_line}</span>
+                <span className={styles.boxScoreLabel}>LINE</span>
+              </div>
+              <div className={styles.boxScoreStat}>
+                <span className={styles.boxScoreValue}>{game.actual_value}</span>
+                <span className={styles.boxScoreLabel}>ACTUAL</span>
+              </div>
+              <div className={styles.boxScoreStat}>
+                <span className={`${styles.boxScoreValue} ${game.differential >= 0 ? styles.positive : styles.negative}`}>
+                  {game.differential >= 0 ? '+' : ''}{game.differential}
+                </span>
+                <span className={styles.boxScoreLabel}>DIFF</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -1218,13 +1246,15 @@ export default function SportsEnginePage() {
       (selectedPlayer?.headshot_url || `https://a.espncdn.com/i/headshots/nfl/players/full/${game.player_id || selectedPlayer?.espn_player_id}.png`)
     const playerName = game.player_name || selectedPlayer?.name
     
-    const isExpanded = expandedGameId === game.game_id
+    // Use composite key for props to handle position-based queries where multiple players share same game_id
+    const gameKey = `${game.game_id}_${game.player_id || index}`
+    const isExpanded = expandedGameId === gameKey
     
     return (
-      <div key={index} className={styles.gameRowWrapper}>
+      <div key={gameKey} className={styles.gameRowWrapper}>
         <div 
           className={`${styles.propGameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
-          onClick={() => toggleGameExpanded(game.game_id)}
+          onClick={() => toggleGameExpanded(gameKey)}
         >
           <span className={styles.propGameDate}>{formatDate(game.game_date)}</span>
           <div className={styles.propMatchup}>
@@ -1271,19 +1301,50 @@ export default function SportsEnginePage() {
     )
   }
 
-  // Helper to format date to EST
+  // Helper to format date to EST - handles various input formats
   const formatDateEST = (dateStr: string) => {
     if (!dateStr) return ''
     try {
-      const date = new Date(dateStr.replace(' ', 'T') + (dateStr.includes('Z') ? '' : 'Z'))
+      // Handle different date formats from ClickHouse
+      let dateToUse = dateStr
+      
+      // If it's just a date (YYYY-MM-DD), add time component
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        dateToUse = `${dateStr}T12:00:00Z` // Use noon to avoid timezone edge cases
+      } 
+      // If it has space instead of T (e.g., "2024-12-05 01:15:00")
+      else if (dateStr.includes(' ') && !dateStr.includes('T')) {
+        dateToUse = dateStr.replace(' ', 'T') + 'Z'
+      }
+      // If it doesn't have Z, add it
+      else if (!dateStr.includes('Z') && dateStr.includes('T')) {
+        dateToUse = dateStr + 'Z'
+      }
+      
+      const date = new Date(dateToUse)
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        // Fallback: try to extract just the date part
+        const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/)
+        if (match) {
+          return `${parseInt(match[2])}/${parseInt(match[3])}`
+        }
+        return dateStr
+      }
+      
       return date.toLocaleDateString('en-US', { 
         timeZone: 'America/New_York',
         month: 'numeric',
-        day: 'numeric',
-        year: '2-digit'
+        day: 'numeric'
       })
     } catch {
-      return dateStr.split('T')[0]
+      // Fallback: try to extract MM/DD from the string
+      const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/)
+      if (match) {
+        return `${parseInt(match[2])}/${parseInt(match[3])}`
+      }
+      return dateStr
     }
   }
   
@@ -1306,9 +1367,9 @@ export default function SportsEnginePage() {
     return formatMap[bookmaker.toLowerCase()] || bookmaker
   }
 
-  // Toggle expanded game details
-  const toggleGameExpanded = (gameId: number) => {
-    setExpandedGameId(prev => prev === gameId ? null : gameId)
+  // Toggle expanded game details - supports composite keys for props
+  const toggleGameExpanded = (gameKey: string) => {
+    setExpandedGameId(prev => prev === gameKey ? null : gameKey)
   }
   
   // Toggle collapsible filter sections
@@ -1369,15 +1430,16 @@ export default function SportsEnginePage() {
     const homeScore = game.home_score || 0
     const awayScore = game.away_score || 0
     
-    const isExpanded = expandedGameId === game.game_id
+    const gameKey = String(game.game_id)
+    const isExpanded = expandedGameId === gameKey
     
     if (betType === 'moneyline') {
       // Moneyline: Show both teams + final score (logos only, no abbr)
       return (
-        <div key={index} className={styles.gameRowWrapper}>
+        <div key={gameKey} className={styles.gameRowWrapper}>
           <div 
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
-            onClick={() => toggleGameExpanded(game.game_id)}
+            onClick={() => toggleGameExpanded(gameKey)}
           >
             <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
@@ -1404,10 +1466,10 @@ export default function SportsEnginePage() {
       const line = game.total || game.line || 0
       
       return (
-        <div key={index} className={styles.gameRowWrapper}>
+        <div key={gameKey} className={styles.gameRowWrapper}>
           <div 
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
-            onClick={() => toggleGameExpanded(game.game_id)}
+            onClick={() => toggleGameExpanded(gameKey)}
           >
             <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
@@ -1437,10 +1499,10 @@ export default function SportsEnginePage() {
       const spread = game.spread || game.line || 0
       
       return (
-        <div key={index} className={styles.gameRowWrapper}>
+        <div key={gameKey} className={styles.gameRowWrapper}>
           <div 
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
-            onClick={() => toggleGameExpanded(game.game_id)}
+            onClick={() => toggleGameExpanded(gameKey)}
           >
             <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
