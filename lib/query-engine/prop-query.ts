@@ -94,10 +94,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   const defenseStat = STAT_TO_DEFENSE[stat]
   
   // Build filter conditions for games table
-  // Remove defense rank from game filters since it's on box_scores
+  // Remove filters that need special handling for props (player team perspective)
   const gameFilters = { ...filters }
   delete gameFilters.vs_defense_rank // This is on box_scores table
   delete gameFilters.location // This is handled separately for box_scores
+  delete gameFilters.is_favorite // Needs player team perspective
+  delete gameFilters.spread_range // Needs player team perspective  
+  delete gameFilters.total_range // Handled separately below
+  delete gameFilters.spread_movement_range // Needs player team perspective
+  delete gameFilters.total_movement_range // Handled separately
+  delete gameFilters.ml_movement_range // Needs player team perspective
   
   const { conditions: gameConditions, appliedFilters, limit } = buildFilterConditions(
     gameFilters,
@@ -203,6 +209,128 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       desc += `≤${max > 0 ? '+' : ''}${max}`
     }
     appliedFilters.push(desc)
+  }
+  
+  // ============================================
+  // PLAYER TEAM PERSPECTIVE FILTERS
+  // These need to consider whether player was on home or away team
+  // ============================================
+  
+  // Favorite/Underdog filter - from player's team perspective
+  // If player is home and spread < 0, player's team is favorite
+  // If player is away and spread > 0, player's team is favorite
+  if (filters.is_favorite && filters.is_favorite !== 'any') {
+    if (filters.is_favorite === 'favorite') {
+      // Player's team was favorite
+      gameConditions.push(`((b.is_home = 1 AND g.spread_close < 0) OR (b.is_home = 0 AND g.spread_close > 0))`)
+    } else {
+      // Player's team was underdog
+      gameConditions.push(`((b.is_home = 1 AND g.spread_close > 0) OR (b.is_home = 0 AND g.spread_close < 0))`)
+    }
+    appliedFilters.push(filters.is_favorite === 'favorite' ? 'Player Team Favorite' : 'Player Team Underdog')
+  }
+  
+  // Spread range filter - from player's team perspective
+  // We need to calculate the spread from the player's team viewpoint
+  // If home: spread_close is already from home perspective
+  // If away: negate the spread
+  if (filters.spread_range && (filters.spread_range.min !== undefined || filters.spread_range.max !== undefined)) {
+    const { min, max } = filters.spread_range
+    const spreadExpr = `IF(b.is_home = 1, g.spread_close, -g.spread_close)`
+    
+    if (min !== undefined && max !== undefined) {
+      const minVal = Math.min(min, max)
+      const maxVal = Math.max(min, max)
+      gameConditions.push(`${spreadExpr} BETWEEN ${minVal} AND ${maxVal}`)
+    } else if (min !== undefined) {
+      if (min >= 0) {
+        gameConditions.push(`${spreadExpr} >= ${min}`)
+      } else {
+        gameConditions.push(`${spreadExpr} <= ${min}`)
+      }
+    } else if (max !== undefined) {
+      if (max >= 0) {
+        gameConditions.push(`${spreadExpr} <= ${max}`)
+      } else {
+        gameConditions.push(`${spreadExpr} >= ${max}`)
+      }
+    }
+    
+    let desc = 'Player Team Spread '
+    if (min !== undefined && max !== undefined) {
+      desc += `${min > 0 ? '+' : ''}${min} to ${max > 0 ? '+' : ''}${max}`
+    } else if (min !== undefined) {
+      desc += min >= 0 ? `+${min} or more` : `${min} or more`
+    } else if (max !== undefined) {
+      desc += max >= 0 ? `+${max} or less` : `${max} or less`
+    }
+    appliedFilters.push(desc)
+  }
+  
+  // Total range filter - same for both teams (game-level)
+  if (filters.total_range && (filters.total_range.min !== undefined || filters.total_range.max !== undefined)) {
+    const { min, max } = filters.total_range
+    if (min !== undefined && max !== undefined) {
+      gameConditions.push(`g.total_close BETWEEN ${min} AND ${max}`)
+    } else if (min !== undefined) {
+      gameConditions.push(`g.total_close >= ${min}`)
+    } else if (max !== undefined) {
+      gameConditions.push(`g.total_close <= ${max}`)
+    }
+    
+    let desc = 'Total '
+    if (min !== undefined && max !== undefined) {
+      desc += `${min}-${max}`
+    } else if (min !== undefined) {
+      desc += `${min}+`
+    } else if (max !== undefined) {
+      desc += `≤${max}`
+    }
+    appliedFilters.push(desc)
+  }
+  
+  // Spread movement filter - from player's team perspective
+  if (filters.spread_movement_range && (filters.spread_movement_range.min !== undefined || filters.spread_movement_range.max !== undefined)) {
+    const { min, max } = filters.spread_movement_range
+    const moveExpr = `IF(b.is_home = 1, g.spread_movement, -g.spread_movement)`
+    
+    if (min !== undefined && max !== undefined) {
+      gameConditions.push(`${moveExpr} BETWEEN ${min} AND ${max}`)
+    } else if (min !== undefined) {
+      gameConditions.push(`${moveExpr} >= ${min}`)
+    } else if (max !== undefined) {
+      gameConditions.push(`${moveExpr} <= ${max}`)
+    }
+    appliedFilters.push(`Spread Movement ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}`)
+  }
+  
+  // Total movement filter - same for both teams
+  if (filters.total_movement_range && (filters.total_movement_range.min !== undefined || filters.total_movement_range.max !== undefined)) {
+    const { min, max } = filters.total_movement_range
+    if (min !== undefined && max !== undefined) {
+      gameConditions.push(`g.total_movement BETWEEN ${min} AND ${max}`)
+    } else if (min !== undefined) {
+      gameConditions.push(`g.total_movement >= ${min}`)
+    } else if (max !== undefined) {
+      gameConditions.push(`g.total_movement <= ${max}`)
+    }
+    appliedFilters.push(`Total Movement ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}`)
+  }
+  
+  // ML movement filter - from player's team perspective
+  if (filters.ml_movement_range && (filters.ml_movement_range.min !== undefined || filters.ml_movement_range.max !== undefined)) {
+    const { min, max } = filters.ml_movement_range
+    // home_ml_movement is from home perspective, negate for away
+    const moveExpr = `IF(b.is_home = 1, g.home_ml_movement, -g.home_ml_movement)`
+    
+    if (min !== undefined && max !== undefined) {
+      gameConditions.push(`${moveExpr} BETWEEN ${min} AND ${max}`)
+    } else if (min !== undefined) {
+      gameConditions.push(`${moveExpr} >= ${min}`)
+    } else if (max !== undefined) {
+      gameConditions.push(`${moveExpr} <= ${max}`)
+    }
+    appliedFilters.push(`ML Movement ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}`)
   }
   
   // Build the query
