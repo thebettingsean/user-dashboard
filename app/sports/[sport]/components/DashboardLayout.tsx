@@ -461,6 +461,27 @@ function getOddsForBetType(betType: string | undefined, game: GameSummary): stri
   }
 }
 
+// Get actual public betting percentages for a bet type
+function getPublicBettingForBetType(betType: string | undefined, pm: PublicMoneySummary | null): { bets: number | null; stake: number | null } {
+  if (!betType || !pm) return { bets: null, stake: null }
+  switch (betType) {
+    case 'moneyline_home':
+      return { bets: toNumber(pm.public_money_ml_home_bets_pct), stake: toNumber(pm.public_money_ml_home_stake_pct) }
+    case 'moneyline_away':
+      return { bets: toNumber(pm.public_money_ml_away_bets_pct), stake: toNumber(pm.public_money_ml_away_stake_pct) }
+    case 'spread_home':
+      return { bets: toNumber(pm.public_money_spread_home_bets_pct), stake: toNumber(pm.public_money_spread_home_stake_pct) }
+    case 'spread_away':
+      return { bets: toNumber(pm.public_money_spread_away_bets_pct), stake: toNumber(pm.public_money_spread_away_stake_pct) }
+    case 'over':
+      return { bets: toNumber(pm.public_money_over_bets_pct), stake: toNumber(pm.public_money_over_stake_pct) }
+    case 'under':
+      return { bets: toNumber(pm.public_money_under_bets_pct), stake: toNumber(pm.public_money_under_stake_pct) }
+    default:
+      return { bets: null, stake: null }
+  }
+}
+
 function formatPublicCardDate(isoString: string) {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -2484,9 +2505,9 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                     {activeFilter === 'publicVegas' && (
                       <div className={styles.publicMetrics}>
                         {rlmStats.map((stat, index) => {
-                          const rlmValue = toNumber(stat.percentage || (stat as any).percentage2)
                           const lineMove = toNumber(stat.line_movement)
                           const betTypeOdds = getOddsForBetType(stat.bet_type, game)
+                          const publicBetting = getPublicBettingForBetType(stat.bet_type, pm)
                           
                           return (
                             <div key={`${game.id}-rlm-${index}`} className={styles.publicMetric}>
@@ -2499,13 +2520,13 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
                                 )}
                               </div>
                               <div className={styles.publicMetricValues}>
-                                <span>{formatPercentage(rlmValue)} bets</span>
-                                <span className={styles.publicStake}>{formatPercentage(100 - (rlmValue ?? 0))} money</span>
+                                <span>{formatPercentage(publicBetting.bets)} bets</span>
+                                <span className={styles.publicStake}>{formatPercentage(publicBetting.stake)} money</span>
                               </div>
                               <div className={styles.publicMetricBar}>
                                 <div
                                   className={styles.publicMetricFill}
-                                  style={{ width: `${Math.min(100, Math.max(0, rlmValue ?? 0))}%` }}
+                                  style={{ width: `${Math.min(100, Math.max(0, publicBetting.bets ?? 0))}%` }}
                                 />
                               </div>
                             </div>

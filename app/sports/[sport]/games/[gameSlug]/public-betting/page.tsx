@@ -35,11 +35,15 @@ interface GameData {
   awayTeam: string
   homeTeam: string
   publicMoney: PublicMoneyData | null
+  moneyline?: { home: number | null; away: number | null }
+  spread?: { homeLine: number | null; awayLine: number | null }
+  totals?: { number: number | null }
 }
 
 interface Market {
   id: string
   label: string
+  odds: string
   bets: number | null
   stake: number | null
   diff: number | null
@@ -76,7 +80,10 @@ export default function PublicBettingTabPage() {
           setGameData({
             awayTeam: game.awayTeam,
             homeTeam: game.homeTeam,
-            publicMoney: game.publicMoney || null
+            publicMoney: game.publicMoney || null,
+            moneyline: game.moneyline || null,
+            spread: game.spread || null,
+            totals: game.totals || null
           })
         }
       } catch (error) {
@@ -133,6 +140,22 @@ export default function PublicBettingTabPage() {
   // Build all markets (prioritize RLM sides, fallback to most public)
   const markets: Market[] = []
   
+  // Helper to format odds
+  const formatOdds = (odds: number | null | undefined): string => {
+    if (odds === null || odds === undefined) return ''
+    return odds > 0 ? `(+${odds})` : `(${odds})`
+  }
+  
+  const formatSpread = (line: number | null | undefined): string => {
+    if (line === null || line === undefined) return ''
+    return line > 0 ? `(+${line})` : `(${line})`
+  }
+  
+  const formatTotal = (total: number | null | undefined): string => {
+    if (total === null || total === undefined) return ''
+    return `(${total})`
+  }
+
   // ML Markets
   const mlAwayBets = toNumber(pm.public_money_ml_away_bets_pct)
   const mlAwayStake = toNumber(pm.public_money_ml_away_stake_pct)
@@ -146,15 +169,15 @@ export default function PublicBettingTabPage() {
     
     let chosenSide
     if (awayHasRlm) {
-      chosenSide = { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
+      chosenSide = { label: `${gameData.awayTeam} ML`, odds: formatOdds(gameData.moneyline?.away), bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
     } else if (homeHasRlm) {
-      chosenSide = { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
+      chosenSide = { label: `${gameData.homeTeam} ML`, odds: formatOdds(gameData.moneyline?.home), bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
     } else {
       // No RLM - show most public
       const isAwayMostPublic = mlAwayBets > mlHomeBets
       chosenSide = isAwayMostPublic
-        ? { label: `${gameData.awayTeam} ML`, bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
-        : { label: `${gameData.homeTeam} ML`, bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
+        ? { label: `${gameData.awayTeam} ML`, odds: formatOdds(gameData.moneyline?.away), bets: mlAwayBets, stake: mlAwayStake, id: 'ml_away' }
+        : { label: `${gameData.homeTeam} ML`, odds: formatOdds(gameData.moneyline?.home), bets: mlHomeBets, stake: mlHomeStake, id: 'ml_home' }
     }
     
     const diff = chosenSide.stake !== null && chosenSide.bets !== null 
@@ -164,6 +187,7 @@ export default function PublicBettingTabPage() {
     markets.push({
       id: chosenSide.id,
       label: chosenSide.label,
+      odds: chosenSide.odds,
       bets: chosenSide.bets,
       stake: chosenSide.stake,
       diff
@@ -183,15 +207,15 @@ export default function PublicBettingTabPage() {
     
     let chosenSide
     if (awayHasRlm) {
-      chosenSide = { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
+      chosenSide = { label: `${gameData.awayTeam}`, odds: formatSpread(gameData.spread?.awayLine), bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
     } else if (homeHasRlm) {
-      chosenSide = { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
+      chosenSide = { label: `${gameData.homeTeam}`, odds: formatSpread(gameData.spread?.homeLine), bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
     } else {
       // No RLM - show most public
       const isAwayMostPublic = spreadAwayBets > spreadHomeBets
       chosenSide = isAwayMostPublic
-        ? { label: `${gameData.awayTeam} Spread`, bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
-        : { label: `${gameData.homeTeam} Spread`, bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
+        ? { label: `${gameData.awayTeam}`, odds: formatSpread(gameData.spread?.awayLine), bets: spreadAwayBets, stake: spreadAwayStake, id: 'spread_away' }
+        : { label: `${gameData.homeTeam}`, odds: formatSpread(gameData.spread?.homeLine), bets: spreadHomeBets, stake: spreadHomeStake, id: 'spread_home' }
     }
     
     const diff = chosenSide.stake !== null && chosenSide.bets !== null 
@@ -201,6 +225,7 @@ export default function PublicBettingTabPage() {
     markets.push({
       id: chosenSide.id,
       label: chosenSide.label,
+      odds: chosenSide.odds,
       bets: chosenSide.bets,
       stake: chosenSide.stake,
       diff
@@ -212,6 +237,7 @@ export default function PublicBettingTabPage() {
   const overStake = toNumber(pm.public_money_over_stake_pct)
   const underBets = toNumber(pm.public_money_under_bets_pct)
   const underStake = toNumber(pm.public_money_under_stake_pct)
+  const totalOdds = formatTotal(gameData.totals?.number)
   
   if (overBets !== null && underBets !== null) {
     // Check if either side has RLM
@@ -220,15 +246,15 @@ export default function PublicBettingTabPage() {
     
     let chosenSide
     if (overHasRlm) {
-      chosenSide = { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
+      chosenSide = { label: 'Over', odds: totalOdds, bets: overBets, stake: overStake, id: 'total_over' }
     } else if (underHasRlm) {
-      chosenSide = { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
+      chosenSide = { label: 'Under', odds: totalOdds, bets: underBets, stake: underStake, id: 'total_under' }
     } else {
       // No RLM - show most public
       const isOverMostPublic = overBets > underBets
       chosenSide = isOverMostPublic
-        ? { label: 'Over', bets: overBets, stake: overStake, id: 'total_over' }
-        : { label: 'Under', bets: underBets, stake: underStake, id: 'total_under' }
+        ? { label: 'Over', odds: totalOdds, bets: overBets, stake: overStake, id: 'total_over' }
+        : { label: 'Under', odds: totalOdds, bets: underBets, stake: underStake, id: 'total_under' }
     }
     
     const diff = chosenSide.stake !== null && chosenSide.bets !== null 
@@ -238,6 +264,7 @@ export default function PublicBettingTabPage() {
     markets.push({
       id: chosenSide.id,
       label: chosenSide.label,
+      odds: chosenSide.odds,
       bets: chosenSide.bets,
       stake: chosenSide.stake,
       diff
@@ -388,9 +415,11 @@ export default function PublicBettingTabPage() {
           
           return (
             <div key={market.id} className={styles.marketCard}>
-              {/* Market Label + Line Movement Badge */}
+              {/* Market Label + Odds + Line Movement Badge */}
               <div className={styles.marketHeader}>
-                <span className={styles.marketLabel}>{market.label}</span>
+                <span className={styles.marketLabel}>
+                  {market.label} {market.odds && <span className={styles.oddsLabel}>{market.odds}</span>}
+                </span>
                 {rlm.lineMovement !== null && (
                   <span className={styles.lineMovementBadge}>
                     {rlm.lineMovement > 0 ? '-' : '+'}{Math.abs(rlm.lineMovement).toFixed(1)}

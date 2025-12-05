@@ -213,6 +213,37 @@ function getOddsForBetType(betType: string | undefined, pm: PublicMoneySummary |
   }
 }
 
+// Helper to convert unknown to number
+function toNumberHelper(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isNaN(value) ? null : value
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
+// Get actual public betting percentages for a bet type
+function getPublicBettingForBetType(betType: string | undefined, pm: PublicMoneySummary | null): { bets: number | null; stake: number | null } {
+  if (!betType || !pm) return { bets: null, stake: null }
+  switch (betType) {
+    case 'moneyline_home':
+      return { bets: toNumberHelper(pm.public_money_ml_home_bets_pct), stake: toNumberHelper(pm.public_money_ml_home_stake_pct) }
+    case 'moneyline_away':
+      return { bets: toNumberHelper(pm.public_money_ml_away_bets_pct), stake: toNumberHelper(pm.public_money_ml_away_stake_pct) }
+    case 'spread_home':
+      return { bets: toNumberHelper(pm.public_money_spread_home_bets_pct), stake: toNumberHelper(pm.public_money_spread_home_stake_pct) }
+    case 'spread_away':
+      return { bets: toNumberHelper(pm.public_money_spread_away_bets_pct), stake: toNumberHelper(pm.public_money_spread_away_stake_pct) }
+    case 'over':
+      return { bets: toNumberHelper(pm.public_money_over_bets_pct), stake: toNumberHelper(pm.public_money_over_stake_pct) }
+    case 'under':
+      return { bets: toNumberHelper(pm.public_money_under_bets_pct), stake: toNumberHelper(pm.public_money_under_stake_pct) }
+    default:
+      return { bets: null, stake: null }
+  }
+}
+
 function formatPublicCardDate(isoString: string) {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -1803,9 +1834,9 @@ function SportsSelectorPageContent() {
             {publicView === 'vegas' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {rlmStats.slice(0, 3).map((stat, index) => {
-                  const rlmValue = toNumber(stat.percentage || (stat as any).percentage2)
                   const lineMove = toNumber(stat.line_movement)
                   const betTypeOdds = getOddsForBetType(stat.bet_type, pm)
+                  const publicBetting = getPublicBettingForBetType(stat.bet_type, pm)
                   
                   return (
                     <div key={`${game.id}-rlm-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1837,8 +1868,8 @@ function SportsSelectorPageContent() {
                         fontSize: '11px',
                         color: 'rgba(226, 232, 240, 0.7)'
                       }}>
-                        <span>{formatPercentage(rlmValue)} bets</span>
-                        <span style={{ color: 'rgba(129, 231, 255, 0.95)' }}>{formatPercentage(100 - (rlmValue ?? 0))} money</span>
+                        <span>{formatPercentage(publicBetting.bets)} bets</span>
+                        <span style={{ color: 'rgba(129, 231, 255, 0.95)' }}>{formatPercentage(publicBetting.stake)} money</span>
                       </div>
                       <div style={{
                         height: '6px',
@@ -1849,7 +1880,7 @@ function SportsSelectorPageContent() {
                         <div style={{
                           height: '100%',
                           background: 'linear-gradient(90deg, #22d3ee, #6366f1)',
-                          width: `${Math.min(100, Math.max(0, rlmValue ?? 0))}%`
+                          width: `${Math.min(100, Math.max(0, publicBetting.bets ?? 0))}%`
                         }} />
                       </div>
                     </div>
