@@ -613,7 +613,7 @@ async function processCompletedGames(): Promise<SyncResult> {
         }
       }
       
-      // Step 3: Fetch and insert box scores
+      // Step 3: Fetch and insert box scores (with deduplication)
       if (game.needsBoxScores) {
         try {
           const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.gameId}`)
@@ -627,53 +627,74 @@ async function processCompletedGames(): Promise<SyncResult> {
             const week = summaryData.header?.week || 0
             const gameDate = new Date(gameInfo?.date || Date.now()).toISOString().split('T')[0]
             
+            // Collect all player stats first, then dedupe before inserting
+            const playerStatsMap = new Map<number, { 
+              teamId: number, opponentId: number, isHome: number, 
+              stats: Record<string, number> 
+            }>()
+            
             if (boxscore?.players) {
               for (const teamPlayers of boxscore.players) {
                 const teamId = parseInt(teamPlayers.team?.id) || 0
                 const isHome = teamId === game.homeTeamId ? 1 : 0
-                const opponentId = isHome ? game.awayTeamId : game.homeTeamId
+                const opponentId = isHome === 1 ? game.awayTeamId : game.homeTeamId
                 
                 for (const category of teamPlayers.statistics || []) {
                   for (const athlete of category.athletes || []) {
                     const playerId = parseInt(athlete.athlete?.id) || 0
                     if (playerId === 0) continue
                     
-                    const stats = parseAthleteStats(athlete.stats, category.name)
+                    const newStats = parseAthleteStats(athlete.stats, category.name)
                     
-                    // Only insert if player has meaningful stats
-                    if (stats.pass_yards || stats.rush_yards || stats.receiving_yards || 
-                        stats.pass_tds || stats.rush_tds || stats.receiving_tds) {
-                      
-                      await clickhouseCommand(`
-                        INSERT INTO nfl_box_scores_v2 (
-                          player_id, game_id, game_date, season, week, 
-                          team_id, opponent_id, is_home,
-                          pass_attempts, pass_completions, pass_yards, pass_tds, interceptions,
-                          sacks, qb_rating,
-                          rush_attempts, rush_yards, rush_tds, rush_long, yards_per_carry,
-                          targets, receptions, receiving_yards, receiving_tds, receiving_long, yards_per_reception,
-                          created_at
-                        ) VALUES (
-                          ${playerId}, ${game.gameId}, '${gameDate}', ${season}, ${week},
-                          ${teamId}, ${opponentId}, ${isHome},
-                          ${stats.pass_attempts || 0}, ${stats.pass_completions || 0}, 
-                          ${stats.pass_yards || 0}, ${stats.pass_tds || 0}, ${stats.interceptions || 0},
-                          ${stats.sacks || 0}, ${stats.qb_rating || 0},
-                          ${stats.rush_attempts || 0}, ${stats.rush_yards || 0}, 
-                          ${stats.rush_tds || 0}, ${stats.rush_long || 0}, ${stats.yards_per_carry || 0},
-                          ${stats.targets || 0}, ${stats.receptions || 0}, 
-                          ${stats.receiving_yards || 0}, ${stats.receiving_tds || 0}, 
-                          ${stats.receiving_long || 0}, ${stats.yards_per_reception || 0},
-                          now()
-                        )
-                      `)
-                      boxScoresAdded++
+                    // Merge stats if player already exists
+                    if (playerStatsMap.has(playerId)) {
+                      const existing = playerStatsMap.get(playerId)!
+                      Object.assign(existing.stats, newStats)
+                    } else {
+                      playerStatsMap.set(playerId, {
+                        teamId, opponentId, isHome, stats: newStats
+                      })
                     }
                   }
                 }
               }
             }
-            console.log(`[NFL Sync] Added box scores for game ${game.gameId}`)
+            
+            // Insert deduplicated player stats
+            for (const [playerId, data] of playerStatsMap) {
+              const stats = data.stats
+              
+              // Only insert if player has meaningful stats
+              if (stats.pass_yards || stats.rush_yards || stats.receiving_yards || 
+                  stats.pass_tds || stats.rush_tds || stats.receiving_tds) {
+                
+                await clickhouseCommand(`
+                  INSERT INTO nfl_box_scores_v2 (
+                    player_id, game_id, game_date, season, week, 
+                    team_id, opponent_id, is_home,
+                    pass_attempts, pass_completions, pass_yards, pass_tds, interceptions,
+                    sacks, qb_rating,
+                    rush_attempts, rush_yards, rush_tds, rush_long, yards_per_carry,
+                    targets, receptions, receiving_yards, receiving_tds, receiving_long, yards_per_reception,
+                    created_at
+                  ) VALUES (
+                    ${playerId}, ${game.gameId}, '${gameDate}', ${season}, ${week},
+                    ${data.teamId}, ${data.opponentId}, ${data.isHome},
+                    ${stats.pass_attempts || 0}, ${stats.pass_completions || 0}, 
+                    ${stats.pass_yards || 0}, ${stats.pass_tds || 0}, ${stats.interceptions || 0},
+                    ${stats.sacks || 0}, ${stats.qb_rating || 0},
+                    ${stats.rush_attempts || 0}, ${stats.rush_yards || 0}, 
+                    ${stats.rush_tds || 0}, ${stats.rush_long || 0}, ${stats.yards_per_carry || 0},
+                    ${stats.targets || 0}, ${stats.receptions || 0}, 
+                    ${stats.receiving_yards || 0}, ${stats.receiving_tds || 0}, 
+                    ${stats.receiving_long || 0}, ${stats.yards_per_reception || 0},
+                    now()
+                  )
+                `)
+                boxScoresAdded++
+              }
+            }
+            console.log(`[NFL Sync] Added ${playerStatsMap.size} unique player box scores for game ${game.gameId}`)
           }
         } catch (e) {
           console.error(`Error fetching box scores for game ${game.gameId}:`, e)
