@@ -108,8 +108,8 @@ async function getHistoricalEventOdds(eventId: string, date: string, markets: st
   return response.json()
 }
 
-// Parse prop outcomes into lines
-function parseOutcomes(outcomes: any[]): { line: number, over_odds: number, under_odds: number }[] {
+// Parse prop outcomes - ONLY get the MAIN line (not alternates)
+function parseMainLine(outcomes: any[]): { line: number, over_odds: number, under_odds: number } | null {
   const lines: Map<number, { over_odds: number, under_odds: number }> = new Map()
   
   for (const outcome of outcomes) {
@@ -125,11 +125,23 @@ function parseOutcomes(outcomes: any[]): { line: number, over_odds: number, unde
     else if (outcome.name === 'Under') entry.under_odds = outcome.price
   }
   
-  return Array.from(lines.entries()).map(([line, odds]) => ({
-    line,
-    over_odds: odds.over_odds,
-    under_odds: odds.under_odds
-  }))
+  if (lines.size === 0) return null
+  
+  // Find the main line - closest to -110/-110 (most balanced)
+  let mainLine: number | null = null
+  let bestScore = Infinity
+  
+  for (const [line, odds] of lines) {
+    const score = Math.abs(odds.over_odds - (-110)) + Math.abs(odds.under_odds - (-110))
+    if (score < bestScore) {
+      bestScore = score
+      mainLine = line
+    }
+  }
+  
+  if (mainLine === null) return null
+  const mainOdds = lines.get(mainLine)!
+  return { line: mainLine, over_odds: mainOdds.over_odds, under_odds: mainOdds.under_odds }
 }
 
 // Process a single game's prop lines
@@ -165,19 +177,20 @@ async function processGameProps(event: any, season: number): Promise<PropLine[]>
             playerOutcomes.get(playerName)!.push(outcome)
           }
           
+          // Only get MAIN line per player/prop (not alternates)
           for (const [playerName, outcomes] of playerOutcomes) {
-            const lines = parseOutcomes(outcomes)
+            const mainLine = parseMainLine(outcomes)
             
-            for (const lineData of lines) {
+            if (mainLine) {
               propLines.push({
                 game_id: event.id,
                 espn_game_id: 0,
                 player_name: playerName,
                 espn_player_id: 0,
                 prop_type: market.key,
-                line: lineData.line,
-                over_odds: lineData.over_odds,
-                under_odds: lineData.under_odds,
+                line: mainLine.line,
+                over_odds: mainLine.over_odds,
+                under_odds: mainLine.under_odds,
                 bookmaker: bookmaker.key,
                 snapshot_time: snapshotTime,
                 game_time: event.commence_time,

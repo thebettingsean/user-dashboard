@@ -3,11 +3,21 @@
  * POST /api/clickhouse/create-prop-lines-table
  */
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { clickhouseQuery } from '@/lib/clickhouse'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const action = searchParams.get('action')
+    
+    // Truncate action
+    if (action === 'truncate') {
+      console.log('Truncating nfl_prop_lines table...')
+      await clickhouseQuery('TRUNCATE TABLE nfl_prop_lines')
+      return NextResponse.json({ success: true, message: 'Table truncated!' })
+    }
+    
     console.log('Creating nfl_prop_lines table...')
     
     const createTableSQL = `
