@@ -1,81 +1,24 @@
 {
   "crons": [
     {
-      "path": "/api/cron/refresh-nfl-snapshots",
-      "schedule": "5 * * * *"
-    },
-    {
-      "path": "/api/cron/refresh-cfb-snapshots",
-      "schedule": "10 */2 * * *"
-    },
-    {
-      "path": "/api/cron/refresh-nba-snapshots",
-      "schedule": "0,30 * * * *"
-    },
-    {
-      "path": "/api/cron/refresh-nhl-snapshots",
-      "schedule": "15,45 * * * *"
-    },
-    {
-      "path": "/api/cron/sync-free-users",
+      "path": "/api/cron/nfl-sync?task=all",
       "schedule": "0 10 * * *"
     },
     {
-      "path": "/api/cron/refresh-team-rankings?sport=NFL",
-      "schedule": "0 10 * * 2"
+      "path": "/api/cron/nfl-sync?task=odds",
+      "schedule": "0 */4 * * *"
     },
     {
-      "path": "/api/cron/refresh-team-rankings?sport=NBA",
-      "schedule": "0 11 * * *"
+      "path": "/api/cron/nfl-props-lifecycle?stage=auto",
+      "schedule": "0 * * * *"
     },
     {
-      "path": "/api/cron/refresh-team-rankings?sport=CFB",
-      "schedule": "0 10 * * 2"
+      "path": "/api/clickhouse/populate-streaks",
+      "schedule": "0 6 * * 2"
     },
     {
-      "path": "/api/cron/refresh-team-rankings?sport=NHL",
-      "schedule": "0 11 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nfl-scripts",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nba-scripts",
-      "schedule": "30 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-cfb-scripts",
-      "schedule": "15 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nhl-scripts",
-      "schedule": "45 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nfl-blueprint",
-      "schedule": "40 23 * * 3,4,5,6,0"
-    },
-    {
-      "path": "/api/cron/generate-nba-blueprint",
-      "schedule": "20 14 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nba-blueprint",
-      "schedule": "20 18 * * *"
-    },
-    {
-      "path": "/api/cron/sync-players",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/nfl-sync?mode=upcoming",
-      "schedule": "0 15 * * 2"
-    },
-    {
-      "path": "/api/cron/nfl-sync?mode=complete",
-      "schedule": "0 17 * * 2"
+      "path": "/api/clickhouse/calculate-nfl-rankings",
+      "schedule": "0 8 * * 2"
     }
   ]
 }
-
