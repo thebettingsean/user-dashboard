@@ -419,8 +419,8 @@ async function fetchCurrentProps(): Promise<SyncResult> {
 // ============================================
 async function processCompletedGames(): Promise<SyncResult> {
   try {
-    // Fetch recent completed games directly from ESPN (last 3 days)
-    const response = await fetch(`${ESPN_BASE}/scoreboard?dates=${getRecentDatesString()}`)
+    // Fetch current week's games from ESPN scoreboard
+    const response = await fetch(getESPNScoreboardUrl())
     if (!response.ok) {
       throw new Error(`ESPN scoreboard fetch failed: ${response.status}`)
     }
@@ -608,15 +608,11 @@ async function processCompletedGames(): Promise<SyncResult> {
   }
 }
 
-// Helper to get recent dates for ESPN query (last 3 days)
-function getRecentDatesString(): string {
-  const dates: string[] = []
-  for (let i = 0; i < 3; i++) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    dates.push(d.toISOString().split('T')[0].replace(/-/g, ''))
-  }
-  return dates.join('-')
+// Helper to get week parameter for ESPN - just use current week scoreboard
+function getESPNScoreboardUrl(): string {
+  // ESPN scoreboard without dates returns current week's games
+  // This is simpler and more reliable than date ranges
+  return `${ESPN_BASE}/scoreboard`
 }
 
 // Helper to parse ESPN stats - comprehensive parsing for all stat categories
