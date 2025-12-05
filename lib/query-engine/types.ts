@@ -9,7 +9,7 @@
 
 export type TimePeriod = 
   | 'L3' | 'L5' | 'L10' | 'L15' | 'L20' | 'L30'
-  | 'season' | 'last_season' | 'L2years' | 'L3years' | 'since_2022'
+  | 'season' | 'last_season' | 'L2years' | 'L3years' | 'since_2023' | 'since_2022'
 
 export type Location = 'home' | 'away' | 'any'
 

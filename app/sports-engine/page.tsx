@@ -16,7 +16,7 @@ import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpand
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
-type TimePeriod = 'L3' | 'L5' | 'L10' | 'L15' | 'L20' | 'L30' | 'season' | 'last_season' | 'L2years' | 'L3years' | 'since_2022'
+type TimePeriod = 'L3' | 'L5' | 'L10' | 'L15' | 'L20' | 'L30' | 'season' | 'last_season' | 'L2years' | 'L3years' | 'since_2023' | 'since_2022'
 
 interface QueryResult {
   success?: boolean
@@ -48,6 +48,7 @@ const TIME_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'last_season', label: 'Last Season' },
   { value: 'L2years', label: 'Last 2 Years' },
   { value: 'L3years', label: 'Last 3 Years' },
+  { value: 'since_2023', label: 'Since 2023' },
   { value: 'since_2022', label: 'Since 2022' },
 ]
 
@@ -416,6 +417,13 @@ export default function SportsEnginePage() {
       setQueryType(typeFromPath)
     }
   }, [pathname])
+  
+  // Auto-switch time period when Book Line mode is selected (book lines only available since 2023)
+  useEffect(() => {
+    if (propLineMode === 'book' && timePeriod === 'since_2022') {
+      setTimePeriod('since_2023')
+    }
+  }, [propLineMode])
   
   // Search players from database
   const searchPlayers = async (query: string, position: string) => {
@@ -1981,9 +1989,18 @@ export default function SportsEnginePage() {
             <label>Time Period</label>
             <select value={timePeriod} onChange={(e) => setTimePeriod(e.target.value as TimePeriod)}>
               {TIME_PERIODS.map((tp) => (
-                <option key={tp.value} value={tp.value}>{tp.label}</option>
+                <option 
+                  key={tp.value} 
+                  value={tp.value}
+                  disabled={propLineMode === 'book' && tp.value === 'since_2022'}
+                >
+                  {tp.label}{propLineMode === 'book' && tp.value === 'since_2022' ? ' (no book lines)' : ''}
+                </option>
               ))}
             </select>
+            {propLineMode === 'book' && (
+              <span className={styles.lineNote}>*Book line data available since 2023</span>
+            )}
           </div>
 
           {/* ============================================ */}

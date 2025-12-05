@@ -36,6 +36,8 @@ export function getTimePeriodSQL(period: TimePeriod, tableAlias: string = 'g'): 
       return `${tableAlias}.season >= ${currentSeason - 1}`
     case 'L3years':
       return `${tableAlias}.season >= ${currentSeason - 2}`
+    case 'since_2023':
+      return `${tableAlias}.season >= 2023`
     case 'since_2022':
       return `${tableAlias}.season >= 2022`
     // For L3, L5, etc. - we handle this differently (LIMIT in subquery)
