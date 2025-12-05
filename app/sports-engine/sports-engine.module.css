@@ -1672,3 +1672,79 @@
   background: rgba(248, 113, 113, 0.3);
 }
 
+/* Line Type Toggle (Book Line vs Any Line) */
+.lineTypeToggle {
+  display: flex;
+  gap: 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.lineTypeBtn {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #666;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.lineTypeBtn:hover {
+  color: #888;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lineTypeBtn.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+  color: #fff;
+}
+
+/* Range Inputs for Book Line */
+.rangeInputs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rangeInput {
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(15, 15, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #e6e6e6;
+  font-size: 0.75rem;
+  text-align: center;
+  max-width: 80px;
+}
+
+.rangeInput::placeholder {
+  color: #555;
+}
+
+.rangeSeparator {
+  color: #555;
+  font-size: 0.65rem;
+}
+
+.lineNote {
+  display: block;
+  font-size: 0.6rem;
+  color: #555;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+/* Book Line Value in Results */
+.bookLineValue {
+  font-size: 0.65rem;
+  color: #888;
+  font-style: italic;
+}
+

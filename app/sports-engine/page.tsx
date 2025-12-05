@@ -297,6 +297,11 @@ export default function SportsEnginePage() {
   const [propVersusTeamResults, setPropVersusTeamResults] = useState<typeof NFL_TEAMS>([])
   const [selectedPropVersusTeam, setSelectedPropVersusTeam] = useState<typeof NFL_TEAMS[0] | null>(null)
   
+  // Props - Line Mode (Book Line vs Any Line)
+  const [propLineMode, setPropLineMode] = useState<'book' | 'any'>('any')
+  const [bookLineMin, setBookLineMin] = useState<string>('')
+  const [bookLineMax, setBookLineMax] = useState<string>('')
+  
   // Get available stats based on position (use selected player's position if available)
   const effectivePosition = selectedPlayer?.position || propPosition
   const availablePropStats = PROP_STATS_BY_POSITION[effectivePosition] || PROP_STATS_BY_POSITION['any']
@@ -392,6 +397,9 @@ export default function SportsEnginePage() {
     setSelectedPlayer(null)
     setPropStat('pass_yards')
     setPropLine('250')
+    setPropLineMode('any')
+    setBookLineMin('')
+    setBookLineMax('')
     setPropVersusTeamSearch('')
     setPropVersusTeamResults([])
     setSelectedPropVersusTeam(null)
@@ -758,6 +766,26 @@ export default function SportsEnginePage() {
       } else if (propPosition && propPosition !== 'any') {
         filters.push(`All ${propPosition}s`)
       }
+      
+      // Stat type
+      const statLabel = availablePropStats.find(s => s.value === propStat)?.label || propStat
+      filters.push(statLabel)
+      
+      // Line mode
+      if (propLineMode === 'book') {
+        if (bookLineMin && bookLineMax) {
+          filters.push(`Book Line: ${bookLineMin} to ${bookLineMax}`)
+        } else if (bookLineMin) {
+          filters.push(`Book Line: ${bookLineMin}+`)
+        } else if (bookLineMax) {
+          filters.push(`Book Line: ≤${bookLineMax}`)
+        } else {
+          filters.push('Book Lines (any)')
+        }
+      } else if (propLine) {
+        filters.push(`Line: ${propLine}+`)
+      }
+      
       if (selectedPropVersusTeam) {
         filters.push(`vs ${selectedPropVersusTeam.name}`)
       }
@@ -990,7 +1018,17 @@ export default function SportsEnginePage() {
           return
         }
         body.stat = propStat
-        body.line = parseFloat(propLine) || 0
+        
+        // Book Line mode vs Any Line mode
+        if (propLineMode === 'book') {
+          body.use_book_lines = true
+          if (bookLineMin) body.book_line_min = parseFloat(bookLineMin)
+          if (bookLineMax) body.book_line_max = parseFloat(bookLineMax)
+          body.line = 0 // Line will come from book data
+        } else {
+          body.use_book_lines = false
+          body.line = parseFloat(propLine) || 0
+        }
         
         // Versus team filter for props - goes into filters
         if (selectedPropVersusTeam) {
@@ -1202,7 +1240,15 @@ export default function SportsEnginePage() {
             <span className={game.hit ? styles.statHit : styles.statMiss}>
               {game.actual_value}
             </span>
-            <span className={styles.statType}>{statLabel}</span>
+            {/* Show book line if using book lines mode */}
+            {game.book_line !== undefined && (
+              <span className={styles.bookLineValue}>
+                Line: {game.book_line}
+              </span>
+            )}
+            {game.book_line === undefined && (
+              <span className={styles.statType}>{statLabel}</span>
+            )}
           </div>
           <span className={styles.propResult}>
             {game.hit ? (
@@ -1865,18 +1911,68 @@ export default function SportsEnginePage() {
                 </select>
               </div>
 
-              {/* Line (Over) */}
+              {/* Line Mode Toggle */}
               <div className={styles.propRow}>
-                <label>Line (Over)</label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="e.g. 5.5 or 250"
-                  value={propLine}
-                  onChange={(e) => setPropLine(e.target.value)}
-                  className={styles.lineInput}
-                />
+                <label>Line Type</label>
+                <div className={styles.lineTypeToggle}>
+                  <button
+                    type="button"
+                    className={`${styles.lineTypeBtn} ${propLineMode === 'book' ? styles.active : ''}`}
+                    onClick={() => setPropLineMode('book')}
+                  >
+                    Book Line
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.lineTypeBtn} ${propLineMode === 'any' ? styles.active : ''}`}
+                    onClick={() => setPropLineMode('any')}
+                  >
+                    Any Line
+                  </button>
+                </div>
               </div>
+
+              {/* Book Line Range (min/max) */}
+              {propLineMode === 'book' && (
+                <div className={styles.propRow}>
+                  <label>Book Line Range</label>
+                  <div className={styles.rangeInputs}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="Min"
+                      value={bookLineMin}
+                      onChange={(e) => setBookLineMin(e.target.value)}
+                      className={styles.rangeInput}
+                    />
+                    <span className={styles.rangeSeparator}>to</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="Max"
+                      value={bookLineMax}
+                      onChange={(e) => setBookLineMax(e.target.value)}
+                      className={styles.rangeInput}
+                    />
+                  </div>
+                  <span className={styles.lineNote}>*Uses actual sportsbook lines since 2023</span>
+                </div>
+              )}
+
+              {/* Any Line (Over) - current behavior */}
+              {propLineMode === 'any' && (
+                <div className={styles.propRow}>
+                  <label>Line (Over)</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="e.g. 5.5 or 250"
+                    value={propLine}
+                    onChange={(e) => setPropLine(e.target.value)}
+                    className={styles.lineInput}
+                  />
+                </div>
+              )}
             </div>
           )}
 

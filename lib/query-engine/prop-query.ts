@@ -53,18 +53,42 @@ const STAT_TO_DEFENSE: Record<PropStatType, 'pass' | 'rush' | 'receiving'> = {
   completions_plus_rush_yards: 'pass'
 }
 
+// Map our stat types to prop_type values in nfl_prop_lines
+const STAT_TO_PROP_TYPE: Record<PropStatType, string> = {
+  pass_yards: 'player_pass_yds',
+  pass_tds: 'player_pass_tds',
+  pass_attempts: 'player_pass_attempts',
+  pass_completions: 'player_pass_completions',
+  interceptions: 'player_pass_interceptions',
+  rush_yards: 'player_rush_yds',
+  rush_tds: 'player_rush_tds',
+  rush_attempts: 'player_rush_attempts',
+  rush_long: 'player_rush_longest',
+  yards_per_carry: 'player_rush_yds',  // No direct equivalent
+  receiving_yards: 'player_reception_yds',
+  receptions: 'player_receptions',
+  receiving_tds: 'player_reception_tds',
+  receiving_long: 'player_reception_longest',
+  targets: 'player_receptions',  // No direct equivalent
+  fantasy_points: 'player_pass_yds',  // No direct equivalent
+  completions_plus_rush_yards: 'player_pass_yds'  // No direct equivalent
+}
+
 // ============================================
 // PROP QUERY EXECUTION
 // ============================================
 
 export async function executePropQuery(request: PropQueryRequest): Promise<QueryResult> {
   const startTime = Date.now()
-  const { player_id, position, stat, line, filters } = request
+  const { player_id, position, stat, line, filters, use_book_lines, book_line_min, book_line_max } = request
   
   const statColumn = STAT_COLUMNS[stat]
   if (!statColumn) {
     throw new Error(`Unknown stat type: ${stat}`)
   }
+  
+  // Get the prop type for book lines
+  const propType = STAT_TO_PROP_TYPE[stat]
   
   // Determine defense stat type for ranking filter
   const defenseStat = STAT_TO_DEFENSE[stat]
@@ -193,6 +217,22 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     'b.receiving_yards < 500'
   ]
   
+  // Add book line conditions if using book lines
+  if (use_book_lines && propType) {
+    allConditions.push(`pl.prop_type = '${propType}'`)
+    
+    if (book_line_min !== undefined && book_line_min !== null) {
+      allConditions.push(`pl.line >= ${book_line_min}`)
+      appliedFilters.push(`Book Line ${book_line_min}+`)
+    }
+    if (book_line_max !== undefined && book_line_max !== null) {
+      allConditions.push(`pl.line <= ${book_line_max}`)
+      if (book_line_min === undefined || book_line_min === null) {
+        appliedFilters.push(`Book Line ≤${book_line_max}`)
+      }
+    }
+  }
+  
   const whereClause = allConditions.length > 0 
     ? 'WHERE ' + allConditions.join(' AND ')
     : ''
@@ -203,7 +243,55 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Also join with players table to get position and player info
   const needsPlayerJoin = position && position !== 'any' && (!player_id || player_id === 0)
   
-  const sql = `
+  // Different queries for book line mode vs any line mode
+  const sql = use_book_lines ? `
+    SELECT DISTINCT
+      b.game_id,
+      b.player_id,
+      toString(b.game_date) as game_date,
+      b.opponent_id,
+      b.is_home,
+      ${statColumn} as stat_value,
+      pl.line as book_line,
+      -- Full box score stats for expanded view
+      b.pass_attempts,
+      b.pass_completions,
+      b.pass_yards,
+      b.pass_tds,
+      b.interceptions,
+      b.sacks,
+      b.qb_rating,
+      b.rush_attempts,
+      b.rush_yards,
+      b.rush_tds,
+      b.rush_long,
+      b.yards_per_carry,
+      b.targets,
+      b.receptions,
+      b.receiving_yards,
+      b.receiving_tds,
+      b.receiving_long,
+      b.yards_per_reception,
+      -- Game context
+      g.spread_close,
+      g.total_close,
+      g.home_won,
+      g.home_team_id,
+      g.away_team_id,
+      t.name as opponent_name,
+      t.abbreviation as opponent_abbr,
+      p.name as player_name,
+      p.position as player_position,
+      p.headshot_url as player_headshot
+    FROM nfl_box_scores_v2 b
+    JOIN nfl_games g ON b.game_id = g.game_id
+    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
+    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
+    JOIN nfl_prop_lines pl ON p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)
+    ${whereClause}
+    ORDER BY b.game_date DESC, b.player_id
+    ${limitClause}
+  ` : `
     SELECT DISTINCT
       b.game_id,
       b.player_id,
@@ -274,9 +362,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   
   for (const row of rows) {
     const value = Number(row.stat_value) || 0
-    const hit = value > line
-    const push = value === line
-    const diff = value - line
+    // Use book line if available, otherwise use input line
+    const bookLine = row.book_line !== undefined ? Number(row.book_line) : null
+    const effectiveLine = bookLine !== null ? bookLine : line
+    const hit = value > effectiveLine
+    const push = value === effectiveLine
+    const diff = value - effectiveLine
     
     totalValue += value
     totalDiff += diff
@@ -327,7 +418,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       opponent_id: row.opponent_id,
       location: row.is_home === 1 ? 'home' : 'away',
       actual_value: value,
-      line,
+      line: effectiveLine,
+      book_line: bookLine !== null ? bookLine : undefined,
       hit,
       differential: diff,
       spread: row.spread_close,

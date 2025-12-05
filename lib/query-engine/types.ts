@@ -161,7 +161,10 @@ export interface PropQueryRequest {
   player_id?: number           // ESPN player ID (optional if position is set)
   position?: string            // Position filter (e.g., 'QB', 'WR') - queries all players of position
   stat: PropStatType           // What stat to measure
-  line: number                 // Threshold (e.g., 250 for O250)
+  line: number                 // Threshold (e.g., 250 for O250) - used when use_book_lines is false
+  use_book_lines?: boolean     // If true, join with nfl_prop_lines for actual sportsbook lines
+  book_line_min?: number       // Min book line filter (e.g., 80+ receiving yards line)
+  book_line_max?: number       // Max book line filter
   filters: QueryFilters
 }
 
@@ -201,7 +204,8 @@ export interface GameDetail {
   opponent_id?: number
   location?: 'home' | 'away' | 'neutral'
   actual_value: number
-  line?: number
+  line?: number               // The line used (either input line or book line)
+  book_line?: number          // Actual sportsbook line (from nfl_prop_lines)
   hit: boolean
   differential: number        // actual - line (cover margin)
   spread?: number             // from subject team's perspective
