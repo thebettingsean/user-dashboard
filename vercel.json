@@ -1,8 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/cron/nfl-sync?task=all",
-      "schedule": "0 10 * * *"
+      "path": "/api/cron/nfl-sync?task=games",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/nfl-sync?task=completed",
+      "schedule": "0 */2 * * *"
     },
     {
       "path": "/api/cron/nfl-sync?task=odds",

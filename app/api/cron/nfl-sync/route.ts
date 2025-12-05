@@ -415,112 +415,239 @@ async function fetchCurrentProps(): Promise<SyncResult> {
 }
 
 // ============================================
-// TASK 3: Process Completed Games
+// TASK 3: Process Completed Games (Aggressive Sync)
 // ============================================
 async function processCompletedGames(): Promise<SyncResult> {
   try {
-    // Find games that just completed (within last 24 hours) - those with scores
-    const recentGames = await clickhouseQuery(`
-      SELECT DISTINCT game_id 
-      FROM nfl_games 
-      WHERE home_score > 0 
-        AND game_time >= now() - INTERVAL 24 HOUR
-        AND game_time <= now()
-      LIMIT 10
-    `)
+    // Fetch recent completed games directly from ESPN (last 3 days)
+    const response = await fetch(`${ESPN_BASE}/scoreboard?dates=${getRecentDatesString()}`)
+    if (!response.ok) {
+      throw new Error(`ESPN scoreboard fetch failed: ${response.status}`)
+    }
     
+    const data = await response.json()
+    const events = data.events || []
+    
+    let gamesUpdated = 0
     let boxScoresAdded = 0
-    let propsArchived = 0
+    let gamesNeedingSync: any[] = []
     
-    for (const game of recentGames.data) {
-      const gameId = game.game_id
+    // Step 1: Find all completed games that need syncing
+    for (const event of events) {
+      const status = event.status?.type?.state
+      if (status !== 'post') continue // Only process completed games
       
-      // Check if we already have box scores for this game
-      const existingBoxScores = await clickhouseQuery(`
-        SELECT count() as cnt FROM nfl_box_scores_v2 WHERE game_id = ${gameId}
+      const gameId = parseInt(event.id)
+      const competition = event.competitions?.[0]
+      if (!competition) continue
+      
+      const homeTeam = competition.competitors?.find((c: any) => c.homeAway === 'home')
+      const awayTeam = competition.competitors?.find((c: any) => c.homeAway === 'away')
+      if (!homeTeam || !awayTeam) continue
+      
+      const homeScore = parseInt(homeTeam.score) || 0
+      const awayScore = parseInt(awayTeam.score) || 0
+      
+      // Check if game scores are already in database
+      const existing = await clickhouseQuery(`
+        SELECT home_score, away_score FROM nfl_games WHERE game_id = ${gameId}
       `)
       
-      if (existingBoxScores.data[0]?.cnt === 0) {
-        // Fetch box scores from ESPN
+      const needsScoreUpdate = !existing.data[0] || 
+        existing.data[0].home_score !== homeScore || 
+        existing.data[0].away_score !== awayScore
+      
+      // Check if we have box scores
+      const boxScoreCount = await clickhouseQuery(`
+        SELECT count() as cnt FROM nfl_box_scores_v2 WHERE game_id = ${gameId}
+      `)
+      const needsBoxScores = (boxScoreCount.data[0]?.cnt || 0) === 0
+      
+      if (needsScoreUpdate || needsBoxScores) {
+        gamesNeedingSync.push({
+          gameId,
+          homeTeamId: parseInt(homeTeam.team?.id) || 0,
+          awayTeamId: parseInt(awayTeam.team?.id) || 0,
+          homeScore,
+          awayScore,
+          gameDate: competition.date,
+          needsScoreUpdate,
+          needsBoxScores
+        })
+      }
+    }
+    
+    console.log(`[NFL Sync] Found ${gamesNeedingSync.length} games needing sync`)
+    
+    // Step 2: Update game scores and derived fields
+    for (const game of gamesNeedingSync) {
+      if (game.needsScoreUpdate) {
         try {
-          const response = await fetch(`${ESPN_BASE}/summary?event=${gameId}`)
-          if (response.ok) {
-            const data = await response.json()
-            const boxscore = data.boxscore
+          // First check if game exists
+          const gameExists = await clickhouseQuery(`
+            SELECT game_id, spread_close, total_close FROM nfl_games WHERE game_id = ${game.gameId}
+          `)
+          
+          if (gameExists.data[0]) {
+            const spread = gameExists.data[0].spread_close || 0
+            const total = gameExists.data[0].total_close || 0
+            const totalPoints = game.homeScore + game.awayScore
+            const margin = game.homeScore - game.awayScore
+            
+            // Calculate all derived fields
+            const homeWon = margin > 0 ? 1 : 0
+            const homeCovered = spread !== 0 ? (margin + spread > 0 ? 1 : 0) : 0
+            const spreadPush = spread !== 0 && margin + spread === 0 ? 1 : 0
+            const wentOver = total > 0 && totalPoints > total ? 1 : 0
+            const wentUnder = total > 0 && totalPoints < total ? 1 : 0
+            const totalPush = total > 0 && totalPoints === total ? 1 : 0
+            
+            await clickhouseCommand(`
+              ALTER TABLE nfl_games UPDATE
+                home_score = ${game.homeScore},
+                away_score = ${game.awayScore},
+                total_points = ${totalPoints},
+                home_won = ${homeWon},
+                home_covered = ${homeCovered},
+                spread_push = ${spreadPush},
+                went_over = ${wentOver},
+                went_under = ${wentUnder},
+                total_push = ${totalPush},
+                updated_at = now()
+              WHERE game_id = ${game.gameId}
+            `)
+            gamesUpdated++
+            console.log(`[NFL Sync] Updated game ${game.gameId}: ${game.awayScore}-${game.homeScore}`)
+          }
+        } catch (e) {
+          console.error(`Error updating game ${game.gameId}:`, e)
+        }
+      }
+      
+      // Step 3: Fetch and insert box scores
+      if (game.needsBoxScores) {
+        try {
+          const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.gameId}`)
+          if (summaryResponse.ok) {
+            const summaryData = await summaryResponse.json()
+            const boxscore = summaryData.boxscore
+            
+            // Get game metadata
+            const gameInfo = summaryData.header?.competitions?.[0]
+            const season = summaryData.header?.season?.year || 2024
+            const week = summaryData.header?.week || 0
+            const gameDate = new Date(gameInfo?.date || Date.now()).toISOString().split('T')[0]
             
             if (boxscore?.players) {
               for (const teamPlayers of boxscore.players) {
+                const teamId = parseInt(teamPlayers.team?.id) || 0
+                const isHome = teamId === game.homeTeamId ? 1 : 0
+                const opponentId = isHome ? game.awayTeamId : game.homeTeamId
+                
                 for (const category of teamPlayers.statistics || []) {
                   for (const athlete of category.athletes || []) {
-                    // Parse and insert player stats
                     const playerId = parseInt(athlete.athlete?.id) || 0
                     if (playerId === 0) continue
                     
                     const stats = parseAthleteStats(athlete.stats, category.name)
                     
-                    await clickhouseCommand(`
-                      INSERT INTO nfl_box_scores_v2 (
-                        player_id, game_id, game_date, season, week, team_id, opponent_id, is_home,
-                        pass_attempts, pass_completions, pass_yards, pass_tds, interceptions,
-                        rush_attempts, rush_yards, rush_tds, rush_long,
-                        targets, receptions, receiving_yards, receiving_tds, receiving_long,
-                        created_at
-                      ) VALUES (
-                        ${playerId}, ${gameId}, today(), 2025, 0, 0, 0, 0,
-                        ${stats.pass_attempts || 0}, ${stats.pass_completions || 0}, 
-                        ${stats.pass_yards || 0}, ${stats.pass_tds || 0}, ${stats.interceptions || 0},
-                        ${stats.rush_attempts || 0}, ${stats.rush_yards || 0}, 
-                        ${stats.rush_tds || 0}, ${stats.rush_long || 0},
-                        ${stats.targets || 0}, ${stats.receptions || 0}, 
-                        ${stats.receiving_yards || 0}, ${stats.receiving_tds || 0}, ${stats.receiving_long || 0},
-                        now()
-                      )
-                    `)
-                    boxScoresAdded++
+                    // Only insert if player has meaningful stats
+                    if (stats.pass_yards || stats.rush_yards || stats.receiving_yards || 
+                        stats.pass_tds || stats.rush_tds || stats.receiving_tds) {
+                      
+                      await clickhouseCommand(`
+                        INSERT INTO nfl_box_scores_v2 (
+                          player_id, game_id, game_date, season, week, 
+                          team_id, opponent_id, is_home,
+                          pass_attempts, pass_completions, pass_yards, pass_tds, interceptions,
+                          sacks, qb_rating,
+                          rush_attempts, rush_yards, rush_tds, rush_long, yards_per_carry,
+                          targets, receptions, receiving_yards, receiving_tds, receiving_long, yards_per_reception,
+                          created_at
+                        ) VALUES (
+                          ${playerId}, ${game.gameId}, '${gameDate}', ${season}, ${week},
+                          ${teamId}, ${opponentId}, ${isHome},
+                          ${stats.pass_attempts || 0}, ${stats.pass_completions || 0}, 
+                          ${stats.pass_yards || 0}, ${stats.pass_tds || 0}, ${stats.interceptions || 0},
+                          ${stats.sacks || 0}, ${stats.qb_rating || 0},
+                          ${stats.rush_attempts || 0}, ${stats.rush_yards || 0}, 
+                          ${stats.rush_tds || 0}, ${stats.rush_long || 0}, ${stats.yards_per_carry || 0},
+                          ${stats.targets || 0}, ${stats.receptions || 0}, 
+                          ${stats.receiving_yards || 0}, ${stats.receiving_tds || 0}, 
+                          ${stats.receiving_long || 0}, ${stats.yards_per_reception || 0},
+                          now()
+                        )
+                      `)
+                      boxScoresAdded++
+                    }
                   }
                 }
               }
             }
+            console.log(`[NFL Sync] Added box scores for game ${game.gameId}`)
           }
         } catch (e) {
-          console.error(`Error fetching box scores for game ${gameId}:`, e)
+          console.error(`Error fetching box scores for game ${game.gameId}:`, e)
         }
       }
-      
-      // Archive props to historical table
-      // (Move from current_props to nfl_prop_lines)
-      // This would need game_id mapping - simplified for now
     }
     
     return {
       task: 'process_completed',
       success: true,
-      details: { games_processed: recentGames.data.length, box_scores_added: boxScoresAdded, props_archived: propsArchived }
+      details: { 
+        games_checked: events.filter((e: any) => e.status?.type?.state === 'post').length,
+        games_needing_sync: gamesNeedingSync.length,
+        games_updated: gamesUpdated, 
+        box_scores_added: boxScoresAdded 
+      }
     }
   } catch (error: any) {
+    console.error('[NFL Sync] processCompletedGames error:', error)
     return { task: 'process_completed', success: false, error: error.message }
   }
 }
 
-// Helper to parse ESPN stats
+// Helper to get recent dates for ESPN query (last 3 days)
+function getRecentDatesString(): string {
+  const dates: string[] = []
+  for (let i = 0; i < 3; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    dates.push(d.toISOString().split('T')[0].replace(/-/g, ''))
+  }
+  return dates.join('-')
+}
+
+// Helper to parse ESPN stats - comprehensive parsing for all stat categories
 function parseAthleteStats(statsArray: string[], category: string): Record<string, number> {
   const stats: Record<string, number> = {}
   
-  if (category === 'passing' && statsArray) {
+  if (!statsArray || statsArray.length === 0) return stats
+  
+  if (category === 'passing') {
+    // ESPN format: C/ATT, YDS, AVG, TD, INT, SACKS, QBR, RTG
     const parts = statsArray[0]?.split('/') || []
     stats.pass_completions = parseInt(parts[0]) || 0
     stats.pass_attempts = parseInt(parts[1]) || 0
     stats.pass_yards = parseInt(statsArray[1]) || 0
+    // statsArray[2] is AVG (yards per attempt)
     stats.pass_tds = parseInt(statsArray[3]) || 0
     stats.interceptions = parseInt(statsArray[4]) || 0
-  } else if (category === 'rushing' && statsArray) {
+    stats.sacks = parseInt(statsArray[5]) || 0
+    stats.qb_rating = parseFloat(statsArray[7]) || 0 // RTG is at index 7
+  } else if (category === 'rushing') {
+    // ESPN format: CAR, YDS, AVG, TD, LONG
     stats.rush_attempts = parseInt(statsArray[0]) || 0
     stats.rush_yards = parseInt(statsArray[1]) || 0
+    stats.yards_per_carry = parseFloat(statsArray[2]) || 0
     stats.rush_tds = parseInt(statsArray[3]) || 0
     stats.rush_long = parseInt(statsArray[4]) || 0
-  } else if (category === 'receiving' && statsArray) {
+  } else if (category === 'receiving') {
+    // ESPN format: REC, YDS, AVG, TD, LONG, TGTS
     stats.receptions = parseInt(statsArray[0]) || 0
     stats.receiving_yards = parseInt(statsArray[1]) || 0
+    stats.yards_per_reception = parseFloat(statsArray[2]) || 0
     stats.receiving_tds = parseInt(statsArray[3]) || 0
     stats.receiving_long = parseInt(statsArray[4]) || 0
     stats.targets = parseInt(statsArray[5]) || 0
