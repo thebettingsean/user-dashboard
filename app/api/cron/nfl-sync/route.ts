@@ -20,6 +20,42 @@ export const dynamic = 'force-dynamic'
 const ODDS_API_KEY = process.env.ODDS_API_KEY
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl'
 
+// ESPN team ID to team name (for The Odds API matching)
+const NFL_TEAM_NAMES: Record<number, string> = {
+  22: 'Arizona Cardinals',
+  1: 'Atlanta Falcons',
+  33: 'Baltimore Ravens',
+  2: 'Buffalo Bills',
+  29: 'Carolina Panthers',
+  3: 'Chicago Bears',
+  4: 'Cincinnati Bengals',
+  5: 'Cleveland Browns',
+  6: 'Dallas Cowboys',
+  7: 'Denver Broncos',
+  8: 'Detroit Lions',
+  9: 'Green Bay Packers',
+  34: 'Houston Texans',
+  11: 'Indianapolis Colts',
+  30: 'Jacksonville Jaguars',
+  12: 'Kansas City Chiefs',
+  13: 'Las Vegas Raiders',
+  24: 'Los Angeles Chargers',
+  14: 'Los Angeles Rams',
+  15: 'Miami Dolphins',
+  16: 'Minnesota Vikings',
+  17: 'New England Patriots',
+  18: 'New Orleans Saints',
+  19: 'New York Giants',
+  20: 'New York Jets',
+  21: 'Philadelphia Eagles',
+  23: 'Pittsburgh Steelers',
+  25: 'San Francisco 49ers',
+  26: 'Seattle Seahawks',
+  27: 'Tampa Bay Buccaneers',
+  10: 'Tennessee Titans',
+  28: 'Washington Commanders'
+}
+
 // Team division/conference mapping
 const TEAM_INFO: Record<number, { division: string; conference: string }> = {
   1: { division: 'NFC East', conference: 'NFC' },      // Atlanta Falcons - wrong, fixing
@@ -494,22 +530,48 @@ async function processCompletedGames(): Promise<SyncResult> {
             let spread = gameExists.data[0].spread_close || 0
             let total = gameExists.data[0].total_close || 0
             
-            // SELF-HEALING: If odds are missing, fetch from ESPN
+            // SELF-HEALING: If odds are missing, fetch from The Odds API
             if (spread === 0 || total === 0) {
               try {
-                const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.gameId}`)
-                if (summaryResponse.ok) {
-                  const summaryData = await summaryResponse.json()
-                  const pickcenter = summaryData.pickcenter || []
+                const homeTeam = NFL_TEAM_NAMES[game.homeTeamId]
+                const awayTeam = NFL_TEAM_NAMES[game.awayTeamId]
+                
+                if (homeTeam && awayTeam) {
+                  // Query ~1 hour before game time
+                  const gameTime = new Date(game.gameDate)
+                  const snapshotTime = new Date(gameTime.getTime() - 60 * 60 * 1000)
+                  snapshotTime.setMinutes(Math.floor(snapshotTime.getMinutes() / 5) * 5)
+                  snapshotTime.setSeconds(0)
+                  snapshotTime.setMilliseconds(0)
+                  const dateParam = snapshotTime.toISOString().replace(/\.\d{3}Z$/, 'Z')
                   
-                  if (pickcenter.length > 0) {
-                    // Get odds from first provider (usually DraftKings or ESPN BET)
-                    const odds = pickcenter[0]
-                    spread = parseFloat(odds.spread) || 0
-                    total = parseFloat(odds.overUnder) || 0
-                    oddsFetched++
-                    console.log(`[NFL Sync] Fetched missing odds for game ${game.gameId}: spread=${spread}, total=${total}`)
+                  const oddsUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/odds?` +
+                    `apiKey=${ODDS_API_KEY}&date=${dateParam}&regions=us&markets=spreads,totals&oddsFormat=american`
+                  
+                  const response = await fetch(oddsUrl)
+                  if (response.ok) {
+                    const oddsData = await response.json()
+                    const matchingGame = oddsData.data?.find((event: any) => {
+                      const eventDate = new Date(event.commence_time)
+                      const timeDiff = Math.abs(eventDate.getTime() - gameTime.getTime())
+                      return event.home_team === homeTeam && event.away_team === awayTeam && timeDiff < 4 * 60 * 60 * 1000
+                    })
+                    
+                    if (matchingGame?.bookmakers?.[0]) {
+                      const bookmaker = matchingGame.bookmakers[0]
+                      const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads')
+                      const totalMarket = bookmaker.markets?.find((m: any) => m.key === 'totals')
+                      
+                      spread = spreadMarket?.outcomes?.find((o: any) => o.name === homeTeam)?.point || 0
+                      total = totalMarket?.outcomes?.find((o: any) => o.name === 'Over')?.point || 0
+                      
+                      if (spread !== 0 || total !== 0) {
+                        oddsFetched++
+                        console.log(`[NFL Sync] Fetched odds from The Odds API for ${game.gameId}: spread=${spread}, total=${total}`)
+                      }
+                    }
                   }
+                  await new Promise(r => setTimeout(r, 500)) // Rate limit
                 }
               } catch (oddsErr) {
                 console.error(`[NFL Sync] Failed to fetch odds for game ${game.gameId}:`, oddsErr)
@@ -619,65 +681,104 @@ async function processCompletedGames(): Promise<SyncResult> {
       }
     }
     
-    // Step 4: Fix any games in DB with scores but missing odds (self-healing)
+    // Step 4: Fix any games in DB with scores but missing odds (self-healing via The Odds API)
     let gamesFixedOdds = 0
     try {
       const gamesMissingOdds = await clickhouseQuery(`
-        SELECT game_id FROM nfl_games 
+        SELECT game_id, game_time, home_team_id, away_team_id, home_score, away_score
+        FROM nfl_games 
         WHERE home_score > 0 
           AND (spread_close = 0 OR total_close = 0)
           AND season >= 2024
-        LIMIT 10
+        LIMIT 5
       `)
       
       for (const game of gamesMissingOdds.data) {
         try {
-          const summaryResponse = await fetch(`${ESPN_BASE}/summary?event=${game.game_id}`)
-          if (summaryResponse.ok) {
-            const summaryData = await summaryResponse.json()
-            const pickcenter = summaryData.pickcenter || []
-            
-            if (pickcenter.length > 0) {
-              const odds = pickcenter[0]
-              const spread = parseFloat(odds.spread) || 0
-              const total = parseFloat(odds.overUnder) || 0
-              
-              if (spread !== 0 || total !== 0) {
-                // Get scores to recalculate derived fields
-                const gameData = await clickhouseQuery(`
-                  SELECT home_score, away_score FROM nfl_games WHERE game_id = ${game.game_id}
-                `)
-                
-                if (gameData.data[0]) {
-                  const homeScore = gameData.data[0].home_score
-                  const awayScore = gameData.data[0].away_score
-                  const totalPoints = homeScore + awayScore
-                  const margin = homeScore - awayScore
-                  
-                  const homeWon = margin > 0 ? 1 : 0
-                  const homeCovered = spread !== 0 ? (margin + spread > 0 ? 1 : 0) : 0
-                  const spreadPush = spread !== 0 && margin + spread === 0 ? 1 : 0
-                  const wentOver = total > 0 && totalPoints > total ? 1 : 0
-                  const wentUnder = total > 0 && totalPoints < total ? 1 : 0
-                  const totalPush = total > 0 && totalPoints === total ? 1 : 0
-                  
-                  await clickhouseCommand(`
-                    ALTER TABLE nfl_games UPDATE
-                      spread_close = ${spread},
-                      total_close = ${total},
-                      home_covered = ${homeCovered},
-                      spread_push = ${spreadPush},
-                      went_over = ${wentOver},
-                      went_under = ${wentUnder},
-                      total_push = ${totalPush}
-                    WHERE game_id = ${game.game_id}
-                  `)
-                  gamesFixedOdds++
-                  console.log(`[NFL Sync] Fixed missing odds for game ${game.game_id}: spread=${spread}, total=${total}`)
-                }
-              }
-            }
+          const homeTeam = NFL_TEAM_NAMES[game.home_team_id]
+          const awayTeam = NFL_TEAM_NAMES[game.away_team_id]
+          
+          if (!homeTeam || !awayTeam) {
+            console.log(`[NFL Sync] Unknown team IDs: ${game.home_team_id}/${game.away_team_id}`)
+            continue
           }
+          
+          // Query The Odds API ~1 hour before game time (better snapshot availability)
+          const gameTime = new Date(game.game_time)
+          const snapshotTime = new Date(gameTime.getTime() - 60 * 60 * 1000)
+          
+          // Round to nearest 5-minute interval
+          snapshotTime.setMinutes(Math.floor(snapshotTime.getMinutes() / 5) * 5)
+          snapshotTime.setSeconds(0)
+          snapshotTime.setMilliseconds(0)
+          const dateParam = snapshotTime.toISOString().replace(/\.\d{3}Z$/, 'Z')
+          
+          const oddsUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/odds?` +
+            `apiKey=${ODDS_API_KEY}&date=${dateParam}&regions=us&markets=spreads,totals&oddsFormat=american`
+          
+          console.log(`[NFL Sync] Fetching odds from The Odds API for ${awayTeam} @ ${homeTeam}`)
+          const response = await fetch(oddsUrl)
+          
+          if (!response.ok) {
+            console.error(`[NFL Sync] Odds API error ${response.status}`)
+            await new Promise(r => setTimeout(r, 1000))
+            continue
+          }
+          
+          const oddsData = await response.json()
+          
+          // Find matching game
+          const matchingGame = oddsData.data?.find((event: any) => {
+            const eventDate = new Date(event.commence_time)
+            const timeDiff = Math.abs(eventDate.getTime() - gameTime.getTime())
+            return event.home_team === homeTeam && event.away_team === awayTeam && timeDiff < 4 * 60 * 60 * 1000
+          })
+          
+          if (!matchingGame || !matchingGame.bookmakers?.[0]) {
+            console.log(`[NFL Sync] No odds found for ${awayTeam} @ ${homeTeam}`)
+            await new Promise(r => setTimeout(r, 1000))
+            continue
+          }
+          
+          const bookmaker = matchingGame.bookmakers[0]
+          const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads')
+          const totalMarket = bookmaker.markets?.find((m: any) => m.key === 'totals')
+          
+          const homeSpreadOutcome = spreadMarket?.outcomes?.find((o: any) => o.name === homeTeam)
+          const totalOverOutcome = totalMarket?.outcomes?.find((o: any) => o.name === 'Over')
+          
+          const spread = homeSpreadOutcome?.point || 0
+          const total = totalOverOutcome?.point || 0
+          
+          if (spread !== 0 || total !== 0) {
+            const homeScore = game.home_score
+            const awayScore = game.away_score
+            const totalPoints = homeScore + awayScore
+            const margin = homeScore - awayScore
+            
+            const homeWon = margin > 0 ? 1 : 0
+            const homeCovered = spread !== 0 ? (margin + spread > 0 ? 1 : 0) : 0
+            const spreadPush = spread !== 0 && margin + spread === 0 ? 1 : 0
+            const wentOver = total > 0 && totalPoints > total ? 1 : 0
+            const wentUnder = total > 0 && totalPoints < total ? 1 : 0
+            const totalPush = total > 0 && totalPoints === total ? 1 : 0
+            
+            await clickhouseCommand(`
+              ALTER TABLE nfl_games UPDATE
+                spread_close = ${spread},
+                total_close = ${total},
+                home_covered = ${homeCovered},
+                spread_push = ${spreadPush},
+                went_over = ${wentOver},
+                went_under = ${wentUnder},
+                total_push = ${totalPush}
+              WHERE game_id = ${game.game_id}
+            `)
+            gamesFixedOdds++
+            console.log(`[NFL Sync] ✓ Fixed odds for game ${game.game_id}: spread=${spread}, total=${total}`)
+          }
+          
+          await new Promise(r => setTimeout(r, 1000)) // Rate limit
         } catch (e) {
           console.error(`[NFL Sync] Failed to fix odds for game ${game.game_id}:`, e)
         }
