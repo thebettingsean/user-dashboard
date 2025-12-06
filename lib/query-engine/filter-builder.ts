@@ -817,16 +817,22 @@ export function buildFilterConditions(
     }
   }
   
-  // Opponent's defense rank (vs Defense)
+  // Opponent's defense rank (vs Defense) - requires opponent rankings join
   if (!isOUQuery && filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
-    const defFilter = buildDefenseRankFilter(
-      filters.vs_defense_rank, 
-      filters.defense_stat || defenseStat, 
-      tableAlias
+    requiresRankingsJoin = true
+    // Use opponent's rankings - away_rankings when subject is home, home_rankings when subject is away
+    const oppRankingsAlias = isHomeTeam !== false ? awayRankingsAlias : homeRankingsAlias
+    const defFilter = buildTeamRankingFilter(
+      filters.vs_defense_rank,
+      filters.defense_stat || defenseStat || 'overall',
+      'defense',
+      oppRankingsAlias
     )
     if (defFilter) {
       conditions.push(defFilter)
-      appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} Defense`)
+      const statLabel = filters.defense_stat && filters.defense_stat !== 'overall' 
+        ? ` (${filters.defense_stat})` : ''
+      appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} Defense${statLabel}`)
     }
   }
   

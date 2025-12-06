@@ -1570,7 +1570,7 @@ export default function SportsEnginePage() {
     // Home Favorite/Underdog - for O/U queries
     if (isOUQuery && homeFavDog !== 'any') {
       reasons.push({ 
-        label: homeFavDog === 'favorite' ? 'Home Fav' : 'Home Dog', 
+        label: homeFavDog === 'home_fav' ? 'Home Fav' : 'Home Dog', 
         value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
       })
     }
