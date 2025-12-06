@@ -1748,3 +1748,293 @@
   font-style: italic;
 }
 
+/* ============================================
+   UPCOMING GAMES SECTION
+   ============================================ */
+
+.resultsPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.resultsPanelHeader h2 {
+  margin: 0;
+}
+
+.upcomingToggle {
+  display: flex;
+  gap: 0.25rem;
+  background: #1a1a2e;
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toggleBtn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #fff;
+}
+
+.upcomingSection {
+  margin-top: 1rem;
+}
+
+.upcomingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.upcomingHeader h3 {
+  font-size: 0.9rem;
+  color: #e6e6e6;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upcomingSortSelect {
+  padding: 0.35rem 0.6rem;
+  background: #1a1a2e;
+  border: 1px solid #2d2d44;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.upcomingLoading {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.noUpcoming {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.upcomingGame {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.upcomingGame:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.upcomingGameHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.upcomingGameTime {
+  font-size: 0.7rem;
+  color: #888;
+  min-width: 100px;
+}
+
+.upcomingMatchup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.upcomingTeam {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e6e6e6;
+}
+
+.upcomingLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.upcomingRank {
+  font-size: 0.6rem;
+  color: #888;
+  font-weight: 400;
+}
+
+.atSymbol {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.upcomingBestLine {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bestSpread, .bestTotal, .bestML {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.bookCount {
+  font-size: 0.65rem;
+  color: #666;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.expandIcon {
+  font-size: 1.25rem;
+  color: #555;
+  transition: transform 0.2s ease;
+}
+
+.expandIcon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Expanded Details */
+.upcomingDetails {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.upcomingContext {
+  display: flex;
+  justify-content: space-around;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.contextItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.contextItem strong {
+  font-size: 0.8rem;
+  color: #e6e6e6;
+}
+
+.upcomingBooksGrid {
+  font-size: 0.75rem;
+}
+
+.booksHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  color: #666;
+  font-weight: 600;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bookRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  align-items: center;
+}
+
+.bookRow:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bookName {
+  color: #aaa;
+  font-size: 0.7rem;
+}
+
+.bookSpread, .bookTotal, .bookML {
+  color: #e6e6e6;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bookSpread small, .bookTotal small, .bookML small {
+  color: #666;
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+.lineUp {
+  color: #22c55e !important;
+}
+
+.lineDown {
+  color: #ef4444 !important;
+}
+
+.divisionBadge, .confBadge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+  margin-right: 0.5rem;
+}
+
+.divisionBadge {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.confBadge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+

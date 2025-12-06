@@ -23,6 +23,10 @@
     {
       "path": "/api/clickhouse/calculate-nfl-rankings",
       "schedule": "0 8 * * 2"
+    },
+    {
+      "path": "/api/cron/sync-upcoming-odds",
+      "schedule": "30 * * * *"
     }
   ]
 }

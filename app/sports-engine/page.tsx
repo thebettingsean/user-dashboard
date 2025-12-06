@@ -12,7 +12,8 @@ import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy } from "react-icons/pi"
 import { GiWhistle } from "react-icons/gi"
-import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess } from "react-icons/md"
+import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming } from "react-icons/md"
+import { BsCalendarEvent } from "react-icons/bs"
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
@@ -34,6 +35,66 @@ interface QueryResult {
   filters_applied: string[]
   games: any[]
   error?: string
+}
+
+interface UpcomingGame {
+  game_id: string
+  game_time: string
+  home_team: {
+    id: number
+    name: string
+    abbr: string
+    offense_rank: number
+    defense_rank: number
+    streak: number
+    prev_margin: number
+  }
+  away_team: {
+    id: number
+    name: string
+    abbr: string
+    offense_rank: number
+    defense_rank: number
+    streak: number
+    prev_margin: number
+  }
+  is_division_game: boolean
+  is_conference_game: boolean
+  books: {
+    bookmaker: string
+    bookmaker_title: string
+    spread: {
+      home: number
+      home_odds: number
+      away: number
+      away_odds: number
+      opening: number
+      movement: number
+    }
+    total: {
+      line: number
+      over_odds: number
+      under_odds: number
+      opening: number
+      movement: number
+    }
+    moneyline: {
+      home: number
+      away: number
+      opening_home: number
+      opening_away: number
+      home_movement: number
+    }
+  }[]
+}
+
+interface UpcomingResult {
+  success: boolean
+  filters: string[]
+  upcoming_games: UpcomingGame[]
+  total_games: number
+  total_book_options: number
+  query_time_ms: number
 }
 
 // Constants
@@ -196,6 +257,13 @@ export default function SportsEnginePage() {
   const [visibleGames, setVisibleGames] = useState(10)
   // Use string to allow composite keys like "gameId_playerId" for props
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null)
+  
+  // Upcoming games toggle and data
+  const [showUpcoming, setShowUpcoming] = useState(false)
+  const [upcomingResult, setUpcomingResult] = useState<UpcomingResult | null>(null)
+  const [upcomingLoading, setUpcomingLoading] = useState(false)
+  const [expandedUpcomingGameId, setExpandedUpcomingGameId] = useState<string | null>(null)
+  const [upcomingSortBy, setUpcomingSortBy] = useState<'time' | 'best_odds'>('time')
   
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
@@ -1073,6 +1141,121 @@ export default function SportsEnginePage() {
       setError(err.message || 'Query failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Fetch upcoming games that match current filters
+  const fetchUpcoming = async () => {
+    setUpcomingLoading(true)
+    setUpcomingResult(null)
+    
+    try {
+      const filters: any = {}
+      
+      // Build filters matching the historical query
+      if (location !== 'any') filters.location = location
+      if (favorite !== 'any') filters.is_favorite = favorite === 'yes'
+      if (division === 'yes') filters.is_division_game = true
+      if (division === 'no') filters.is_division_game = false
+      if (conference === 'yes') filters.is_conference_game = true
+      if (conference === 'no') filters.is_conference_game = false
+      
+      // Team rankings
+      if (ownDefenseRank !== 'any') filters.own_defense_rank = ownDefenseRank
+      if (ownOffenseRank !== 'any') filters.own_offense_rank = ownOffenseRank
+      if (defenseRank !== 'any') filters.vs_defense_rank = defenseRank
+      if (offenseRank !== 'any') filters.vs_offense_rank = offenseRank
+      
+      // Spread/Total ranges
+      if (spreadMin || spreadMax) {
+        filters.spread_range = {
+          min: spreadMin ? parseFloat(spreadMin) : undefined,
+          max: spreadMax ? parseFloat(spreadMax) : undefined
+        }
+      }
+      if (totalMin || totalMax) {
+        filters.total_range = {
+          min: totalMin ? parseFloat(totalMin) : undefined,
+          max: totalMax ? parseFloat(totalMax) : undefined
+        }
+      }
+      
+      // Line movement
+      if (spreadMoveMin || spreadMoveMax) {
+        filters.spread_movement_range = {
+          min: spreadMoveMin ? parseFloat(spreadMoveMin) : undefined,
+          max: spreadMoveMax ? parseFloat(spreadMoveMax) : undefined
+        }
+      }
+      if (totalMoveMin || totalMoveMax) {
+        filters.total_movement_range = {
+          min: totalMoveMin ? parseFloat(totalMoveMin) : undefined,
+          max: totalMoveMax ? parseFloat(totalMoveMax) : undefined
+        }
+      }
+      
+      // Momentum
+      if (streak) filters.streak = parseInt(streak)
+      if (prevGameMarginMin || prevGameMarginMax) {
+        filters.prev_margin_range = {
+          min: prevGameMarginMin ? parseFloat(prevGameMarginMin) : undefined,
+          max: prevGameMarginMax ? parseFloat(prevGameMarginMax) : undefined
+        }
+      }
+      
+      // Team specific
+      if (queryType === 'team' && teamId) {
+        filters.team_id = teamId
+      }
+
+      const response = await fetch('/api/query-engine/upcoming', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query_type: queryType,
+          bet_type: betType,
+          filters
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setUpcomingResult(data)
+      }
+    } catch (err) {
+      console.error('Upcoming fetch error:', err)
+    } finally {
+      setUpcomingLoading(false)
+    }
+  }
+
+  // Fetch upcoming when toggle is turned on and we have results
+  useEffect(() => {
+    if (showUpcoming && result) {
+      fetchUpcoming()
+    }
+  }, [showUpcoming])
+
+  // Format odds for display
+  const formatOdds = (odds: number) => {
+    if (!odds) return ''
+    return odds > 0 ? `+${odds}` : `${odds}`
+  }
+
+  // Format game time for display
+  const formatGameTime = (timeStr: string) => {
+    try {
+      const date = new Date(timeStr + 'Z')
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+    } catch {
+      return timeStr
     }
   }
 
@@ -2536,7 +2719,25 @@ export default function SportsEnginePage() {
 
         {/* Results Panel */}
         <div className={styles.resultsPanel}>
-          <h2>Results</h2>
+          <div className={styles.resultsPanelHeader}>
+            <h2>Results</h2>
+            {result && (
+              <div className={styles.upcomingToggle}>
+                <button
+                  className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
+                  onClick={() => setShowUpcoming(false)}
+                >
+                  Historical
+                </button>
+                <button
+                  className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''}`}
+                  onClick={() => setShowUpcoming(true)}
+                >
+                  <BsCalendarEvent /> Upcoming
+                </button>
+              </div>
+            )}
+          </div>
 
           {error && (
             <div className={styles.error}>
@@ -2622,30 +2823,187 @@ export default function SportsEnginePage() {
                 ))}
               </div>
 
-              {/* Recent Games */}
-              <div className={styles.gamesSection}>
-                <h3>Games ({Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
-                <div className={styles.gamesList}>
-                  {result.games?.slice(0, visibleGames).map((game, i) => 
-                    queryType === 'prop' ? renderPropGameRow(game, i) : renderGameRow(game, i)
+              {/* Recent Games - only show when not in upcoming mode */}
+              {!showUpcoming && (
+                <div className={styles.gamesSection}>
+                  <h3>Games ({Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
+                  <div className={styles.gamesList}>
+                    {result.games?.slice(0, visibleGames).map((game, i) => 
+                      queryType === 'prop' ? renderPropGameRow(game, i) : renderGameRow(game, i)
+                    )}
+                  </div>
+                  
+                  {/* Load More Button */}
+                  {result.games && visibleGames < result.games.length && (
+                    <button 
+                      className={styles.loadMoreBtn}
+                      onClick={() => setVisibleGames(prev => prev + 10)}
+                    >
+                      Load Next 10 →
+                    </button>
+                  )}
+                  
+                  {/* Query Time */}
+                  <div className={styles.queryTimeFooter}>
+                    Query: {result.query_time_ms}ms
+                  </div>
+                </div>
+              )}
+
+              {/* Upcoming Games Section */}
+              {showUpcoming && (
+                <div className={styles.upcomingSection}>
+                  <div className={styles.upcomingHeader}>
+                    <h3>
+                      <BsCalendarEvent /> Upcoming Matchups ({upcomingResult?.total_games || 0})
+                    </h3>
+                    {upcomingResult && upcomingResult.total_games > 0 && (
+                      <select 
+                        className={styles.upcomingSortSelect}
+                        value={upcomingSortBy}
+                        onChange={(e) => setUpcomingSortBy(e.target.value as 'time' | 'best_odds')}
+                      >
+                        <option value="time">Sort by Game Time</option>
+                        <option value="best_odds">Sort by Best Odds</option>
+                      </select>
+                    )}
+                  </div>
+
+                  {upcomingLoading && (
+                    <div className={styles.upcomingLoading}>
+                      Finding upcoming matchups...
+                    </div>
+                  )}
+
+                  {!upcomingLoading && upcomingResult?.upcoming_games?.length === 0 && (
+                    <div className={styles.noUpcoming}>
+                      No upcoming games match your current filters.
+                    </div>
+                  )}
+
+                  {upcomingResult?.upcoming_games?.map((game) => (
+                    <div 
+                      key={game.game_id} 
+                      className={styles.upcomingGame}
+                    >
+                      <div 
+                        className={styles.upcomingGameHeader}
+                        onClick={() => setExpandedUpcomingGameId(
+                          expandedUpcomingGameId === game.game_id ? null : game.game_id
+                        )}
+                      >
+                        <div className={styles.upcomingGameTime}>
+                          {formatGameTime(game.game_time)}
+                        </div>
+                        <div className={styles.upcomingMatchup}>
+                          <div className={styles.upcomingTeam}>
+                            {teamLogos[game.away_team.id] && (
+                              <img src={teamLogos[game.away_team.id]} alt="" className={styles.upcomingLogo} />
+                            )}
+                            <span>{game.away_team.abbr}</span>
+                            <span className={styles.upcomingRank}>#{game.away_team.offense_rank} O</span>
+                          </div>
+                          <span className={styles.atSymbol}>@</span>
+                          <div className={styles.upcomingTeam}>
+                            {teamLogos[game.home_team.id] && (
+                              <img src={teamLogos[game.home_team.id]} alt="" className={styles.upcomingLogo} />
+                            )}
+                            <span>{game.home_team.abbr}</span>
+                            <span className={styles.upcomingRank}>#{game.home_team.offense_rank} O</span>
+                          </div>
+                        </div>
+                        <div className={styles.upcomingBestLine}>
+                          {betType === 'spread' && game.books[0] && (
+                            <span className={styles.bestSpread}>
+                              {game.books[0].spread.home > 0 ? '+' : ''}{game.books[0].spread.home}
+                            </span>
+                          )}
+                          {betType === 'total' && game.books[0] && (
+                            <span className={styles.bestTotal}>
+                              O/U {game.books[0].total.line}
+                            </span>
+                          )}
+                          {betType === 'moneyline' && game.books[0] && (
+                            <span className={styles.bestML}>
+                              {formatOdds(game.books[0].moneyline.home)}
+                            </span>
+                          )}
+                          <span className={styles.bookCount}>{game.books.length} books</span>
+                        </div>
+                        <MdExpandMore className={`${styles.expandIcon} ${expandedUpcomingGameId === game.game_id ? styles.rotated : ''}`} />
+                      </div>
+
+                      {/* Expanded Details */}
+                      {expandedUpcomingGameId === game.game_id && (
+                        <div className={styles.upcomingDetails}>
+                          <div className={styles.upcomingContext}>
+                            <div className={styles.contextItem}>
+                              <strong>{game.home_team.abbr}</strong>
+                              <span>#{game.home_team.offense_rank} Off</span>
+                              <span>#{game.home_team.defense_rank} Def</span>
+                              <span className={game.home_team.streak > 0 ? styles.positive : styles.negative}>
+                                {game.home_team.streak > 0 ? `${game.home_team.streak}W streak` : `${Math.abs(game.home_team.streak)}L streak`}
+                              </span>
+                            </div>
+                            <div className={styles.contextItem}>
+                              <strong>{game.away_team.abbr}</strong>
+                              <span>#{game.away_team.offense_rank} Off</span>
+                              <span>#{game.away_team.defense_rank} Def</span>
+                              <span className={game.away_team.streak > 0 ? styles.positive : styles.negative}>
+                                {game.away_team.streak > 0 ? `${game.away_team.streak}W streak` : `${Math.abs(game.away_team.streak)}L streak`}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className={styles.upcomingBooksGrid}>
+                            <div className={styles.booksHeader}>
+                              <span>Book</span>
+                              <span>Spread</span>
+                              <span>Total</span>
+                              <span>ML</span>
+                            </div>
+                            {game.books.slice(0, 10).map((book, i) => (
+                              <div key={i} className={styles.bookRow}>
+                                <span className={styles.bookName}>{book.bookmaker_title}</span>
+                                <span className={styles.bookSpread}>
+                                  {book.spread.home > 0 ? '+' : ''}{book.spread.home}
+                                  <small>({formatOdds(book.spread.home_odds)})</small>
+                                  {book.spread.movement !== 0 && (
+                                    <small className={book.spread.movement > 0 ? styles.lineUp : styles.lineDown}>
+                                      {book.spread.movement > 0 ? '↑' : '↓'}{Math.abs(book.spread.movement)}
+                                    </small>
+                                  )}
+                                </span>
+                                <span className={styles.bookTotal}>
+                                  {book.total.line}
+                                  <small>({formatOdds(book.total.over_odds)})</small>
+                                  {book.total.movement !== 0 && (
+                                    <small className={book.total.movement > 0 ? styles.lineUp : styles.lineDown}>
+                                      {book.total.movement > 0 ? '↑' : '↓'}{Math.abs(book.total.movement)}
+                                    </small>
+                                  )}
+                                </span>
+                                <span className={styles.bookML}>
+                                  {formatOdds(book.moneyline.home)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {game.is_division_game && <span className={styles.divisionBadge}>Division Game</span>}
+                          {game.is_conference_game && !game.is_division_game && <span className={styles.confBadge}>Conference Game</span>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {upcomingResult && (
+                    <div className={styles.queryTimeFooter}>
+                      Query: {upcomingResult.query_time_ms}ms
+                    </div>
                   )}
                 </div>
-                
-                {/* Load More Button */}
-                {result.games && visibleGames < result.games.length && (
-                  <button 
-                    className={styles.loadMoreBtn}
-                    onClick={() => setVisibleGames(prev => prev + 10)}
-                  >
-                    Load Next 10 →
-                  </button>
-                )}
-                
-                {/* Query Time */}
-                <div className={styles.queryTimeFooter}>
-                  Query: {result.query_time_ms}ms
-                </div>
-              </div>
+              )}
             </>
           )}
 
