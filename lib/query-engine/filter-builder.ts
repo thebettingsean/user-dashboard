@@ -160,37 +160,47 @@ export function buildFavoriteFilter(
  */
 export function buildSpreadRangeFilter(
   range: { min?: number; max?: number } | undefined,
-  tableAlias: string
+  tableAlias: string,
+  isHomeTeam: boolean = true
 ): string | null {
   if (!range) return null
   if (range.min === undefined && range.max === undefined) return null
   
+  // For away team perspective, we need to negate the spread values
+  // Home spread -3 = Away spread +3
+  const adjustedMin = range.min !== undefined 
+    ? (isHomeTeam ? range.min : -range.min) 
+    : undefined
+  const adjustedMax = range.max !== undefined 
+    ? (isHomeTeam ? range.max : -range.max) 
+    : undefined
+  
   // Both min and max provided
-  if (range.min !== undefined && range.max !== undefined) {
-    const minSpread = Math.min(range.min, range.max)
-    const maxSpread = Math.max(range.min, range.max)
+  if (adjustedMin !== undefined && adjustedMax !== undefined) {
+    const minSpread = Math.min(adjustedMin, adjustedMax)
+    const maxSpread = Math.max(adjustedMin, adjustedMax)
     return `${tableAlias}.spread_close BETWEEN ${minSpread} AND ${maxSpread}`
   }
   
   // Only min provided (e.g., +3 means >= +3 for dogs, or -3 means <= -3 for favs)
-  if (range.min !== undefined) {
-    if (range.min >= 0) {
+  if (adjustedMin !== undefined) {
+    if (adjustedMin >= 0) {
       // Underdogs: spread >= min (e.g., +3 or more)
-      return `${tableAlias}.spread_close >= ${range.min}`
+      return `${tableAlias}.spread_close >= ${adjustedMin}`
     } else {
       // Favorites: spread <= min (e.g., -3 means -3, -4, -5... more favored)
-      return `${tableAlias}.spread_close <= ${range.min}`
+      return `${tableAlias}.spread_close <= ${adjustedMin}`
     }
   }
   
   // Only max provided
-  if (range.max !== undefined) {
-    if (range.max >= 0) {
+  if (adjustedMax !== undefined) {
+    if (adjustedMax >= 0) {
       // Underdogs up to max (e.g., up to +7)
-      return `${tableAlias}.spread_close <= ${range.max}`
+      return `${tableAlias}.spread_close <= ${adjustedMax}`
     } else {
       // Favorites less than max (e.g., less favored than -7)
-      return `${tableAlias}.spread_close >= ${range.max}`
+      return `${tableAlias}.spread_close >= ${adjustedMax}`
     }
   }
   
@@ -735,7 +745,7 @@ export function buildFilterConditions(
   
   // Spread range - for O/U queries, this applies to home team's spread
   if (filters.spread_range) {
-    const spreadFilter = buildSpreadRangeFilter(filters.spread_range, tableAlias)
+    const spreadFilter = buildSpreadRangeFilter(filters.spread_range, tableAlias, isHomeTeam)
     if (spreadFilter) {
       conditions.push(spreadFilter)
       const { min, max } = filters.spread_range
