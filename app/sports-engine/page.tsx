@@ -1154,7 +1154,17 @@ export default function SportsEnginePage() {
       
       // Build filters matching the historical query
       if (location !== 'any') filters.location = location
-      if (favorite !== 'any') filters.is_favorite = favorite === 'favorite'
+      
+      // For O/U queries, use homeFavDog; for other bet types, use favorite
+      const isOUQuery = betType === 'total'
+      if (isOUQuery) {
+        // For totals, home_fav means home team is favorite (home_spread < 0)
+        if (homeFavDog === 'home_fav') filters.is_home_favorite = true
+        if (homeFavDog === 'home_dog') filters.is_home_favorite = false
+      } else {
+        if (favorite !== 'any') filters.is_favorite = favorite === 'favorite'
+      }
+      
       if (division === 'division') filters.is_division_game = true
       if (division === 'non_division') filters.is_division_game = false
       if (conference === 'conference') filters.is_conference_game = true

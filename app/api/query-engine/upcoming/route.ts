@@ -74,13 +74,22 @@ export async function POST(request: Request) {
     const teamPrefix = isHome ? 'home' : 'away'
     const oppPrefix = isHome ? 'away' : 'home'
     
-    // Favorite/Dog filter
+    // Favorite/Dog filter (for spread/ML - based on location)
     if (filters.is_favorite === true) {
       conditions.push(`ll.${teamPrefix}_spread < 0`)
       appliedFilters.push('Favorite')
     } else if (filters.is_favorite === false) {
       conditions.push(`ll.${teamPrefix}_spread > 0`)
       appliedFilters.push('Underdog')
+    }
+    
+    // Home Favorite/Dog filter (for O/U - always from home perspective)
+    if (filters.is_home_favorite === true) {
+      conditions.push(`ll.home_spread < 0`)
+      appliedFilters.push('Home Favorite')
+    } else if (filters.is_home_favorite === false) {
+      conditions.push(`ll.home_spread > 0`)
+      appliedFilters.push('Home Underdog')
     }
     
     // Spread range
