@@ -478,10 +478,18 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       t.conference as opponent_conference,
       p.name as player_name,
       p.position as player_position,
-      p.headshot_url as player_headshot
+      p.headshot_url as player_headshot,
+      ht.abbreviation as home_abbr,
+      at.abbreviation as away_abbr,
+      ht.division as home_division,
+      ht.conference as home_conference,
+      at.division as away_division,
+      at.conference as away_conference
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
+    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
+    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
     JOIN nfl_prop_lines pl ON p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)
     ${oppRankingsJoin}
@@ -542,10 +550,18 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       t.conference as opponent_conference,
       p.name as player_name,
       p.position as player_position,
-      p.headshot_url as player_headshot
+      p.headshot_url as player_headshot,
+      ht.abbreviation as home_abbr,
+      at.abbreviation as away_abbr,
+      ht.division as home_division,
+      ht.conference as home_conference,
+      at.division as away_division,
+      at.conference as away_conference
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
+    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
+    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
     ${oppRankingsJoin}
     ${whereClause}
@@ -664,7 +680,19 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       receiving_yards: row.receiving_yards,
       receiving_tds: row.receiving_tds,
       receiving_long: row.receiving_long,
-      yards_per_reception: row.yards_per_reception
+      yards_per_reception: row.yards_per_reception,
+      // For "Why this fits" - venue and matchup info
+      venue: row.venue,
+      home_division: row.home_division,
+      away_division: row.away_division,
+      home_conference: row.home_conference,
+      away_conference: row.away_conference,
+      spread_close: row.spread_close,
+      // Additional team info
+      home_team_id: row.home_team_id,
+      away_team_id: row.away_team_id,
+      home_abbr: row.home_abbr,
+      away_abbr: row.away_abbr
     })
   }
   

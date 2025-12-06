@@ -1517,11 +1517,11 @@ export default function SportsEnginePage() {
       reasons.push({ label: 'Bet Type', value: betLabel })
     }
 
-    // Location/Venue - for non-O/U queries
-    if (!isOUQuery) {
+    // Location/Venue - show stadium name if available
+    if (location === 'home' || location === 'away') {
       if (game.venue) {
         reasons.push({ label: 'Location', value: `@ ${game.venue}` })
-      } else if (location === 'home' || location === 'away') {
+      } else {
         reasons.push({ 
           label: 'Location', 
           value: location === 'home' ? `${homeAbbr} at Home` : `${awayAbbr} on Road`
@@ -1529,10 +1529,10 @@ export default function SportsEnginePage() {
       }
     }
 
-    // Division filter
+    // Division filter - show actual division names
     if (division === 'division') {
-      if (game.home_division && game.away_division) {
-        reasons.push({ label: 'Division', value: `${game.home_division}` })
+      if (game.home_division) {
+        reasons.push({ label: 'Division', value: game.home_division })
       } else {
         reasons.push({ label: 'Division', value: 'Division Game' })
       }
@@ -1544,9 +1544,9 @@ export default function SportsEnginePage() {
       }
     }
     
-    // Conference filter
+    // Conference filter - show actual conference names
     if (conference === 'conference') {
-      if (game.home_conference && game.away_conference) {
+      if (game.home_conference) {
         reasons.push({ label: 'Conference', value: `${game.home_conference} vs ${game.home_conference}` })
       } else {
         reasons.push({ label: 'Conference', value: 'Conference Game' })
@@ -1561,7 +1561,6 @@ export default function SportsEnginePage() {
 
     // Favorite/Underdog - for non-O/U
     if (!isOUQuery && favorite !== 'any') {
-      const isFavorite = homeSpread < 0
       reasons.push({ 
         label: favorite === 'favorite' ? 'Favorite' : 'Underdog', 
         value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
@@ -1570,7 +1569,6 @@ export default function SportsEnginePage() {
 
     // Home Favorite/Underdog - for O/U queries
     if (isOUQuery && homeFavDog !== 'any') {
-      const isHomeFav = homeSpread < 0
       reasons.push({ 
         label: homeFavDog === 'favorite' ? 'Home Fav' : 'Home Dog', 
         value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
@@ -1590,17 +1588,58 @@ export default function SportsEnginePage() {
       reasons.push({ label: 'Total', value: `O/U ${gameTotal}` })
     }
 
-    // Spread/Line info for spreads
-    if (betType === 'spread' && !spreadMin && !spreadMax) {
+    // Spread/Line info for spreads (only if no spread range filter)
+    if (betType === 'spread' && !spreadMin && !spreadMax && favorite === 'any') {
       reasons.push({ 
         label: 'Line', 
         value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
       })
     }
 
-    // Referee
-    if (game.referee_name && queryType === 'referee') {
+    // Referee - always show if referee query type
+    if (queryType === 'referee' && game.referee_name) {
       reasons.push({ label: 'Referee', value: game.referee_name })
+    }
+
+    // Defense rank filter - show actual rank
+    if (defenseRank !== 'any') {
+      const rankLabel = defenseRank.replace('_', ' ')
+      // We don't have opp_def_rank in game data yet, so show the filter
+      reasons.push({ label: 'vs Defense', value: `${rankLabel}` })
+    }
+
+    // Offense rank filter - show actual rank
+    if (offenseRank !== 'any') {
+      const rankLabel = offenseRank.replace('_', ' ')
+      reasons.push({ label: 'vs Offense', value: `${rankLabel}` })
+    }
+
+    // Own defense rank
+    if (ownDefenseRank !== 'any') {
+      const rankLabel = ownDefenseRank.replace('_', ' ')
+      reasons.push({ label: 'Team Defense', value: `${rankLabel}` })
+    }
+
+    // Own offense rank
+    if (ownOffenseRank !== 'any') {
+      const rankLabel = ownOffenseRank.replace('_', ' ')
+      reasons.push({ label: 'Team Offense', value: `${rankLabel}` })
+    }
+
+    // For O/U queries - home/away team stats
+    if (isOUQuery) {
+      if (homeTeamDefenseRank !== 'any') {
+        reasons.push({ label: 'Home Def', value: homeTeamDefenseRank.replace('_', ' ') })
+      }
+      if (homeTeamOffenseRank !== 'any') {
+        reasons.push({ label: 'Home Off', value: homeTeamOffenseRank.replace('_', ' ') })
+      }
+      if (awayTeamDefenseRank !== 'any') {
+        reasons.push({ label: 'Away Def', value: awayTeamDefenseRank.replace('_', ' ') })
+      }
+      if (awayTeamOffenseRank !== 'any') {
+        reasons.push({ label: 'Away Off', value: awayTeamOffenseRank.replace('_', ' ') })
+      }
     }
 
     // Streaks

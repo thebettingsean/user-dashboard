@@ -308,7 +308,14 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       home_team_id: row.home_team_id,
       away_team_id: row.away_team_id,
       home_abbr: row.home_abbr,
-      away_abbr: row.away_abbr
+      away_abbr: row.away_abbr,
+      // For "Why this fits" - venue and matchup info
+      venue: row.venue,
+      home_division: row.home_division,
+      away_division: row.away_division,
+      home_conference: row.home_conference,
+      away_conference: row.away_conference,
+      spread_close: row.spread_close
     })
   }
   
