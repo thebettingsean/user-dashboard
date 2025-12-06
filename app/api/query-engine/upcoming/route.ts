@@ -273,88 +273,80 @@ export async function POST(request: Request) {
       ? 'AND ' + conditions.join(' AND ')
       : ''
     
-    // Query for upcoming games with current and opening lines
+    // Query for upcoming games with current lines
+    // Using argMax to get latest snapshot per game/bookmaker
     const sql = `
-      WITH 
-        current_lines AS (
-          SELECT 
-            game_id,
-            bookmaker,
-            bookmaker_title,
-            home_spread,
-            home_spread_odds,
-            away_spread,
-            away_spread_odds,
-            total_line,
-            over_odds,
-            under_odds,
-            home_ml,
-            away_ml,
-            snapshot_time
-          FROM nfl_line_snapshots
-          WHERE (game_id, bookmaker, snapshot_time) IN (
-            SELECT game_id, bookmaker, max(snapshot_time)
-            FROM nfl_line_snapshots
-            GROUP BY game_id, bookmaker
-          )
-        ),
-        opening_lines AS (
-          SELECT 
-            game_id,
-            bookmaker,
-            home_spread as opening_spread,
-            total_line as opening_total,
-            home_ml as opening_home_ml,
-            away_ml as opening_away_ml
-          FROM nfl_line_snapshots
-          WHERE is_opening = 1
-        )
+      WITH latest_lines AS (
+        SELECT 
+          game_id,
+          bookmaker,
+          argMax(bookmaker_title, snapshot_time) as bookmaker_title,
+          argMax(home_spread, snapshot_time) as home_spread,
+          argMax(home_spread_odds, snapshot_time) as home_spread_odds,
+          argMax(away_spread, snapshot_time) as away_spread,
+          argMax(away_spread_odds, snapshot_time) as away_spread_odds,
+          argMax(total_line, snapshot_time) as total_line,
+          argMax(over_odds, snapshot_time) as over_odds,
+          argMax(under_odds, snapshot_time) as under_odds,
+          argMax(home_ml, snapshot_time) as home_ml,
+          argMax(away_ml, snapshot_time) as away_ml,
+          max(snapshot_time) as latest_snapshot
+        FROM nfl_line_snapshots
+        GROUP BY game_id, bookmaker
+      ),
+      opening_lines AS (
+        SELECT 
+          game_id,
+          bookmaker,
+          home_spread as opening_spread,
+          total_line as opening_total,
+          home_ml as opening_home_ml,
+          away_ml as opening_away_ml
+        FROM nfl_line_snapshots
+        WHERE is_opening = 1
+      )
       SELECT 
-        g.game_id,
-        g.game_time,
-        g.home_team_id,
-        g.away_team_id,
-        g.home_team_name,
-        g.away_team_name,
-        g.home_team_abbr,
-        g.away_team_abbr,
-        g.is_division_game,
-        g.is_conference_game,
-        g.home_offense_rank,
-        g.home_defense_rank,
-        g.away_offense_rank,
-        g.away_defense_rank,
-        g.home_streak,
-        g.away_streak,
-        g.home_prev_margin,
-        g.away_prev_margin,
-        curr.bookmaker,
-        curr.bookmaker_title,
-        curr.home_spread,
-        curr.home_spread_odds,
-        curr.away_spread,
-        curr.away_spread_odds,
-        curr.total_line,
-        curr.over_odds,
-        curr.under_odds,
-        curr.home_ml,
-        curr.away_ml,
-        open.opening_spread,
-        open.opening_total,
-        open.opening_home_ml,
-        open.opening_away_ml,
-        curr.home_spread - open.opening_spread as spread_movement,
-        curr.total_line - open.opening_total as total_movement,
-        curr.home_ml - open.opening_home_ml as home_ml_movement
+        g.game_id AS game_id,
+        g.game_time AS game_time,
+        g.home_team_id AS home_team_id,
+        g.away_team_id AS away_team_id,
+        g.home_team_name AS home_team_name,
+        g.away_team_name AS away_team_name,
+        g.home_team_abbr AS home_team_abbr,
+        g.away_team_abbr AS away_team_abbr,
+        g.is_division_game AS is_division_game,
+        g.is_conference_game AS is_conference_game,
+        g.home_offense_rank AS home_offense_rank,
+        g.home_defense_rank AS home_defense_rank,
+        g.away_offense_rank AS away_offense_rank,
+        g.away_defense_rank AS away_defense_rank,
+        g.home_streak AS home_streak,
+        g.away_streak AS away_streak,
+        g.home_prev_margin AS home_prev_margin,
+        g.away_prev_margin AS away_prev_margin,
+        ll.bookmaker AS bookmaker,
+        ll.bookmaker_title AS bookmaker_title,
+        ll.home_spread AS home_spread,
+        ll.home_spread_odds AS home_spread_odds,
+        ll.away_spread AS away_spread,
+        ll.away_spread_odds AS away_spread_odds,
+        ll.total_line AS total_line,
+        ll.over_odds AS over_odds,
+        ll.under_odds AS under_odds,
+        ll.home_ml AS home_ml,
+        ll.away_ml AS away_ml,
+        ll.latest_snapshot AS snapshot_time,
+        ol.opening_spread AS opening_spread,
+        ol.opening_total AS opening_total,
+        ol.opening_home_ml AS opening_home_ml,
+        ol.opening_away_ml AS opening_away_ml
       FROM nfl_upcoming_games g
-      JOIN current_lines curr ON g.game_id = curr.game_id
-      LEFT JOIN opening_lines open ON g.game_id = open.game_id AND curr.bookmaker = open.bookmaker
+      INNER JOIN latest_lines ll ON g.game_id = ll.game_id
+      LEFT JOIN opening_lines ol ON g.game_id = ol.game_id AND ll.bookmaker = ol.bookmaker
       WHERE 1=1
       ${whereClause}
-      ORDER BY g.game_time ASC, curr.bookmaker
+      ORDER BY g.game_time ASC, ll.bookmaker
     `
-    
-    console.log('Upcoming query SQL:', sql)
     
     const results = await executeQuery(sql)
     
@@ -395,6 +387,11 @@ export async function POST(request: Request) {
       const alreadyHasBookmaker = existingBooks.some((b: any) => b.bookmaker_title === row.bookmaker_title)
       
       if (!alreadyHasBookmaker) {
+        // Calculate movements
+        const spreadMovement = row.opening_spread ? row.home_spread - row.opening_spread : 0
+        const totalMovement = row.opening_total ? row.total_line - row.opening_total : 0
+        const mlMovement = row.opening_home_ml ? row.home_ml - row.opening_home_ml : 0
+        
         existingBooks.push({
           bookmaker: row.bookmaker,
           bookmaker_title: row.bookmaker_title,
@@ -404,21 +401,21 @@ export async function POST(request: Request) {
             away: row.away_spread,
             away_odds: row.away_spread_odds,
             opening: row.opening_spread,
-            movement: row.spread_movement
+            movement: spreadMovement
           },
           total: {
             line: row.total_line,
             over_odds: row.over_odds,
             under_odds: row.under_odds,
             opening: row.opening_total,
-            movement: row.total_movement
+            movement: totalMovement
           },
           moneyline: {
             home: row.home_ml,
             away: row.away_ml,
             opening_home: row.opening_home_ml,
             opening_away: row.opening_away_ml,
-            home_movement: row.home_ml_movement
+            home_movement: mlMovement
           }
         })
       }
