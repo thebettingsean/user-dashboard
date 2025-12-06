@@ -1259,6 +1259,165 @@ export default function SportsEnginePage() {
     }
   }
 
+  // Book priority cascade for best odds
+  const BOOK_PRIORITY = [
+    'fanduel', 'draftkings', 'betmgm', 'williamhill_us', 'betrivers',
+    'fanatics', 'bovada', 'pointsbetus', 'barstool', 'betonlineag', 'unibet_us'
+  ]
+
+  // Get best book from list using priority cascade
+  const getBestBook = (books: any[]) => {
+    if (!books || books.length === 0) return null
+    
+    // Sort by priority
+    const sorted = [...books].sort((a, b) => {
+      const aIdx = BOOK_PRIORITY.indexOf(a.bookmaker?.toLowerCase() || '')
+      const bIdx = BOOK_PRIORITY.indexOf(b.bookmaker?.toLowerCase() || '')
+      // If not in priority list, put at end
+      const aPriority = aIdx === -1 ? 999 : aIdx
+      const bPriority = bIdx === -1 ? 999 : bIdx
+      return aPriority - bPriority
+    })
+    
+    return sorted[0]
+  }
+
+  // Get the bet display for upcoming game based on query type and filters
+  const getUpcomingBetDisplay = (game: UpcomingGame) => {
+    const bestBook = getBestBook(game.books)
+    if (!bestBook) return null
+
+    // Determine subject team based on location filter
+    const isHomeSubject = location !== 'away'
+    const subjectTeam = isHomeSubject ? game.home_team : game.away_team
+    const subjectLogo = teamLogos[subjectTeam.id]
+    
+    if (betType === 'spread') {
+      const spread = isHomeSubject ? bestBook.spread.home : bestBook.spread.away
+      const odds = isHomeSubject ? bestBook.spread.home_odds : bestBook.spread.away_odds
+      return {
+        teamName: subjectTeam.name,
+        teamAbbr: subjectTeam.abbr,
+        teamLogo: subjectLogo,
+        line: `${spread > 0 ? '+' : ''}${spread}`,
+        odds: formatOdds(odds),
+        bookName: bestBook.bookmaker_title
+      }
+    } else if (betType === 'total') {
+      return {
+        teamName: 'Game Total',
+        teamAbbr: '',
+        teamLogo: null,
+        line: `O/U ${bestBook.total.line}`,
+        odds: formatOdds(bestBook.total.over_odds),
+        bookName: bestBook.bookmaker_title
+      }
+    } else { // moneyline
+      const ml = isHomeSubject ? bestBook.moneyline.home : bestBook.moneyline.away
+      return {
+        teamName: subjectTeam.name,
+        teamAbbr: subjectTeam.abbr,
+        teamLogo: subjectLogo,
+        line: formatOdds(ml),
+        odds: '',
+        bookName: bestBook.bookmaker_title
+      }
+    }
+  }
+
+  // Get "why this matches" items for upcoming game
+  const getMatchReasons = (game: UpcomingGame) => {
+    const reasons: { label: string; value: string; match: boolean }[] = []
+    const bestBook = getBestBook(game.books)
+    if (!bestBook) return reasons
+
+    const isHomeSubject = location !== 'away'
+    const subjectTeam = isHomeSubject ? game.home_team : game.away_team
+    const opponentTeam = isHomeSubject ? game.away_team : game.home_team
+    const subjectSpread = isHomeSubject ? bestBook.spread.home : bestBook.spread.away
+
+    // Location
+    if (location === 'home') {
+      reasons.push({ label: 'Home Team', value: game.home_team.abbr, match: true })
+    } else if (location === 'away') {
+      reasons.push({ label: 'Away Team', value: game.away_team.abbr, match: true })
+    }
+
+    // Division/Conference
+    if (game.is_division_game) {
+      reasons.push({ label: 'Division Game', value: '✓', match: true })
+    } else if (game.is_conference_game) {
+      reasons.push({ label: 'Conference Game', value: '✓', match: true })
+    }
+
+    // Favorite/Underdog
+    if (favorite === 'yes') {
+      reasons.push({ label: 'Favorite', value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`, match: subjectSpread < 0 })
+    } else if (favorite === 'no') {
+      reasons.push({ label: 'Underdog', value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`, match: subjectSpread > 0 })
+    }
+
+    // Spread range
+    if (spreadMin || spreadMax) {
+      reasons.push({ 
+        label: 'Spread Range', 
+        value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`,
+        match: true 
+      })
+    }
+
+    // Total range
+    if (totalMin || totalMax) {
+      reasons.push({ 
+        label: 'Game Total', 
+        value: `O/U ${bestBook.total.line}`,
+        match: true 
+      })
+    }
+
+    // Team rankings
+    if (defenseRank !== 'any') {
+      reasons.push({ 
+        label: 'vs Defense', 
+        value: `#${opponentTeam.defense_rank}`,
+        match: true 
+      })
+    }
+    if (offenseRank !== 'any') {
+      reasons.push({ 
+        label: 'vs Offense', 
+        value: `#${opponentTeam.offense_rank}`,
+        match: true 
+      })
+    }
+    if (ownDefenseRank !== 'any') {
+      reasons.push({ 
+        label: 'Team Defense', 
+        value: `#${subjectTeam.defense_rank}`,
+        match: true 
+      })
+    }
+    if (ownOffenseRank !== 'any') {
+      reasons.push({ 
+        label: 'Team Offense', 
+        value: `#${subjectTeam.offense_rank}`,
+        match: true 
+      })
+    }
+
+    // Streaks
+    if (streak) {
+      const teamStreak = isHomeSubject ? game.home_team.streak : game.away_team.streak
+      reasons.push({ 
+        label: 'Streak', 
+        value: teamStreak > 0 ? `${teamStreak}W` : `${Math.abs(teamStreak)}L`,
+        match: true 
+      })
+    }
+
+    return reasons
+  }
+
   // Render expanded prop details (player box score - FULL stats from nfl_box_scores_v2)
   const renderPropDetails = (game: any) => {
     const playerName = game.player_name || selectedPlayer?.name || 'Player'
@@ -2881,121 +3040,177 @@ export default function SportsEnginePage() {
                     </div>
                   )}
 
-                  {upcomingResult?.upcoming_games?.map((game) => (
-                    <div 
-                      key={game.game_id} 
-                      className={styles.upcomingGame}
-                    >
+                  {upcomingResult?.upcoming_games?.map((game) => {
+                    const betDisplay = getUpcomingBetDisplay(game)
+                    const matchReasons = getMatchReasons(game)
+                    const bestBook = getBestBook(game.books)
+                    const isHomeSubject = location !== 'away'
+                    
+                    return (
                       <div 
-                        className={styles.upcomingGameHeader}
-                        onClick={() => setExpandedUpcomingGameId(
-                          expandedUpcomingGameId === game.game_id ? null : game.game_id
-                        )}
+                        key={game.game_id} 
+                        className={styles.upcomingGame}
                       >
-                        <div className={styles.upcomingGameTime}>
-                          {formatGameTime(game.game_time)}
-                        </div>
-                        <div className={styles.upcomingMatchup}>
-                          <div className={styles.upcomingTeam}>
-                            {teamLogos[game.away_team.id] && (
-                              <img src={teamLogos[game.away_team.id]} alt="" className={styles.upcomingLogo} />
-                            )}
-                            <span>{game.away_team.abbr}</span>
-                            <span className={styles.upcomingRank}>#{game.away_team.offense_rank} O</span>
+                        {/* Collapsed Header - Shows the BET */}
+                        <div 
+                          className={styles.upcomingGameHeader}
+                          onClick={() => setExpandedUpcomingGameId(
+                            expandedUpcomingGameId === game.game_id ? null : game.game_id
+                          )}
+                        >
+                          <div className={styles.upcomingGameTime}>
+                            {formatGameTime(game.game_time)}
                           </div>
-                          <span className={styles.atSymbol}>@</span>
-                          <div className={styles.upcomingTeam}>
-                            {teamLogos[game.home_team.id] && (
-                              <img src={teamLogos[game.home_team.id]} alt="" className={styles.upcomingLogo} />
+                          
+                          {/* The Bet Display */}
+                          <div className={styles.upcomingBetDisplay}>
+                            {betDisplay?.teamLogo && (
+                              <img src={betDisplay.teamLogo} alt="" className={styles.upcomingBetLogo} />
                             )}
-                            <span>{game.home_team.abbr}</span>
-                            <span className={styles.upcomingRank}>#{game.home_team.offense_rank} O</span>
-                          </div>
-                        </div>
-                        <div className={styles.upcomingBestLine}>
-                          {betType === 'spread' && game.books[0] && (
-                            <span className={styles.bestSpread}>
-                              {game.books[0].spread.home > 0 ? '+' : ''}{game.books[0].spread.home}
-                            </span>
-                          )}
-                          {betType === 'total' && game.books[0] && (
-                            <span className={styles.bestTotal}>
-                              O/U {game.books[0].total.line}
-                            </span>
-                          )}
-                          {betType === 'moneyline' && game.books[0] && (
-                            <span className={styles.bestML}>
-                              {formatOdds(game.books[0].moneyline.home)}
-                            </span>
-                          )}
-                          <span className={styles.bookCount}>{game.books.length} books</span>
-                        </div>
-                        <MdExpandMore className={`${styles.expandIcon} ${expandedUpcomingGameId === game.game_id ? styles.rotated : ''}`} />
-                      </div>
-
-                      {/* Expanded Details */}
-                      {expandedUpcomingGameId === game.game_id && (
-                        <div className={styles.upcomingDetails}>
-                          <div className={styles.upcomingContext}>
-                            <div className={styles.contextItem}>
-                              <strong>{game.home_team.abbr}</strong>
-                              <span>#{game.home_team.offense_rank} Off</span>
-                              <span>#{game.home_team.defense_rank} Def</span>
-                              <span className={game.home_team.streak > 0 ? styles.positive : styles.negative}>
-                                {game.home_team.streak > 0 ? `${game.home_team.streak}W streak` : `${Math.abs(game.home_team.streak)}L streak`}
+                            <div className={styles.upcomingBetInfo}>
+                              <span className={styles.upcomingBetTeam}>
+                                {betDisplay?.teamAbbr || betDisplay?.teamName}
+                              </span>
+                              <span className={styles.upcomingBetLine}>
+                                {betDisplay?.line}
                               </span>
                             </div>
-                            <div className={styles.contextItem}>
-                              <strong>{game.away_team.abbr}</strong>
-                              <span>#{game.away_team.offense_rank} Off</span>
-                              <span>#{game.away_team.defense_rank} Def</span>
-                              <span className={game.away_team.streak > 0 ? styles.positive : styles.negative}>
-                                {game.away_team.streak > 0 ? `${game.away_team.streak}W streak` : `${Math.abs(game.away_team.streak)}L streak`}
+                            {betDisplay?.odds && (
+                              <span className={styles.upcomingBetOdds}>
+                                ({betDisplay.odds})
                               </span>
-                            </div>
+                            )}
                           </div>
 
-                          <div className={styles.upcomingBooksGrid}>
-                            <div className={styles.booksHeader}>
-                              <span>Book</span>
-                              <span>Spread</span>
-                              <span>Total</span>
-                              <span>ML</span>
-                            </div>
-                            {game.books.slice(0, 10).map((book, i) => (
-                              <div key={i} className={styles.bookRow}>
-                                <span className={styles.bookName}>{book.bookmaker_title}</span>
-                                <span className={styles.bookSpread}>
-                                  {book.spread.home > 0 ? '+' : ''}{book.spread.home}
-                                  <small>({formatOdds(book.spread.home_odds)})</small>
-                                  {book.spread.movement !== 0 && (
-                                    <small className={book.spread.movement > 0 ? styles.lineUp : styles.lineDown}>
-                                      {book.spread.movement > 0 ? '↑' : '↓'}{Math.abs(book.spread.movement)}
-                                    </small>
+                          <div className={styles.upcomingMeta}>
+                            <span className={styles.bookCount}>{game.books.length} books</span>
+                            <span className={styles.bookSource}>{betDisplay?.bookName}</span>
+                          </div>
+                          
+                          <MdExpandMore className={`${styles.expandIcon} ${expandedUpcomingGameId === game.game_id ? styles.rotated : ''}`} />
+                        </div>
+
+                        {/* Expanded Details */}
+                        {expandedUpcomingGameId === game.game_id && (
+                          <div className={styles.upcomingDetails}>
+                            {/* Sportsbook-style odds display */}
+                            <div className={styles.sportsbookOdds}>
+                              {/* Away Team Row */}
+                              <div className={`${styles.teamOddsRow} ${!isHomeSubject ? styles.subjectTeam : ''}`}>
+                                <div className={styles.teamOddsInfo}>
+                                  {teamLogos[game.away_team.id] && (
+                                    <img src={teamLogos[game.away_team.id]} alt="" className={styles.teamOddsLogo} />
                                   )}
-                                </span>
-                                <span className={styles.bookTotal}>
-                                  {book.total.line}
-                                  <small>({formatOdds(book.total.over_odds)})</small>
-                                  {book.total.movement !== 0 && (
-                                    <small className={book.total.movement > 0 ? styles.lineUp : styles.lineDown}>
-                                      {book.total.movement > 0 ? '↑' : '↓'}{Math.abs(book.total.movement)}
-                                    </small>
-                                  )}
-                                </span>
-                                <span className={styles.bookML}>
-                                  {formatOdds(book.moneyline.home)}
-                                </span>
+                                  <span className={styles.teamOddsName}>{game.away_team.abbr}</span>
+                                </div>
+                                <div className={styles.teamOddsValues}>
+                                  <div className={`${styles.oddsCell} ${betType === 'moneyline' && !isHomeSubject ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>ML</span>
+                                    <span className={styles.oddsValue}>{formatOdds(bestBook?.moneyline.away || 0)}</span>
+                                  </div>
+                                  <div className={`${styles.oddsCell} ${betType === 'spread' && !isHomeSubject ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>Spread</span>
+                                    <span className={styles.oddsValue}>
+                                      {bestBook?.spread.away > 0 ? '+' : ''}{bestBook?.spread.away}
+                                      <small>({formatOdds(bestBook?.spread.away_odds || 0)})</small>
+                                    </span>
+                                  </div>
+                                  <div className={`${styles.oddsCell} ${betType === 'total' ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>Over</span>
+                                    <span className={styles.oddsValue}>
+                                      O {bestBook?.total.line}
+                                      <small>({formatOdds(bestBook?.total.over_odds || 0)})</small>
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                              
+                              {/* Home Team Row */}
+                              <div className={`${styles.teamOddsRow} ${isHomeSubject ? styles.subjectTeam : ''}`}>
+                                <div className={styles.teamOddsInfo}>
+                                  {teamLogos[game.home_team.id] && (
+                                    <img src={teamLogos[game.home_team.id]} alt="" className={styles.teamOddsLogo} />
+                                  )}
+                                  <span className={styles.teamOddsName}>{game.home_team.abbr}</span>
+                                </div>
+                                <div className={styles.teamOddsValues}>
+                                  <div className={`${styles.oddsCell} ${betType === 'moneyline' && isHomeSubject ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>ML</span>
+                                    <span className={styles.oddsValue}>{formatOdds(bestBook?.moneyline.home || 0)}</span>
+                                  </div>
+                                  <div className={`${styles.oddsCell} ${betType === 'spread' && isHomeSubject ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>Spread</span>
+                                    <span className={styles.oddsValue}>
+                                      {bestBook?.spread.home > 0 ? '+' : ''}{bestBook?.spread.home}
+                                      <small>({formatOdds(bestBook?.spread.home_odds || 0)})</small>
+                                    </span>
+                                  </div>
+                                  <div className={`${styles.oddsCell} ${betType === 'total' ? styles.highlighted : ''}`}>
+                                    <span className={styles.oddsLabel}>Under</span>
+                                    <span className={styles.oddsValue}>
+                                      U {bestBook?.total.line}
+                                      <small>({formatOdds(bestBook?.total.under_odds || 0)})</small>
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
 
-                          {game.is_division_game && <span className={styles.divisionBadge}>Division Game</span>}
-                          {game.is_conference_game && !game.is_division_game && <span className={styles.confBadge}>Conference Game</span>}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            {/* Why This Matches */}
+                            {matchReasons.length > 0 && (
+                              <div className={styles.matchReasons}>
+                                <div className={styles.matchReasonsTitle}>Why this matches:</div>
+                                <div className={styles.matchReasonsList}>
+                                  {matchReasons.map((reason, i) => (
+                                    <div key={i} className={styles.matchReason}>
+                                      <FaCheckCircle className={styles.matchCheck} />
+                                      <span>{reason.label}:</span>
+                                      <strong>{reason.value}</strong>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* More Books */}
+                            <details className={styles.moreBooks}>
+                              <summary>View all {game.books.length} sportsbooks</summary>
+                              <div className={styles.upcomingBooksGrid}>
+                                <div className={styles.booksHeader}>
+                                  <span>Book</span>
+                                  <span>Spread</span>
+                                  <span>Total</span>
+                                  <span>ML</span>
+                                </div>
+                                {game.books.map((book, i) => (
+                                  <div key={i} className={styles.bookRow}>
+                                    <span className={styles.bookName}>{book.bookmaker_title}</span>
+                                    <span className={styles.bookSpread}>
+                                      {book.spread.home > 0 ? '+' : ''}{book.spread.home}
+                                      <small>({formatOdds(book.spread.home_odds)})</small>
+                                    </span>
+                                    <span className={styles.bookTotal}>
+                                      {book.total.line}
+                                      <small>({formatOdds(book.total.over_odds)})</small>
+                                    </span>
+                                    <span className={styles.bookML}>
+                                      {formatOdds(book.moneyline.home)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+
+                            {/* Badges */}
+                            <div className={styles.gameBadges}>
+                              {game.is_division_game && <span className={styles.divisionBadge}>Division</span>}
+                              {game.is_conference_game && !game.is_division_game && <span className={styles.confBadge}>Conference</span>}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
 
                   {upcomingResult && (
                     <div className={styles.queryTimeFooter}>
