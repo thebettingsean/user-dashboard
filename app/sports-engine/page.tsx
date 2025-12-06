@@ -1154,7 +1154,7 @@ export default function SportsEnginePage() {
       
       // Build filters matching the historical query
       if (location !== 'any') filters.location = location
-      if (favorite !== 'any') filters.is_favorite = favorite === 'yes'
+      if (favorite !== 'any') filters.is_favorite = favorite === 'favorite'
       if (division === 'division') filters.is_division_game = true
       if (division === 'non_division') filters.is_division_game = false
       if (conference === 'conference') filters.is_conference_game = true
