@@ -1304,12 +1304,17 @@ export default function SportsEnginePage() {
         bookName: bestBook.bookmaker_title
       }
     } else if (betType === 'total') {
+      // For totals, show both teams with O/U
+      const selectedSide = side || 'over' // Default to over if not specified
       return {
-        teamName: 'Game Total',
+        teamName: `${game.away_team.abbr} @ ${game.home_team.abbr}`,
         teamAbbr: '',
         teamLogo: null,
-        line: `O/U ${bestBook.total.line}`,
-        odds: formatOdds(bestBook.total.over_odds),
+        awayLogo: teamLogos[game.away_team.id],
+        homeLogo: teamLogos[game.home_team.id],
+        isTotal: true,
+        line: selectedSide === 'over' ? `O ${bestBook.total.line}` : `U ${bestBook.total.line}`,
+        odds: formatOdds(selectedSide === 'over' ? bestBook.total.over_odds : bestBook.total.under_odds),
         bookName: bestBook.bookmaker_title
       }
     } else { // moneyline
@@ -3064,17 +3069,37 @@ export default function SportsEnginePage() {
                           
                           {/* The Bet Display */}
                           <div className={styles.upcomingBetDisplay}>
-                            {betDisplay?.teamLogo && (
-                              <img src={betDisplay.teamLogo} alt="" className={styles.upcomingBetLogo} />
+                            {/* For totals, show both team logos */}
+                            {(betDisplay as any)?.isTotal ? (
+                              <>
+                                <div className={styles.upcomingMatchupLogos}>
+                                  {(betDisplay as any)?.awayLogo && (
+                                    <img src={(betDisplay as any).awayLogo} alt="" className={styles.upcomingBetLogo} />
+                                  )}
+                                  <span className={styles.atSymbolSmall}>@</span>
+                                  {(betDisplay as any)?.homeLogo && (
+                                    <img src={(betDisplay as any).homeLogo} alt="" className={styles.upcomingBetLogo} />
+                                  )}
+                                </div>
+                                <span className={styles.upcomingBetLine}>
+                                  {betDisplay?.line}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                {betDisplay?.teamLogo && (
+                                  <img src={betDisplay.teamLogo} alt="" className={styles.upcomingBetLogo} />
+                                )}
+                                <div className={styles.upcomingBetInfo}>
+                                  <span className={styles.upcomingBetTeam}>
+                                    {betDisplay?.teamAbbr || betDisplay?.teamName}
+                                  </span>
+                                  <span className={styles.upcomingBetLine}>
+                                    {betDisplay?.line}
+                                  </span>
+                                </div>
+                              </>
                             )}
-                            <div className={styles.upcomingBetInfo}>
-                              <span className={styles.upcomingBetTeam}>
-                                {betDisplay?.teamAbbr || betDisplay?.teamName}
-                              </span>
-                              <span className={styles.upcomingBetLine}>
-                                {betDisplay?.line}
-                              </span>
-                            </div>
                             {betDisplay?.odds && (
                               <span className={styles.upcomingBetOdds}>
                                 ({betDisplay.odds})

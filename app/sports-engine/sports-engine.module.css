@@ -1906,6 +1906,19 @@
   font-weight: 500;
 }
 
+/* Matchup logos for totals */
+.upcomingMatchupLogos {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.atSymbolSmall {
+  font-size: 0.7rem;
+  color: #555;
+  font-weight: 500;
+}
+
 .upcomingMeta {
   display: flex;
   flex-direction: column;

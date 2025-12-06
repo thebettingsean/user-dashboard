@@ -424,7 +424,23 @@ export async function POST(request: Request) {
       }
     }
     
-    const games = Array.from(gameMap.values())
+    // Book priority cascade for sorting
+    const BOOK_PRIORITY = [
+      'fanduel', 'draftkings', 'betmgm', 'williamhill_us', 'caesars', 'betrivers',
+      'fanatics', 'bovada', 'pointsbetus', 'barstool', 'betonlineag', 'unibet_us'
+    ]
+    
+    // Sort books by priority for each game
+    const games = Array.from(gameMap.values()).map(game => ({
+      ...game,
+      books: game.books.sort((a: any, b: any) => {
+        const aIdx = BOOK_PRIORITY.findIndex(p => a.bookmaker?.toLowerCase().includes(p))
+        const bIdx = BOOK_PRIORITY.findIndex(p => b.bookmaker?.toLowerCase().includes(p))
+        const aPriority = aIdx === -1 ? 999 : aIdx
+        const bPriority = bIdx === -1 ? 999 : bIdx
+        return aPriority - bPriority
+      })
+    }))
     
     const duration = Date.now() - startTime
     
