@@ -156,6 +156,10 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       g.total_points,
       g.spread_close,
       g.total_close,
+      g.spread_open,
+      g.total_open,
+      g.spread_movement,
+      g.total_movement,
       g.home_covered,
       g.went_over,
       g.went_under,
@@ -165,13 +169,23 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       g.is_division_game,
       g.is_conference_game,
       g.is_playoff,
+      g.venue,
+      g.referee_name,
+      g.home_streak,
+      g.away_streak,
+      g.home_prev_margin,
+      g.away_prev_margin,
       ${hitColumn} as hit,
       ${valueColumn} as value,
       ${lineColumn} as line,
       ht.name as home_team_name,
       ht.abbreviation as home_abbr,
+      ht.division as home_division,
+      ht.conference as home_conference,
       at.name as away_team_name,
-      at.abbreviation as away_abbr
+      at.abbreviation as away_abbr,
+      at.division as away_division,
+      at.conference as away_conference
     FROM nfl_games g
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'

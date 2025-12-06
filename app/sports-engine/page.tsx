@@ -40,6 +40,7 @@ interface QueryResult {
 interface UpcomingGame {
   game_id: string
   game_time: string
+  venue?: string
   home_team: {
     id: number
     name: string
@@ -48,6 +49,8 @@ interface UpcomingGame {
     defense_rank: number
     streak: number
     prev_margin: number
+    division?: string
+    conference?: string
   }
   away_team: {
     id: number
@@ -57,6 +60,8 @@ interface UpcomingGame {
     defense_rank: number
     streak: number
     prev_margin: number
+    division?: string
+    conference?: string
   }
   is_division_game: boolean
   is_conference_game: boolean
@@ -618,6 +623,14 @@ export default function SportsEnginePage() {
   // Build display filters list
   const getAppliedFiltersDisplay = () => {
     const filters: string[] = []
+    
+    // Bet type
+    if (betType) {
+      const betLabel = betType === 'spread' ? 'Spread' 
+        : betType === 'total' ? (side === 'over' ? 'Over' : 'Under') 
+        : 'Moneyline'
+      filters.push(betLabel)
+    }
     
     // Time period
     const tp = TIME_PERIODS.find(t => t.value === timePeriod)
@@ -1351,31 +1364,74 @@ export default function SportsEnginePage() {
     const opponentTeam = isHomeSubject ? game.away_team : game.home_team
     const subjectSpread = isHomeSubject ? bestBook.spread.home : bestBook.spread.away
 
-    // Location
-    if (location === 'home') {
-      reasons.push({ label: 'Home Team', value: game.home_team.abbr, match: true })
-    } else if (location === 'away') {
-      reasons.push({ label: 'Away Team', value: game.away_team.abbr, match: true })
+    // Bet type
+    if (betType) {
+      const betLabel = betType === 'spread' ? 'Spread' : betType === 'total' ? (side === 'over' ? 'Over' : 'Under') : 'Moneyline'
+      reasons.push({ label: 'Bet Type', value: betLabel, match: true })
     }
 
-    // Division/Conference
-    if (game.is_division_game) {
-      reasons.push({ label: 'Division Game', value: '✓', match: true })
-    } else if (game.is_conference_game) {
-      reasons.push({ label: 'Conference Game', value: '✓', match: true })
+    // Location - show as stadium context
+    if (location === 'home') {
+      reasons.push({ label: 'Location', value: `${game.home_team.abbr} at Home`, match: true })
+    } else if (location === 'away') {
+      reasons.push({ label: 'Location', value: `${game.away_team.abbr} on Road`, match: true })
+    }
+
+    // Division/Conference - show actual divisions
+    if (division === 'division' && game.is_division_game) {
+      const homeDivision = game.home_team.division || ''
+      reasons.push({ 
+        label: 'Division', 
+        value: homeDivision ? `${homeDivision.split(' ')[0]} ${homeDivision.split(' ')[1]}` : 'Division Game',
+        match: true 
+      })
+    } else if (division === 'non_division' && !game.is_division_game) {
+      reasons.push({ label: 'Division', value: 'Non-Division', match: true })
+    }
+    
+    if (conference === 'conference' && game.is_conference_game) {
+      const homeConf = game.home_team.conference || ''
+      reasons.push({ 
+        label: 'Conference', 
+        value: homeConf ? `${homeConf} vs ${homeConf}` : 'Conference Game',
+        match: true 
+      })
+    } else if (conference === 'non_conference' && !game.is_conference_game) {
+      const homeConf = game.home_team.conference || 'NFC'
+      const awayConf = game.away_team.conference || 'AFC'
+      reasons.push({ 
+        label: 'Conference', 
+        value: `${awayConf} vs ${homeConf}`,
+        match: true 
+      })
     }
 
     // Favorite/Underdog
-    if (favorite === 'yes') {
+    if (favorite === 'favorite') {
       reasons.push({ label: 'Favorite', value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`, match: subjectSpread < 0 })
-    } else if (favorite === 'no') {
+    } else if (favorite === 'underdog') {
       reasons.push({ label: 'Underdog', value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`, match: subjectSpread > 0 })
+    }
+
+    // Home fav/dog for O/U
+    if (homeFavDog === 'favorite') {
+      reasons.push({ 
+        label: 'Home Fav', 
+        value: `${bestBook.spread.home > 0 ? '+' : ''}${bestBook.spread.home}`, 
+        match: bestBook.spread.home < 0 
+      })
+    } else if (homeFavDog === 'underdog') {
+      reasons.push({ 
+        label: 'Home Dog', 
+        value: `${bestBook.spread.home > 0 ? '+' : ''}${bestBook.spread.home}`, 
+        match: bestBook.spread.home > 0 
+      })
     }
 
     // Spread range
     if (spreadMin || spreadMax) {
       reasons.push({ 
-        label: 'Spread Range', 
+        label: 'Spread', 
         value: `${subjectSpread > 0 ? '+' : ''}${subjectSpread}`,
         match: true 
       })
@@ -1384,7 +1440,7 @@ export default function SportsEnginePage() {
     // Total range
     if (totalMin || totalMax) {
       reasons.push({ 
-        label: 'Game Total', 
+        label: 'Total', 
         value: `O/U ${bestBook.total.line}`,
         match: true 
       })
@@ -1392,30 +1448,34 @@ export default function SportsEnginePage() {
 
     // Team rankings
     if (defenseRank !== 'any') {
+      const defLabel = defenseRank.includes('top') ? `Top ${defenseRank.split('_')[1]}` : `Bottom ${defenseRank.split('_')[1]}`
       reasons.push({ 
         label: 'vs Defense', 
-        value: `#${opponentTeam.defense_rank}`,
+        value: `${opponentTeam.abbr} #${opponentTeam.defense_rank} (${defLabel})`,
         match: true 
       })
     }
     if (offenseRank !== 'any') {
+      const offLabel = offenseRank.includes('top') ? `Top ${offenseRank.split('_')[1]}` : `Bottom ${offenseRank.split('_')[1]}`
       reasons.push({ 
         label: 'vs Offense', 
-        value: `#${opponentTeam.offense_rank}`,
+        value: `${opponentTeam.abbr} #${opponentTeam.offense_rank} (${offLabel})`,
         match: true 
       })
     }
     if (ownDefenseRank !== 'any') {
+      const ownDefLabel = ownDefenseRank.includes('top') ? `Top ${ownDefenseRank.split('_')[1]}` : `Bottom ${ownDefenseRank.split('_')[1]}`
       reasons.push({ 
         label: 'Team Defense', 
-        value: `#${subjectTeam.defense_rank}`,
+        value: `${subjectTeam.abbr} #${subjectTeam.defense_rank} (${ownDefLabel})`,
         match: true 
       })
     }
     if (ownOffenseRank !== 'any') {
+      const ownOffLabel = ownOffenseRank.includes('top') ? `Top ${ownOffenseRank.split('_')[1]}` : `Bottom ${ownOffenseRank.split('_')[1]}`
       reasons.push({ 
         label: 'Team Offense', 
-        value: `#${subjectTeam.offense_rank}`,
+        value: `${subjectTeam.abbr} #${subjectTeam.offense_rank} (${ownOffLabel})`,
         match: true 
       })
     }
@@ -1425,9 +1485,219 @@ export default function SportsEnginePage() {
       const teamStreak = isHomeSubject ? game.home_team.streak : game.away_team.streak
       reasons.push({ 
         label: 'Streak', 
-        value: teamStreak > 0 ? `${teamStreak}W` : `${Math.abs(teamStreak)}L`,
+        value: teamStreak > 0 ? `${teamStreak}W streak` : `${Math.abs(teamStreak)}L streak`,
         match: true 
       })
+    }
+
+    // Previous margin
+    if (prevGameMarginMin || prevGameMarginMax) {
+      const teamPrevMargin = isHomeSubject ? game.home_team.prev_margin : game.away_team.prev_margin
+      reasons.push({ 
+        label: 'Prev Game', 
+        value: teamPrevMargin > 0 ? `Won by ${teamPrevMargin}` : `Lost by ${Math.abs(teamPrevMargin)}`,
+        match: true 
+      })
+    }
+
+    return reasons
+  }
+  
+  // Get "why this fits" items for historical game
+  const getHistoricalMatchReasons = (game: any) => {
+    const reasons: { label: string; value: string }[] = []
+    const homeAbbr = game.home_abbr || 'HOME'
+    const awayAbbr = game.away_abbr || 'AWAY'
+    const homeSpread = game.spread_close ?? game.spread ?? 0
+    const gameTotal = game.total_close ?? game.total ?? 0
+    
+    // Bet type
+    if (betType) {
+      const betLabel = betType === 'spread' ? 'Spread' : betType === 'total' ? (side === 'over' ? 'Over' : 'Under') : 'Moneyline'
+      reasons.push({ label: 'Bet Type', value: betLabel })
+    }
+
+    // Location/Venue - for non-O/U queries
+    if (!isOUQuery) {
+      if (game.venue) {
+        reasons.push({ label: 'Location', value: `@ ${game.venue}` })
+      } else if (location === 'home' || location === 'away') {
+        reasons.push({ 
+          label: 'Location', 
+          value: location === 'home' ? `${homeAbbr} at Home` : `${awayAbbr} on Road`
+        })
+      }
+    }
+
+    // Division filter
+    if (division === 'division') {
+      if (game.home_division && game.away_division) {
+        reasons.push({ label: 'Division', value: `${game.home_division}` })
+      } else {
+        reasons.push({ label: 'Division', value: 'Division Game' })
+      }
+    } else if (division === 'non_division') {
+      if (game.home_division && game.away_division) {
+        reasons.push({ label: 'Non-Division', value: `${game.away_division} vs ${game.home_division}` })
+      } else {
+        reasons.push({ label: 'Non-Division', value: 'Non-Division Game' })
+      }
+    }
+    
+    // Conference filter
+    if (conference === 'conference') {
+      if (game.home_conference && game.away_conference) {
+        reasons.push({ label: 'Conference', value: `${game.home_conference} vs ${game.home_conference}` })
+      } else {
+        reasons.push({ label: 'Conference', value: 'Conference Game' })
+      }
+    } else if (conference === 'non_conference') {
+      if (game.home_conference && game.away_conference) {
+        reasons.push({ label: 'Non-Conf', value: `${game.away_conference} vs ${game.home_conference}` })
+      } else {
+        reasons.push({ label: 'Non-Conf', value: 'Non-Conference Game' })
+      }
+    }
+
+    // Favorite/Underdog - for non-O/U
+    if (!isOUQuery && favorite !== 'any') {
+      const isFavorite = homeSpread < 0
+      reasons.push({ 
+        label: favorite === 'favorite' ? 'Favorite' : 'Underdog', 
+        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+      })
+    }
+
+    // Home Favorite/Underdog - for O/U queries
+    if (isOUQuery && homeFavDog !== 'any') {
+      const isHomeFav = homeSpread < 0
+      reasons.push({ 
+        label: homeFavDog === 'favorite' ? 'Home Fav' : 'Home Dog', 
+        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+      })
+    }
+
+    // Spread range - for non-O/U
+    if (!isOUQuery && (spreadMin || spreadMax)) {
+      reasons.push({ 
+        label: 'Spread', 
+        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+      })
+    }
+
+    // Total range
+    if (totalMin || totalMax) {
+      reasons.push({ label: 'Total', value: `O/U ${gameTotal}` })
+    }
+
+    // Spread/Line info for spreads
+    if (betType === 'spread' && !spreadMin && !spreadMax) {
+      reasons.push({ 
+        label: 'Line', 
+        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+      })
+    }
+
+    // Referee
+    if (game.referee_name && queryType === 'referee') {
+      reasons.push({ label: 'Referee', value: game.referee_name })
+    }
+
+    // Streaks
+    if (streak && (game.home_streak !== undefined || game.away_streak !== undefined)) {
+      const isHomeSubject = location !== 'away'
+      const teamStreak = isHomeSubject ? game.home_streak : game.away_streak
+      if (teamStreak !== undefined && teamStreak !== 0) {
+        reasons.push({ 
+          label: 'Streak', 
+          value: teamStreak > 0 ? `${teamStreak}W streak` : `${Math.abs(teamStreak)}L streak`
+        })
+      }
+    }
+
+    // Previous margin
+    if ((prevGameMarginMin || prevGameMarginMax) && (game.home_prev_margin !== undefined || game.away_prev_margin !== undefined)) {
+      const isHomeSubject = location !== 'away'
+      const prevMargin = isHomeSubject ? game.home_prev_margin : game.away_prev_margin
+      if (prevMargin !== undefined) {
+        reasons.push({ 
+          label: 'Prev Game', 
+          value: prevMargin > 0 ? `Won by ${prevMargin}` : `Lost by ${Math.abs(prevMargin)}`
+        })
+      }
+    }
+
+    return reasons
+  }
+  
+  // Get "why this fits" items for prop game
+  const getPropMatchReasons = (game: any) => {
+    const reasons: { label: string; value: string }[] = []
+    
+    // Location/Venue
+    if (game.venue) {
+      reasons.push({ label: 'Location', value: `@ ${game.venue}` })
+    } else if (location && location !== 'any') {
+      reasons.push({ 
+        label: 'Location', 
+        value: location === 'home' ? `${game.player_name?.split(' ')[1] || 'Player'} at Home` : `${game.player_name?.split(' ')[1] || 'Player'} on Road`
+      })
+    }
+
+    // Division/Conference
+    if (game.is_division_game && (division === 'division')) {
+      reasons.push({ label: 'Division', value: 'Division Game' })
+    } else if (!game.is_division_game && (division === 'non_division')) {
+      reasons.push({ label: 'Non-Division', value: 'Non-Division Game' })
+    }
+    
+    if (game.is_conference_game && (conference === 'conference')) {
+      reasons.push({ label: 'Conference', value: 'Conference Game' })
+    } else if (!game.is_conference_game && (conference === 'non_conference')) {
+      reasons.push({ label: 'Non-Conference', value: 'Non-Conference Game' })
+    }
+
+    // Versus opponent
+    if (selectedPropVersusTeam) {
+      const opponentName = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      reasons.push({ label: 'vs Team', value: opponentName })
+    }
+
+    // Defense rank
+    if (defenseRank && defenseRank !== 'any') {
+      const rankLabel = defenseRank.includes('top') ? `Top ${defenseRank.split('_')[1]}` : `Bottom ${defenseRank.split('_')[1]}`
+      const opponentName = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      reasons.push({ label: 'vs Defense', value: `${opponentName} (${rankLabel})` })
+    }
+
+    // Offense rank
+    if (offenseRank && offenseRank !== 'any') {
+      const rankLabel = offenseRank.includes('top') ? `Top ${offenseRank.split('_')[1]}` : `Bottom ${offenseRank.split('_')[1]}`
+      const opponentName = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      reasons.push({ label: 'vs Offense', value: `${opponentName} (${rankLabel})` })
+    }
+
+    // Line info
+    if (game.book_line !== undefined) {
+      reasons.push({ label: 'Book Line', value: `o${game.book_line}` })
+    } else if (parseFloat(propLine) > 0) {
+      reasons.push({ label: 'Line', value: `o${propLine}` })
+    }
+
+    // Referee
+    if (game.referee_name) {
+      reasons.push({ label: 'Referee', value: game.referee_name })
+    }
+
+    // Streaks - using game-level streak data
+    if (streak && (game.home_streak !== undefined || game.away_streak !== undefined)) {
+      const teamStreak = game.is_home ? game.home_streak : game.away_streak
+      if (teamStreak !== undefined && teamStreak !== 0) {
+        reasons.push({ 
+          label: 'Team Streak', 
+          value: teamStreak > 0 ? `${teamStreak}W streak` : `${Math.abs(teamStreak)}L streak`
+        })
+      }
     }
 
     return reasons
@@ -1573,6 +1843,25 @@ export default function SportsEnginePage() {
             </div>
           </div>
         )}
+        
+        {/* Why This Fits */}
+        {(() => {
+          const propReasons = getPropMatchReasons(game)
+          return propReasons.length > 0 ? (
+            <div className={styles.whyThisFits}>
+              <div className={styles.whyThisFitsTitle}>Why this fits:</div>
+              <div className={styles.whyThisFitsList}>
+                {propReasons.map((reason, i) => (
+                  <div key={i} className={styles.whyThisFitsItem}>
+                    <FaCheckCircle className={styles.matchCheck} />
+                    <span>{reason.label}:</span>
+                    <strong>{reason.value}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null
+        })()}
       </div>
     )
   }
@@ -1740,6 +2029,7 @@ export default function SportsEnginePage() {
     const awayScore = game.away_score || 0
     const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'HOME'
     const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'AWAY'
+    const matchReasons = getHistoricalMatchReasons(game)
     
     return (
       <div className={styles.gameDetailsExpanded}>
@@ -1753,24 +2043,40 @@ export default function SportsEnginePage() {
             {awayAbbr} {awayScore} @ {homeAbbr} {homeScore}
           </span>
         </div>
-        {game.spread !== undefined && (
+        {(game.spread_close !== undefined || game.spread !== undefined) && (
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Spread</span>
             <span className={styles.detailValue}>
-              {homeAbbr} {game.spread > 0 ? '+' : ''}{game.spread} / {awayAbbr} {game.spread > 0 ? '-' : '+'}{Math.abs(game.spread)}
+              {homeAbbr} {(game.spread_close || game.spread) > 0 ? '+' : ''}{game.spread_close || game.spread}
             </span>
           </div>
         )}
-        {game.total !== undefined && (
+        {(game.total_close !== undefined || game.total !== undefined) && (
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Total</span>
-            <span className={styles.detailValue}>O/U {game.total}</span>
+            <span className={styles.detailValue}>O/U {game.total_close || game.total}</span>
           </div>
         )}
         {game.referee_name && (
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Referee</span>
             <span className={styles.detailValue}>{game.referee_name}</span>
+          </div>
+        )}
+        
+        {/* Why This Fits */}
+        {matchReasons.length > 0 && (
+          <div className={styles.whyThisFits}>
+            <div className={styles.whyThisFitsTitle}>Why this fits:</div>
+            <div className={styles.whyThisFitsList}>
+              {matchReasons.map((reason, i) => (
+                <div key={i} className={styles.whyThisFitsItem}>
+                  <FaCheckCircle className={styles.matchCheck} />
+                  <span>{reason.label}:</span>
+                  <strong>{reason.value}</strong>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

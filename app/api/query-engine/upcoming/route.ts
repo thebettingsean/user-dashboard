@@ -329,6 +329,10 @@ export async function POST(request: Request) {
         g.away_streak AS away_streak,
         g.home_prev_margin AS home_prev_margin,
         g.away_prev_margin AS away_prev_margin,
+        ht.division AS home_division,
+        ht.conference AS home_conference,
+        at.division AS away_division,
+        at.conference AS away_conference,
         ll.bookmaker AS bookmaker,
         ll.bookmaker_title AS bookmaker_title,
         ll.home_spread AS home_spread,
@@ -348,6 +352,8 @@ export async function POST(request: Request) {
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
       LEFT JOIN opening_lines ol ON g.game_id = ol.game_id AND ll.bookmaker = ol.bookmaker
+      LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
+      LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
       WHERE 1=1
       ${whereClause}
       ORDER BY g.game_time ASC, ll.bookmaker
@@ -370,7 +376,9 @@ export async function POST(request: Request) {
             offense_rank: row.home_offense_rank,
             defense_rank: row.home_defense_rank,
             streak: row.home_streak,
-            prev_margin: row.home_prev_margin
+            prev_margin: row.home_prev_margin,
+            division: row.home_division,
+            conference: row.home_conference
           },
           away_team: {
             id: row.away_team_id,
@@ -379,7 +387,9 @@ export async function POST(request: Request) {
             offense_rank: row.away_offense_rank,
             defense_rank: row.away_defense_rank,
             streak: row.away_streak,
-            prev_margin: row.away_prev_margin
+            prev_margin: row.away_prev_margin,
+            division: row.away_division,
+            conference: row.away_conference
           },
           is_division_game: row.is_division_game === 1,
           is_conference_game: row.is_conference_game === 1,

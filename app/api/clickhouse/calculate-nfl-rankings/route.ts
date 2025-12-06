@@ -1,27 +1,66 @@
 import { NextResponse } from 'next/server'
-import { clickhouseQuery, clickhouseInsert } from '@/lib/clickhouse'
+import { clickhouseQuery, clickhouseCommand } from '@/lib/clickhouse'
 
 /**
  * CALCULATE NFL TEAM RANKINGS
  * 
  * For a given season/week, calculates rankings based on all games through that week.
- * Teams are ranked 1-32 where lower = better performance.
+ * Teams are ranked 1-32 where lower rank = better performance.
+ * 
+ * Can be called:
+ * - With specific season/week: ?season=2025&week=13
+ * - With 'auto' to detect current season/week: ?auto=true
+ * - Via cron (Tuesday 8 AM) to update current week
  */
+
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const season = searchParams.get('season') || '2022'
-  const week = searchParams.get('week') || '1'
+  const autoDetect = searchParams.get('auto') === 'true'
   
   try {
-    console.log(`[Calculate Rankings] Starting ${season} Week ${week}...`)
+    let seasonNum: number
+    let weekNum: number
     
-    // Step 1: Aggregate team stats through this week
+    if (autoDetect || (!searchParams.get('season') && !searchParams.get('week'))) {
+      // Auto-detect current season and latest week with data
+      const latestData = await clickhouseQuery(`
+        SELECT season, max(week) as max_week 
+        FROM nfl_team_stats 
+        GROUP BY season 
+        ORDER BY season DESC 
+        LIMIT 1
+      `)
+      
+      if (!latestData.data || latestData.data.length === 0) {
+        throw new Error('No team stats data found')
+      }
+      
+      seasonNum = latestData.data[0].season
+      weekNum = latestData.data[0].max_week
+      console.log(`[Calculate Rankings] Auto-detected: Season ${seasonNum} Week ${weekNum}`)
+    } else {
+      seasonNum = parseInt(searchParams.get('season') || '2025')
+      weekNum = parseInt(searchParams.get('week') || '1')
+    }
+    
+    console.log(`[Calculate Rankings] Starting ${seasonNum} Week ${weekNum}...`)
+    
+    // Step 1: Delete existing rankings for this season/week
+    await clickhouseCommand(`
+      ALTER TABLE nfl_team_rankings DELETE 
+      WHERE season = ${seasonNum} AND week = ${weekNum}
+    `)
+    
+    // Wait for mutation to complete
+    await new Promise(r => setTimeout(r, 1000))
+    
+    // Step 2: Aggregate team stats through this week including yards per attempt
     const aggregatedStats = await clickhouseQuery(`
       SELECT 
         team_id,
-        ${season} as season,
-        ${week} as week,
         COUNT(*) as games_played,
         
         -- OFFENSIVE AVERAGES
@@ -29,43 +68,114 @@ export async function GET(request: Request) {
         AVG(total_yards) as total_yards_per_game,
         AVG(passing_yards) as passing_yards_per_game,
         AVG(rushing_yards) as rushing_yards_per_game,
-        AVG(third_down_pct) as third_down_pct_avg,
-        AVG(redzone_pct) as redzone_pct_avg,
+        
+        -- YARDS PER ATTEMPT (efficiency)
+        SUM(passing_yards) / nullIf(SUM(passing_attempts), 0) as yards_per_pass,
+        SUM(rushing_yards) / nullIf(SUM(rushing_attempts), 0) as yards_per_rush,
         
         -- DEFENSIVE AVERAGES
         AVG(points_allowed) as points_allowed_per_game,
         AVG(def_total_yards_allowed) as total_yards_allowed_per_game,
         AVG(def_passing_yards_allowed) as passing_yards_allowed_per_game,
         AVG(def_rushing_yards_allowed) as rushing_yards_allowed_per_game,
-        AVG(def_sacks) as sacks_per_game,
-        AVG(def_turnovers_forced) as turnovers_forced_per_game
+        
+        -- DEFENSIVE YARDS PER ATTEMPT (using offensive attempts as proxy)
+        SUM(def_passing_yards_allowed) / nullIf(SUM(passing_attempts), 0) as yards_per_pass_allowed,
+        SUM(def_rushing_yards_allowed) / nullIf(SUM(rushing_attempts), 0) as yards_per_rush_allowed
         
       FROM nfl_team_stats
-      WHERE season = ${season} AND week <= ${week}
+      WHERE season = ${seasonNum} AND week <= ${weekNum}
       GROUP BY team_id
       ORDER BY team_id
     `)
 
     if (!aggregatedStats.data || aggregatedStats.data.length === 0) {
-      throw new Error('No team stats found for this season/week')
+      throw new Error(`No team stats found for season ${seasonNum} week ${weekNum}`)
     }
 
     console.log(`[Calculate Rankings] Aggregated stats for ${aggregatedStats.data.length} teams`)
 
-    // Step 2: Rank teams for each metric
-    const rankedTeams = rankTeams(aggregatedStats.data, season, week)
-
-    // Step 3: Insert into nfl_team_rankings
-    if (rankedTeams.length > 0) {
-      await clickhouseInsert('nfl_team_rankings', rankedTeams)
-      console.log(`[Calculate Rankings] ✅ Inserted rankings for ${rankedTeams.length} teams`)
+    // Step 3: Calculate ranks for each metric
+    const teams = aggregatedStats.data
+    
+    // Offensive metrics (higher = better = lower rank number)
+    const offensiveMetrics = [
+      'points_per_game', 'total_yards_per_game', 'passing_yards_per_game',
+      'rushing_yards_per_game', 'yards_per_pass', 'yards_per_rush'
+    ]
+    
+    // Defensive metrics (lower = better = lower rank number)  
+    const defensiveMetrics = [
+      'points_allowed_per_game', 'total_yards_allowed_per_game',
+      'passing_yards_allowed_per_game', 'rushing_yards_allowed_per_game',
+      'yards_per_pass_allowed', 'yards_per_rush_allowed'
+    ]
+    
+    // Calculate ranks
+    const ranks: Record<number, Record<string, number>> = {}
+    teams.forEach((t: any) => { ranks[t.team_id] = {} })
+    
+    for (const metric of offensiveMetrics) {
+      const sorted = [...teams].sort((a: any, b: any) => (b[metric] || 0) - (a[metric] || 0))
+      sorted.forEach((t: any, i: number) => {
+        ranks[t.team_id][`rank_${metric}`] = i + 1
+      })
     }
+    
+    for (const metric of defensiveMetrics) {
+      const sorted = [...teams].sort((a: any, b: any) => (a[metric] || 999) - (b[metric] || 999))
+      sorted.forEach((t: any, i: number) => {
+        ranks[t.team_id][`rank_${metric}`] = i + 1
+      })
+    }
+
+    // Step 4: Insert rankings
+    for (const team of teams) {
+      const r = ranks[team.team_id]
+      
+      await clickhouseCommand(`
+        INSERT INTO nfl_team_rankings (
+          team_id, season, week, games_played,
+          rank_points_per_game, rank_total_yards_per_game, 
+          rank_passing_yards_per_game, rank_rushing_yards_per_game,
+          rank_yards_per_pass, rank_yards_per_rush,
+          rank_points_allowed_per_game, rank_total_yards_allowed_per_game,
+          rank_passing_yards_allowed_per_game, rank_rushing_yards_allowed_per_game,
+          rank_yards_per_pass_allowed, rank_yards_per_rush_allowed,
+          points_per_game, points_allowed_per_game,
+          total_yards_per_game, total_yards_allowed_per_game,
+          passing_yards_per_game, passing_yards_allowed_per_game,
+          rushing_yards_per_game, rushing_yards_allowed_per_game,
+          yards_per_pass, yards_per_rush,
+          yards_per_pass_allowed, yards_per_rush_allowed,
+          updated_at
+        ) VALUES (
+          ${team.team_id}, ${seasonNum}, ${weekNum}, ${team.games_played},
+          ${r.rank_points_per_game}, ${r.rank_total_yards_per_game},
+          ${r.rank_passing_yards_per_game}, ${r.rank_rushing_yards_per_game},
+          ${r.rank_yards_per_pass}, ${r.rank_yards_per_rush},
+          ${r.rank_points_allowed_per_game}, ${r.rank_total_yards_allowed_per_game},
+          ${r.rank_passing_yards_allowed_per_game}, ${r.rank_rushing_yards_allowed_per_game},
+          ${r.rank_yards_per_pass_allowed}, ${r.rank_yards_per_rush_allowed},
+          ${team.points_per_game || 0}, ${team.points_allowed_per_game || 0},
+          ${team.total_yards_per_game || 0}, ${team.total_yards_allowed_per_game || 0},
+          ${team.passing_yards_per_game || 0}, ${team.passing_yards_allowed_per_game || 0},
+          ${team.rushing_yards_per_game || 0}, ${team.rushing_yards_allowed_per_game || 0},
+          ${team.yards_per_pass || 0}, ${team.yards_per_rush || 0},
+          ${team.yards_per_pass_allowed || 0}, ${team.yards_per_rush_allowed || 0},
+          now()
+        )
+      `)
+    }
+    
+    console.log(`[Calculate Rankings] ✅ Inserted rankings for ${teams.length} teams`)
 
     return NextResponse.json({
       success: true,
-      season: parseInt(season),
-      week: parseInt(week),
-      teams_ranked: rankedTeams.length
+      season: seasonNum,
+      week: weekNum,
+      teams_ranked: teams.length,
+      message: `Rankings calculated for ${seasonNum} Week ${weekNum}`
     })
 
   } catch (error: any) {
@@ -73,86 +183,14 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { 
         success: false,
-        error: error.message,
-        season: parseInt(season),
-        week: parseInt(week)
+        error: error.message
       },
       { status: 500 }
     )
   }
 }
 
-// Rank teams for all metrics
-function rankTeams(teams: any[], season: string, week: string) {
-  // Sort and rank for each metric
-  const rankedData = teams.map((team: any) => {
-    return {
-      team_id: team.team_id,
-      season: parseInt(season),
-      week: parseInt(week),
-      games_played: team.games_played,
-      
-      // Will be calculated below
-      rank_points_per_game: 0,
-      rank_total_yards_per_game: 0,
-      rank_passing_yards_per_game: 0,
-      rank_rushing_yards_per_game: 0,
-      rank_third_down_pct: 0,
-      rank_redzone_pct: 0,
-      
-      rank_points_allowed_per_game: 0,
-      rank_total_yards_allowed_per_game: 0,
-      rank_passing_yards_allowed_per_game: 0,
-      rank_rushing_yards_allowed_per_game: 0,
-      rank_sacks_per_game: 0,
-      rank_turnovers_forced_per_game: 0,
-      
-      // Actual values
-      points_per_game: team.points_per_game,
-      points_allowed_per_game: team.points_allowed_per_game,
-      total_yards_per_game: team.total_yards_per_game,
-      total_yards_allowed_per_game: team.total_yards_allowed_per_game,
-      passing_yards_per_game: team.passing_yards_per_game,
-      passing_yards_allowed_per_game: team.passing_yards_allowed_per_game,
-      rushing_yards_per_game: team.rushing_yards_per_game,
-      rushing_yards_allowed_per_game: team.rushing_yards_allowed_per_game,
-      
-      updated_at: Math.floor(Date.now() / 1000)
-    }
-  })
-
-  // Rank offensive stats (higher = better rank, so rank 1 = highest value)
-  rankByValue(rankedData, 'points_per_game', 'rank_points_per_game', false)
-  rankByValue(rankedData, 'total_yards_per_game', 'rank_total_yards_per_game', false)
-  rankByValue(rankedData, 'passing_yards_per_game', 'rank_passing_yards_per_game', false)
-  rankByValue(rankedData, 'rushing_yards_per_game', 'rank_rushing_yards_per_game', false)
-
-  // Rank defensive stats (lower = better rank, so rank 1 = lowest value)
-  rankByValue(rankedData, 'points_allowed_per_game', 'rank_points_allowed_per_game', true)
-  rankByValue(rankedData, 'total_yards_allowed_per_game', 'rank_total_yards_allowed_per_game', true)
-  rankByValue(rankedData, 'passing_yards_allowed_per_game', 'rank_passing_yards_allowed_per_game', true)
-  rankByValue(rankedData, 'rushing_yards_allowed_per_game', 'rank_rushing_yards_allowed_per_game', true)
-
-  return rankedData
+// POST for manual triggers
+export async function POST(request: Request) {
+  return GET(request)
 }
-
-// Helper: Rank teams by a specific value
-function rankByValue(teams: any[], valueKey: string, rankKey: string, ascending: boolean) {
-  // Sort teams by value
-  const sorted = [...teams].sort((a, b) => {
-    if (ascending) {
-      return a[valueKey] - b[valueKey] // Lower is better
-    } else {
-      return b[valueKey] - a[valueKey] // Higher is better
-    }
-  })
-
-  // Assign ranks
-  sorted.forEach((team, index) => {
-    const teamInArray = teams.find(t => t.team_id === team.team_id)
-    if (teamInArray) {
-      teamInArray[rankKey] = index + 1 // Rank 1-32
-    }
-  })
-}
-

@@ -38,7 +38,7 @@ export async function clickhouseQuery<T = any>(
         'Content-Type': 'application/json',
         'Authorization': `Basic ${auth}`
       },
-      body: JSON.stringify({ sql }),
+      body: JSON.stringify({ query: sql }),
       cache: 'no-store'
     })
 
@@ -87,7 +87,7 @@ export async function clickhouseCommand(sql: string): Promise<void> {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${auth}`
       },
-      body: JSON.stringify({ sql })
+      body: JSON.stringify({ query: sql })
     })
 
     if (!response.ok) {
