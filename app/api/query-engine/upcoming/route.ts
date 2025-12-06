@@ -390,32 +390,38 @@ export async function POST(request: Request) {
         })
       }
       
-      gameMap.get(row.game_id).books.push({
-        bookmaker: row.bookmaker,
-        bookmaker_title: row.bookmaker_title,
-        spread: {
-          home: row.home_spread,
-          home_odds: row.home_spread_odds,
-          away: row.away_spread,
-          away_odds: row.away_spread_odds,
-          opening: row.opening_spread,
-          movement: row.spread_movement
-        },
-        total: {
-          line: row.total_line,
-          over_odds: row.over_odds,
-          under_odds: row.under_odds,
-          opening: row.opening_total,
-          movement: row.total_movement
-        },
-        moneyline: {
-          home: row.home_ml,
-          away: row.away_ml,
-          opening_home: row.opening_home_ml,
-          opening_away: row.opening_away_ml,
-          home_movement: row.home_ml_movement
-        }
-      })
+      // Only add if this bookmaker isn't already in the list (deduplicate)
+      const existingBooks = gameMap.get(row.game_id).books
+      const alreadyHasBookmaker = existingBooks.some((b: any) => b.bookmaker_title === row.bookmaker_title)
+      
+      if (!alreadyHasBookmaker) {
+        existingBooks.push({
+          bookmaker: row.bookmaker,
+          bookmaker_title: row.bookmaker_title,
+          spread: {
+            home: row.home_spread,
+            home_odds: row.home_spread_odds,
+            away: row.away_spread,
+            away_odds: row.away_spread_odds,
+            opening: row.opening_spread,
+            movement: row.spread_movement
+          },
+          total: {
+            line: row.total_line,
+            over_odds: row.over_odds,
+            under_odds: row.under_odds,
+            opening: row.opening_total,
+            movement: row.total_movement
+          },
+          moneyline: {
+            home: row.home_ml,
+            away: row.away_ml,
+            opening_home: row.opening_home_ml,
+            opening_away: row.opening_away_ml,
+            home_movement: row.home_ml_movement
+          }
+        })
+      }
     }
     
     const games = Array.from(gameMap.values())
