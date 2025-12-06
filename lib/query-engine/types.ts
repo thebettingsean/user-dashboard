@@ -17,7 +17,7 @@ export type DivisionFilter = 'division' | 'non_division' | 'any'
 
 export type ConferenceFilter = 'conference' | 'non_conference' | 'any'
 
-export type FavoriteFilter = 'favorite' | 'underdog' | 'any'
+export type FavoriteFilter = 'favorite' | 'underdog' | 'any' | boolean
 
 // For O/U - describes the game situation (home team's status)
 export type HomeFavDogFilter = 'home_fav' | 'home_dog' | 'any'
@@ -69,14 +69,29 @@ export interface QueryFilters {
   // Opponent's rankings (vs Defense/Offense)
   vs_defense_rank?: DefenseRankFilter  // vs top/bottom X defense
   defense_stat?: 'pass' | 'rush' | 'receiving'  // which stat to use for defense ranking
+  defense_stat_position?: 'vs_wr' | 'vs_te' | 'vs_rb' | 'wr' | 'te' | 'rb'  // position-specific defense
   
   // Offense ranking filters (opponent's offensive rank)
   vs_offense_rank?: OpponentRankFilter  // vs top/bottom X offense
-  offense_stat?: 'points' | 'total_yards' | 'passing' | 'rushing' | 'wr' | 'te' | 'rb'  // which stat to use (now includes positions)
+  offense_stat?: 'points' | 'total_yards' | 'passing' | 'rushing' | 'pass' | 'rush' | 'wr' | 'te' | 'rb'  // which stat to use (now includes positions)
+  offense_stat_position?: 'wr_prod' | 'te_prod' | 'rb_prod' | 'wr' | 'te' | 'rb'  // position-specific offense
+  
+  // Subject team's own position-specific stats
+  own_defense_stat_position?: 'vs_wr' | 'vs_te' | 'vs_rb' | 'wr' | 'te' | 'rb'
+  own_offense_stat_position?: 'wr_prod' | 'te_prod' | 'rb_prod' | 'wr' | 'te' | 'rb'
   
   // Win percentage filters (0-100 range, stored as 0-1)
   team_win_pct?: Range                  // Subject team's win percentage
   opp_win_pct?: Range                   // Opponent team's win percentage
+  
+  // Additional filters for upcoming API
+  is_division_game?: boolean            // Explicit division game filter
+  is_conference_game?: boolean          // Explicit conference game filter
+  is_home_favorite?: boolean            // For O/U: is home team favorite?
+  ml_range?: Range                      // Moneyline range
+  streak?: number                       // Streak filter (positive = wins, negative = losses)
+  prev_margin_range?: Range             // Previous game margin range
+  team_id?: number                      // Team filter for team-specific queries
   
   // ============================================
   // O/U SPECIFIC FILTERS

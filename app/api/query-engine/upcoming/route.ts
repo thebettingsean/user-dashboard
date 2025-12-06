@@ -75,10 +75,11 @@ export async function POST(request: Request) {
     const oppPrefix = isHome ? 'away' : 'home'
     
     // Favorite/Dog filter (for spread/ML - based on location)
-    if (filters.is_favorite === true) {
+    const isFav = filters.is_favorite
+    if (isFav === 'favorite' || isFav === true) {
       conditions.push(`ll.${teamPrefix}_spread < 0`)
       appliedFilters.push('Favorite')
-    } else if (filters.is_favorite === false) {
+    } else if (isFav === 'underdog' || isFav === false) {
       conditions.push(`ll.${teamPrefix}_spread > 0`)
       appliedFilters.push('Underdog')
     }
@@ -172,9 +173,29 @@ export async function POST(request: Request) {
     
     // ===== TEAM STATS FILTERS =====
     
-    // Team's own offense rank
+    // Team's own offense rank - with position-specific support
     if (filters.own_offense_rank && filters.own_offense_rank !== 'any') {
-      const col = `g.${teamPrefix}_offense_rank`
+      let col = `g.${teamPrefix}_offense_rank`
+      let statLabel = 'Offense'
+      
+      const ownOffStat = filters.own_offense_stat as string
+      if (ownOffStat === 'pass' || ownOffStat === 'passing') {
+        col = `g.${teamPrefix}_pass_offense_rank`
+        statLabel = 'Pass O'
+      } else if (ownOffStat === 'rush' || ownOffStat === 'rushing') {
+        col = `g.${teamPrefix}_rush_offense_rank`
+        statLabel = 'Rush O'
+      } else if (ownOffStat === 'wr') {
+        col = `g.${teamPrefix}_rank_wr_prod`
+        statLabel = 'WR Prod'
+      } else if (ownOffStat === 'te') {
+        col = `g.${teamPrefix}_rank_te_prod`
+        statLabel = 'TE Prod'
+      } else if (ownOffStat === 'rb') {
+        col = `g.${teamPrefix}_rank_rb_prod`
+        statLabel = 'RB Prod'
+      }
+      
       switch (filters.own_offense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
@@ -183,12 +204,32 @@ export async function POST(request: Request) {
         case 'bottom_10': conditions.push(`${col} >= 23`); break
         case 'bottom_15': conditions.push(`${col} >= 18`); break
       }
-      appliedFilters.push(`Team ${filters.own_offense_rank.replace('_', ' ')} Offense`)
+      appliedFilters.push(`Team ${filters.own_offense_rank.replace('_', ' ')} ${statLabel}`)
     }
     
-    // Team's own defense rank
+    // Team's own defense rank - with position-specific support
     if (filters.own_defense_rank && filters.own_defense_rank !== 'any') {
-      const col = `g.${teamPrefix}_defense_rank`
+      let col = `g.${teamPrefix}_defense_rank`
+      let statLabel = 'Defense'
+      
+      const ownDefStat = filters.own_defense_stat as string
+      if (ownDefStat === 'pass' || ownDefStat === 'passing') {
+        col = `g.${teamPrefix}_pass_defense_rank`
+        statLabel = 'Pass D'
+      } else if (ownDefStat === 'rush' || ownDefStat === 'rushing') {
+        col = `g.${teamPrefix}_rush_defense_rank`
+        statLabel = 'Rush D'
+      } else if (ownDefStat === 'wr') {
+        col = `g.${teamPrefix}_rank_vs_wr`
+        statLabel = 'D vs WRs'
+      } else if (ownDefStat === 'te') {
+        col = `g.${teamPrefix}_rank_vs_te`
+        statLabel = 'D vs TEs'
+      } else if (ownDefStat === 'rb') {
+        col = `g.${teamPrefix}_rank_vs_rb`
+        statLabel = 'D vs RBs'
+      }
+      
       switch (filters.own_defense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
@@ -197,12 +238,32 @@ export async function POST(request: Request) {
         case 'bottom_10': conditions.push(`${col} >= 23`); break
         case 'bottom_15': conditions.push(`${col} >= 18`); break
       }
-      appliedFilters.push(`Team ${filters.own_defense_rank.replace('_', ' ')} Defense`)
+      appliedFilters.push(`Team ${filters.own_defense_rank.replace('_', ' ')} ${statLabel}`)
     }
     
-    // vs Offense (opponent's offense rank)
+    // vs Offense (opponent's offense rank) - with position-specific support
     if (filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
-      const col = `g.${oppPrefix}_offense_rank`
+      let col = `g.${oppPrefix}_offense_rank`
+      let statLabel = 'Offense'
+      
+      const offStat = filters.offense_stat as string
+      if (offStat === 'pass' || offStat === 'passing') {
+        col = `g.${oppPrefix}_pass_offense_rank`
+        statLabel = 'Pass O'
+      } else if (offStat === 'rush' || offStat === 'rushing') {
+        col = `g.${oppPrefix}_rush_offense_rank`
+        statLabel = 'Rush O'
+      } else if (offStat === 'wr') {
+        col = `g.${oppPrefix}_rank_wr_prod`
+        statLabel = 'WR Prod'
+      } else if (offStat === 'te') {
+        col = `g.${oppPrefix}_rank_te_prod`
+        statLabel = 'TE Prod'
+      } else if (offStat === 'rb') {
+        col = `g.${oppPrefix}_rank_rb_prod`
+        statLabel = 'RB Prod'
+      }
+      
       switch (filters.vs_offense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
@@ -211,12 +272,33 @@ export async function POST(request: Request) {
         case 'bottom_10': conditions.push(`${col} >= 23`); break
         case 'bottom_15': conditions.push(`${col} >= 18`); break
       }
-      appliedFilters.push(`vs ${filters.vs_offense_rank.replace('_', ' ')} Offense`)
+      appliedFilters.push(`vs ${filters.vs_offense_rank.replace('_', ' ')} ${statLabel}`)
     }
     
-    // vs Defense (opponent's defense rank)
+    // vs Defense (opponent's defense rank) - with position-specific support
     if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
-      const col = `g.${oppPrefix}_defense_rank`
+      // Determine which column to use based on defense_stat
+      let col = `g.${oppPrefix}_defense_rank` // default
+      let statLabel = 'Defense'
+      
+      const defStat = filters.defense_stat as string
+      if (defStat === 'pass') {
+        col = `g.${oppPrefix}_pass_defense_rank`
+        statLabel = 'Pass D'
+      } else if (defStat === 'rush') {
+        col = `g.${oppPrefix}_rush_defense_rank`
+        statLabel = 'Rush D'
+      } else if (defStat === 'wr') {
+        col = `g.${oppPrefix}_rank_vs_wr`
+        statLabel = 'vs WRs'
+      } else if (defStat === 'te') {
+        col = `g.${oppPrefix}_rank_vs_te`
+        statLabel = 'vs TEs'
+      } else if (defStat === 'rb') {
+        col = `g.${oppPrefix}_rank_vs_rb`
+        statLabel = 'vs RBs'
+      }
+      
       switch (filters.vs_defense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
@@ -225,7 +307,41 @@ export async function POST(request: Request) {
         case 'bottom_10': conditions.push(`${col} >= 23`); break
         case 'bottom_15': conditions.push(`${col} >= 18`); break
       }
-      appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} Defense`)
+      appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} ${statLabel}`)
+    }
+    
+    // ===== WIN PERCENTAGE FILTERS =====
+    
+    // Team's win percentage
+    if (filters.team_win_pct) {
+      const { min, max } = filters.team_win_pct
+      const col = `g.${teamPrefix}_win_pct`
+      if (min !== undefined && max !== undefined) {
+        conditions.push(`${col} >= ${min / 100} AND ${col} <= ${max / 100}`)
+        appliedFilters.push(`Team Win% ${min}-${max}%`)
+      } else if (min !== undefined) {
+        conditions.push(`${col} >= ${min / 100}`)
+        appliedFilters.push(`Team Win% ${min}%+`)
+      } else if (max !== undefined) {
+        conditions.push(`${col} <= ${max / 100}`)
+        appliedFilters.push(`Team Win% ≤${max}%`)
+      }
+    }
+    
+    // Opponent's win percentage
+    if (filters.opp_win_pct) {
+      const { min, max } = filters.opp_win_pct
+      const col = `g.${oppPrefix}_win_pct`
+      if (min !== undefined && max !== undefined) {
+        conditions.push(`${col} >= ${min / 100} AND ${col} <= ${max / 100}`)
+        appliedFilters.push(`Opp Win% ${min}-${max}%`)
+      } else if (min !== undefined) {
+        conditions.push(`${col} >= ${min / 100}`)
+        appliedFilters.push(`Opp Win% ${min}%+`)
+      } else if (max !== undefined) {
+        conditions.push(`${col} <= ${max / 100}`)
+        appliedFilters.push(`Opp Win% ≤${max}%`)
+      }
     }
     
     // ===== MOMENTUM FILTERS =====
@@ -325,10 +441,38 @@ export async function POST(request: Request) {
         g.home_defense_rank AS home_defense_rank,
         g.away_offense_rank AS away_offense_rank,
         g.away_defense_rank AS away_defense_rank,
+        g.home_pass_offense_rank AS home_pass_offense_rank,
+        g.home_rush_offense_rank AS home_rush_offense_rank,
+        g.home_pass_defense_rank AS home_pass_defense_rank,
+        g.home_rush_defense_rank AS home_rush_defense_rank,
+        g.away_pass_offense_rank AS away_pass_offense_rank,
+        g.away_rush_offense_rank AS away_rush_offense_rank,
+        g.away_pass_defense_rank AS away_pass_defense_rank,
+        g.away_rush_defense_rank AS away_rush_defense_rank,
         g.home_streak AS home_streak,
         g.away_streak AS away_streak,
         g.home_prev_margin AS home_prev_margin,
         g.away_prev_margin AS away_prev_margin,
+        -- Win percentage
+        g.home_win_pct AS home_win_pct,
+        g.away_win_pct AS away_win_pct,
+        g.home_wins AS home_wins,
+        g.home_losses AS home_losses,
+        g.away_wins AS away_wins,
+        g.away_losses AS away_losses,
+        -- Position-specific rankings
+        g.home_rank_vs_wr AS home_rank_vs_wr,
+        g.home_rank_vs_te AS home_rank_vs_te,
+        g.home_rank_vs_rb AS home_rank_vs_rb,
+        g.away_rank_vs_wr AS away_rank_vs_wr,
+        g.away_rank_vs_te AS away_rank_vs_te,
+        g.away_rank_vs_rb AS away_rank_vs_rb,
+        g.home_rank_wr_prod AS home_rank_wr_prod,
+        g.home_rank_te_prod AS home_rank_te_prod,
+        g.home_rank_rb_prod AS home_rank_rb_prod,
+        g.away_rank_wr_prod AS away_rank_wr_prod,
+        g.away_rank_te_prod AS away_rank_te_prod,
+        g.away_rank_rb_prod AS away_rank_rb_prod,
         ht.division AS home_division,
         ht.conference AS home_conference,
         at.division AS away_division,

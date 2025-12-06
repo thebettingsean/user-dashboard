@@ -307,6 +307,13 @@ export default function SportsEnginePage() {
   const [teamWinPctMax, setTeamWinPctMax] = useState<string>('')
   const [oppWinPctMin, setOppWinPctMin] = useState<string>('')
   const [oppWinPctMax, setOppWinPctMax] = useState<string>('')
+  
+  // Position-specific stat filters (for vs WRs, vs TEs, vs RBs)
+  const [defenseStatPosition, setDefenseStatPosition] = useState<string>('')
+  const [offenseStatPosition, setOffenseStatPosition] = useState<string>('')
+  const [ownDefenseStatPosition, setOwnDefenseStatPosition] = useState<string>('')
+  const [ownOffenseStatPosition, setOwnOffenseStatPosition] = useState<string>('')
+  
   const [spreadMin, setSpreadMin] = useState<string>('')
   const [spreadMax, setSpreadMax] = useState<string>('')
   const [totalMin, setTotalMin] = useState<string>('')
@@ -426,6 +433,12 @@ export default function SportsEnginePage() {
     setTeamWinPctMax('')
     setOppWinPctMin('')
     setOppWinPctMax('')
+    
+    // Position-specific stat filters
+    setDefenseStatPosition('')
+    setOffenseStatPosition('')
+    setOwnDefenseStatPosition('')
+    setOwnOffenseStatPosition('')
     
     // Ranges
     setSpreadMin('')
@@ -993,10 +1006,26 @@ export default function SportsEnginePage() {
         if (defenseRank !== 'any') {
           filters.vs_defense_rank = defenseRank
           filters.defense_stat = defenseStat
+          // Position-specific defense stat
+          if (defenseStatPosition) {
+            filters.defense_stat_position = defenseStatPosition
+          }
         }
         if (offenseRank !== 'any') {
           filters.vs_offense_rank = offenseRank
           filters.offense_stat = offenseStat
+          // Position-specific offense stat
+          if (offenseStatPosition) {
+            filters.offense_stat_position = offenseStatPosition
+          }
+        }
+        
+        // Subject team's position-specific stats
+        if (ownDefenseRank !== 'any' && ownDefenseStatPosition) {
+          filters.own_defense_stat_position = ownDefenseStatPosition
+        }
+        if (ownOffenseRank !== 'any' && ownOffenseStatPosition) {
+          filters.own_offense_stat_position = ownOffenseStatPosition
         }
         
         // Win percentage filters
@@ -1233,6 +1262,26 @@ export default function SportsEnginePage() {
       if (ownOffenseRank !== 'any') filters.own_offense_rank = ownOffenseRank
       if (defenseRank !== 'any') filters.vs_defense_rank = defenseRank
       if (offenseRank !== 'any') filters.vs_offense_rank = offenseRank
+      
+      // Pass stat types for ranking filters
+      if (ownDefenseStat) filters.own_defense_stat = ownDefenseStat
+      if (ownOffenseStat) filters.own_offense_stat = ownOffenseStat
+      if (defenseStat) filters.defense_stat = defenseStat
+      if (offenseStat) filters.offense_stat = offenseStat
+      
+      // Win percentage filters
+      if (teamWinPctMin !== '' || teamWinPctMax !== '') {
+        filters.team_win_pct = {
+          min: teamWinPctMin ? parseFloat(teamWinPctMin) : undefined,
+          max: teamWinPctMax ? parseFloat(teamWinPctMax) : undefined
+        }
+      }
+      if (oppWinPctMin !== '' || oppWinPctMax !== '') {
+        filters.opp_win_pct = {
+          min: oppWinPctMin ? parseFloat(oppWinPctMin) : undefined,
+          max: oppWinPctMax ? parseFloat(oppWinPctMax) : undefined
+        }
+      }
       
       // Spread/Total ranges
       if (spreadMin || spreadMax) {
@@ -1707,18 +1756,110 @@ export default function SportsEnginePage() {
       }
     }
 
-    // Win percentage filters - display when filtered
-    if (teamWinPctMin || teamWinPctMax) {
-      const pctDisplay = teamWinPctMin && teamWinPctMax 
-        ? `${teamWinPctMin}-${teamWinPctMax}%`
-        : teamWinPctMin ? `${teamWinPctMin}%+` : `≤${teamWinPctMax}%`
-      reasons.push({ label: 'Team Win%', value: pctDisplay })
+    // Win percentage filters - display actual values from game data
+    if (teamWinPctMin !== '' || teamWinPctMax !== '') {
+      const isSubjectHome = location !== 'away'
+      const teamWinPct = isSubjectHome ? game.home_win_pct : game.away_win_pct
+      if (teamWinPct !== undefined && teamWinPct !== null) {
+        reasons.push({ label: 'Team Win%', value: `${(teamWinPct * 100).toFixed(0)}%` })
+      } else {
+        const pctDisplay = teamWinPctMin && teamWinPctMax 
+          ? `${teamWinPctMin}-${teamWinPctMax}%`
+          : teamWinPctMin ? `${teamWinPctMin}%+` : `≤${teamWinPctMax}%`
+        reasons.push({ label: 'Team Win%', value: pctDisplay })
+      }
     }
-    if (oppWinPctMin || oppWinPctMax) {
-      const pctDisplay = oppWinPctMin && oppWinPctMax 
-        ? `${oppWinPctMin}-${oppWinPctMax}%`
-        : oppWinPctMin ? `${oppWinPctMin}%+` : `≤${oppWinPctMax}%`
-      reasons.push({ label: 'Opp Win%', value: pctDisplay })
+    if (oppWinPctMin !== '' || oppWinPctMax !== '') {
+      const isSubjectHome = location !== 'away'
+      const oppWinPct = isSubjectHome ? game.away_win_pct : game.home_win_pct
+      if (oppWinPct !== undefined && oppWinPct !== null) {
+        reasons.push({ label: 'Opp Win%', value: `${(oppWinPct * 100).toFixed(0)}%` })
+      } else {
+        const pctDisplay = oppWinPctMin && oppWinPctMax 
+          ? `${oppWinPctMin}-${oppWinPctMax}%`
+          : oppWinPctMin ? `${oppWinPctMin}%+` : `≤${oppWinPctMax}%`
+        reasons.push({ label: 'Opp Win%', value: pctDisplay })
+      }
+    }
+
+    // Position-specific Defense ranking (vs WRs, vs TEs, vs RBs)
+    if (defenseStatPosition && defenseStatPosition !== '') {
+      const isSubjectHome = location !== 'away'
+      const oppAbbr = isSubjectHome ? (game.away_abbr || 'OPP') : (game.home_abbr || 'OPP')
+      const actualRank = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' 
+        ? (isSubjectHome ? game.away_def_rank_vs_wr : game.home_def_rank_vs_wr)
+        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' 
+        ? (isSubjectHome ? game.away_def_rank_vs_te : game.home_def_rank_vs_te)
+        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' 
+        ? (isSubjectHome ? game.away_def_rank_vs_rb : game.home_def_rank_vs_rb)
+        : null
+      const statLabel = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' ? 'D vs WRs'
+        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' ? 'D vs TEs'
+        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' ? 'D vs RBs'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'vs Defense', value: `${oppAbbr} #${actualRank} ${statLabel}` })
+      }
+    }
+
+    // Position-specific Offense ranking (WR/TE/RB production)
+    if (offenseStatPosition && offenseStatPosition !== '') {
+      const isSubjectHome = location !== 'away'
+      const oppAbbr = isSubjectHome ? (game.away_abbr || 'OPP') : (game.home_abbr || 'OPP')
+      const actualRank = offenseStatPosition === 'wr_prod' || offenseStatPosition === 'wr' 
+        ? (isSubjectHome ? game.away_off_rank_wr_prod : game.home_off_rank_wr_prod)
+        : offenseStatPosition === 'te_prod' || offenseStatPosition === 'te' 
+        ? (isSubjectHome ? game.away_off_rank_te_prod : game.home_off_rank_te_prod)
+        : offenseStatPosition === 'rb_prod' || offenseStatPosition === 'rb' 
+        ? (isSubjectHome ? game.away_off_rank_rb_prod : game.home_off_rank_rb_prod)
+        : null
+      const statLabel = offenseStatPosition === 'wr_prod' || offenseStatPosition === 'wr' ? 'WR Prod'
+        : offenseStatPosition === 'te_prod' || offenseStatPosition === 'te' ? 'TE Prod'
+        : offenseStatPosition === 'rb_prod' || offenseStatPosition === 'rb' ? 'RB Prod'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'vs Offense', value: `${oppAbbr} #${actualRank} ${statLabel}` })
+      }
+    }
+
+    // Own position-specific Defense ranking (Team defense vs WR/TE/RB)
+    if (ownDefenseStatPosition && ownDefenseStatPosition !== '') {
+      const isSubjectHome = location !== 'away'
+      const teamAbbr = isSubjectHome ? (game.home_abbr || 'TEAM') : (game.away_abbr || 'TEAM')
+      const actualRank = ownDefenseStatPosition === 'vs_wr' || ownDefenseStatPosition === 'wr' 
+        ? (isSubjectHome ? game.home_def_rank_vs_wr : game.away_def_rank_vs_wr)
+        : ownDefenseStatPosition === 'vs_te' || ownDefenseStatPosition === 'te' 
+        ? (isSubjectHome ? game.home_def_rank_vs_te : game.away_def_rank_vs_te)
+        : ownDefenseStatPosition === 'vs_rb' || ownDefenseStatPosition === 'rb' 
+        ? (isSubjectHome ? game.home_def_rank_vs_rb : game.away_def_rank_vs_rb)
+        : null
+      const statLabel = ownDefenseStatPosition === 'vs_wr' || ownDefenseStatPosition === 'wr' ? 'D vs WRs'
+        : ownDefenseStatPosition === 'vs_te' || ownDefenseStatPosition === 'te' ? 'D vs TEs'
+        : ownDefenseStatPosition === 'vs_rb' || ownDefenseStatPosition === 'rb' ? 'D vs RBs'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'Team Defense', value: `${teamAbbr} #${actualRank} ${statLabel}` })
+      }
+    }
+
+    // Own position-specific Offense ranking (Team WR/TE/RB production)
+    if (ownOffenseStatPosition && ownOffenseStatPosition !== '') {
+      const isSubjectHome = location !== 'away'
+      const teamAbbr = isSubjectHome ? (game.home_abbr || 'TEAM') : (game.away_abbr || 'TEAM')
+      const actualRank = ownOffenseStatPosition === 'wr_prod' || ownOffenseStatPosition === 'wr' 
+        ? (isSubjectHome ? game.home_off_rank_wr_prod : game.away_off_rank_wr_prod)
+        : ownOffenseStatPosition === 'te_prod' || ownOffenseStatPosition === 'te' 
+        ? (isSubjectHome ? game.home_off_rank_te_prod : game.away_off_rank_te_prod)
+        : ownOffenseStatPosition === 'rb_prod' || ownOffenseStatPosition === 'rb' 
+        ? (isSubjectHome ? game.home_off_rank_rb_prod : game.away_off_rank_rb_prod)
+        : null
+      const statLabel = ownOffenseStatPosition === 'wr_prod' || ownOffenseStatPosition === 'wr' ? 'WR Prod'
+        : ownOffenseStatPosition === 'te_prod' || ownOffenseStatPosition === 'te' ? 'TE Prod'
+        : ownOffenseStatPosition === 'rb_prod' || ownOffenseStatPosition === 'rb' ? 'RB Prod'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'Team Offense', value: `${teamAbbr} #${actualRank} ${statLabel}` })
+      }
     }
 
     // For O/U queries - home/away team stats with actual ranks
@@ -1978,6 +2119,54 @@ export default function SportsEnginePage() {
           label: 'Prev Game', 
           value: prevMargin > 0 ? `Won by ${prevMargin}` : `Lost by ${Math.abs(prevMargin)}`
         })
+      }
+    }
+
+    // Position-specific Defense ranking (vs WRs, vs TEs, vs RBs)
+    if (defenseStatPosition && defenseStatPosition !== '') {
+      const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      const actualRank = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' ? game.opp_def_rank_vs_wr
+        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' ? game.opp_def_rank_vs_te
+        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' ? game.opp_def_rank_vs_rb
+        : null
+      const statLabel = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' ? 'D vs WRs'
+        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' ? 'D vs TEs'
+        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' ? 'D vs RBs'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
+      }
+    }
+
+    // Position-specific Offense ranking (WR/TE/RB production)
+    if (offenseStatPosition && offenseStatPosition !== '') {
+      const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      const actualRank = offenseStatPosition === 'wr_prod' || offenseStatPosition === 'wr' ? game.opp_off_rank_wr_prod
+        : offenseStatPosition === 'te_prod' || offenseStatPosition === 'te' ? game.opp_off_rank_te_prod
+        : offenseStatPosition === 'rb_prod' || offenseStatPosition === 'rb' ? game.opp_off_rank_rb_prod
+        : null
+      const statLabel = offenseStatPosition === 'wr_prod' || offenseStatPosition === 'wr' ? 'WR Prod'
+        : offenseStatPosition === 'te_prod' || offenseStatPosition === 'te' ? 'TE Prod'
+        : offenseStatPosition === 'rb_prod' || offenseStatPosition === 'rb' ? 'RB Prod'
+        : ''
+      if (actualRank && statLabel) {
+        reasons.push({ label: 'vs Offense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
+      }
+    }
+
+    // Team Win Percentage
+    if (teamWinPctMin !== '' || teamWinPctMax !== '') {
+      const teamWinPct = game.team_win_pct
+      if (teamWinPct !== undefined && teamWinPct !== null) {
+        reasons.push({ label: 'Team Win%', value: `${(teamWinPct * 100).toFixed(0)}%` })
+      }
+    }
+
+    // Opponent Win Percentage
+    if (oppWinPctMin !== '' || oppWinPctMax !== '') {
+      const oppWinPct = game.opp_win_pct
+      if (oppWinPct !== undefined && oppWinPct !== null) {
+        reasons.push({ label: 'Opp Win%', value: `${(oppWinPct * 100).toFixed(0)}%` })
       }
     }
 

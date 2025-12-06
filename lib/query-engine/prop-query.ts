@@ -117,6 +117,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Add box score specific conditions
   const boxConditions: string[] = []
   
+  // Track if we need opponent rankings join (for position-specific filters)
+  let needsOppRankingsJoin = false
+  
   // Player or Position filter
   if (player_id && player_id > 0) {
     // Specific player
@@ -141,36 +144,68 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     appliedFilters.push('vs Specific Opponent')
   }
   
-  // Defense rank filter - use box_scores columns
+  // Defense rank filter - supports position-specific rankings
+  // defense_stat_position can be 'vs_wr', 'vs_te', 'vs_rb' for position-specific
   if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
-    const rankCol = defenseStat === 'pass' ? 'opp_def_rank_pass_yards'
-      : defenseStat === 'rush' ? 'opp_def_rank_rush_yards'
-      : 'opp_def_rank_receiving_yards'
+    let rankCol: string
+    let statLabel: string
+    
+    // Check for position-specific defense filter
+    const positionStat = filters.defense_stat_position || filters.defense_stat
+    
+    if (positionStat === 'vs_wr' || positionStat === 'wr') {
+      // Use rankings table for position-specific
+      needsOppRankingsJoin = true
+      rankCol = 'opp_rank.rank_yards_allowed_to_wr'
+      statLabel = 'D vs WRs'
+    } else if (positionStat === 'vs_te' || positionStat === 'te') {
+      needsOppRankingsJoin = true
+      rankCol = 'opp_rank.rank_yards_allowed_to_te'
+      statLabel = 'D vs TEs'
+    } else if (positionStat === 'vs_rb' || positionStat === 'rb') {
+      needsOppRankingsJoin = true
+      rankCol = 'opp_rank.rank_yards_allowed_to_rb'
+      statLabel = 'D vs RBs'
+    } else if (positionStat === 'pass') {
+      rankCol = 'b.opp_def_rank_pass_yards'
+      statLabel = 'Pass D'
+    } else if (positionStat === 'rush') {
+      rankCol = 'b.opp_def_rank_rush_yards'
+      statLabel = 'Rush D'
+    } else {
+      // Default based on player position's stat type
+      rankCol = defenseStat === 'pass' ? 'b.opp_def_rank_pass_yards'
+        : defenseStat === 'rush' ? 'b.opp_def_rank_rush_yards'
+        : 'b.opp_def_rank_receiving_yards'
+      statLabel = 'Defense'
+    }
+    
+    const rankCondition = rankCol.startsWith('opp_rank.') ? rankCol : rankCol
     
     switch (filters.vs_defense_rank) {
       case 'top_5':
-        boxConditions.push(`b.${rankCol} <= 5 AND b.${rankCol} > 0`)
-        appliedFilters.push('vs Top 5 Defense')
+        boxConditions.push(`${rankCondition} <= 5 AND ${rankCondition} > 0`)
+        appliedFilters.push(`vs Top 5 ${statLabel}`)
         break
       case 'top_10':
-        boxConditions.push(`b.${rankCol} <= 10 AND b.${rankCol} > 0`)
-        appliedFilters.push('vs Top 10 Defense')
+        boxConditions.push(`${rankCondition} <= 10 AND ${rankCondition} > 0`)
+        appliedFilters.push(`vs Top 10 ${statLabel}`)
         break
       case 'top_15':
-        boxConditions.push(`b.${rankCol} <= 15 AND b.${rankCol} > 0`)
-        appliedFilters.push('vs Top 15 Defense')
+        boxConditions.push(`${rankCondition} <= 15 AND ${rankCondition} > 0`)
+        appliedFilters.push(`vs Top 15 ${statLabel}`)
         break
       case 'bottom_5':
-        boxConditions.push(`b.${rankCol} >= 28`)
-        appliedFilters.push('vs Bottom 5 Defense')
+        boxConditions.push(`${rankCondition} >= 28`)
+        appliedFilters.push(`vs Bottom 5 ${statLabel}`)
         break
       case 'bottom_10':
-        boxConditions.push(`b.${rankCol} >= 23`)
-        appliedFilters.push('vs Bottom 10 Defense')
+        boxConditions.push(`${rankCondition} >= 23`)
+        appliedFilters.push(`vs Bottom 10 ${statLabel}`)
         break
       case 'bottom_15':
-        boxConditions.push(`b.${rankCol} >= 18`)
-        appliedFilters.push('vs Bottom 15 Defense')
+        boxConditions.push(`${rankCondition} >= 18`)
+        appliedFilters.push(`vs Bottom 15 ${statLabel}`)
         break
     }
   }
@@ -333,9 +368,48 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     appliedFilters.push(`ML Movement ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}`)
   }
   
-  // Track if we need opponent rankings join
-  let needsOppRankingsJoin = false
+  // Opponent rank conditions (for vs offense filter and win%)
   const oppRankConditions: string[] = []
+  
+  // ============================================
+  // WIN PERCENTAGE FILTERS
+  // ============================================
+  
+  // Team's win percentage (player's team) - requires team_rank join
+  if (filters.team_win_pct) {
+    needsOppRankingsJoin = true
+    const { min, max } = filters.team_win_pct
+    // For player's team, if player is home use home rankings, else away
+    const winPctExpr = `IF(b.is_home = 1, team_rank.win_pct, team_rank.win_pct)`
+    
+    if (min !== undefined && max !== undefined) {
+      oppRankConditions.push(`team_rank.win_pct >= ${min / 100} AND team_rank.win_pct <= ${max / 100}`)
+      appliedFilters.push(`Team Win% ${min}-${max}%`)
+    } else if (min !== undefined) {
+      oppRankConditions.push(`team_rank.win_pct >= ${min / 100}`)
+      appliedFilters.push(`Team Win% ${min}%+`)
+    } else if (max !== undefined) {
+      oppRankConditions.push(`team_rank.win_pct <= ${max / 100}`)
+      appliedFilters.push(`Team Win% ≤${max}%`)
+    }
+  }
+  
+  // Opponent's win percentage
+  if (filters.opp_win_pct) {
+    needsOppRankingsJoin = true
+    const { min, max } = filters.opp_win_pct
+    
+    if (min !== undefined && max !== undefined) {
+      oppRankConditions.push(`opp_rank.win_pct >= ${min / 100} AND opp_rank.win_pct <= ${max / 100}`)
+      appliedFilters.push(`Opp Win% ${min}-${max}%`)
+    } else if (min !== undefined) {
+      oppRankConditions.push(`opp_rank.win_pct >= ${min / 100}`)
+      appliedFilters.push(`Opp Win% ${min}%+`)
+    } else if (max !== undefined) {
+      oppRankConditions.push(`opp_rank.win_pct <= ${max / 100}`)
+      appliedFilters.push(`Opp Win% ≤${max}%`)
+    }
+  }
   
   // vs Offense filter - opponent's offensive ranking
   if (filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
@@ -388,11 +462,14 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     'b.receiving_yards < 500'
   ]
   
-  // Build opponent rankings JOIN clause if needed
+  // Build opponent rankings JOIN clause if needed (includes team's own ranking for team_win_pct)
   const oppRankingsJoin = needsOppRankingsJoin ? `
     LEFT JOIN nfl_team_rankings opp_rank ON b.opponent_id = opp_rank.team_id 
       AND g.season = opp_rank.season 
       AND g.week = opp_rank.week + 1
+    LEFT JOIN nfl_team_rankings team_rank ON b.team_id = team_rank.team_id 
+      AND g.season = team_rank.season 
+      AND g.week = team_rank.week + 1
   ` : ''
   
   // Add book line conditions if using book lines
@@ -492,7 +569,14 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Opponent offensive rankings from rankings join (if available)
       ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
       ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush' : 'NULL as opp_off_rank_rush'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      -- Position-specific defensive rankings (vs WR/TE/RB)
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      -- Win percentages
+      ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
+      ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
@@ -572,7 +656,14 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Opponent offensive rankings from rankings join (if available)
       ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
       ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush' : 'NULL as opp_off_rank_rush'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      -- Position-specific defensive rankings (vs WR/TE/RB)
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      -- Win percentages
+      ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
+      ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'

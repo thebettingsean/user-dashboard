@@ -95,7 +95,7 @@ async function insertRows(table: string, rows: any[]): Promise<void> {
   }
 }
 
-// Get current team rankings from our data
+// Get current team rankings from our data (including win% and position stats)
 async function getTeamRankings(): Promise<Map<number, any>> {
   const rankings = await executeQuery(`
     SELECT 
@@ -106,7 +106,19 @@ async function getTeamRankings(): Promise<Map<number, any>> {
       rank_rushing_yards_per_game as rush_offense_rank,
       rank_points_allowed_per_game as defense_rank,
       rank_passing_yards_allowed_per_game as pass_defense_rank,
-      rank_rushing_yards_allowed_per_game as rush_defense_rank
+      rank_rushing_yards_allowed_per_game as rush_defense_rank,
+      -- Win percentage
+      wins,
+      losses,
+      win_pct,
+      -- Position-specific DEFENSE rankings (yards allowed TO position)
+      rank_yards_allowed_to_wr as rank_vs_wr,
+      rank_yards_allowed_to_te as rank_vs_te,
+      rank_yards_allowed_to_rb as rank_vs_rb,
+      -- Position-specific OFFENSE rankings (yards produced BY position)
+      rank_wr_yards_produced as rank_wr_prod,
+      rank_te_yards_produced as rank_te_prod,
+      rank_rb_yards_produced as rank_rb_prod
     FROM nfl_team_rankings
     WHERE (season, week) = (
       SELECT season, max(week) FROM nfl_team_rankings GROUP BY season ORDER BY season DESC LIMIT 1
@@ -287,6 +299,27 @@ export async function GET(request: Request) {
         away_streak: awayMomentum.streak,
         home_prev_margin: homeMomentum.prev_margin,
         away_prev_margin: awayMomentum.prev_margin,
+        // New: Win percentage
+        home_win_pct: homeRankings.win_pct || 0,
+        away_win_pct: awayRankings.win_pct || 0,
+        home_wins: homeRankings.wins || 0,
+        home_losses: homeRankings.losses || 0,
+        away_wins: awayRankings.wins || 0,
+        away_losses: awayRankings.losses || 0,
+        // New: Position-specific defense rankings (vs WR/TE/RB)
+        home_rank_vs_wr: homeRankings.rank_vs_wr || 0,
+        home_rank_vs_te: homeRankings.rank_vs_te || 0,
+        home_rank_vs_rb: homeRankings.rank_vs_rb || 0,
+        away_rank_vs_wr: awayRankings.rank_vs_wr || 0,
+        away_rank_vs_te: awayRankings.rank_vs_te || 0,
+        away_rank_vs_rb: awayRankings.rank_vs_rb || 0,
+        // New: Position-specific offense rankings (WR/TE/RB production)
+        home_rank_wr_prod: homeRankings.rank_wr_prod || 0,
+        home_rank_te_prod: homeRankings.rank_te_prod || 0,
+        home_rank_rb_prod: homeRankings.rank_rb_prod || 0,
+        away_rank_wr_prod: awayRankings.rank_wr_prod || 0,
+        away_rank_te_prod: awayRankings.rank_te_prod || 0,
+        away_rank_rb_prod: awayRankings.rank_rb_prod || 0,
         updated_at: snapshotTime
       })
       
@@ -355,6 +388,11 @@ export async function GET(request: Request) {
         ${g.away_offense_rank}, ${g.away_defense_rank}, ${g.away_pass_offense_rank}, ${g.away_rush_offense_rank},
         ${g.away_pass_defense_rank}, ${g.away_rush_defense_rank},
         ${g.home_streak}, ${g.away_streak}, ${g.home_prev_margin}, ${g.away_prev_margin},
+        ${g.home_win_pct}, ${g.away_win_pct}, ${g.home_wins}, ${g.home_losses}, ${g.away_wins}, ${g.away_losses},
+        ${g.home_rank_vs_wr}, ${g.home_rank_vs_te}, ${g.home_rank_vs_rb},
+        ${g.away_rank_vs_wr}, ${g.away_rank_vs_te}, ${g.away_rank_vs_rb},
+        ${g.home_rank_wr_prod}, ${g.home_rank_te_prod}, ${g.home_rank_rb_prod},
+        ${g.away_rank_wr_prod}, ${g.away_rank_te_prod}, ${g.away_rank_rb_prod},
         now(), now()
       )`).join(',\n')
       
@@ -368,6 +406,11 @@ export async function GET(request: Request) {
           away_offense_rank, away_defense_rank, away_pass_offense_rank, away_rush_offense_rank,
           away_pass_defense_rank, away_rush_defense_rank,
           home_streak, away_streak, home_prev_margin, away_prev_margin,
+          home_win_pct, away_win_pct, home_wins, home_losses, away_wins, away_losses,
+          home_rank_vs_wr, home_rank_vs_te, home_rank_vs_rb,
+          away_rank_vs_wr, away_rank_vs_te, away_rank_vs_rb,
+          home_rank_wr_prod, home_rank_te_prod, home_rank_rb_prod,
+          away_rank_wr_prod, away_rank_te_prod, away_rank_rb_prod,
           created_at, updated_at
         ) VALUES ${gameValues}
       `)
