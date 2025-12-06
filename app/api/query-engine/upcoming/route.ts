@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       appliedFilters.push('Non-Conference')
     }
     
-    // ===== BETTING FILTERS (from current lines) =====
+    // ===== BETTING FILTERS (from latest lines - alias 'll') =====
     
     const isHome = filters.location !== 'away'
     const teamPrefix = isHome ? 'home' : 'away'
@@ -76,10 +76,10 @@ export async function POST(request: Request) {
     
     // Favorite/Dog filter
     if (filters.is_favorite === true) {
-      conditions.push(`curr.${teamPrefix}_spread < 0`)
+      conditions.push(`ll.${teamPrefix}_spread < 0`)
       appliedFilters.push('Favorite')
     } else if (filters.is_favorite === false) {
-      conditions.push(`curr.${teamPrefix}_spread > 0`)
+      conditions.push(`ll.${teamPrefix}_spread > 0`)
       appliedFilters.push('Underdog')
     }
     
@@ -87,13 +87,13 @@ export async function POST(request: Request) {
     if (filters.spread_range) {
       const { min, max } = filters.spread_range
       if (min !== undefined && max !== undefined) {
-        conditions.push(`curr.${teamPrefix}_spread BETWEEN ${min} AND ${max}`)
+        conditions.push(`ll.${teamPrefix}_spread BETWEEN ${min} AND ${max}`)
         appliedFilters.push(`Spread ${min} to ${max}`)
       } else if (min !== undefined) {
-        conditions.push(`curr.${teamPrefix}_spread >= ${min}`)
+        conditions.push(`ll.${teamPrefix}_spread >= ${min}`)
         appliedFilters.push(`Spread ${min}+`)
       } else if (max !== undefined) {
-        conditions.push(`curr.${teamPrefix}_spread <= ${max}`)
+        conditions.push(`ll.${teamPrefix}_spread <= ${max}`)
         appliedFilters.push(`Spread ≤${max}`)
       }
     }
@@ -102,13 +102,13 @@ export async function POST(request: Request) {
     if (filters.total_range) {
       const { min, max } = filters.total_range
       if (min !== undefined && max !== undefined) {
-        conditions.push(`curr.total_line BETWEEN ${min} AND ${max}`)
+        conditions.push(`ll.total_line BETWEEN ${min} AND ${max}`)
         appliedFilters.push(`Total ${min}-${max}`)
       } else if (min !== undefined) {
-        conditions.push(`curr.total_line >= ${min}`)
+        conditions.push(`ll.total_line >= ${min}`)
         appliedFilters.push(`Total ${min}+`)
       } else if (max !== undefined) {
-        conditions.push(`curr.total_line <= ${max}`)
+        conditions.push(`ll.total_line <= ${max}`)
         appliedFilters.push(`Total ≤${max}`)
       }
     }
@@ -117,35 +117,31 @@ export async function POST(request: Request) {
     if (filters.ml_range) {
       const { min, max } = filters.ml_range
       if (min !== undefined && max !== undefined) {
-        conditions.push(`curr.${teamPrefix}_ml BETWEEN ${min} AND ${max}`)
+        conditions.push(`ll.${teamPrefix}_ml BETWEEN ${min} AND ${max}`)
         appliedFilters.push(`ML ${min} to ${max}`)
       } else if (min !== undefined) {
-        conditions.push(`curr.${teamPrefix}_ml >= ${min}`)
+        conditions.push(`ll.${teamPrefix}_ml >= ${min}`)
         appliedFilters.push(`ML ${min}+`)
       } else if (max !== undefined) {
-        conditions.push(`curr.${teamPrefix}_ml <= ${max}`)
+        conditions.push(`ll.${teamPrefix}_ml <= ${max}`)
         appliedFilters.push(`ML ≤${max}`)
       }
     }
     
     // ===== LINE MOVEMENT FILTERS =====
     
-    // Spread movement
+    // Spread movement (ll = latest lines, ol = opening lines)
     if (filters.spread_movement_range) {
       const { min, max } = filters.spread_movement_range
-      // Movement = current - opening (positive = line moved toward team)
-      const moveExpr = isHome 
-        ? '(open.opening_spread - curr.home_spread)'  // Negative opening becoming less negative = positive move
-        : '(curr.away_spread - (-open.opening_spread))'
       
       if (min !== undefined && max !== undefined) {
-        conditions.push(`(curr.home_spread - open.opening_spread) BETWEEN ${min} AND ${max}`)
+        conditions.push(`(ll.home_spread - ol.opening_spread) BETWEEN ${min} AND ${max}`)
         appliedFilters.push(`Spread Move ${min} to ${max}`)
       } else if (min !== undefined) {
-        conditions.push(`(curr.home_spread - open.opening_spread) >= ${min}`)
+        conditions.push(`(ll.home_spread - ol.opening_spread) >= ${min}`)
         appliedFilters.push(`Spread Move ${min}+`)
       } else if (max !== undefined) {
-        conditions.push(`(curr.home_spread - open.opening_spread) <= ${max}`)
+        conditions.push(`(ll.home_spread - ol.opening_spread) <= ${max}`)
         appliedFilters.push(`Spread Move ≤${max}`)
       }
     }
@@ -154,13 +150,13 @@ export async function POST(request: Request) {
     if (filters.total_movement_range) {
       const { min, max } = filters.total_movement_range
       if (min !== undefined && max !== undefined) {
-        conditions.push(`(curr.total_line - open.opening_total) BETWEEN ${min} AND ${max}`)
+        conditions.push(`(ll.total_line - ol.opening_total) BETWEEN ${min} AND ${max}`)
         appliedFilters.push(`Total Move ${min} to ${max}`)
       } else if (min !== undefined) {
-        conditions.push(`(curr.total_line - open.opening_total) >= ${min}`)
+        conditions.push(`(ll.total_line - ol.opening_total) >= ${min}`)
         appliedFilters.push(`Total Move ${min}+`)
       } else if (max !== undefined) {
-        conditions.push(`(curr.total_line - open.opening_total) <= ${max}`)
+        conditions.push(`(ll.total_line - ol.opening_total) <= ${max}`)
         appliedFilters.push(`Total Move ≤${max}`)
       }
     }
