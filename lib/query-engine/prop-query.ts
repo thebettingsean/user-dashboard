@@ -484,7 +484,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ht.division as home_division,
       ht.conference as home_conference,
       at.division as away_division,
-      at.conference as away_conference
+      at.conference as away_conference,
+      -- Opponent defensive rankings from box scores
+      b.opp_def_rank_pass_yards,
+      b.opp_def_rank_rush_yards,
+      b.opp_def_rank_receiving_yards,
+      -- Opponent offensive rankings from rankings join (if available)
+      ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush' : 'NULL as opp_off_rank_rush'}
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
@@ -556,7 +564,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ht.division as home_division,
       ht.conference as home_conference,
       at.division as away_division,
-      at.conference as away_conference
+      at.conference as away_conference,
+      -- Opponent defensive rankings from box scores
+      b.opp_def_rank_pass_yards,
+      b.opp_def_rank_rush_yards,
+      b.opp_def_rank_receiving_yards,
+      -- Opponent offensive rankings from rankings join (if available)
+      ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
+      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush' : 'NULL as opp_off_rank_rush'}
     FROM nfl_box_scores_v2 b
     JOIN nfl_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
@@ -692,7 +708,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       home_team_id: row.home_team_id,
       away_team_id: row.away_team_id,
       home_abbr: row.home_abbr,
-      away_abbr: row.away_abbr
+      away_abbr: row.away_abbr,
+      // Opponent rankings for "Why this fits"
+      opp_def_rank_pass: row.opp_def_rank_pass_yards,
+      opp_def_rank_rush: row.opp_def_rank_rush_yards,
+      opp_def_rank_receiving: row.opp_def_rank_receiving_yards,
+      opp_off_rank_points: row.opp_off_rank_points,
+      opp_off_rank_pass: row.opp_off_rank_pass,
+      opp_off_rank_rush: row.opp_off_rank_rush,
+      // Track if player is home for context
+      is_home: row.is_home === 1
     })
   }
   

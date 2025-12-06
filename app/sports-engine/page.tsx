@@ -1762,18 +1762,40 @@ export default function SportsEnginePage() {
       reasons.push({ label: 'vs Team', value: opponentName })
     }
 
-    // Defense rank
+    // Defense rank - show actual rank number
     if (defenseRank && defenseRank !== 'any') {
-      const rankLabel = defenseRank.includes('top') ? `Top ${defenseRank.split('_')[1]}` : `Bottom ${defenseRank.split('_')[1]}`
-      const opponentName = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      reasons.push({ label: 'vs Defense', value: `${opponentName} (${rankLabel})` })
+      const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      // Get actual rank from game data based on selected stat
+      const actualRank = defenseStat === 'pass' ? game.opp_def_rank_pass 
+        : defenseStat === 'rush' ? game.opp_def_rank_rush 
+        : game.opp_def_rank_receiving
+      const statLabel = defenseStat === 'pass' ? 'Pass D' : defenseStat === 'rush' ? 'Rush D' : 'Rec D'
+      if (actualRank) {
+        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
+      } else {
+        const rankLabel = defenseRank.includes('top') ? `Top ${defenseRank.split('_')[1]}` : `Bottom ${defenseRank.split('_')[1]}`
+        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} (${rankLabel})` })
+      }
     }
 
-    // Offense rank
+    // Offense rank - show actual rank number
     if (offenseRank && offenseRank !== 'any') {
-      const rankLabel = offenseRank.includes('top') ? `Top ${offenseRank.split('_')[1]}` : `Bottom ${offenseRank.split('_')[1]}`
-      const opponentName = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      reasons.push({ label: 'vs Offense', value: `${opponentName} (${rankLabel})` })
+      const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
+      // Get actual rank from game data based on selected stat
+      const actualRank = offenseStat === 'points' ? game.opp_off_rank_points
+        : offenseStat === 'pass' || offenseStat === 'passing' ? game.opp_off_rank_pass
+        : offenseStat === 'rush' || offenseStat === 'rushing' ? game.opp_off_rank_rush
+        : game.opp_off_rank_points
+      const statLabel = offenseStat === 'points' ? 'Pts O' 
+        : offenseStat === 'pass' || offenseStat === 'passing' ? 'Pass O' 
+        : offenseStat === 'rush' || offenseStat === 'rushing' ? 'Rush O'
+        : 'Pts O'
+      if (actualRank) {
+        reasons.push({ label: 'vs Offense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
+      } else {
+        const rankLabel = offenseRank.includes('top') ? `Top ${offenseRank.split('_')[1]}` : `Bottom ${offenseRank.split('_')[1]}`
+        reasons.push({ label: 'vs Offense', value: `${opponentAbbr} (${rankLabel})` })
+      }
     }
 
     // Line info

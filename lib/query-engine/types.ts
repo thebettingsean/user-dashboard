@@ -266,6 +266,15 @@ export interface GameDetail {
   away_off_rank_points?: number
   away_off_rank_pass?: number
   away_off_rank_rush?: number
+  // Opponent rankings for props (from box scores perspective)
+  opp_def_rank_pass?: number
+  opp_def_rank_rush?: number
+  opp_def_rank_receiving?: number
+  opp_off_rank_points?: number
+  opp_off_rank_pass?: number
+  opp_off_rank_rush?: number
+  // Player perspective
+  is_home?: boolean
 }
 
 export interface QueryResult {
