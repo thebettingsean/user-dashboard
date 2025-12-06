@@ -1155,10 +1155,10 @@ export default function SportsEnginePage() {
       // Build filters matching the historical query
       if (location !== 'any') filters.location = location
       if (favorite !== 'any') filters.is_favorite = favorite === 'yes'
-      if (division === 'yes') filters.is_division_game = true
-      if (division === 'no') filters.is_division_game = false
-      if (conference === 'yes') filters.is_conference_game = true
-      if (conference === 'no') filters.is_conference_game = false
+      if (division === 'division') filters.is_division_game = true
+      if (division === 'non_division') filters.is_division_game = false
+      if (conference === 'conference') filters.is_conference_game = true
+      if (conference === 'non_conference') filters.is_conference_game = false
       
       // Team rankings
       if (ownDefenseRank !== 'any') filters.own_defense_rank = ownDefenseRank
