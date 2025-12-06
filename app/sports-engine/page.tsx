@@ -1733,27 +1733,54 @@ export default function SportsEnginePage() {
   const getPropMatchReasons = (game: any) => {
     const reasons: { label: string; value: string }[] = []
     
-    // Location/Venue
-    if (game.venue) {
-      reasons.push({ label: 'Location', value: `@ ${game.venue}` })
-    } else if (location && location !== 'any') {
-      reasons.push({ 
-        label: 'Location', 
-        value: location === 'home' ? `${game.player_name?.split(' ')[1] || 'Player'} at Home` : `${game.player_name?.split(' ')[1] || 'Player'} on Road`
-      })
+    // Location - ONLY show if user specifically selected home or away
+    if (location && location !== 'any') {
+      if (game.venue) {
+        reasons.push({ label: 'Location', value: `@ ${game.venue}` })
+      } else {
+        reasons.push({ 
+          label: 'Location', 
+          value: location === 'home' ? `${game.player_name?.split(' ')[1] || 'Player'} at Home` : `${game.player_name?.split(' ')[1] || 'Player'} on Road`
+        })
+      }
     }
 
-    // Division/Conference
-    if (game.is_division_game && (division === 'division')) {
-      reasons.push({ label: 'Division', value: 'Division Game' })
-    } else if (!game.is_division_game && (division === 'non_division')) {
-      reasons.push({ label: 'Non-Division', value: 'Non-Division Game' })
+    // Division - show actual divisions if filter applied
+    if (division === 'division' && game.is_division_game) {
+      const homeDiv = game.home_division || ''
+      const awayDiv = game.away_division || ''
+      if (homeDiv && awayDiv) {
+        reasons.push({ label: 'Division', value: `${awayDiv} vs ${homeDiv}` })
+      } else {
+        reasons.push({ label: 'Division', value: 'Division Game' })
+      }
+    } else if (division === 'non_division' && !game.is_division_game) {
+      const homeDiv = game.home_division || ''
+      const awayDiv = game.away_division || ''
+      if (homeDiv && awayDiv) {
+        reasons.push({ label: 'Non-Division', value: `${awayDiv} vs ${homeDiv}` })
+      } else {
+        reasons.push({ label: 'Non-Division', value: 'Non-Division Game' })
+      }
     }
     
-    if (game.is_conference_game && (conference === 'conference')) {
-      reasons.push({ label: 'Conference', value: 'Conference Game' })
-    } else if (!game.is_conference_game && (conference === 'non_conference')) {
-      reasons.push({ label: 'Non-Conference', value: 'Non-Conference Game' })
+    // Conference - show actual conferences if filter applied
+    if (conference === 'conference' && game.is_conference_game) {
+      const homeConf = game.home_conference || ''
+      const awayConf = game.away_conference || ''
+      if (homeConf && awayConf) {
+        reasons.push({ label: 'Conference', value: `${awayConf} vs ${homeConf}` })
+      } else {
+        reasons.push({ label: 'Conference', value: 'Conference Game' })
+      }
+    } else if (conference === 'non_conference' && !game.is_conference_game) {
+      const homeConf = game.home_conference || ''
+      const awayConf = game.away_conference || ''
+      if (homeConf && awayConf) {
+        reasons.push({ label: 'Non-Conference', value: `${awayConf} vs ${homeConf}` })
+      } else {
+        reasons.push({ label: 'Non-Conference', value: 'Non-Conference Game' })
+      }
     }
 
     // Versus opponent
@@ -1765,7 +1792,6 @@ export default function SportsEnginePage() {
     // Defense rank - show actual rank number
     if (defenseRank && defenseRank !== 'any') {
       const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      // Get actual rank from game data based on selected stat
       const actualRank = defenseStat === 'pass' ? game.opp_def_rank_pass 
         : defenseStat === 'rush' ? game.opp_def_rank_rush 
         : game.opp_def_rank_receiving
@@ -1781,7 +1807,6 @@ export default function SportsEnginePage() {
     // Offense rank - show actual rank number
     if (offenseRank && offenseRank !== 'any') {
       const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      // Get actual rank from game data based on selected stat
       const actualRank = offenseStat === 'points' ? game.opp_off_rank_points
         : offenseStat === 'pass' || offenseStat === 'passing' ? game.opp_off_rank_pass
         : offenseStat === 'rush' || offenseStat === 'rushing' ? game.opp_off_rank_rush
@@ -1798,11 +1823,76 @@ export default function SportsEnginePage() {
       }
     }
 
-    // Line info
-    if (game.book_line !== undefined) {
+    // Favorite/Underdog filter
+    if (favorite && favorite !== 'any') {
+      const playerSpread = game.is_home ? game.spread_close : -game.spread_close
+      if (playerSpread !== undefined) {
+        reasons.push({ 
+          label: favorite === 'favorite' ? 'Favorite' : 'Underdog', 
+          value: `${Math.abs(playerSpread).toFixed(1)} pts`
+        })
+      }
+    }
+
+    // Total range filter
+    if (totalMin || totalMax) {
+      const gameTotal = game.total || game.total_close
+      if (gameTotal) {
+        let totalDesc = ''
+        if (totalMin && totalMax) {
+          totalDesc = `O/U ${gameTotal} (${totalMin}-${totalMax} range)`
+        } else if (totalMin) {
+          totalDesc = `O/U ${gameTotal} (${totalMin}+)`
+        } else if (totalMax) {
+          totalDesc = `O/U ${gameTotal} (≤${totalMax})`
+        }
+        reasons.push({ label: 'Total', value: totalDesc })
+      }
+    }
+
+    // Spread range filter
+    if (spreadMin || spreadMax) {
+      const playerSpread = game.is_home ? game.spread_close : -game.spread_close
+      if (playerSpread !== undefined) {
+        let spreadDesc = `${playerSpread > 0 ? '+' : ''}${playerSpread.toFixed(1)}`
+        reasons.push({ label: 'Spread', value: spreadDesc })
+      }
+    }
+
+    // Book Line filter (the filter itself, not just the line value)
+    if (propLineMode === 'book' && (bookLineMin || bookLineMax)) {
+      let filterDesc = ''
+      if (bookLineMin && bookLineMax) {
+        filterDesc = `${bookLineMin} to ${bookLineMax}`
+      } else if (bookLineMin) {
+        filterDesc = `${bookLineMin}+`
+      } else if (bookLineMax) {
+        filterDesc = `≤${bookLineMax}`
+      }
+      reasons.push({ label: 'Book Line Filter', value: filterDesc })
+    }
+
+    // Actual book line value
+    if (game.book_line !== undefined && game.bookmaker) {
+      reasons.push({ label: game.bookmaker.charAt(0).toUpperCase() + game.bookmaker.slice(1), value: `o${game.book_line}` })
+    } else if (game.book_line !== undefined) {
       reasons.push({ label: 'Book Line', value: `o${game.book_line}` })
     } else if (parseFloat(propLine) > 0) {
       reasons.push({ label: 'Line', value: `o${propLine}` })
+    }
+
+    // Line movement filters
+    if (spreadMoveMin || spreadMoveMax) {
+      const movement = game.spread_movement
+      if (movement !== undefined) {
+        reasons.push({ label: 'Spread Move', value: `${movement > 0 ? '+' : ''}${movement.toFixed(1)}` })
+      }
+    }
+    if (totalMoveMin || totalMoveMax) {
+      const movement = game.total_movement
+      if (movement !== undefined) {
+        reasons.push({ label: 'Total Move', value: `${movement > 0 ? '+' : ''}${movement.toFixed(1)}` })
+      }
     }
 
     // Referee
@@ -1811,12 +1901,23 @@ export default function SportsEnginePage() {
     }
 
     // Streaks - using game-level streak data
-    if (streak && (game.home_streak !== undefined || game.away_streak !== undefined)) {
+    if (streak) {
       const teamStreak = game.is_home ? game.home_streak : game.away_streak
       if (teamStreak !== undefined && teamStreak !== 0) {
         reasons.push({ 
           label: 'Team Streak', 
           value: teamStreak > 0 ? `${teamStreak}W streak` : `${Math.abs(teamStreak)}L streak`
+        })
+      }
+    }
+
+    // Previous game margin
+    if (prevGameMarginMin || prevGameMarginMax) {
+      const prevMargin = game.is_home ? game.home_prev_margin : game.away_prev_margin
+      if (prevMargin !== undefined) {
+        reasons.push({ 
+          label: 'Prev Game', 
+          value: prevMargin > 0 ? `Won by ${prevMargin}` : `Lost by ${Math.abs(prevMargin)}`
         })
       }
     }
