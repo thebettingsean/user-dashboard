@@ -246,6 +246,26 @@ export interface GameDetail {
   receiving_long?: number
   targets?: number
   yards_per_reception?: number
+  // "Why this fits" - venue and matchup info
+  venue?: string
+  home_division?: string
+  away_division?: string
+  home_conference?: string
+  away_conference?: string
+  spread_close?: number
+  // Team ranking data for "Why this fits"
+  home_def_rank_points?: number
+  home_def_rank_pass?: number
+  home_def_rank_rush?: number
+  home_off_rank_points?: number
+  home_off_rank_pass?: number
+  home_off_rank_rush?: number
+  away_def_rank_points?: number
+  away_def_rank_pass?: number
+  away_def_rank_rush?: number
+  away_off_rank_points?: number
+  away_off_rank_pass?: number
+  away_off_rank_rush?: number
 }
 
 export interface QueryResult {

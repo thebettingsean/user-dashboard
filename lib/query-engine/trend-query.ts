@@ -145,6 +145,21 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       AND g.week = ar.week + 1
   ` : ''
   
+  // Add ranking columns if joins are present
+  const rankingColumns = requiresRankingsJoin ? `,
+      hr.rank_points_allowed_per_game as home_def_rank_points,
+      hr.rank_passing_yards_allowed_per_game as home_def_rank_pass,
+      hr.rank_rushing_yards_allowed_per_game as home_def_rank_rush,
+      hr.rank_points_per_game as home_off_rank_points,
+      hr.rank_passing_yards_per_game as home_off_rank_pass,
+      hr.rank_rushing_yards_per_game as home_off_rank_rush,
+      ar.rank_points_allowed_per_game as away_def_rank_points,
+      ar.rank_passing_yards_allowed_per_game as away_def_rank_pass,
+      ar.rank_rushing_yards_allowed_per_game as away_def_rank_rush,
+      ar.rank_points_per_game as away_off_rank_points,
+      ar.rank_passing_yards_per_game as away_off_rank_pass,
+      ar.rank_rushing_yards_per_game as away_off_rank_rush` : ''
+  
   const sql = `
     SELECT 
       g.game_id,
@@ -186,6 +201,7 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       at.abbreviation as away_abbr,
       at.division as away_division,
       at.conference as away_conference
+      ${rankingColumns}
     FROM nfl_games g
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
@@ -315,7 +331,20 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       away_division: row.away_division,
       home_conference: row.home_conference,
       away_conference: row.away_conference,
-      spread_close: row.spread_close
+      spread_close: row.spread_close,
+      // Rank data for "Why this fits"
+      home_def_rank_points: row.home_def_rank_points,
+      home_def_rank_pass: row.home_def_rank_pass,
+      home_def_rank_rush: row.home_def_rank_rush,
+      home_off_rank_points: row.home_off_rank_points,
+      home_off_rank_pass: row.home_off_rank_pass,
+      home_off_rank_rush: row.home_off_rank_rush,
+      away_def_rank_points: row.away_def_rank_points,
+      away_def_rank_pass: row.away_def_rank_pass,
+      away_def_rank_rush: row.away_def_rank_rush,
+      away_off_rank_points: row.away_off_rank_points,
+      away_off_rank_pass: row.away_off_rank_pass,
+      away_off_rank_rush: row.away_off_rank_rush
     })
   }
   

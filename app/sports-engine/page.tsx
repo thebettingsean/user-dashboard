@@ -1601,44 +1601,104 @@ export default function SportsEnginePage() {
       reasons.push({ label: 'Referee', value: game.referee_name })
     }
 
-    // Defense rank filter - show actual rank
+    // Defense rank filter - show actual rank from game data
     if (defenseRank !== 'any') {
-      const rankLabel = defenseRank.replace('_', ' ')
-      // We don't have opp_def_rank in game data yet, so show the filter
-      reasons.push({ label: 'vs Defense', value: `${rankLabel}` })
+      // Determine opponent team (opposite of subject)
+      const isSubjectHome = location !== 'away'
+      const oppDefRank = isSubjectHome
+        ? (defenseStat === 'pass' ? game.away_def_rank_pass : defenseStat === 'rush' ? game.away_def_rank_rush : game.away_def_rank_points)
+        : (defenseStat === 'pass' ? game.home_def_rank_pass : defenseStat === 'rush' ? game.home_def_rank_rush : game.home_def_rank_points)
+      const statLabel = defenseStat === 'pass' ? 'Pass D' : defenseStat === 'rush' ? 'Rush D' : 'Pts D'
+      const oppAbbr = isSubjectHome ? (game.away_abbr || 'OPP') : (game.home_abbr || 'OPP')
+      if (oppDefRank) {
+        reasons.push({ label: 'vs Defense', value: `${oppAbbr} #${oppDefRank} ${statLabel}` })
+      } else {
+        reasons.push({ label: 'vs Defense', value: `${defenseRank.replace('_', ' ')} (${statLabel})` })
+      }
     }
 
-    // Offense rank filter - show actual rank
+    // Offense rank filter - show actual rank from game data
     if (offenseRank !== 'any') {
-      const rankLabel = offenseRank.replace('_', ' ')
-      reasons.push({ label: 'vs Offense', value: `${rankLabel}` })
+      const isSubjectHome = location !== 'away'
+      const oppOffRank = isSubjectHome
+        ? (offenseStat === 'pass' || offenseStat === 'passing' ? game.away_off_rank_pass : offenseStat === 'rush' || offenseStat === 'rushing' ? game.away_off_rank_rush : game.away_off_rank_points)
+        : (offenseStat === 'pass' || offenseStat === 'passing' ? game.home_off_rank_pass : offenseStat === 'rush' || offenseStat === 'rushing' ? game.home_off_rank_rush : game.home_off_rank_points)
+      const statLabel = offenseStat === 'pass' || offenseStat === 'passing' ? 'Pass O' : offenseStat === 'rush' || offenseStat === 'rushing' ? 'Rush O' : 'Pts O'
+      const oppAbbr = isSubjectHome ? (game.away_abbr || 'OPP') : (game.home_abbr || 'OPP')
+      if (oppOffRank) {
+        reasons.push({ label: 'vs Offense', value: `${oppAbbr} #${oppOffRank} ${statLabel}` })
+      } else {
+        reasons.push({ label: 'vs Offense', value: `${offenseRank.replace('_', ' ')} (${statLabel})` })
+      }
     }
 
-    // Own defense rank
+    // Own defense rank - show actual rank from game data
     if (ownDefenseRank !== 'any') {
-      const rankLabel = ownDefenseRank.replace('_', ' ')
-      reasons.push({ label: 'Team Defense', value: `${rankLabel}` })
+      const isSubjectHome = location !== 'away'
+      const ownDefRank = isSubjectHome
+        ? (ownDefenseStat === 'pass' ? game.home_def_rank_pass : ownDefenseStat === 'rush' ? game.home_def_rank_rush : game.home_def_rank_points)
+        : (ownDefenseStat === 'pass' ? game.away_def_rank_pass : ownDefenseStat === 'rush' ? game.away_def_rank_rush : game.away_def_rank_points)
+      const statLabel = ownDefenseStat === 'pass' ? 'Pass D' : ownDefenseStat === 'rush' ? 'Rush D' : 'Pts D'
+      const teamAbbr = isSubjectHome ? (game.home_abbr || 'TEAM') : (game.away_abbr || 'TEAM')
+      if (ownDefRank) {
+        reasons.push({ label: 'Team Defense', value: `${teamAbbr} #${ownDefRank} ${statLabel}` })
+      } else {
+        reasons.push({ label: 'Team Defense', value: `${ownDefenseRank.replace('_', ' ')}` })
+      }
     }
 
-    // Own offense rank
+    // Own offense rank - show actual rank from game data
     if (ownOffenseRank !== 'any') {
-      const rankLabel = ownOffenseRank.replace('_', ' ')
-      reasons.push({ label: 'Team Offense', value: `${rankLabel}` })
+      const isSubjectHome = location !== 'away'
+      const ownOffRank = isSubjectHome
+        ? (ownOffenseStat === 'pass' || ownOffenseStat === 'passing' ? game.home_off_rank_pass : ownOffenseStat === 'rush' || ownOffenseStat === 'rushing' ? game.home_off_rank_rush : game.home_off_rank_points)
+        : (ownOffenseStat === 'pass' || ownOffenseStat === 'passing' ? game.away_off_rank_pass : ownOffenseStat === 'rush' || ownOffenseStat === 'rushing' ? game.away_off_rank_rush : game.away_off_rank_points)
+      const statLabel = ownOffenseStat === 'pass' || ownOffenseStat === 'passing' ? 'Pass O' : ownOffenseStat === 'rush' || ownOffenseStat === 'rushing' ? 'Rush O' : 'Pts O'
+      const teamAbbr = isSubjectHome ? (game.home_abbr || 'TEAM') : (game.away_abbr || 'TEAM')
+      if (ownOffRank) {
+        reasons.push({ label: 'Team Offense', value: `${teamAbbr} #${ownOffRank} ${statLabel}` })
+      } else {
+        reasons.push({ label: 'Team Offense', value: `${ownOffenseRank.replace('_', ' ')}` })
+      }
     }
 
-    // For O/U queries - home/away team stats
+    // For O/U queries - home/away team stats with actual ranks
     if (isOUQuery) {
       if (homeTeamDefenseRank !== 'any') {
-        reasons.push({ label: 'Home Def', value: homeTeamDefenseRank.replace('_', ' ') })
+        const homeDefRank = homeTeamDefenseStat === 'pass' ? game.home_def_rank_pass : homeTeamDefenseStat === 'rush' ? game.home_def_rank_rush : game.home_def_rank_points
+        const statLabel = homeTeamDefenseStat === 'pass' ? 'Pass D' : homeTeamDefenseStat === 'rush' ? 'Rush D' : 'Pts D'
+        if (homeDefRank) {
+          reasons.push({ label: 'Home Def', value: `${game.home_abbr || 'HOME'} #${homeDefRank} ${statLabel}` })
+        } else {
+          reasons.push({ label: 'Home Def', value: homeTeamDefenseRank.replace('_', ' ') })
+        }
       }
       if (homeTeamOffenseRank !== 'any') {
-        reasons.push({ label: 'Home Off', value: homeTeamOffenseRank.replace('_', ' ') })
+        const homeOffRank = homeTeamOffenseStat === 'pass' || homeTeamOffenseStat === 'passing' ? game.home_off_rank_pass : homeTeamOffenseStat === 'rush' || homeTeamOffenseStat === 'rushing' ? game.home_off_rank_rush : game.home_off_rank_points
+        const statLabel = homeTeamOffenseStat === 'pass' || homeTeamOffenseStat === 'passing' ? 'Pass O' : homeTeamOffenseStat === 'rush' || homeTeamOffenseStat === 'rushing' ? 'Rush O' : 'Pts O'
+        if (homeOffRank) {
+          reasons.push({ label: 'Home Off', value: `${game.home_abbr || 'HOME'} #${homeOffRank} ${statLabel}` })
+        } else {
+          reasons.push({ label: 'Home Off', value: homeTeamOffenseRank.replace('_', ' ') })
+        }
       }
       if (awayTeamDefenseRank !== 'any') {
-        reasons.push({ label: 'Away Def', value: awayTeamDefenseRank.replace('_', ' ') })
+        const awayDefRank = awayTeamDefenseStat === 'pass' ? game.away_def_rank_pass : awayTeamDefenseStat === 'rush' ? game.away_def_rank_rush : game.away_def_rank_points
+        const statLabel = awayTeamDefenseStat === 'pass' ? 'Pass D' : awayTeamDefenseStat === 'rush' ? 'Rush D' : 'Pts D'
+        if (awayDefRank) {
+          reasons.push({ label: 'Away Def', value: `${game.away_abbr || 'AWAY'} #${awayDefRank} ${statLabel}` })
+        } else {
+          reasons.push({ label: 'Away Def', value: awayTeamDefenseRank.replace('_', ' ') })
+        }
       }
       if (awayTeamOffenseRank !== 'any') {
-        reasons.push({ label: 'Away Off', value: awayTeamOffenseRank.replace('_', ' ') })
+        const awayOffRank = awayTeamOffenseStat === 'pass' || awayTeamOffenseStat === 'passing' ? game.away_off_rank_pass : awayTeamOffenseStat === 'rush' || awayTeamOffenseStat === 'rushing' ? game.away_off_rank_rush : game.away_off_rank_points
+        const statLabel = awayTeamOffenseStat === 'pass' || awayTeamOffenseStat === 'passing' ? 'Pass O' : awayTeamOffenseStat === 'rush' || awayTeamOffenseStat === 'rushing' ? 'Rush O' : 'Pts O'
+        if (awayOffRank) {
+          reasons.push({ label: 'Away Off', value: `${game.away_abbr || 'AWAY'} #${awayOffRank} ${statLabel}` })
+        } else {
+          reasons.push({ label: 'Away Off', value: awayTeamOffenseRank.replace('_', ' ') })
+        }
       }
     }
 
