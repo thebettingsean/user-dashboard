@@ -39,8 +39,8 @@ export interface Range {
 // Opponent ranking filter (1-32)
 export type OpponentRankFilter = 'top_5' | 'top_10' | 'top_15' | 'bottom_5' | 'bottom_10' | 'bottom_15' | 'any'
 
-// Stat type for team rankings
-export type RankStatType = 'overall' | 'pass' | 'rush' | 'total_yards' | 'points'
+// Stat type for team rankings (now includes position-specific stats)
+export type RankStatType = 'overall' | 'pass' | 'rush' | 'total_yards' | 'points' | 'wr' | 'te' | 'rb'
 
 // Team perspective for O/U queries
 export type TeamSide = 'home' | 'away'
@@ -72,7 +72,11 @@ export interface QueryFilters {
   
   // Offense ranking filters (opponent's offensive rank)
   vs_offense_rank?: OpponentRankFilter  // vs top/bottom X offense
-  offense_stat?: 'points' | 'total_yards' | 'passing' | 'rushing'  // which stat to use
+  offense_stat?: 'points' | 'total_yards' | 'passing' | 'rushing' | 'wr' | 'te' | 'rb'  // which stat to use (now includes positions)
+  
+  // Win percentage filters (0-100 range, stored as 0-1)
+  team_win_pct?: Range                  // Subject team's win percentage
+  opp_win_pct?: Range                   // Opponent team's win percentage
   
   // ============================================
   // O/U SPECIFIC FILTERS

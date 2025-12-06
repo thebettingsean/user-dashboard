@@ -301,6 +301,12 @@ export default function SportsEnginePage() {
   const [defenseStat, setDefenseStat] = useState<string>('pass')
   const [offenseRank, setOffenseRank] = useState<string>('any')
   const [offenseStat, setOffenseStat] = useState<string>('points')
+  
+  // Win Percentage Filters (0-100)
+  const [teamWinPctMin, setTeamWinPctMin] = useState<string>('')
+  const [teamWinPctMax, setTeamWinPctMax] = useState<string>('')
+  const [oppWinPctMin, setOppWinPctMin] = useState<string>('')
+  const [oppWinPctMax, setOppWinPctMax] = useState<string>('')
   const [spreadMin, setSpreadMin] = useState<string>('')
   const [spreadMax, setSpreadMax] = useState<string>('')
   const [totalMin, setTotalMin] = useState<string>('')
@@ -414,6 +420,12 @@ export default function SportsEnginePage() {
     setDefenseStat('pass')
     setOffenseRank('any')
     setOffenseStat('points')
+    
+    // Win percentage
+    setTeamWinPctMin('')
+    setTeamWinPctMax('')
+    setOppWinPctMin('')
+    setOppWinPctMax('')
     
     // Ranges
     setSpreadMin('')
@@ -671,6 +683,25 @@ export default function SportsEnginePage() {
       if (offenseRank !== 'any') {
         const statLabel = offenseStat === 'overall' ? '' : ` (${offenseStat})`
         filters.push(`vs ${offenseRank.replace('_', ' ')} Offense${statLabel}`)
+      }
+      // Win percentage
+      if (teamWinPctMin || teamWinPctMax) {
+        if (teamWinPctMin && teamWinPctMax) {
+          filters.push(`Team Win%: ${teamWinPctMin}-${teamWinPctMax}%`)
+        } else if (teamWinPctMin) {
+          filters.push(`Team Win%: ${teamWinPctMin}%+`)
+        } else if (teamWinPctMax) {
+          filters.push(`Team Win%: ≤${teamWinPctMax}%`)
+        }
+      }
+      if (oppWinPctMin || oppWinPctMax) {
+        if (oppWinPctMin && oppWinPctMax) {
+          filters.push(`Opp Win%: ${oppWinPctMin}-${oppWinPctMax}%`)
+        } else if (oppWinPctMin) {
+          filters.push(`Opp Win%: ${oppWinPctMin}%+`)
+        } else if (oppWinPctMax) {
+          filters.push(`Opp Win%: ≤${oppWinPctMax}%`)
+        }
       }
     } else {
       // O/U four-way team stats
@@ -966,6 +997,20 @@ export default function SportsEnginePage() {
         if (offenseRank !== 'any') {
           filters.vs_offense_rank = offenseRank
           filters.offense_stat = offenseStat
+        }
+        
+        // Win percentage filters
+        if (teamWinPctMin || teamWinPctMax) {
+          filters.team_win_pct = {
+            ...(teamWinPctMin && { min: parseFloat(teamWinPctMin) }),
+            ...(teamWinPctMax && { max: parseFloat(teamWinPctMax) })
+          }
+        }
+        if (oppWinPctMin || oppWinPctMax) {
+          filters.opp_win_pct = {
+            ...(oppWinPctMin && { min: parseFloat(oppWinPctMin) }),
+            ...(oppWinPctMax && { max: parseFloat(oppWinPctMax) })
+          }
         }
       }
       
@@ -1660,6 +1705,20 @@ export default function SportsEnginePage() {
       } else {
         reasons.push({ label: 'Team Offense', value: `${ownOffenseRank.replace('_', ' ')}` })
       }
+    }
+
+    // Win percentage filters - display when filtered
+    if (teamWinPctMin || teamWinPctMax) {
+      const pctDisplay = teamWinPctMin && teamWinPctMax 
+        ? `${teamWinPctMin}-${teamWinPctMax}%`
+        : teamWinPctMin ? `${teamWinPctMin}%+` : `≤${teamWinPctMax}%`
+      reasons.push({ label: 'Team Win%', value: pctDisplay })
+    }
+    if (oppWinPctMin || oppWinPctMax) {
+      const pctDisplay = oppWinPctMin && oppWinPctMax 
+        ? `${oppWinPctMin}-${oppWinPctMax}%`
+        : oppWinPctMin ? `${oppWinPctMin}%+` : `≤${oppWinPctMax}%`
+      reasons.push({ label: 'Opp Win%', value: pctDisplay })
     }
 
     // For O/U queries - home/away team stats with actual ranks
@@ -3248,6 +3307,9 @@ export default function SportsEnginePage() {
                         <option value="pass">vs Pass</option>
                         <option value="rush">vs Rush</option>
                         <option value="points">vs Points</option>
+                        <option value="wr">vs WRs</option>
+                        <option value="te">vs TEs</option>
+                        <option value="rb">vs RBs</option>
                       </select>
                     )}
                   </div>
@@ -3268,12 +3330,33 @@ export default function SportsEnginePage() {
                         <option value="points">Points</option>
                         <option value="pass">Passing</option>
                         <option value="rush">Rushing</option>
+                        <option value="wr">WR Production</option>
+                        <option value="te">TE Production</option>
+                        <option value="rb">RB Production</option>
                       </select>
                     )}
                   </div>
                 </div>
                 
-                {/* Row 2: Prev Game Margin & W/L Streak */}
+                {/* Row 3: Win Percentage */}
+                <div className={styles.filterGrid}>
+                  <div>
+                    <span>Team Win %</span>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="numeric" placeholder="Min %" value={teamWinPctMin} onChange={(e) => setTeamWinPctMin(e.target.value)} />
+                      <input type="text" inputMode="numeric" placeholder="Max %" value={teamWinPctMax} onChange={(e) => setTeamWinPctMax(e.target.value)} />
+                    </div>
+                  </div>
+                  <div>
+                    <span>Opp Win %</span>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="numeric" placeholder="Min %" value={oppWinPctMin} onChange={(e) => setOppWinPctMin(e.target.value)} />
+                      <input type="text" inputMode="numeric" placeholder="Max %" value={oppWinPctMax} onChange={(e) => setOppWinPctMax(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Row 4: Prev Game Margin & W/L Streak */}
                 <div className={styles.filterGrid}>
                   <div>
                     <span>Prev Game Margin</span>

@@ -458,6 +458,7 @@ export function buildHomeFavDogFilter(
 
 /**
  * Get the ranking column name based on stat type and side (offense/defense)
+ * Now supports position-specific stats: wr, te, rb
  */
 function getRankingColumn(
   side: 'offense' | 'defense',
@@ -469,6 +470,10 @@ function getRankingColumn(
       case 'rush': return 'rank_rushing_yards_allowed_per_game'
       case 'total_yards': return 'rank_total_yards_allowed_per_game'
       case 'points': return 'rank_points_allowed_per_game'
+      // Position-specific defense (yards allowed TO position)
+      case 'wr': return 'rank_yards_allowed_to_wr'
+      case 'te': return 'rank_yards_allowed_to_te'
+      case 'rb': return 'rank_yards_allowed_to_rb'
       default: return 'rank_total_yards_allowed_per_game' // overall = total yards
     }
   } else {
@@ -478,9 +483,37 @@ function getRankingColumn(
       case 'rush': return 'rank_rushing_yards_per_game'
       case 'total_yards': return 'rank_total_yards_per_game'
       case 'points': return 'rank_points_per_game'
+      // Position-specific offense (yards produced BY position)
+      case 'wr': return 'rank_wr_yards_produced'
+      case 'te': return 'rank_te_yards_produced'
+      case 'rb': return 'rank_rb_yards_produced'
       default: return 'rank_total_yards_per_game' // overall = total yards
     }
   }
+}
+
+/**
+ * Build win percentage filter
+ * Uses the win_pct column (0-1 range, so need to convert from % input)
+ */
+export function buildWinPctFilter(
+  range: { min?: number; max?: number } | undefined,
+  tableAlias: string
+): string | null {
+  if (!range) return null
+  if (range.min === undefined && range.max === undefined) return null
+  
+  const conditions: string[] = []
+  
+  // Convert from % (0-100) to decimal (0-1)
+  if (range.min !== undefined) {
+    conditions.push(`${tableAlias}.win_pct >= ${range.min / 100}`)
+  }
+  if (range.max !== undefined) {
+    conditions.push(`${tableAlias}.win_pct <= ${range.max / 100}`)
+  }
+  
+  return conditions.join(' AND ')
 }
 
 /**
@@ -852,6 +885,42 @@ export function buildFilterConditions(
       const statLabel = filters.offense_stat && filters.offense_stat !== 'overall' 
         ? ` (${filters.offense_stat})` : ''
       appliedFilters.push(`vs ${filters.vs_offense_rank.replace('_', ' ')} Offense${statLabel}`)
+    }
+  }
+  
+  // Subject team's win percentage filter
+  if (!isOUQuery && filters.team_win_pct) {
+    requiresRankingsJoin = true
+    const rankingsAlias = isHomeTeam !== false ? homeRankingsAlias : awayRankingsAlias
+    const winPctFilter = buildWinPctFilter(filters.team_win_pct, rankingsAlias)
+    if (winPctFilter) {
+      conditions.push(winPctFilter)
+      const { min, max } = filters.team_win_pct
+      if (min !== undefined && max !== undefined) {
+        appliedFilters.push(`Team Win%: ${min}-${max}%`)
+      } else if (min !== undefined) {
+        appliedFilters.push(`Team Win%: ${min}%+`)
+      } else if (max !== undefined) {
+        appliedFilters.push(`Team Win%: ≤${max}%`)
+      }
+    }
+  }
+  
+  // Opponent's win percentage filter
+  if (!isOUQuery && filters.opp_win_pct) {
+    requiresRankingsJoin = true
+    const oppRankingsAlias = isHomeTeam !== false ? awayRankingsAlias : homeRankingsAlias
+    const oppWinPctFilter = buildWinPctFilter(filters.opp_win_pct, oppRankingsAlias)
+    if (oppWinPctFilter) {
+      conditions.push(oppWinPctFilter)
+      const { min, max } = filters.opp_win_pct
+      if (min !== undefined && max !== undefined) {
+        appliedFilters.push(`Opp Win%: ${min}-${max}%`)
+      } else if (min !== undefined) {
+        appliedFilters.push(`Opp Win%: ${min}%+`)
+      } else if (max !== undefined) {
+        appliedFilters.push(`Opp Win%: ≤${max}%`)
+      }
     }
   }
   
