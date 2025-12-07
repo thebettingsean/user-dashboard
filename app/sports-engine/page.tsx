@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import styles from './sports-engine.module.css'
 
 // Icons
@@ -13,7 +13,8 @@ import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy } from "react-icons/pi"
 import { GiWhistle } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming } from "react-icons/md"
-import { BsCalendarEvent } from "react-icons/bs"
+import { BsCalendarEvent, BsShare } from "react-icons/bs"
+import { FiCopy, FiCheck } from "react-icons/fi"
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
@@ -243,9 +244,14 @@ const NFL_TEAMS = [
   { id: 28, name: 'Washington Commanders', abbr: 'WAS' },
 ]
 
-export default function SportsEnginePage() {
+function SportsEngineContent() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  
+  // Share functionality state
+  const [showCopiedToast, setShowCopiedToast] = useState(false)
+  const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false)
   
   // Determine initial query type from URL path
   const getQueryTypeFromPath = (path: string): QueryType => {
@@ -646,6 +652,261 @@ export default function SportsEnginePage() {
     setRefereeSearch(query)
     setRefereeSearchResults(searchReferees(query))
   }
+
+  // ============================================
+  // SHARE FUNCTIONALITY
+  // ============================================
+  
+  // Build shareable URL from current state
+  const buildShareableUrl = useCallback(() => {
+    const params = new URLSearchParams()
+    
+    // Query type
+    params.set('type', queryType)
+    
+    // Bet type (for trends/teams/refs)
+    if (queryType !== 'prop') {
+      params.set('bet', betType)
+      if (betType === 'total' && side) params.set('side', side)
+    }
+    
+    // Time period
+    params.set('period', timePeriod)
+    
+    // Basic filters
+    if (location !== 'any') params.set('loc', location)
+    if (division !== 'any') params.set('div', division)
+    if (conference !== 'any') params.set('conf', conference)
+    if (playoff !== 'any') params.set('playoff', playoff)
+    if (favorite !== 'any') params.set('fav', favorite)
+    if (homeFavDog !== 'any') params.set('homefav', homeFavDog)
+    
+    // Rankings
+    if (ownDefenseRank !== 'any') params.set('ownDef', ownDefenseRank)
+    if (ownOffenseRank !== 'any') params.set('ownOff', ownOffenseRank)
+    if (defenseRank !== 'any') params.set('vsDef', defenseRank)
+    if (offenseRank !== 'any') params.set('vsOff', offenseRank)
+    if (ownDefenseStat !== 'overall') params.set('ownDefStat', ownDefenseStat)
+    if (ownOffenseStat !== 'overall') params.set('ownOffStat', ownOffenseStat)
+    if (defenseStat !== 'overall') params.set('defStat', defenseStat)
+    if (offenseStat !== 'overall') params.set('offStat', offenseStat)
+    
+    // Ranges
+    if (spreadMin) params.set('spMin', spreadMin)
+    if (spreadMax) params.set('spMax', spreadMax)
+    if (totalMin) params.set('totMin', totalMin)
+    if (totalMax) params.set('totMax', totalMax)
+    if (mlMin) params.set('mlMin', mlMin)
+    if (mlMax) params.set('mlMax', mlMax)
+    
+    // Line movement
+    if (spreadMoveMin) params.set('spMoveMin', spreadMoveMin)
+    if (spreadMoveMax) params.set('spMoveMax', spreadMoveMax)
+    if (totalMoveMin) params.set('totMoveMin', totalMoveMin)
+    if (totalMoveMax) params.set('totMoveMax', totalMoveMax)
+    
+    // Win percentages
+    if (teamWinPctMin) params.set('teamWinMin', teamWinPctMin)
+    if (teamWinPctMax) params.set('teamWinMax', teamWinPctMax)
+    if (oppWinPctMin) params.set('oppWinMin', oppWinPctMin)
+    if (oppWinPctMax) params.set('oppWinMax', oppWinPctMax)
+    
+    // Momentum
+    if (streak) params.set('streak', streak)
+    if (prevGameMarginMin) params.set('prevMin', prevGameMarginMin)
+    if (prevGameMarginMax) params.set('prevMax', prevGameMarginMax)
+    
+    // Team-specific
+    if (queryType === 'team' && teamId) params.set('team', teamId.toString())
+    if (teamLocation !== 'any') params.set('teamLoc', teamLocation)
+    if (selectedVersusTeam) params.set('opp', selectedVersusTeam.id.toString())
+    
+    // Referee-specific
+    if (queryType === 'referee' && selectedReferee) params.set('ref', selectedReferee.referee_name)
+    
+    // Props-specific
+    if (queryType === 'prop') {
+      if (propPosition !== 'any') params.set('pos', propPosition)
+      if (propStat) params.set('stat', propStat)
+      if (propLine) params.set('line', propLine)
+      if (propLineMode === 'book') {
+        params.set('lineMode', 'book')
+        if (bookLineMin) params.set('bookMin', bookLineMin)
+        if (bookLineMax) params.set('bookMax', bookLineMax)
+      }
+      if (selectedPropVersusTeam) params.set('vsTeam', selectedPropVersusTeam.toString())
+    }
+    
+    // Build the full URL
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    return `${baseUrl}/sports-engine?${params.toString()}`
+  }, [queryType, betType, side, timePeriod, location, division, conference, playoff, favorite, homeFavDog,
+      ownDefenseRank, ownOffenseRank, defenseRank, offenseRank, ownDefenseStat, ownOffenseStat, defenseStat, offenseStat,
+      spreadMin, spreadMax, totalMin, totalMax, mlMin, mlMax, spreadMoveMin, spreadMoveMax, totalMoveMin, totalMoveMax,
+      teamWinPctMin, teamWinPctMax, oppWinPctMin, oppWinPctMax, streak, prevGameMarginMin, prevGameMarginMax,
+      teamId, teamLocation, selectedVersusTeam, selectedReferee, propPosition, propStat, propLine, propLineMode, 
+      bookLineMin, bookLineMax, selectedPropVersusTeam])
+  
+  // Handle share button click
+  const handleShare = async () => {
+    const url = buildShareableUrl()
+    
+    try {
+      await navigator.clipboard.writeText(url)
+      setShowCopiedToast(true)
+      setTimeout(() => setShowCopiedToast(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = url
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setShowCopiedToast(true)
+      setTimeout(() => setShowCopiedToast(false), 2000)
+    }
+  }
+  
+  // Load filters from URL on mount
+  useEffect(() => {
+    // Get the type param - if it doesn't exist, no share params in URL
+    const type = searchParams.get('type') as QueryType | null
+    if (!type) return
+    
+    // Only load once per set of params
+    if (hasLoadedFromUrl) return
+    setHasLoadedFromUrl(true)
+    
+    // Query type
+    if (type) setQueryType(type)
+    
+    // Bet type
+    const bet = searchParams.get('bet')
+    if (bet) setBetType(bet as any)
+    const sideParam = searchParams.get('side')
+    if (sideParam) setSide(sideParam as any)
+    
+    // Time period
+    const period = searchParams.get('period')
+    if (period) setTimePeriod(period as TimePeriod)
+    
+    // Basic filters
+    const loc = searchParams.get('loc')
+    if (loc) setLocation(loc)
+    const div = searchParams.get('div')
+    if (div) setDivision(div)
+    const conf = searchParams.get('conf')
+    if (conf) setConference(conf)
+    const playoffParam = searchParams.get('playoff')
+    if (playoffParam) setPlayoff(playoffParam)
+    const fav = searchParams.get('fav')
+    if (fav) setFavorite(fav)
+    const homefav = searchParams.get('homefav')
+    if (homefav) setHomeFavDog(homefav)
+    
+    // Rankings
+    const ownDef = searchParams.get('ownDef')
+    if (ownDef) setOwnDefenseRank(ownDef)
+    const ownOff = searchParams.get('ownOff')
+    if (ownOff) setOwnOffenseRank(ownOff)
+    const vsDef = searchParams.get('vsDef')
+    if (vsDef) setDefenseRank(vsDef)
+    const vsOff = searchParams.get('vsOff')
+    if (vsOff) setOffenseRank(vsOff)
+    const ownDefStat = searchParams.get('ownDefStat')
+    if (ownDefStat) setOwnDefenseStat(ownDefStat)
+    const ownOffStat = searchParams.get('ownOffStat')
+    if (ownOffStat) setOwnOffenseStat(ownOffStat)
+    const defStat = searchParams.get('defStat')
+    if (defStat) setDefenseStat(defStat)
+    const offStat = searchParams.get('offStat')
+    if (offStat) setOffenseStat(offStat)
+    
+    // Ranges
+    const spMin = searchParams.get('spMin')
+    if (spMin) setSpreadMin(spMin)
+    const spMax = searchParams.get('spMax')
+    if (spMax) setSpreadMax(spMax)
+    const totMin = searchParams.get('totMin')
+    if (totMin) setTotalMin(totMin)
+    const totMax = searchParams.get('totMax')
+    if (totMax) setTotalMax(totMax)
+    const mlMinParam = searchParams.get('mlMin')
+    if (mlMinParam) setMlMin(mlMinParam)
+    const mlMaxParam = searchParams.get('mlMax')
+    if (mlMaxParam) setMlMax(mlMaxParam)
+    
+    // Line movement
+    const spMoveMin = searchParams.get('spMoveMin')
+    if (spMoveMin) setSpreadMoveMin(spMoveMin)
+    const spMoveMax = searchParams.get('spMoveMax')
+    if (spMoveMax) setSpreadMoveMax(spMoveMax)
+    const totMoveMin = searchParams.get('totMoveMin')
+    if (totMoveMin) setTotalMoveMin(totMoveMin)
+    const totMoveMax = searchParams.get('totMoveMax')
+    if (totMoveMax) setTotalMoveMax(totMoveMax)
+    
+    // Win percentages
+    const teamWinMin = searchParams.get('teamWinMin')
+    if (teamWinMin) setTeamWinPctMin(teamWinMin)
+    const teamWinMax = searchParams.get('teamWinMax')
+    if (teamWinMax) setTeamWinPctMax(teamWinMax)
+    const oppWinMin = searchParams.get('oppWinMin')
+    if (oppWinMin) setOppWinPctMin(oppWinMin)
+    const oppWinMax = searchParams.get('oppWinMax')
+    if (oppWinMax) setOppWinPctMax(oppWinMax)
+    
+    // Momentum
+    const streakParam = searchParams.get('streak')
+    if (streakParam) setStreak(streakParam)
+    const prevMin = searchParams.get('prevMin')
+    if (prevMin) setPrevGameMarginMin(prevMin)
+    const prevMax = searchParams.get('prevMax')
+    if (prevMax) setPrevGameMarginMax(prevMax)
+    
+    // Team-specific
+    const teamParam = searchParams.get('team')
+    if (teamParam) setTeamId(parseInt(teamParam))
+    const teamLoc = searchParams.get('teamLoc')
+    if (teamLoc && ['any', 'home', 'away'].includes(teamLoc)) {
+      setTeamLocation(teamLoc as 'any' | 'home' | 'away')
+    }
+    const oppParam = searchParams.get('opp')
+    if (oppParam) {
+      const oppTeam = NFL_TEAMS.find(t => t.id === parseInt(oppParam))
+      if (oppTeam) setSelectedVersusTeam(oppTeam)
+    }
+    
+    // Referee-specific
+    const refParam = searchParams.get('ref')
+    if (refParam) {
+      // Create a minimal referee object from the URL param
+      setSelectedReferee({ referee_name: refParam, game_count: 0 })
+    }
+    
+    // Props-specific
+    const posParam = searchParams.get('pos')
+    if (posParam) setPropPosition(posParam)
+    const statParam = searchParams.get('stat')
+    if (statParam) setPropStat(statParam as any)
+    const lineParam = searchParams.get('line')
+    if (lineParam) setPropLine(lineParam)
+    const lineMode = searchParams.get('lineMode')
+    if (lineMode === 'book') {
+      setPropLineMode('book')
+      const bookMin = searchParams.get('bookMin')
+      if (bookMin) setBookLineMin(bookMin)
+      const bookMax = searchParams.get('bookMax')
+      if (bookMax) setBookLineMax(bookMax)
+    }
+    const vsTeam = searchParams.get('vsTeam')
+    if (vsTeam) {
+      const versusTeam = NFL_TEAMS.find(t => t.id === parseInt(vsTeam))
+      if (versusTeam) setSelectedPropVersusTeam(versusTeam)
+    }
+    
+  }, [searchParams, hasLoadedFromUrl])
 
   // Build display filters list
   const getAppliedFiltersDisplay = () => {
@@ -3737,22 +3998,32 @@ export default function SportsEnginePage() {
         <div className={styles.resultsPanel}>
           <div className={styles.resultsPanelHeader}>
             <h2>Results</h2>
-            {result && (
-              <div className={styles.upcomingToggle}>
-                <button
-                  className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
-                  onClick={() => setShowUpcoming(false)}
-                >
-                  Historical
-                </button>
-                <button
-                  className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''}`}
-                  onClick={() => setShowUpcoming(true)}
-                >
-                  <BsCalendarEvent /> Upcoming
-                </button>
-              </div>
-            )}
+            <div className={styles.headerActions}>
+              {result && (
+                <div className={styles.upcomingToggle}>
+                  <button
+                    className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
+                    onClick={() => setShowUpcoming(false)}
+                  >
+                    Historical
+                  </button>
+                  <button
+                    className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''}`}
+                    onClick={() => setShowUpcoming(true)}
+                  >
+                    <BsCalendarEvent /> Upcoming
+                  </button>
+                </div>
+              )}
+              <button
+                className={styles.shareBtn}
+                onClick={handleShare}
+                title="Copy shareable link"
+              >
+                {showCopiedToast ? <FiCheck /> : <BsShare />}
+                {showCopiedToast ? 'Copied!' : 'Share'}
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -4217,5 +4488,25 @@ export default function SportsEnginePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Wrapper component with Suspense for useSearchParams
+export default function SportsEnginePage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a14 0%, #12121e 50%, #0d0d18 100%)',
+        color: '#888'
+      }}>
+        Loading Sports Engine...
+      </div>
+    }>
+      <SportsEngineContent />
+    </Suspense>
   )
 }
