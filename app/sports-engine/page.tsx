@@ -4143,16 +4143,6 @@ function SportsEngineContent() {
                     <h3>
                       <BsCalendarEvent /> {queryType === 'prop' ? 'Upcoming Props' : 'Upcoming Matchups'} ({queryType === 'prop' ? upcomingResult?.total_props || 0 : upcomingResult?.total_games || 0})
                     </h3>
-                    {upcomingResult && upcomingResult.total_games > 0 && (
-                      <select 
-                        className={styles.upcomingSortSelect}
-                        value={upcomingSortBy}
-                        onChange={(e) => setUpcomingSortBy(e.target.value as 'time' | 'best_odds')}
-                      >
-                        <option value="time">Sort by Game Time</option>
-                        <option value="best_odds">Sort by Best Odds</option>
-                      </select>
-                    )}
                   </div>
 
                   {upcomingLoading && (
