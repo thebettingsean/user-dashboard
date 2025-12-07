@@ -1912,6 +1912,15 @@
   font-size: 0.9rem;
 }
 
+.upcomingPlayerHeadshot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.1);
+  margin-right: 0.5rem;
+}
+
 .upcomingGameInfo {
   display: flex;
   flex-direction: column;
@@ -2347,5 +2356,229 @@
   background: rgba(59, 130, 246, 0.1);
   color: #60a5fa;
   border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* ================================
+   MOBILE OPTIMIZATIONS
+   ================================ */
+
+@media (max-width: 768px) {
+  /* Header - smaller title, left-center alignment */
+  .header {
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+  
+  .header h1 {
+    font-size: 1.25rem;
+    justify-content: flex-start;
+    gap: 0.35rem;
+  }
+  
+  .titleIcon {
+    font-size: 1.5rem;
+  }
+  
+  .betaTag {
+    font-size: 0.5rem;
+    padding: 0.15rem 0.4rem;
+    margin-left: 0.5rem;
+  }
+  
+  .tagline {
+    font-size: 0.7rem !important;
+    margin-top: 0.5rem !important;
+    text-align: left;
+  }
+  
+  /* Results section - keep centered, smaller text */
+  .resultsPanel {
+    padding: 0.75rem;
+    overflow-x: hidden;
+  }
+  
+  .mainRecord {
+    font-size: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .winRate {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .gamesCount {
+    font-size: 0.75rem;
+  }
+  
+  /* Stats grid - smaller on mobile */
+  .statValue {
+    font-size: 1.1rem;
+  }
+  
+  .statLabel {
+    font-size: 0.65rem;
+  }
+  
+  .additionalStats {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .additionalStats span {
+    font-size: 0.6rem;
+  }
+  
+  .additionalStats strong {
+    font-size: 0.9rem;
+  }
+  
+  /* Filters applied - wrap properly */
+  .filtersApplied {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+  
+  .filterTag {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  /* Game rows - smaller and centered */
+  .gameRow, .gameRowWrapper {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .gameDate {
+    font-size: 0.65rem;
+    min-width: 35px;
+  }
+  
+  .playerInfo {
+    gap: 0.35rem;
+  }
+  
+  .playerHeadshot {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .playerName {
+    font-size: 0.75rem;
+  }
+  
+  .opponentAbbr {
+    font-size: 0.7rem;
+  }
+  
+  .teamLogo {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .statResult {
+    font-size: 1rem;
+  }
+  
+  .bookLine {
+    font-size: 0.6rem;
+  }
+  
+  /* Upcoming props - mobile friendly */
+  .upcomingGame {
+    padding: 0.5rem;
+  }
+  
+  .upcomingGameHeader {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  
+  .upcomingGameTime {
+    font-size: 0.65rem;
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+  
+  .upcomingBetDisplay {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .upcomingPlayerName {
+    font-size: 0.8rem;
+  }
+  
+  .upcomingBetLine {
+    font-size: 0.75rem;
+  }
+  
+  .upcomingBetOdds {
+    font-size: 0.65rem;
+  }
+  
+  .upcomingPlayerHeadshot {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .upcomingMeta {
+    font-size: 0.6rem;
+  }
+  
+  /* Why this fits - mobile */
+  .whyThisFits {
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .whyThisFitsTitle {
+    font-size: 0.65rem;
+  }
+  
+  .whyThisFitsItem {
+    font-size: 0.65rem;
+    gap: 0.25rem;
+  }
+  
+  /* Load more button */
+  .loadMoreBtn {
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.1rem;
+  }
+  
+  .titleIcon {
+    font-size: 1.3rem;
+  }
+  
+  .mainRecord {
+    font-size: 1.25rem;
+  }
+  
+  .statCard {
+    padding: 0.5rem;
+  }
+  
+  .statValue {
+    font-size: 1rem;
+  }
+  
+  .gameRow, .gameRowWrapper {
+    padding: 0.35rem;
+  }
+  
+  .playerHeadshot {
+    width: 24px;
+    height: 24px;
+  }
 }
 

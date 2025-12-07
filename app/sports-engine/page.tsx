@@ -3928,6 +3928,14 @@ export default function SportsEnginePage() {
                           </div>
                           
                           <div className={styles.upcomingBetDisplay}>
+                            {prop.player_headshot && (
+                              <img 
+                                src={prop.player_headshot} 
+                                alt={prop.player_name}
+                                className={styles.upcomingPlayerHeadshot}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                              />
+                            )}
                             <span className={styles.upcomingPlayerName}>{prop.player_name}</span>
                             <span className={styles.upcomingBetLine}>
                               o{prop.line} {prop.prop_type?.replace('player_', '').replace('_', ' ')}

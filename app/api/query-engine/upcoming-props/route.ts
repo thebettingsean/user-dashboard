@@ -197,11 +197,10 @@ export async function POST(request: Request) {
       ? 'AND ' + propConditions.join(' AND ')
       : ''
     
-    // Build position filter if specified
-    let positionJoinClause = ''
+    // Always join with players table to get headshot, optionally filter by position
+    const positionJoinClause = `LEFT JOIN players pl ON p.player_name = pl.name AND pl.sport = 'nfl'`
     let positionCondition = ''
     if (position && position !== 'any') {
-      positionJoinClause = `LEFT JOIN players pl ON p.player_name = pl.name AND pl.sport = 'nfl'`
       positionCondition = `AND pl.position = '${position.toUpperCase()}'`
     }
     
@@ -259,7 +258,9 @@ export async function POST(request: Request) {
         p.line as prop_line,
         p.over_odds,
         p.under_odds,
-        p.bookmaker
+        p.bookmaker,
+        pl.headshot_url as player_headshot,
+        pl.espn_player_id as player_id
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
       INNER JOIN latest_props p ON g.game_id = p.game_id
@@ -316,7 +317,9 @@ export async function POST(request: Request) {
         line: row.prop_line,
         over_odds: row.over_odds,
         under_odds: row.under_odds,
-        bookmaker: row.bookmaker
+        bookmaker: row.bookmaker,
+        player_headshot: row.player_headshot,
+        player_id: row.player_id
       })
     }
     
@@ -364,7 +367,9 @@ export async function POST(request: Request) {
           line: prop.line,
           over_odds: prop.over_odds,
           under_odds: prop.under_odds,
-          bookmaker: prop.bookmaker
+          bookmaker: prop.bookmaker,
+          player_headshot: prop.player_headshot,
+          player_id: prop.player_id
         })
       }
     }
