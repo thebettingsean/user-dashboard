@@ -682,21 +682,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     ${limitClause}
   `
   
-  // Store debug info for this query
-  const debugInfo = {
-    use_book_lines,
-    boxConditions,
-    gameConditions,
-    oppRankConditions,
-    allConditions,
-    whereClause,
-    sql: sql.substring(0, 2000)
-  }
-  
-  // @ts-ignore - attach debug info to result
   const result = await clickhouseQuery(sql)
-  // @ts-ignore
-  result._debug = debugInfo
   const rows = result.data || []
   
   // Calculate results
@@ -855,8 +841,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     longest_miss_streak: longestMissStreak,
     games,
     query_time_ms: Date.now() - startTime,
-    filters_applied: appliedFilters,
-    _debug: debugInfo
+    filters_applied: appliedFilters
   }
 }
 
