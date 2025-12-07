@@ -104,6 +104,10 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   delete gameFilters.spread_movement_range // Needs player team perspective
   delete gameFilters.total_movement_range // Handled separately
   delete gameFilters.ml_movement_range // Needs player team perspective
+  delete gameFilters.team_win_pct // Handled separately with team_rank alias
+  delete gameFilters.opp_win_pct // Handled separately with opp_rank alias
+  delete gameFilters.vs_offense_rank // Handled separately with opp_rank alias
+  delete gameFilters.vs_defense_rank // Handled separately with opp_rank alias
   
   const { conditions: gameConditions, appliedFilters, limit } = buildFilterConditions(
     gameFilters,
@@ -126,8 +130,10 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     boxConditions.push(`b.player_id = ${player_id}`)
   } else if (position && position !== 'any') {
     // All players of a position - join with players table
-    boxConditions.push(`p.position = '${position}'`)
-    appliedFilters.push(`All ${position}s`)
+    // Position must be uppercase to match database (RB, WR, QB, TE)
+    const positionUpper = position.toUpperCase()
+    boxConditions.push(`p.position = '${positionUpper}'`)
+    appliedFilters.push(`All ${positionUpper}s`)
   } else {
     throw new Error('Must specify either player_id or position')
   }
@@ -676,9 +682,21 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     ${limitClause}
   `
   
-  console.log('[PropQuery] Executing:', sql.substring(0, 200) + '...')
+  // Store debug info for this query
+  const debugInfo = {
+    use_book_lines,
+    boxConditions,
+    gameConditions,
+    oppRankConditions,
+    allConditions,
+    whereClause,
+    sql: sql.substring(0, 2000)
+  }
   
+  // @ts-ignore - attach debug info to result
   const result = await clickhouseQuery(sql)
+  // @ts-ignore
+  result._debug = debugInfo
   const rows = result.data || []
   
   // Calculate results
@@ -837,7 +855,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     longest_miss_streak: longestMissStreak,
     games,
     query_time_ms: Date.now() - startTime,
-    filters_applied: appliedFilters
+    filters_applied: appliedFilters,
+    _debug: debugInfo
   }
 }
 
