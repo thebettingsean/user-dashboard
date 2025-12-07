@@ -3407,22 +3407,22 @@ export default function SportsEnginePage() {
                   <div>
                     <span>{isOUQuery ? 'Home Spread' : 'Spread Range'}</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={spreadMin} onChange={(e) => setSpreadMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={spreadMax} onChange={(e) => setSpreadMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={spreadMin} onChange={(e) => setSpreadMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={spreadMax} onChange={(e) => setSpreadMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>ML Range</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={mlMin} onChange={(e) => setMlMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={mlMax} onChange={(e) => setMlMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={mlMin} onChange={(e) => setMlMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={mlMax} onChange={(e) => setMlMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>Total Range</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={totalMin} onChange={(e) => setTotalMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={totalMax} onChange={(e) => setTotalMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={totalMin} onChange={(e) => setTotalMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={totalMax} onChange={(e) => setTotalMax(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -3435,22 +3435,22 @@ export default function SportsEnginePage() {
                   <div>
                     <span>Spread Move</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={spreadMoveMin} onChange={(e) => setSpreadMoveMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={spreadMoveMax} onChange={(e) => setSpreadMoveMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={spreadMoveMin} onChange={(e) => setSpreadMoveMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={spreadMoveMax} onChange={(e) => setSpreadMoveMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>ML Move</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={mlMoveMin} onChange={(e) => setMlMoveMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={mlMoveMax} onChange={(e) => setMlMoveMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={mlMoveMin} onChange={(e) => setMlMoveMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={mlMoveMax} onChange={(e) => setMlMoveMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>Total Move</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={totalMoveMin} onChange={(e) => setTotalMoveMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={totalMoveMax} onChange={(e) => setTotalMoveMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={totalMoveMin} onChange={(e) => setTotalMoveMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={totalMoveMax} onChange={(e) => setTotalMoveMax(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -3574,15 +3574,15 @@ export default function SportsEnginePage() {
                   <div>
                     <span>Team Win %</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min %" value={teamWinPctMin} onChange={(e) => setTeamWinPctMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max %" value={teamWinPctMax} onChange={(e) => setTeamWinPctMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min %" value={teamWinPctMin} onChange={(e) => setTeamWinPctMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max %" value={teamWinPctMax} onChange={(e) => setTeamWinPctMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>Opp Win %</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min %" value={oppWinPctMin} onChange={(e) => setOppWinPctMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max %" value={oppWinPctMax} onChange={(e) => setOppWinPctMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min %" value={oppWinPctMin} onChange={(e) => setOppWinPctMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max %" value={oppWinPctMax} onChange={(e) => setOppWinPctMax(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -3592,13 +3592,13 @@ export default function SportsEnginePage() {
                   <div>
                     <span>Prev Game Margin</span>
                     <div className={styles.rangeRow}>
-                      <input type="text" inputMode="numeric" placeholder="Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
-                      <input type="text" inputMode="numeric" placeholder="Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
                     </div>
                   </div>
                   <div>
                     <span>W/L Streak</span>
-                    <input type="text" inputMode="numeric" placeholder="2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} className={styles.streakInput} />
+                    <input type="text" inputMode="text" placeholder="2 or -2" value={streak} onChange={(e) => setStreak(e.target.value)} className={styles.streakInput} />
                     <div className={styles.hint}>+ wins, - losses</div>
                   </div>
                 </div>
@@ -3651,7 +3651,7 @@ export default function SportsEnginePage() {
                   </div>
                   <div>
                     <span>Streak</span>
-                    <input type="text" inputMode="numeric" placeholder="-2" value={awayStreak} onChange={(e) => setAwayStreak(e.target.value)} />
+                    <input type="text" inputMode="text" placeholder="-2" value={awayStreak} onChange={(e) => setAwayStreak(e.target.value)} />
                   </div>
                 </div>
                 
@@ -3698,7 +3698,7 @@ export default function SportsEnginePage() {
                   </div>
                   <div>
                     <span>Streak</span>
-                    <input type="text" inputMode="numeric" placeholder="3" value={streak} onChange={(e) => setStreak(e.target.value)} />
+                    <input type="text" inputMode="text" placeholder="3" value={streak} onChange={(e) => setStreak(e.target.value)} />
                   </div>
                 </div>
                 
@@ -3706,8 +3706,8 @@ export default function SportsEnginePage() {
                 <div className={styles.marginSection}>
                   <span>Prev Game Margin</span>
                   <div className={styles.rangeRow}>
-                    <input type="text" inputMode="numeric" placeholder="Home Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
-                    <input type="text" inputMode="numeric" placeholder="Home Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
+                    <input type="text" inputMode="text" placeholder="Home Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
+                    <input type="text" inputMode="text" placeholder="Home Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
                   </div>
                 </div>
               </>
