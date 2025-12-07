@@ -1,0 +1,390 @@
+import { NextResponse } from 'next/server'
+import { QueryFilters } from '@/lib/query-engine/types'
+
+const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST!
+const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID!
+const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET!
+
+async function executeQuery(sql: string): Promise<any> {
+  const response = await fetch(CLICKHOUSE_HOST, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${Buffer.from(`${CLICKHOUSE_KEY_ID}:${CLICKHOUSE_KEY_SECRET}`).toString('base64')}`
+    },
+    body: JSON.stringify({ query: sql, format: 'JSONEachRow' })
+  })
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`ClickHouse error: ${text}`)
+  }
+
+  const text = await response.text()
+  if (!text.trim()) return []
+  return text.trim().split('\n').map(line => JSON.parse(line))
+}
+
+// Map prop stat types to database prop_type values
+const PROP_TYPE_MAP: Record<string, string> = {
+  'pass_yards': 'player_pass_yds',
+  'pass_tds': 'player_pass_tds',
+  'pass_attempts': 'player_pass_attempts',
+  'pass_completions': 'player_pass_completions',
+  'interceptions': 'player_pass_interceptions',
+  'rush_yards': 'player_rush_yds',
+  'rush_tds': 'player_rush_tds',
+  'rush_attempts': 'player_rush_attempts',
+  'receiving_yards': 'player_reception_yds',
+  'receptions': 'player_receptions',
+  'receiving_tds': 'player_reception_tds',
+}
+
+// Map positions to relevant prop types
+const POSITION_PROP_TYPES: Record<string, string[]> = {
+  'qb': ['player_pass_yds', 'player_pass_tds', 'player_pass_attempts', 'player_pass_completions', 'player_rush_yds'],
+  'rb': ['player_rush_yds', 'player_rush_tds', 'player_rush_attempts', 'player_reception_yds', 'player_receptions'],
+  'wr': ['player_reception_yds', 'player_receptions', 'player_reception_tds'],
+  'te': ['player_reception_yds', 'player_receptions', 'player_reception_tds'],
+}
+
+export async function POST(request: Request) {
+  const startTime = Date.now()
+  
+  try {
+    const body = await request.json()
+    const { 
+      position,        // 'qb', 'rb', 'wr', 'te', 'any'
+      stat,            // 'receiving_yards', 'rush_yards', etc.
+      line_min,        // minimum line value
+      line_max,        // maximum line value
+      filters = {}     // game-level filters (total, defense rank, etc.)
+    } = body as { 
+      position?: string, 
+      stat?: string, 
+      line_min?: number, 
+      line_max?: number,
+      filters: QueryFilters 
+    }
+    
+    const gameConditions: string[] = []
+    const propConditions: string[] = []
+    const appliedFilters: string[] = []
+    
+    // ===== PROP-SPECIFIC FILTERS =====
+    
+    // Prop type filter (stat type)
+    if (stat && PROP_TYPE_MAP[stat]) {
+      propConditions.push(`p.prop_type = '${PROP_TYPE_MAP[stat]}'`)
+      appliedFilters.push(stat.replace('_', ' '))
+    } else if (position && POSITION_PROP_TYPES[position]) {
+      // Filter by position's relevant prop types
+      const propTypes = POSITION_PROP_TYPES[position]
+      propConditions.push(`p.prop_type IN ('${propTypes.join("','")}')`)
+      appliedFilters.push(`${position.toUpperCase()} props`)
+    }
+    
+    // Line range filter
+    if (line_min !== undefined && line_min !== null) {
+      propConditions.push(`p.line >= ${line_min}`)
+    }
+    if (line_max !== undefined && line_max !== null) {
+      propConditions.push(`p.line <= ${line_max}`)
+    }
+    if (line_min !== undefined || line_max !== undefined) {
+      const lineDesc = line_min && line_max ? `${line_min}-${line_max}` 
+        : line_min ? `${line_min}+` : `≤${line_max}`
+      appliedFilters.push(`Line: ${lineDesc}`)
+    }
+    
+    // ===== GAME-LEVEL FILTERS =====
+    
+    // Total range
+    if (filters.total_range) {
+      const { min, max } = filters.total_range
+      if (min !== undefined) {
+        gameConditions.push(`ll.total_line >= ${min}`)
+        appliedFilters.push(`Total ${min}+`)
+      }
+      if (max !== undefined) {
+        gameConditions.push(`ll.total_line <= ${max}`)
+        if (min === undefined) appliedFilters.push(`Total ≤${max}`)
+      }
+    }
+    
+    // Division filter
+    if (filters.is_division_game === true) {
+      gameConditions.push('g.is_division_game = 1')
+      appliedFilters.push('Division')
+    } else if (filters.is_division_game === false) {
+      gameConditions.push('g.is_division_game = 0')
+      appliedFilters.push('Non-Division')
+    }
+    
+    // Conference filter
+    if (filters.is_conference_game === true) {
+      gameConditions.push('g.is_conference_game = 1')
+      appliedFilters.push('Conference')
+    } else if (filters.is_conference_game === false) {
+      gameConditions.push('g.is_conference_game = 0')
+      appliedFilters.push('Non-Conference')
+    }
+    
+    // Defense rank filter (opponent's defense) - for position-specific
+    const defStat = (filters.defense_stat_position || filters.defense_stat) as string
+    if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
+      // Determine column based on stat type
+      let homeCol = 'g.home_defense_rank'
+      let awayCol = 'g.away_defense_rank'
+      let statLabel = 'Defense'
+      
+      if (defStat === 'wr' || defStat === 'vs_wr') {
+        homeCol = 'g.home_rank_vs_wr'
+        awayCol = 'g.away_rank_vs_wr'
+        statLabel = 'D vs WRs'
+      } else if (defStat === 'te' || defStat === 'vs_te') {
+        homeCol = 'g.home_rank_vs_te'
+        awayCol = 'g.away_rank_vs_te'
+        statLabel = 'D vs TEs'
+      } else if (defStat === 'rb' || defStat === 'vs_rb') {
+        homeCol = 'g.home_rank_vs_rb'
+        awayCol = 'g.away_rank_vs_rb'
+        statLabel = 'D vs RBs'
+      } else if (defStat === 'pass') {
+        homeCol = 'g.home_pass_defense_rank'
+        awayCol = 'g.away_pass_defense_rank'
+        statLabel = 'Pass D'
+      } else if (defStat === 'rush') {
+        homeCol = 'g.home_rush_defense_rank'
+        awayCol = 'g.away_rush_defense_rank'
+        statLabel = 'Rush D'
+      }
+      
+      // We want games where EITHER team has a defense in the rank range
+      // (players on home team face away defense, players on away team face home defense)
+      let rankCondition = ''
+      switch (filters.vs_defense_rank) {
+        case 'top_5':
+          rankCondition = `((${homeCol} <= 5 AND ${homeCol} > 0) OR (${awayCol} <= 5 AND ${awayCol} > 0))`
+          break
+        case 'top_10':
+          rankCondition = `((${homeCol} <= 10 AND ${homeCol} > 0) OR (${awayCol} <= 10 AND ${awayCol} > 0))`
+          break
+        case 'top_15':
+          rankCondition = `((${homeCol} <= 15 AND ${homeCol} > 0) OR (${awayCol} <= 15 AND ${awayCol} > 0))`
+          break
+        case 'bottom_5':
+          rankCondition = `(${homeCol} >= 28 OR ${awayCol} >= 28)`
+          break
+        case 'bottom_10':
+          rankCondition = `(${homeCol} >= 23 OR ${awayCol} >= 23)`
+          break
+        case 'bottom_15':
+          rankCondition = `(${homeCol} >= 18 OR ${awayCol} >= 18)`
+          break
+      }
+      if (rankCondition) {
+        gameConditions.push(rankCondition)
+        appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} ${statLabel}`)
+      }
+    }
+    
+    // Build WHERE clauses
+    const gameWhereClause = gameConditions.length > 0 
+      ? 'AND ' + gameConditions.join(' AND ')
+      : ''
+    const propWhereClause = propConditions.length > 0
+      ? 'AND ' + propConditions.join(' AND ')
+      : ''
+    
+    // Build position filter if specified
+    let positionJoinClause = ''
+    let positionCondition = ''
+    if (position && position !== 'any') {
+      positionJoinClause = `LEFT JOIN players pl ON p.player_name = pl.name AND pl.sport = 'nfl'`
+      positionCondition = `AND pl.position = '${position.toUpperCase()}'`
+    }
+    
+    // Query for upcoming props that match filters
+    const sql = `
+      WITH latest_lines AS (
+        SELECT 
+          game_id,
+          argMax(home_spread, snapshot_time) as home_spread,
+          argMax(total_line, snapshot_time) as total_line,
+          argMax(home_ml, snapshot_time) as home_ml,
+          argMax(away_ml, snapshot_time) as away_ml,
+          max(snapshot_time) as latest_snapshot
+        FROM nfl_line_snapshots
+        GROUP BY game_id
+      ),
+      latest_props AS (
+        SELECT 
+          game_id,
+          player_name,
+          prop_type,
+          bookmaker,
+          argMax(line, snapshot_time) as line,
+          argMax(over_odds, snapshot_time) as over_odds,
+          argMax(under_odds, snapshot_time) as under_odds,
+          max(snapshot_time) as latest_snapshot
+        FROM nfl_prop_line_snapshots
+        GROUP BY game_id, player_name, prop_type, bookmaker
+      )
+      SELECT 
+        g.game_id,
+        g.game_time,
+        g.home_team_id,
+        g.away_team_id,
+        g.home_team_name,
+        g.away_team_name,
+        g.home_team_abbr,
+        g.away_team_abbr,
+        g.is_division_game,
+        g.is_conference_game,
+        g.home_rank_vs_wr,
+        g.home_rank_vs_te,
+        g.home_rank_vs_rb,
+        g.away_rank_vs_wr,
+        g.away_rank_vs_te,
+        g.away_rank_vs_rb,
+        g.home_defense_rank,
+        g.away_defense_rank,
+        g.home_win_pct,
+        g.away_win_pct,
+        ll.total_line,
+        ll.home_spread,
+        p.player_name,
+        p.prop_type,
+        p.line as prop_line,
+        p.over_odds,
+        p.under_odds,
+        p.bookmaker
+      FROM nfl_upcoming_games g
+      INNER JOIN latest_lines ll ON g.game_id = ll.game_id
+      INNER JOIN latest_props p ON g.game_id = p.game_id
+      ${positionJoinClause}
+      WHERE 1=1
+      ${gameWhereClause}
+      ${propWhereClause}
+      ${positionCondition}
+      ORDER BY g.game_time ASC, p.player_name, p.line
+    `
+    
+    console.log('[UpcomingProps] Query:', sql.substring(0, 300) + '...')
+    
+    const rows = await executeQuery(sql)
+    
+    // Group by game and player for cleaner response
+    const gamesMap = new Map<string, any>()
+    
+    for (const row of rows) {
+      const gameKey = row.game_id
+      
+      if (!gamesMap.has(gameKey)) {
+        gamesMap.set(gameKey, {
+          game_id: row.game_id,
+          game_time: row.game_time,
+          home_team_id: row.home_team_id,
+          away_team_id: row.away_team_id,
+          home_team_name: row.home_team_name,
+          away_team_name: row.away_team_name,
+          home_team_abbr: row.home_team_abbr,
+          away_team_abbr: row.away_team_abbr,
+          is_division_game: row.is_division_game,
+          is_conference_game: row.is_conference_game,
+          home_rank_vs_wr: row.home_rank_vs_wr,
+          home_rank_vs_te: row.home_rank_vs_te,
+          home_rank_vs_rb: row.home_rank_vs_rb,
+          away_rank_vs_wr: row.away_rank_vs_wr,
+          away_rank_vs_te: row.away_rank_vs_te,
+          away_rank_vs_rb: row.away_rank_vs_rb,
+          home_defense_rank: row.home_defense_rank,
+          away_defense_rank: row.away_defense_rank,
+          home_win_pct: row.home_win_pct,
+          away_win_pct: row.away_win_pct,
+          total_line: row.total_line,
+          home_spread: row.home_spread,
+          props: []
+        })
+      }
+      
+      // Add prop to game
+      gamesMap.get(gameKey)!.props.push({
+        player_name: row.player_name,
+        prop_type: row.prop_type,
+        line: row.prop_line,
+        over_odds: row.over_odds,
+        under_odds: row.under_odds,
+        bookmaker: row.bookmaker
+      })
+    }
+    
+    const games = Array.from(gamesMap.values())
+    
+    // Deduplicate props per player (keep best book line)
+    for (const game of games) {
+      const playerProps = new Map<string, any>()
+      for (const prop of game.props) {
+        const key = `${prop.player_name}_${prop.prop_type}`
+        if (!playerProps.has(key) || prop.line < playerProps.get(key).line) {
+          playerProps.set(key, prop)
+        }
+      }
+      game.props = Array.from(playerProps.values())
+    }
+    
+    const duration = Date.now() - startTime
+    
+    // Create a flat list of upcoming props for display
+    const upcomingProps: any[] = []
+    for (const game of games) {
+      for (const prop of game.props) {
+        upcomingProps.push({
+          game_id: game.game_id,
+          game_time: game.game_time,
+          home_team_id: game.home_team_id,
+          away_team_id: game.away_team_id,
+          home_team_abbr: game.home_team_abbr,
+          away_team_abbr: game.away_team_abbr,
+          home_team_name: game.home_team_name,
+          away_team_name: game.away_team_name,
+          is_division_game: game.is_division_game,
+          is_conference_game: game.is_conference_game,
+          home_rank_vs_wr: game.home_rank_vs_wr,
+          home_rank_vs_te: game.home_rank_vs_te,
+          home_rank_vs_rb: game.home_rank_vs_rb,
+          away_rank_vs_wr: game.away_rank_vs_wr,
+          away_rank_vs_te: game.away_rank_vs_te,
+          away_rank_vs_rb: game.away_rank_vs_rb,
+          total_line: game.total_line,
+          home_spread: game.home_spread,
+          player_name: prop.player_name,
+          prop_type: prop.prop_type,
+          line: prop.line,
+          over_odds: prop.over_odds,
+          under_odds: prop.under_odds,
+          bookmaker: prop.bookmaker
+        })
+      }
+    }
+    
+    return NextResponse.json({
+      success: true,
+      games,
+      upcoming_props: upcomingProps,
+      total_games: games.length,
+      total_props: upcomingProps.length,
+      applied_filters: appliedFilters,
+      duration_ms: duration
+    })
+
+  } catch (error) {
+    console.error('Upcoming props error:', error)
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
+

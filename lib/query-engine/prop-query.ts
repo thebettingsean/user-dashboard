@@ -117,8 +117,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Add box score specific conditions
   const boxConditions: string[] = []
   
-  // Track if we need opponent rankings join (for position-specific filters)
-  let needsOppRankingsJoin = false
+  // Always include rankings join for comprehensive "Why this fits" data
+  let needsOppRankingsJoin = true
   
   // Player or Position filter
   if (player_id && player_id > 0) {

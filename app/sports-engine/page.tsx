@@ -96,10 +96,12 @@ interface UpcomingGame {
 interface UpcomingResult {
   success: boolean
   filters: string[]
-  upcoming_games: UpcomingGame[]
+  upcoming_games?: UpcomingGame[]
+  upcoming_props?: any[]  // For prop queries
   total_games: number
-  total_book_options: number
-  query_time_ms: number
+  total_props?: number    // For prop queries
+  total_book_options?: number
+  query_time_ms?: number
 }
 
 // Constants
@@ -1325,20 +1327,41 @@ export default function SportsEnginePage() {
         filters.team_id = teamId
       }
 
-      const response = await fetch('/api/query-engine/upcoming', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query_type: queryType,
-          bet_type: betType,
-          filters
+      // Use different endpoint for props
+      if (queryType === 'prop') {
+        const propResponse = await fetch('/api/query-engine/upcoming-props', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            position: propPosition !== 'any' ? propPosition : undefined,
+            stat: propStat,
+            line_min: propLineMode === 'book' && bookLineMin ? parseFloat(bookLineMin) : (parseFloat(propLine) > 0 ? parseFloat(propLine) - 10 : undefined),
+            line_max: propLineMode === 'book' && bookLineMax ? parseFloat(bookLineMax) : (parseFloat(propLine) > 0 ? parseFloat(propLine) + 10 : undefined),
+            filters
+          })
         })
-      })
+        
+        const propData = await propResponse.json()
+        
+        if (propData.success) {
+          setUpcomingResult(propData)
+        }
+      } else {
+        const response = await fetch('/api/query-engine/upcoming', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query_type: queryType,
+            bet_type: betType,
+            filters
+          })
+        })
 
-      const data = await response.json()
-      
-      if (data.success) {
-        setUpcomingResult(data)
+        const data = await response.json()
+        
+        if (data.success) {
+          setUpcomingResult(data)
+        }
       }
     } catch (err) {
       console.error('Upcoming fetch error:', err)
@@ -1933,6 +1956,17 @@ export default function SportsEnginePage() {
   const getPropMatchReasons = (game: any) => {
     const reasons: { label: string; value: string }[] = []
     
+    // Prop Position - show if filtering by position (not specific player)
+    if (propPosition && propPosition !== 'any' && !selectedPlayer) {
+      reasons.push({ label: 'Position', value: propPosition.toUpperCase() })
+    }
+    
+    // Prop Stat Type
+    if (propStat) {
+      const statLabel = availablePropStats.find(s => s.value === propStat)?.label || propStat
+      reasons.push({ label: 'Stat', value: statLabel })
+    }
+    
     // Location - ONLY show if user specifically selected home or away
     if (location && location !== 'any') {
       if (game.venue) {
@@ -1989,18 +2023,40 @@ export default function SportsEnginePage() {
       reasons.push({ label: 'vs Team', value: opponentName })
     }
 
-    // Defense rank - show actual rank number
+    // Defense rank - show actual rank number (including position-specific)
     if (defenseRank && defenseRank !== 'any') {
       const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      const actualRank = defenseStat === 'pass' ? game.opp_def_rank_pass 
-        : defenseStat === 'rush' ? game.opp_def_rank_rush 
-        : game.opp_def_rank_receiving
-      const statLabel = defenseStat === 'pass' ? 'Pass D' : defenseStat === 'rush' ? 'Rush D' : 'Rec D'
+      
+      // Check for position-specific defense first (can come from defenseStat or defenseStatPosition)
+      const posDefStat = defenseStatPosition || defenseStat
+      let actualRank: number | null = null
+      let statLabel = ''
+      
+      if (posDefStat === 'wr' || posDefStat === 'vs_wr') {
+        actualRank = game.opp_def_rank_vs_wr
+        statLabel = 'D vs WRs'
+      } else if (posDefStat === 'te' || posDefStat === 'vs_te') {
+        actualRank = game.opp_def_rank_vs_te
+        statLabel = 'D vs TEs'
+      } else if (posDefStat === 'rb' || posDefStat === 'vs_rb') {
+        actualRank = game.opp_def_rank_vs_rb
+        statLabel = 'D vs RBs'
+      } else if (posDefStat === 'pass') {
+        actualRank = game.opp_def_rank_pass_yards || game.opp_def_rank_pass
+        statLabel = 'Pass D'
+      } else if (posDefStat === 'rush') {
+        actualRank = game.opp_def_rank_rush_yards || game.opp_def_rank_rush
+        statLabel = 'Rush D'
+      } else {
+        actualRank = game.opp_def_rank_receiving_yards || game.opp_def_rank_receiving
+        statLabel = 'Rec D'
+      }
+      
       if (actualRank) {
         reasons.push({ label: 'vs Defense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
       } else {
         const rankLabel = defenseRank.includes('top') ? `Top ${defenseRank.split('_')[1]}` : `Bottom ${defenseRank.split('_')[1]}`
-        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} (${rankLabel})` })
+        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} (${rankLabel} ${statLabel})` })
       }
     }
 
@@ -2122,21 +2178,7 @@ export default function SportsEnginePage() {
       }
     }
 
-    // Position-specific Defense ranking (vs WRs, vs TEs, vs RBs)
-    if (defenseStatPosition && defenseStatPosition !== '') {
-      const opponentAbbr = NFL_TEAMS.find(t => t.id === game.opponent_id)?.abbr || 'OPP'
-      const actualRank = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' ? game.opp_def_rank_vs_wr
-        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' ? game.opp_def_rank_vs_te
-        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' ? game.opp_def_rank_vs_rb
-        : null
-      const statLabel = defenseStatPosition === 'vs_wr' || defenseStatPosition === 'wr' ? 'D vs WRs'
-        : defenseStatPosition === 'vs_te' || defenseStatPosition === 'te' ? 'D vs TEs'
-        : defenseStatPosition === 'vs_rb' || defenseStatPosition === 'rb' ? 'D vs RBs'
-        : ''
-      if (actualRank && statLabel) {
-        reasons.push({ label: 'vs Defense', value: `${opponentAbbr} #${actualRank} ${statLabel}` })
-      }
-    }
+    // Note: Position-specific Defense ranking is now handled in the main defense rank block above
 
     // Position-specific Offense ranking (WR/TE/RB production)
     if (offenseStatPosition && offenseStatPosition !== '') {
@@ -3829,7 +3871,7 @@ export default function SportsEnginePage() {
                 <div className={styles.upcomingSection}>
                   <div className={styles.upcomingHeader}>
                     <h3>
-                      <BsCalendarEvent /> Upcoming Matchups ({upcomingResult?.total_games || 0})
+                      <BsCalendarEvent /> {queryType === 'prop' ? 'Upcoming Props' : 'Upcoming Matchups'} ({queryType === 'prop' ? upcomingResult?.total_props || 0 : upcomingResult?.total_games || 0})
                     </h3>
                     {upcomingResult && upcomingResult.total_games > 0 && (
                       <select 
@@ -3849,13 +3891,115 @@ export default function SportsEnginePage() {
                     </div>
                   )}
 
-                  {!upcomingLoading && upcomingResult?.upcoming_games?.length === 0 && (
+                  {!upcomingLoading && ((queryType !== 'prop' && upcomingResult?.upcoming_games?.length === 0) || (queryType === 'prop' && upcomingResult?.upcoming_props?.length === 0)) && (
                     <div className={styles.noUpcoming}>
-                      No upcoming games match your current filters.
+                      {queryType === 'prop' ? 'No upcoming props match your current filters.' : 'No upcoming games match your current filters.'}
                     </div>
                   )}
+                  
+                  {/* Upcoming Props Display */}
+                  {queryType === 'prop' && upcomingResult?.upcoming_props?.map((prop: any, index: number) => {
+                    const homeAbbr = prop.home_team_abbr || 'HOME'
+                    const awayAbbr = prop.away_team_abbr || 'AWAY'
+                    const homeLogo = teamLogos[prop.home_team_id]
+                    const awayLogo = teamLogos[prop.away_team_id]
+                    
+                    // Get relevant defense rank based on filter
+                    const defRankValue = defenseStat === 'wr' || defenseStatPosition === 'wr'
+                      ? Math.max(prop.home_rank_vs_wr || 99, prop.away_rank_vs_wr || 99)
+                      : defenseStat === 'te' || defenseStatPosition === 'te'
+                      ? Math.max(prop.home_rank_vs_te || 99, prop.away_rank_vs_te || 99)
+                      : defenseStat === 'rb' || defenseStatPosition === 'rb'
+                      ? Math.max(prop.home_rank_vs_rb || 99, prop.away_rank_vs_rb || 99)
+                      : null
+                    
+                    const propKey = `${prop.game_id}_${prop.player_name}_${prop.prop_type}_${index}`
+                    const isExpanded = expandedUpcomingGameId === propKey
+                    
+                    return (
+                      <div key={propKey} className={styles.upcomingGame}>
+                        <div 
+                          className={styles.upcomingGameHeader}
+                          onClick={() => setExpandedUpcomingGameId(isExpanded ? null : propKey)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className={styles.upcomingGameTime}>
+                            {formatGameTime(prop.game_time)}
+                          </div>
+                          
+                          <div className={styles.upcomingBetDisplay}>
+                            <span className={styles.upcomingPlayerName}>{prop.player_name}</span>
+                            <span className={styles.upcomingBetLine}>
+                              o{prop.line} {prop.prop_type?.replace('player_', '').replace('_', ' ')}
+                            </span>
+                            <span className={styles.upcomingBetOdds}>
+                              ({formatOdds(prop.over_odds)})
+                            </span>
+                          </div>
+                          
+                          <div className={styles.upcomingMeta}>
+                            <span className={styles.bookSource}>{prop.bookmaker}</span>
+                          </div>
+                          
+                          <MdExpandMore className={`${styles.expandIcon} ${isExpanded ? styles.rotated : ''}`} />
+                        </div>
+                        
+                        {isExpanded && (
+                          <div className={styles.upcomingDetails}>
+                            {/* Game info */}
+                            <div className={styles.upcomingGameInfo}>
+                              <div className={styles.upcomingMatchupFull}>
+                                {awayLogo && <img src={awayLogo} alt="" className={styles.teamOddsLogo} />}
+                                <span>{awayAbbr}</span>
+                                <span className={styles.atSymbolSmall}>@</span>
+                                {homeLogo && <img src={homeLogo} alt="" className={styles.teamOddsLogo} />}
+                                <span>{homeAbbr}</span>
+                              </div>
+                              <div className={styles.propDetails}>
+                                <span>Total: O/U {prop.total_line}</span>
+                                <span>Spread: {prop.home_spread > 0 ? `+${prop.home_spread}` : prop.home_spread}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Why this fits */}
+                            <div className={styles.whyThisFits}>
+                              <div className={styles.whyThisFitsTitle}>Why this fits:</div>
+                              <div className={styles.whyThisFitsList}>
+                                {prop.total_line && totalMin && (
+                                  <div className={styles.whyThisFitsItem}>
+                                    <FaCheckCircle className={styles.matchCheck} />
+                                    <span>Total:</span>
+                                    <strong>O/U {prop.total_line} ({totalMin}+ filter)</strong>
+                                  </div>
+                                )}
+                                {defenseRank && defenseRank !== 'any' && defRankValue && (
+                                  <div className={styles.whyThisFitsItem}>
+                                    <FaCheckCircle className={styles.matchCheck} />
+                                    <span>vs Defense:</span>
+                                    <strong>
+                                      {defenseStat === 'wr' || defenseStatPosition === 'wr' ? 
+                                        `#${Math.min(prop.home_rank_vs_wr || 32, prop.away_rank_vs_wr || 32)} D vs WRs` :
+                                        defenseStat === 'te' || defenseStatPosition === 'te' ? 
+                                        `#${Math.min(prop.home_rank_vs_te || 32, prop.away_rank_vs_te || 32)} D vs TEs` :
+                                        `#${Math.min(prop.home_rank_vs_rb || 32, prop.away_rank_vs_rb || 32)} D vs RBs`
+                                      }
+                                    </strong>
+                                  </div>
+                                )}
+                                <div className={styles.whyThisFitsItem}>
+                                  <FaCheckCircle className={styles.matchCheck} />
+                                  <span>Line:</span>
+                                  <strong>o{prop.line} ({prop.bookmaker})</strong>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
 
-                  {upcomingResult?.upcoming_games?.map((game) => {
+                  {queryType !== 'prop' && upcomingResult?.upcoming_games?.map((game) => {
                     const betDisplay = getUpcomingBetDisplay(game)
                     const matchReasons = getMatchReasons(game)
                     const bestBook = getBestBook(game.books)
