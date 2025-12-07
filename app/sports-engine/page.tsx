@@ -651,8 +651,8 @@ export default function SportsEnginePage() {
   const getAppliedFiltersDisplay = () => {
     const filters: string[] = []
     
-    // Bet type
-    if (betType) {
+    // Bet type - only show for trends, teams, and refs (not props)
+    if (queryType !== 'prop' && betType) {
       const betLabel = betType === 'spread' ? 'Spread' 
         : betType === 'total' ? (side === 'over' ? 'Over' : 'Under') 
         : 'Moneyline'
