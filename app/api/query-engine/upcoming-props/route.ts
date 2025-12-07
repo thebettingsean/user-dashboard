@@ -231,36 +231,36 @@ export async function POST(request: Request) {
         GROUP BY game_id, player_name, prop_type, bookmaker
       )
       SELECT 
-        g.game_id,
-        g.game_time,
-        g.home_team_id,
-        g.away_team_id,
-        g.home_team_name,
-        g.away_team_name,
-        g.home_team_abbr,
-        g.away_team_abbr,
-        g.is_division_game,
-        g.is_conference_game,
-        g.home_rank_vs_wr,
-        g.home_rank_vs_te,
-        g.home_rank_vs_rb,
-        g.away_rank_vs_wr,
-        g.away_rank_vs_te,
-        g.away_rank_vs_rb,
-        g.home_defense_rank,
-        g.away_defense_rank,
-        g.home_win_pct,
-        g.away_win_pct,
-        ll.total_line,
-        ll.home_spread,
-        p.player_name,
-        p.prop_type,
-        p.line as prop_line,
-        p.over_odds,
-        p.under_odds,
-        p.bookmaker,
-        pl.headshot_url as player_headshot,
-        pl.espn_player_id as player_id
+        g.game_id AS game_id,
+        g.game_time AS game_time,
+        g.home_team_id AS home_team_id,
+        g.away_team_id AS away_team_id,
+        g.home_team_name AS home_team_name,
+        g.away_team_name AS away_team_name,
+        g.home_team_abbr AS home_team_abbr,
+        g.away_team_abbr AS away_team_abbr,
+        g.is_division_game AS is_division_game,
+        g.is_conference_game AS is_conference_game,
+        g.home_rank_vs_wr AS home_rank_vs_wr,
+        g.home_rank_vs_te AS home_rank_vs_te,
+        g.home_rank_vs_rb AS home_rank_vs_rb,
+        g.away_rank_vs_wr AS away_rank_vs_wr,
+        g.away_rank_vs_te AS away_rank_vs_te,
+        g.away_rank_vs_rb AS away_rank_vs_rb,
+        g.home_defense_rank AS home_defense_rank,
+        g.away_defense_rank AS away_defense_rank,
+        g.home_win_pct AS home_win_pct,
+        g.away_win_pct AS away_win_pct,
+        ll.total_line AS total_line,
+        ll.home_spread AS home_spread,
+        p.player_name AS player_name,
+        p.prop_type AS prop_type,
+        p.line AS prop_line,
+        p.over_odds AS over_odds,
+        p.under_odds AS under_odds,
+        p.bookmaker AS bookmaker,
+        pl.headshot_url AS player_headshot,
+        pl.espn_player_id AS player_id
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
       INNER JOIN latest_props p ON g.game_id = p.game_id
@@ -272,9 +272,16 @@ export async function POST(request: Request) {
       ORDER BY g.game_time ASC, p.player_name, p.line
     `
     
-    console.log('[UpcomingProps] Query:', sql.substring(0, 300) + '...')
+    console.log('[UpcomingProps] Query:', sql.substring(0, 500) + '...')
     
     const rows = await executeQuery(sql)
+    
+    // Debug: log unique game_ids in raw results
+    const uniqueGameIds = new Set(rows.map((r: any) => r.game_id))
+    console.log('[UpcomingProps] Raw rows:', rows.length, 'Unique games:', uniqueGameIds.size)
+    if (rows.length > 0) {
+      console.log('[UpcomingProps] First row game_id:', rows[0].game_id, 'teams:', rows[0].away_team_abbr, '@', rows[0].home_team_abbr)
+    }
     
     // Group by game and player for cleaner response
     const gamesMap = new Map<string, any>()
