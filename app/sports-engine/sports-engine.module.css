@@ -444,6 +444,15 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
+.filtersAppliedCount {
+  display: block;
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
 /* Results Panel */
 .resultsPanel {
   background: rgba(20, 20, 30, 0.8);

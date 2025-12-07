@@ -3480,7 +3480,6 @@ function SportsEngineContent() {
                       className={styles.rangeInput}
                     />
                   </div>
-                  <span className={styles.lineNote}>*Uses actual sportsbook lines since 2023</span>
                 </div>
               )}
 
@@ -3515,9 +3514,6 @@ function SportsEngineContent() {
                 </option>
               ))}
             </select>
-            {propLineMode === 'book' && (
-              <span className={styles.lineNote}>*Book line data available since 2023</span>
-            )}
           </div>
 
           {/* ============================================ */}
@@ -3992,6 +3988,9 @@ function SportsEngineContent() {
               Clear
             </button>
           </div>
+          <span className={styles.filtersAppliedCount}>
+            Filters applied: {getAppliedFiltersDisplay().length}
+          </span>
         </div>
 
         {/* Results Panel */}
