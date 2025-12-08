@@ -1714,6 +1714,19 @@
   color: #fff;
 }
 
+.lineTypeBtn.andBtn {
+  flex: 0;
+  min-width: 32px;
+  padding: 0.4rem 0.5rem;
+  font-weight: 600;
+  color: #888;
+}
+
+.lineTypeBtn.andBtn.active {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.5) 0%, rgba(251, 191, 36, 0.5) 100%);
+  color: #fef3c7;
+}
+
 /* Range Inputs for Book Line */
 .rangeInputs {
   display: flex;

@@ -32,6 +32,8 @@ interface QueryResult {
   current_streak: number
   longest_hit_streak: number
   longest_miss_streak: number
+  estimated_roi?: number
+  total_profit?: number
   query_time_ms: number
   filters_applied: string[]
   games: any[]
@@ -393,8 +395,8 @@ function SportsEngineContent() {
   const [propVersusTeamResults, setPropVersusTeamResults] = useState<typeof NFL_TEAMS>([])
   const [selectedPropVersusTeam, setSelectedPropVersusTeam] = useState<typeof NFL_TEAMS[0] | null>(null)
   
-  // Props - Line Mode (Book Line vs Any Line)
-  const [propLineMode, setPropLineMode] = useState<'book' | 'any'>('any')
+  // Props - Line Mode (Book Line, And (both), or Any Line)
+  const [propLineMode, setPropLineMode] = useState<'book' | 'and' | 'any'>('any')
   const [bookLineMin, setBookLineMin] = useState<string>('')
   const [bookLineMax, setBookLineMax] = useState<string>('')
   
@@ -527,7 +529,7 @@ function SportsEngineContent() {
   
   // Auto-switch time period when Book Line mode is selected (book lines only available since 2023)
   useEffect(() => {
-    if (propLineMode === 'book' && timePeriod === 'since_2022') {
+    if ((propLineMode === 'book' || propLineMode === 'and') && timePeriod === 'since_2022') {
       setTimePeriod('since_2023')
     }
   }, [propLineMode])
@@ -729,8 +731,8 @@ function SportsEngineContent() {
       if (propPosition !== 'any') params.set('pos', propPosition)
       if (propStat) params.set('stat', propStat)
       if (propLine) params.set('line', propLine)
-      if (propLineMode === 'book') {
-        params.set('lineMode', 'book')
+      if (propLineMode === 'book' || propLineMode === 'and') {
+        params.set('lineMode', propLineMode)
         if (bookLineMin) params.set('bookMin', bookLineMin)
         if (bookLineMax) params.set('bookMax', bookLineMax)
       }
@@ -893,8 +895,8 @@ function SportsEngineContent() {
     const lineParam = searchParams.get('line')
     if (lineParam) setPropLine(lineParam)
     const lineMode = searchParams.get('lineMode')
-    if (lineMode === 'book') {
-      setPropLineMode('book')
+    if (lineMode === 'book' || lineMode === 'and') {
+      setPropLineMode(lineMode as 'book' | 'and')
       const bookMin = searchParams.get('bookMin')
       if (bookMin) setBookLineMin(bookMin)
       const bookMax = searchParams.get('bookMax')
@@ -1449,13 +1451,21 @@ function SportsEngineContent() {
         }
         body.stat = propStat
         
-        // Book Line mode vs Any Line mode
+        // Book Line mode vs Any Line mode vs "And" mode (both)
         if (propLineMode === 'book') {
+          // Book line only - filter by book lines, calculate hit against book line
           body.use_book_lines = true
           if (bookLineMin) body.book_line_min = parseFloat(bookLineMin)
           if (bookLineMax) body.book_line_max = parseFloat(bookLineMax)
           body.line = 0 // Line will come from book data
+        } else if (propLineMode === 'and') {
+          // DUAL MODE - filter by book lines, but calculate hit against custom line
+          body.use_book_lines = true
+          if (bookLineMin) body.book_line_min = parseFloat(bookLineMin)
+          if (bookLineMax) body.book_line_max = parseFloat(bookLineMax)
+          body.line = parseFloat(propLine) || 0 // Custom line for hit calculation
         } else {
+          // Any line mode - no book line filtering
           body.use_book_lines = false
           body.line = parseFloat(propLine) || 0
         }
@@ -3439,20 +3449,27 @@ function SportsEngineContent() {
                 </select>
               </div>
 
-              {/* Line Mode Toggle */}
+              {/* Line Mode Toggle - Book Line / And / Any Line */}
               <div className={styles.propRow}>
                 <label>Line Type</label>
                 <div className={styles.lineTypeToggle}>
                   <button
                     type="button"
-                    className={`${styles.lineTypeBtn} ${propLineMode === 'book' ? styles.active : ''}`}
+                    className={`${styles.lineTypeBtn} ${propLineMode === 'book' || propLineMode === 'and' ? styles.active : ''}`}
                     onClick={() => setPropLineMode('book')}
                   >
                     Book Line
                   </button>
                   <button
                     type="button"
-                    className={`${styles.lineTypeBtn} ${propLineMode === 'any' ? styles.active : ''}`}
+                    className={`${styles.lineTypeBtn} ${styles.andBtn} ${propLineMode === 'and' ? styles.active : ''}`}
+                    onClick={() => setPropLineMode('and')}
+                  >
+                    &
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.lineTypeBtn} ${propLineMode === 'any' || propLineMode === 'and' ? styles.active : ''}`}
                     onClick={() => setPropLineMode('any')}
                   >
                     Any Line
@@ -3460,8 +3477,8 @@ function SportsEngineContent() {
                 </div>
               </div>
 
-              {/* Book Line Range (min/max) */}
-              {propLineMode === 'book' && (
+              {/* Book Line Range (min/max) - shown for 'book' or 'and' mode */}
+              {(propLineMode === 'book' || propLineMode === 'and') && (
                 <div className={styles.propRow}>
                   <label>Book Line Range</label>
                   <div className={styles.rangeInputs}>
@@ -3486,10 +3503,10 @@ function SportsEngineContent() {
                 </div>
               )}
 
-              {/* Any Line (Over) - current behavior */}
-              {propLineMode === 'any' && (
+              {/* Any Line (Over) - shown for 'any' or 'and' mode */}
+              {(propLineMode === 'any' || propLineMode === 'and') && (
                 <div className={styles.propRow}>
-                  <label>Line (Over)</label>
+                  <label>{propLineMode === 'and' ? 'Test Against Line' : 'Line (Over)'}</label>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -3498,6 +3515,11 @@ function SportsEngineContent() {
                     onChange={(e) => setPropLine(e.target.value)}
                     className={styles.lineInput}
                   />
+                  {propLineMode === 'and' && (
+                    <div className={styles.hint}>
+                      Find alt prop value by testing hit rate at any line, based on what books set
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -4098,6 +4120,14 @@ function SportsEngineContent() {
                     <div className={styles.statValue}>{result.total_games}</div>
                     <div className={styles.statLabel}>Games</div>
                   </div>
+                  {result.estimated_roi !== undefined && (
+                    <div className={`${styles.statCard} ${result.estimated_roi >= 0 ? styles.hot : styles.cold}`}>
+                      <div className={styles.statValue}>
+                        {result.estimated_roi >= 0 ? '+' : ''}{result.estimated_roi}%
+                      </div>
+                      <div className={styles.statLabel}>Est. ROI</div>
+                    </div>
+                  )}
                 </div>
               )}
 

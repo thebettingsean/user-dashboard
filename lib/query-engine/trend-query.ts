@@ -226,6 +226,10 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
   let minValue = Infinity
   let maxValue = -Infinity
   
+  // ROI calculation
+  let totalProfit = 0
+  const unitSize = 100
+  
   // Streak tracking
   let currentStreak = 0
   let longestHitStreak = 0
@@ -238,6 +242,29 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
     const hitValue = Number(row.hit)
     const isPush = bet_type === 'spread' ? row.spread_push === 1 : (bet_type === 'total' ? row.total_push === 1 : false)
     const hit = hitValue === 1 && !isPush
+    
+    // ROI: For spreads/totals use -110, for ML use actual odds
+    let odds = -110 // Default for spreads/totals
+    if (bet_type === 'moneyline') {
+      // Use home or away ML based on side
+      if (side === 'home' || side === 'favorite') {
+        odds = row.home_ml_close || -110
+        if (side === 'favorite' && row.spread_close > 0) odds = row.away_ml_close || -110 // Away is fav
+      } else {
+        odds = row.away_ml_close || -110
+        if (side === 'underdog' && row.spread_close > 0) odds = row.home_ml_close || -110 // Home is dog
+      }
+    }
+    
+    if (hit) {
+      if (odds > 0) {
+        totalProfit += (odds / 100) * unitSize
+      } else {
+        totalProfit += (100 / Math.abs(odds)) * unitSize
+      }
+    } else if (!isPush) {
+      totalProfit -= unitSize
+    }
     
     totalValue += bet_type === 'total' ? row.total_points : Math.abs(value)
     
@@ -387,6 +414,9 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
     current_streak: currentStreak,
     longest_hit_streak: longestHitStreak,
     longest_miss_streak: longestMissStreak,
+    // ROI calculation
+    estimated_roi: totalGames > 0 ? Math.round((totalProfit / (totalGames * unitSize)) * 1000) / 10 : 0,
+    total_profit: Math.round(totalProfit * 10) / 10,
     games,
     query_time_ms: Date.now() - startTime,
     filters_applied: [trendDescription, ...appliedFilters]

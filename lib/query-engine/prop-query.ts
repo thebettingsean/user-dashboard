@@ -515,6 +515,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ${statColumn} as stat_value,
       pl.line as book_line,
       pl.bookmaker as bookmaker,
+      pl.over_odds as over_odds,
+      pl.under_odds as under_odds,
       -- Full box score stats for expanded view
       b.pass_attempts,
       b.pass_completions,
@@ -702,14 +704,35 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   let tempStreak = 0
   let lastWasHit: boolean | null = null
   
+  // ROI calculation variables
+  let totalProfit = 0
+  const unitSize = 100 // Standard $100 unit
+  
   for (const row of rows) {
     const value = Number(row.stat_value) || 0
-    // Use book line if available, otherwise use input line
     const bookLine = row.book_line !== undefined ? Number(row.book_line) : null
-    const effectiveLine = bookLine !== null ? bookLine : line
+    const overOdds = row.over_odds ? Number(row.over_odds) : -110 // Default -110
+    
+    // DUAL LINE MODE: If both book lines are used for filtering AND a custom line is set,
+    // use the custom line for hit/miss calculation (to find alt line value)
+    // Otherwise use book line if available, or input line
+    const effectiveLine = (use_book_lines && line > 0) ? line : (bookLine !== null ? bookLine : line)
     const hit = value > effectiveLine
     const push = value === effectiveLine
     const diff = value - effectiveLine
+    
+    // Calculate profit for ROI (using over odds)
+    if (hit) {
+      // Profit calculation based on American odds
+      if (overOdds > 0) {
+        totalProfit += (overOdds / 100) * unitSize // e.g., +150 = $150 profit on $100
+      } else {
+        totalProfit += (100 / Math.abs(overOdds)) * unitSize // e.g., -110 = $90.91 profit on $100
+      }
+    } else if (!push) {
+      totalProfit -= unitSize // Loss = -$100
+    }
+    // Push = $0 profit
     
     totalValue += value
     totalDiff += diff
@@ -763,6 +786,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       line: effectiveLine,
       book_line: bookLine !== null ? bookLine : undefined,
       bookmaker: row.bookmaker || undefined,
+      over_odds: row.over_odds || undefined,
+      under_odds: row.under_odds || undefined,
       hit,
       differential: diff,
       spread: row.spread_close,
@@ -839,6 +864,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     current_streak: currentStreak,
     longest_hit_streak: longestHitStreak,
     longest_miss_streak: longestMissStreak,
+    // ROI calculation
+    estimated_roi: totalGames > 0 ? Math.round((totalProfit / (totalGames * unitSize)) * 1000) / 10 : 0,
+    total_profit: Math.round(totalProfit * 10) / 10,
     games,
     query_time_ms: Date.now() - startTime,
     filters_applied: appliedFilters

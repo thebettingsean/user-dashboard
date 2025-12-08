@@ -226,6 +226,8 @@ export interface GameDetail {
   line?: number               // The line used (either input line or book line)
   book_line?: number          // Actual sportsbook line (from nfl_prop_lines)
   bookmaker?: string          // Sportsbook name (e.g., 'fanduel', 'draftkings')
+  over_odds?: number          // American odds for over (e.g., -110)
+  under_odds?: number         // American odds for under (e.g., -110)
   hit: boolean
   differential: number        // actual - line (cover margin)
   spread?: number             // from subject team's perspective
@@ -314,6 +316,10 @@ export interface QueryResult {
   current_streak: number      // positive = hit streak, negative = miss streak
   longest_hit_streak: number
   longest_miss_streak: number
+  
+  // ROI tracking
+  estimated_roi?: number      // Estimated ROI percentage (e.g., 5.2 = +5.2%)
+  total_profit?: number       // Total profit in units (e.g., 52 = $52 profit on $100 units)
   
   // Game-by-game breakdown
   games: GameDetail[]
