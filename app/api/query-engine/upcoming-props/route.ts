@@ -198,10 +198,16 @@ export async function POST(request: Request) {
       : ''
     
     // Always join with players table to get headshot, optionally filter by position
-    const positionJoinClause = `LEFT JOIN players pl ON p.player_name = pl.name AND pl.sport = 'nfl'`
+    // Use LEFT JOIN so players not in our table still show up
+    // IMPORTANT: Normalize names by removing periods (e.g., "AJ Brown" vs "A.J. Brown")
+    const positionJoinClause = `LEFT JOIN players pl ON 
+      LOWER(REPLACE(p.player_name, '.', '')) = LOWER(REPLACE(pl.name, '.', '')) 
+      AND pl.sport = 'nfl'`
     let positionCondition = ''
     if (position && position !== 'any') {
-      positionCondition = `AND pl.position = '${position.toUpperCase()}'`
+      // Allow players who ARE the position OR who aren't in our players table (pl.position IS NULL)
+      // This ensures we don't miss props just because a player isn't in our database
+      positionCondition = `AND (pl.position = '${position.toUpperCase()}' OR pl.position IS NULL)`
     }
     
     // Build line filter condition (to find qualifying players)
