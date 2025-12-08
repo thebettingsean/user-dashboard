@@ -204,7 +204,20 @@ export async function POST(request: Request) {
       positionCondition = `AND pl.position = '${position.toUpperCase()}'`
     }
     
+    // Build line filter condition (to find qualifying players)
+    const lineFilterConditions: string[] = []
+    if (line_min !== undefined && line_min !== null) {
+      lineFilterConditions.push(`line >= ${line_min}`)
+    }
+    if (line_max !== undefined && line_max !== null) {
+      lineFilterConditions.push(`line <= ${line_max}`)
+    }
+    const lineFilterClause = lineFilterConditions.length > 0 
+      ? lineFilterConditions.join(' AND ')
+      : '1=1'
+    
     // Query for upcoming props that match filters
+    // First find players with at least one book line in range, then get ALL their book lines
     const sql = `
       WITH latest_lines AS (
         SELECT 
@@ -217,7 +230,7 @@ export async function POST(request: Request) {
         FROM nfl_line_snapshots
         GROUP BY game_id
       ),
-      latest_props AS (
+      all_latest_props AS (
         SELECT 
           game_id,
           player_name,
@@ -229,6 +242,15 @@ export async function POST(request: Request) {
           max(snapshot_time) as latest_snapshot
         FROM nfl_prop_line_snapshots
         GROUP BY game_id, player_name, prop_type, bookmaker
+      ),
+      -- Find player/prop combos that have at least one book line in range
+      qualifying_players AS (
+        SELECT DISTINCT game_id, player_name, prop_type
+        FROM all_latest_props
+        WHERE ${lineFilterClause}
+        ${propConditions.filter(c => !c.includes('p.line')).length > 0 
+          ? 'AND ' + propConditions.filter(c => !c.includes('p.line')).join(' AND ').replace(/p\./g, '')
+          : ''}
       )
       SELECT 
         g.game_id AS game_id,
@@ -259,15 +281,19 @@ export async function POST(request: Request) {
         p.over_odds AS over_odds,
         p.under_odds AS under_odds,
         p.bookmaker AS bookmaker,
+        -- Flag if this specific line is in the filter range
+        IF(${lineFilterClause.replace(/line/g, 'p.line')}, 1, 0) AS in_filter_range,
         pl.headshot_url AS player_headshot,
         pl.espn_player_id AS player_id
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
-      INNER JOIN latest_props p ON g.game_id = p.game_id
+      INNER JOIN qualifying_players qp ON g.game_id = qp.game_id
+      INNER JOIN all_latest_props p ON g.game_id = p.game_id 
+        AND p.player_name = qp.player_name 
+        AND p.prop_type = qp.prop_type
       ${positionJoinClause}
       WHERE 1=1
       ${gameWhereClause}
-      ${propWhereClause}
       ${positionCondition}
       ORDER BY g.game_time ASC, p.player_name, p.line
     `
@@ -317,7 +343,7 @@ export async function POST(request: Request) {
         })
       }
       
-      // Add prop to game
+      // Add prop to game with in_filter_range flag
       gamesMap.get(gameKey)!.props.push({
         player_name: row.player_name,
         prop_type: row.prop_type,
@@ -326,22 +352,45 @@ export async function POST(request: Request) {
         under_odds: row.under_odds,
         bookmaker: row.bookmaker,
         player_headshot: row.player_headshot,
-        player_id: row.player_id
+        player_id: row.player_id,
+        in_filter_range: row.in_filter_range === 1
       })
     }
     
     const games = Array.from(gamesMap.values())
     
-    // Deduplicate props per player (keep best book line)
+    // Process props: group all book lines per player, select best in-range line for display
     for (const game of games) {
-      const playerProps = new Map<string, any>()
+      const playerPropsMap = new Map<string, { primary: any, all_books: any[] }>()
+      
       for (const prop of game.props) {
         const key = `${prop.player_name}_${prop.prop_type}`
-        if (!playerProps.has(key) || prop.line < playerProps.get(key).line) {
-          playerProps.set(key, prop)
+        
+        if (!playerPropsMap.has(key)) {
+          playerPropsMap.set(key, { 
+            primary: prop.in_filter_range ? prop : null, 
+            all_books: [prop] 
+          })
+        } else {
+          const existing = playerPropsMap.get(key)!
+          existing.all_books.push(prop)
+          
+          // Update primary if this one is in range and better (lower line)
+          if (prop.in_filter_range) {
+            if (!existing.primary || prop.line < existing.primary.line) {
+              existing.primary = prop
+            }
+          }
         }
       }
-      game.props = Array.from(playerProps.values())
+      
+      // Convert to final format with all_books array
+      game.props = Array.from(playerPropsMap.values())
+        .filter(p => p.primary !== null) // Only include players with at least one in-range line
+        .map(p => ({
+          ...p.primary,
+          all_books: p.all_books.sort((a, b) => a.line - b.line) // Sort by line ascending
+        }))
     }
     
     const duration = Date.now() - startTime
@@ -376,7 +425,8 @@ export async function POST(request: Request) {
           under_odds: prop.under_odds,
           bookmaker: prop.bookmaker,
           player_headshot: prop.player_headshot,
-          player_id: prop.player_id
+          player_id: prop.player_id,
+          all_books: prop.all_books || [] // Include all sportsbook lines
         })
       }
     }

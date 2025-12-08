@@ -4229,6 +4229,26 @@ function SportsEngineContent() {
                               </div>
                             </div>
                             
+                            {/* All Sportsbooks Lines */}
+                            {prop.all_books && prop.all_books.length > 1 && (
+                              <div className={styles.allBooksSection}>
+                                <div className={styles.allBooksTitle}>All Sportsbook Lines:</div>
+                                <div className={styles.allBooksList}>
+                                  {prop.all_books.map((book: any, bookIdx: number) => (
+                                    <div 
+                                      key={bookIdx} 
+                                      className={`${styles.bookLineRow} ${book.in_filter_range ? styles.inRange : styles.outOfRange}`}
+                                    >
+                                      <span className={styles.bookName}>{book.bookmaker}</span>
+                                      <span className={styles.bookLine}>o{book.line}</span>
+                                      <span className={styles.bookOdds}>({formatOdds(book.over_odds)})</span>
+                                      {book.in_filter_range && <span className={styles.matchesBadge}>✓</span>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
                             {/* Why this fits */}
                             <div className={styles.whyThisFits}>
                               <div className={styles.whyThisFitsTitle}>Why this fits:</div>
