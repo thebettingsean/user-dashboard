@@ -1899,8 +1899,36 @@ function SportsEngineContent() {
     const reasons: { label: string; value: string }[] = []
     const homeAbbr = game.home_abbr || 'HOME'
     const awayAbbr = game.away_abbr || 'AWAY'
-    const homeSpread = game.spread_close ?? game.spread ?? 0
+    const homeSpread = game.spread_close ?? 0
+    const awaySpread = -homeSpread // Away team's spread is inverse of home
     const gameTotal = game.total_close ?? game.total ?? 0
+    
+    // Determine subject team based on side selection
+    // For home: subject = home team
+    // For away: subject = away team  
+    // For favorite: subject = whichever team is favorite
+    // For underdog: subject = whichever team is underdog
+    const homeIsFav = homeSpread < 0
+    let subjectAbbr: string
+    let subjectSpread: number
+    
+    if (location === 'home' || side === 'home') {
+      subjectAbbr = homeAbbr
+      subjectSpread = homeSpread
+    } else if (location === 'away' || side === 'away') {
+      subjectAbbr = awayAbbr
+      subjectSpread = awaySpread
+    } else if (side === 'favorite' || favorite === 'favorite') {
+      subjectAbbr = homeIsFav ? homeAbbr : awayAbbr
+      subjectSpread = homeIsFav ? homeSpread : awaySpread
+    } else if (side === 'underdog' || favorite === 'underdog') {
+      subjectAbbr = homeIsFav ? awayAbbr : homeAbbr
+      subjectSpread = homeIsFav ? awaySpread : homeSpread
+    } else {
+      // Default to home perspective
+      subjectAbbr = homeAbbr
+      subjectSpread = homeSpread
+    }
     
     // Bet type
     if (betType) {
@@ -1950,11 +1978,17 @@ function SportsEngineContent() {
       }
     }
 
-    // Favorite/Underdog - for non-O/U
+    // Favorite/Underdog - for non-O/U (show the subject team, not always home)
     if (!isOUQuery && favorite !== 'any') {
+      const favAbbr = homeIsFav ? homeAbbr : awayAbbr
+      const favSpread = homeIsFav ? homeSpread : awaySpread
+      const dogAbbr = homeIsFav ? awayAbbr : homeAbbr  
+      const dogSpread = homeIsFav ? awaySpread : homeSpread
       reasons.push({ 
         label: favorite === 'favorite' ? 'Favorite' : 'Underdog', 
-        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+        value: favorite === 'favorite' 
+          ? `${favAbbr} ${favSpread > 0 ? '+' : ''}${favSpread}`
+          : `${dogAbbr} ${dogSpread > 0 ? '+' : ''}${dogSpread}`
       })
     }
 
@@ -1966,11 +2000,11 @@ function SportsEngineContent() {
       })
     }
 
-    // Spread range - for non-O/U
+    // Spread range - for non-O/U (show subject team's spread)
     if (!isOUQuery && (spreadMin || spreadMax)) {
       reasons.push({ 
         label: 'Spread', 
-        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+        value: `${subjectAbbr} ${subjectSpread > 0 ? '+' : ''}${subjectSpread}`
       })
     }
 
@@ -1979,11 +2013,11 @@ function SportsEngineContent() {
       reasons.push({ label: 'Total', value: `O/U ${gameTotal}` })
     }
 
-    // Spread/Line info for spreads (only if no spread range filter)
+    // Spread/Line info for spreads (only if no spread range filter) - show subject team
     if (betType === 'spread' && !spreadMin && !spreadMax && favorite === 'any') {
       reasons.push({ 
         label: 'Line', 
-        value: `${homeAbbr} ${homeSpread > 0 ? '+' : ''}${homeSpread}`
+        value: `${subjectAbbr} ${subjectSpread > 0 ? '+' : ''}${subjectSpread}`
       })
     }
 
@@ -2815,6 +2849,32 @@ function SportsEngineContent() {
     const awayScore = game.away_score || 0
     const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'HOME'
     const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'AWAY'
+    const homeSpread = game.spread_close ?? 0
+    const awaySpread = -homeSpread
+    const homeIsFav = homeSpread < 0
+    
+    // Determine subject team based on side selection (same logic as getHistoricalMatchReasons)
+    let subjectAbbr: string
+    let subjectSpread: number
+    
+    if (location === 'home' || side === 'home') {
+      subjectAbbr = homeAbbr
+      subjectSpread = homeSpread
+    } else if (location === 'away' || side === 'away') {
+      subjectAbbr = awayAbbr
+      subjectSpread = awaySpread
+    } else if (side === 'favorite' || favorite === 'favorite') {
+      subjectAbbr = homeIsFav ? homeAbbr : awayAbbr
+      subjectSpread = homeIsFav ? homeSpread : awaySpread
+    } else if (side === 'underdog' || favorite === 'underdog') {
+      subjectAbbr = homeIsFav ? awayAbbr : homeAbbr
+      subjectSpread = homeIsFav ? awaySpread : homeSpread
+    } else {
+      // Default to home perspective for O/U or general queries
+      subjectAbbr = homeAbbr
+      subjectSpread = homeSpread
+    }
+    
     const matchReasons = getHistoricalMatchReasons(game)
     
     return (
@@ -2833,7 +2893,7 @@ function SportsEngineContent() {
           <div className={styles.detailRow}>
             <span className={styles.detailLabel}>Spread</span>
             <span className={styles.detailValue}>
-              {homeAbbr} {(game.spread_close || game.spread) > 0 ? '+' : ''}{game.spread_close || game.spread}
+              {subjectAbbr} {subjectSpread > 0 ? '+' : ''}{subjectSpread}
             </span>
           </div>
         )}
