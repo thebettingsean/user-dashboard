@@ -782,6 +782,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       teamWon = row.is_home === 1 ? homeWon : !homeWon
     }
     
+    // Player's team spread: spread_close if home, else flip it
+    const playerSpread = row.is_home === 1 ? row.spread_close : -row.spread_close
+    
     games.push({
       game_id: row.game_id,
       game_date: row.game_date, // Already formatted as string via toString()
@@ -796,7 +799,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       under_odds: row.under_odds || undefined,
       hit,
       differential: diff,
-      spread: row.spread_close,
+      spread: playerSpread, // Player's team spread (from their perspective)
       total: row.total_close,
       team_won: teamWon,
       // Player info for position-based queries

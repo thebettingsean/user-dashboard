@@ -223,17 +223,20 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
       }
     }
     
+    // Subject team's spread: home team's spread_close, or flip if side=away
+    const subjectSpread = side === 'away' ? -row.spread_close : row.spread_close
+    
     games.push({
       game_id: row.game_id,
       game_date: row.game_date,
       opponent: `${row.away_abbr || 'Away'} @ ${row.home_abbr || 'Home'}`,
       opponent_id: row.away_team_id,
-      location: 'home',
+      location: side === 'away' ? 'away' : 'home',
       actual_value: bet_type === 'total' ? row.total_points : value,
-      line: bet_type === 'total' ? row.total_close : row.spread_close,
+      line: bet_type === 'total' ? row.total_close : Math.abs(row.spread_close),
       hit,
       differential: value,
-      spread: row.spread_close,
+      spread: subjectSpread, // Subject team's spread (flipped if side=away)
       total: row.total_close,
       home_score: row.home_score,
       away_score: row.away_score,

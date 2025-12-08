@@ -308,17 +308,21 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
     // Determine opponent based on team perspective
     let opponent: string
     let opponentId: number
-    let location: 'home' | 'away'
+    let gameLocation: 'home' | 'away'
+    let subjectSpread: number
     
     if (team_id) {
       const isHome = row.home_team_id === team_id
       opponent = isHome ? (row.away_abbr || row.away_team_name) : (row.home_abbr || row.home_team_name)
       opponentId = isHome ? row.away_team_id : row.home_team_id
-      location = isHome ? 'home' : 'away'
+      gameLocation = isHome ? 'home' : 'away'
+      // Subject team's spread: home team's spread_close, or flip if away
+      subjectSpread = isHome ? row.spread_close : -row.spread_close
     } else {
       opponent = `${row.away_abbr || 'Away'} @ ${row.home_abbr || 'Home'}`
       opponentId = row.away_team_id
-      location = 'home'
+      gameLocation = 'home'
+      subjectSpread = row.spread_close
     }
     
     games.push({
@@ -326,12 +330,12 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
       game_date: row.game_date,
       opponent,
       opponent_id: opponentId,
-      location,
+      location: gameLocation,
       actual_value: bet_type === 'total' ? row.total_points : value,
-      line: bet_type === 'total' ? row.total_close : row.spread_close,
+      line: bet_type === 'total' ? row.total_close : Math.abs(row.spread_close),
       hit,
       differential: diff,
-      spread: row.spread_close,
+      spread: subjectSpread, // Subject team's spread (flipped if away)
       total: row.total_close,
       team_won: team_id 
         ? (row.home_team_id === team_id ? row.home_won === 1 : row.home_won === 0)
