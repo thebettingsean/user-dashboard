@@ -1428,8 +1428,11 @@ function SportsEngineContent() {
         body.bet_type = betType
         if (betType === 'total') {
           body.side = side
+        } else if (location !== 'any') {
+          // Use location filter to determine perspective (same as trends)
+          body.side = location
         } else {
-          body.side = 'home'
+          body.side = 'home' // Default to home teams
         }
         if (refereeId) body.referee_id = refereeId
       } else if (queryType === 'prop') {
