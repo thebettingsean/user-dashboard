@@ -705,6 +705,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   let lastWasHit: boolean | null = null
   
   // ROI calculation variables
+  // ONLY calculate ROI for pure Book Line mode (not dual mode, not any line mode)
+  // because we only have actual odds for the book lines
+  const canCalculateROI = use_book_lines && (!line || line === 0)
   let totalProfit = 0
   const unitSize = 100 // Standard $100 unit
   
@@ -721,18 +724,21 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     const push = value === effectiveLine
     const diff = value - effectiveLine
     
-    // Calculate profit for ROI (using over odds)
-    if (hit) {
-      // Profit calculation based on American odds
-      if (overOdds > 0) {
-        totalProfit += (overOdds / 100) * unitSize // e.g., +150 = $150 profit on $100
-      } else {
-        totalProfit += (100 / Math.abs(overOdds)) * unitSize // e.g., -110 = $90.91 profit on $100
+    // Calculate profit for ROI ONLY if we're using actual book lines
+    // (not for dual mode or any line mode - we don't have odds for arbitrary lines)
+    if (canCalculateROI) {
+      if (hit) {
+        // Profit calculation based on American odds
+        if (overOdds > 0) {
+          totalProfit += (overOdds / 100) * unitSize // e.g., +150 = $150 profit on $100
+        } else {
+          totalProfit += (100 / Math.abs(overOdds)) * unitSize // e.g., -110 = $90.91 profit on $100
+        }
+      } else if (!push) {
+        totalProfit -= unitSize // Loss = -$100
       }
-    } else if (!push) {
-      totalProfit -= unitSize // Loss = -$100
+      // Push = $0 profit
     }
-    // Push = $0 profit
     
     totalValue += value
     totalDiff += diff
@@ -864,9 +870,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     current_streak: currentStreak,
     longest_hit_streak: longestHitStreak,
     longest_miss_streak: longestMissStreak,
-    // ROI calculation
-    estimated_roi: totalGames > 0 ? Math.round((totalProfit / (totalGames * unitSize)) * 1000) / 10 : 0,
-    total_profit: Math.round(totalProfit * 10) / 10,
+    // ROI calculation - ONLY for pure Book Line mode (we have actual odds)
+    // For Any Line or Dual mode, we don't know the real odds
+    ...(canCalculateROI ? {
+      estimated_roi: totalGames > 0 ? Math.round((totalProfit / (totalGames * unitSize)) * 1000) / 10 : 0,
+      total_profit: Math.round(totalProfit * 10) / 10,
+    } : {}),
     games,
     query_time_ms: Date.now() - startTime,
     filters_applied: appliedFilters
