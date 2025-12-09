@@ -17,6 +17,8 @@ import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpand
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
 import { FiCopy, FiCheck, FiMenu, FiChevronLeft } from "react-icons/fi"
 import { LuGitPullRequestArrow, LuBot } from "react-icons/lu"
+import { useUser } from "@clerk/nextjs"
+import { serializeQueryState, deserializeQueryConfig } from "@/lib/saved-queries"
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
@@ -282,6 +284,16 @@ function SportsEngineContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>('builder')
   
+  // Saved queries state
+  const { user, isSignedIn } = useUser()
+  const [savedQueries, setSavedQueries] = useState<any[]>([])
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [saveQueryName, setSaveQueryName] = useState('')
+  const [saveQueryDescription, setSaveQueryDescription] = useState('')
+  const [savingQuery, setSavingQuery] = useState(false)
+  const [loadingSavedQueries, setLoadingSavedQueries] = useState(false)
+  const [deletingQueryId, setDeletingQueryId] = useState<string | null>(null)
+  
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
     playerStats: false,
@@ -532,6 +544,355 @@ function SportsEngineContent() {
     setError(null)
   }
   
+  // ============================================
+  // SAVED QUERIES FUNCTIONALITY
+  // ============================================
+
+  // Load all saved queries for the current user
+  const loadSavedQueries = async () => {
+    if (!isSignedIn) return
+    
+    setLoadingSavedQueries(true)
+    try {
+      const response = await fetch('/api/saved-queries')
+      if (!response.ok) {
+        console.error('Failed to load saved queries')
+        return
+      }
+      const data = await response.json()
+      if (data.success) {
+        setSavedQueries(data.queries || [])
+      }
+    } catch (error) {
+      console.error('Error loading saved queries:', error)
+    } finally {
+      setLoadingSavedQueries(false)
+    }
+  }
+
+  // Save current query state
+  const handleSaveQuery = async () => {
+    if (!isSignedIn) {
+      alert('Please sign in to save queries')
+      return
+    }
+    
+    if (!saveQueryName.trim()) {
+      alert('Please enter a name for your saved query')
+      return
+    }
+    
+    setSavingQuery(true)
+    try {
+      // Serialize current state
+      const queryConfig = serializeQueryState({
+        queryType,
+        betType,
+        side,
+        timePeriod,
+        location,
+        division,
+        conference,
+        playoff,
+        favorite,
+        homeFavDog,
+        ownDefenseRank,
+        ownDefenseStat,
+        ownOffenseRank,
+        ownOffenseStat,
+        defenseRank,
+        defenseStat,
+        offenseRank,
+        offenseStat,
+        defenseStatPosition,
+        offenseStatPosition,
+        ownDefenseStatPosition,
+        ownOffenseStatPosition,
+        teamWinPctMin,
+        teamWinPctMax,
+        oppWinPctMin,
+        oppWinPctMax,
+        spreadMin,
+        spreadMax,
+        totalMin,
+        totalMax,
+        mlMin,
+        mlMax,
+        spreadMoveMin,
+        spreadMoveMax,
+        totalMoveMin,
+        totalMoveMax,
+        mlMoveMin,
+        mlMoveMax,
+        homeTeamDefenseRank,
+        homeTeamDefenseStat,
+        homeTeamOffenseRank,
+        homeTeamOffenseStat,
+        awayTeamDefenseRank,
+        awayTeamDefenseStat,
+        awayTeamOffenseRank,
+        awayTeamOffenseStat,
+        streak,
+        prevGameMarginMin,
+        prevGameMarginMax,
+        awayStreak,
+        awayPrevGameMarginMin,
+        awayPrevGameMarginMax,
+        teamId,
+        teamLocation,
+        selectedVersusTeam,
+        refereeId,
+        selectedReferee,
+        playerId: selectedPlayer?.espn_player_id,
+        selectedPlayer,
+        propPosition,
+        propStat,
+        propLine,
+        propLineMode,
+        bookLineMin,
+        bookLineMax,
+        selectedPropVersusTeam,
+        minTargets,
+        minCarries,
+        minPassAttempts
+      })
+      
+      // Save last result summary if available
+      const lastResultSummary = result ? {
+        hits: result.hits,
+        misses: result.misses,
+        hit_rate: result.hit_rate,
+        total_games: result.total_games
+      } : null
+      
+      const response = await fetch('/api/saved-queries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: saveQueryName.trim(),
+          description: saveQueryDescription.trim() || null,
+          query_config: queryConfig,
+          last_result_summary: lastResultSummary
+        })
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || 'Failed to save query')
+        return
+      }
+      
+      // Success - reload queries and close modal
+      await loadSavedQueries()
+      setShowSaveModal(false)
+      setSaveQueryName('')
+      setSaveQueryDescription('')
+      alert('Query saved successfully!')
+    } catch (error) {
+      console.error('Error saving query:', error)
+      alert('Failed to save query')
+    } finally {
+      setSavingQuery(false)
+    }
+  }
+
+  // Load a saved query into the builder
+  const handleLoadQuery = async (savedQuery: any) => {
+    try {
+      const config = savedQuery.query_config
+      
+      // Navigate to the correct query type first
+      if (config.queryType) {
+        navigateToQueryType(config.queryType)
+      }
+      
+      // Deserialize and apply all the state
+      const state = deserializeQueryConfig(config)
+      
+      // Apply basic filters
+      if (state.timePeriod) setTimePeriod(state.timePeriod as TimePeriod)
+      if (state.betType) setBetType(state.betType)
+      if (state.side) setSide(state.side)
+      if (state.location) setLocation(state.location)
+      if (state.division) setDivision(state.division)
+      if (state.conference) setConference(state.conference)
+      if (state.playoff) setPlayoff(state.playoff)
+      if (state.favorite) setFavorite(state.favorite)
+      if (state.homeFavDog) setHomeFavDog(state.homeFavDog)
+      
+      // Rankings
+      if (state.ownDefenseRank) setOwnDefenseRank(state.ownDefenseRank)
+      if (state.ownDefenseStat) setOwnDefenseStat(state.ownDefenseStat)
+      if (state.ownOffenseRank) setOwnOffenseRank(state.ownOffenseRank)
+      if (state.ownOffenseStat) setOwnOffenseStat(state.ownOffenseStat)
+      if (state.defenseRank) setDefenseRank(state.defenseRank)
+      if (state.defenseStat) setDefenseStat(state.defenseStat)
+      if (state.offenseRank) setOffenseRank(state.offenseRank)
+      if (state.offenseStat) setOffenseStat(state.offenseStat)
+      if (state.defenseStatPosition) setDefenseStatPosition(state.defenseStatPosition)
+      if (state.offenseStatPosition) setOffenseStatPosition(state.offenseStatPosition)
+      if (state.ownDefenseStatPosition) setOwnDefenseStatPosition(state.ownDefenseStatPosition)
+      if (state.ownOffenseStatPosition) setOwnOffenseStatPosition(state.ownOffenseStatPosition)
+      
+      // Win percentages
+      if (state.teamWinPctMin) setTeamWinPctMin(state.teamWinPctMin)
+      if (state.teamWinPctMax) setTeamWinPctMax(state.teamWinPctMax)
+      if (state.oppWinPctMin) setOppWinPctMin(state.oppWinPctMin)
+      if (state.oppWinPctMax) setOppWinPctMax(state.oppWinPctMax)
+      
+      // Ranges
+      if (state.spreadMin) setSpreadMin(state.spreadMin)
+      if (state.spreadMax) setSpreadMax(state.spreadMax)
+      if (state.totalMin) setTotalMin(state.totalMin)
+      if (state.totalMax) setTotalMax(state.totalMax)
+      if (state.mlMin) setMlMin(state.mlMin)
+      if (state.mlMax) setMlMax(state.mlMax)
+      
+      // Line movement
+      if (state.spreadMoveMin) setSpreadMoveMin(state.spreadMoveMin)
+      if (state.spreadMoveMax) setSpreadMoveMax(state.spreadMoveMax)
+      if (state.totalMoveMin) setTotalMoveMin(state.totalMoveMin)
+      if (state.totalMoveMax) setTotalMoveMax(state.totalMoveMax)
+      if (state.mlMoveMin) setMlMoveMin(state.mlMoveMin)
+      if (state.mlMoveMax) setMlMoveMax(state.mlMoveMax)
+      
+      // O/U specific
+      if (state.homeTeamDefenseRank) setHomeTeamDefenseRank(state.homeTeamDefenseRank)
+      if (state.homeTeamDefenseStat) setHomeTeamDefenseStat(state.homeTeamDefenseStat)
+      if (state.homeTeamOffenseRank) setHomeTeamOffenseRank(state.homeTeamOffenseRank)
+      if (state.homeTeamOffenseStat) setHomeTeamOffenseStat(state.homeTeamOffenseStat)
+      if (state.awayTeamDefenseRank) setAwayTeamDefenseRank(state.awayTeamDefenseRank)
+      if (state.awayTeamDefenseStat) setAwayTeamDefenseStat(state.awayTeamDefenseStat)
+      if (state.awayTeamOffenseRank) setAwayTeamOffenseRank(state.awayTeamOffenseRank)
+      if (state.awayTeamOffenseStat) setAwayTeamOffenseStat(state.awayTeamOffenseStat)
+      
+      // Momentum
+      if (state.streak) setStreak(state.streak)
+      if (state.prevGameMarginMin) setPrevGameMarginMin(state.prevGameMarginMin)
+      if (state.prevGameMarginMax) setPrevGameMarginMax(state.prevGameMarginMax)
+      if (state.awayStreak) setAwayStreak(state.awayStreak)
+      if (state.awayPrevGameMarginMin) setAwayPrevGameMarginMin(state.awayPrevGameMarginMin)
+      if (state.awayPrevGameMarginMax) setAwayPrevGameMarginMax(state.awayPrevGameMarginMax)
+      
+      // Type-specific
+      if (config.queryType === 'team') {
+        if (state.teamId) {
+          setTeamId(state.teamId)
+          const team = NFL_TEAMS.find(t => t.id === state.teamId)
+          if (team) setSelectedTeam(team)
+        }
+        if (state.teamLocation) setTeamLocation(state.teamLocation)
+        if (state.selectedVersusTeam) {
+          const vsTeam = NFL_TEAMS.find(t => t.id === state.selectedVersusTeam.id)
+          if (vsTeam) setSelectedVersusTeam(vsTeam)
+        }
+      }
+      
+      if (config.queryType === 'referee') {
+        if (state.refereeId) setRefereeId(state.refereeId)
+        if (state.selectedReferee) {
+          setSelectedReferee(state.selectedReferee)
+        }
+      }
+      
+      if (config.queryType === 'prop') {
+        if (state.propPosition) setPropPosition(state.propPosition)
+        if (state.propStat) setPropStat(state.propStat)
+        if (state.propLine) setPropLine(state.propLine)
+        if (state.propLineMode) setPropLineMode(state.propLineMode)
+        if (state.bookLineMin) setBookLineMin(state.bookLineMin)
+        if (state.bookLineMax) setBookLineMax(state.bookLineMax)
+        if (state.selectedPropVersusTeam) {
+          const vsTeam = NFL_TEAMS.find(t => t.id === state.selectedPropVersusTeam.id)
+          if (vsTeam) setSelectedPropVersusTeam(vsTeam)
+        }
+        if (state.minTargets) setMinTargets(state.minTargets)
+        if (state.minCarries) setMinCarries(state.minCarries)
+        if (state.minPassAttempts) setMinPassAttempts(state.minPassAttempts)
+        
+        // Load player if saved
+        if (state.selectedPlayer && state.selectedPlayer.espn_player_id) {
+          // Search for the player and set it when found
+          const playerIdToFind = state.selectedPlayer.espn_player_id
+          const playerName = state.selectedPlayer.name || ''
+          const playerPosition = state.selectedPlayer.position || propPosition
+          
+          searchPlayers(playerName, playerPosition).then(() => {
+            // Use a small delay to allow state to update
+            setTimeout(() => {
+              // The searchPlayers function updates playerSearchResults state
+              // We need to check it after the state updates
+              // For now, we'll set the player info directly from saved data
+              if (state.selectedPlayer) {
+                setSelectedPlayer({
+                  espn_player_id: playerIdToFind,
+                  name: state.selectedPlayer.name || '',
+                  position: state.selectedPlayer.position || '',
+                  headshot_url: state.selectedPlayer.headshot_url
+                } as any)
+                setPlayerId(playerIdToFind)
+              }
+            }, 300)
+          }).catch(() => {
+            // If search fails, still try to set the player from saved data
+            if (state.selectedPlayer) {
+              setSelectedPlayer({
+                espn_player_id: playerIdToFind,
+                name: state.selectedPlayer.name || '',
+                position: state.selectedPlayer.position || '',
+                headshot_url: state.selectedPlayer.headshot_url
+              } as any)
+              setPlayerId(playerIdToFind)
+            }
+          })
+        }
+      }
+      
+      // Switch to builder section
+      setActiveSection('builder')
+      setSidebarOpen(false)
+      
+      // Track that this query was loaded
+      if (savedQuery.id) {
+        fetch(`/api/saved-queries/${savedQuery.id}/run`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        }).catch(err => console.error('Failed to track query run:', err))
+      }
+    } catch (error) {
+      console.error('Error loading query:', error)
+      alert('Failed to load query')
+    }
+  }
+
+  // Delete a saved query
+  const handleDeleteQuery = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this saved query?')) {
+      return
+    }
+    
+    setDeletingQueryId(id)
+    try {
+      const response = await fetch(`/api/saved-queries/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (!response.ok) {
+        alert('Failed to delete query')
+        return
+      }
+      
+      // Reload queries
+      await loadSavedQueries()
+    } catch (error) {
+      console.error('Error deleting query:', error)
+      alert('Failed to delete query')
+    } finally {
+      setDeletingQueryId(null)
+    }
+  }
+  
   // Sync query type with URL when path changes (for browser back/forward)
   useEffect(() => {
     const typeFromPath = getQueryTypeFromPath(pathname)
@@ -547,11 +908,18 @@ function SportsEngineContent() {
     }
   }, [propLineMode])
   
+  // Load saved queries when user signs in
+  useEffect(() => {
+    if (isSignedIn) {
+      loadSavedQueries()
+    }
+  }, [isSignedIn])
+  
   // Search players from database
-  const searchPlayers = async (query: string, position: string) => {
+  const searchPlayers = async (query: string, position: string): Promise<void> => {
     if (query.length < 2 && position === 'any') {
       setPlayerSearchResults([])
-      return
+      return Promise.resolve()
     }
     
     setPlayerSearchLoading(true)
@@ -3236,12 +3604,12 @@ function SportsEngineContent() {
             </button>
             
             <button 
-              className={`${styles.sidebarItem} ${activeSection === 'myBuilds' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
-              onClick={() => {}}
+              className={`${styles.sidebarItem} ${activeSection === 'myBuilds' ? styles.sidebarItemActive : ''}`}
+              onClick={() => { setActiveSection('myBuilds'); setSidebarOpen(false); }}
             >
               <FaToolbox className={styles.sidebarIcon} />
               <span>My Builds</span>
-              <span className={styles.soonTag}>soon</span>
+              {savedQueries.length > 0 && <span className={styles.badge}>{savedQueries.length}</span>}
             </button>
             
             <button 
@@ -3293,6 +3661,82 @@ function SportsEngineContent() {
           />
         )}
 
+        {/* My Builds Section */}
+        {activeSection === 'myBuilds' && (
+          <div className={styles.myBuildsSection}>
+            <div className={styles.myBuildsHeader}>
+              <h2>My Saved Builds</h2>
+              <button
+                className={styles.closeMyBuilds}
+                onClick={() => setActiveSection('builder')}
+              >
+                <FiChevronLeft /> Back to Builder
+              </button>
+            </div>
+            
+            {!isSignedIn ? (
+              <div className={styles.myBuildsEmpty}>
+                <p>Please sign in to save and load query builds.</p>
+              </div>
+            ) : loadingSavedQueries ? (
+              <div className={styles.myBuildsEmpty}>
+                <p>Loading saved builds...</p>
+              </div>
+            ) : savedQueries.length === 0 ? (
+              <div className={styles.myBuildsEmpty}>
+                <p>No saved builds yet. Create a build and click "Save Build" to get started!</p>
+              </div>
+            ) : (
+              <div className={styles.savedQueriesList}>
+                {savedQueries.map((query) => (
+                  <div key={query.id} className={styles.savedQueryItem}>
+                    <div className={styles.savedQueryHeader}>
+                      <h3>{query.name}</h3>
+                      <div className={styles.savedQueryActions}>
+                        <button
+                          className={styles.loadQueryBtn}
+                          onClick={() => handleLoadQuery(query)}
+                          title="Load this build"
+                        >
+                          Load
+                        </button>
+                        <button
+                          className={styles.deleteQueryBtn}
+                          onClick={() => handleDeleteQuery(query.id)}
+                          disabled={deletingQueryId === query.id}
+                          title="Delete this build"
+                        >
+                          {deletingQueryId === query.id ? '...' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                    {query.description && (
+                      <p className={styles.savedQueryDescription}>{query.description}</p>
+                    )}
+                    <div className={styles.savedQueryMeta}>
+                      <span>Type: {query.query_config?.queryType || 'unknown'}</span>
+                      {query.run_count > 0 && (
+                        <span>Used {query.run_count} time{query.run_count !== 1 ? 's' : ''}</span>
+                      )}
+                      {query.last_result_summary && (
+                        <span>
+                          Last: {query.last_result_summary.hit_rate}% ({query.last_result_summary.hits}-{query.last_result_summary.misses})
+                        </span>
+                      )}
+                    </div>
+                    {query.updated_at && (
+                      <div className={styles.savedQueryDate}>
+                        Updated {new Date(query.updated_at).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeSection === 'builder' && (
         <div className={styles.layout}>
           {/* Builder Panel */}
           <div className={styles.panel}>
@@ -4248,6 +4692,15 @@ function SportsEngineContent() {
               {loading ? 'Running...' : <><IoRocketOutline /> Run Build</>}
             </button>
             <button
+              className={styles.saveBtn}
+              onClick={() => setShowSaveModal(true)}
+              type="button"
+              disabled={!isSignedIn}
+              title={!isSignedIn ? 'Sign in to save queries' : 'Save this build'}
+            >
+              <FiCopy /> Save Build
+            </button>
+            <button
               className={styles.clearBtn}
               onClick={clearFilters}
               type="button"
@@ -4771,6 +5224,64 @@ function SportsEngineContent() {
           )}
         </div>
       </div>
+        )}
+
+      {/* Save Query Modal */}
+      {showSaveModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowSaveModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Save Query Build</h3>
+              <button 
+                className={styles.modalClose}
+                onClick={() => setShowSaveModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalField}>
+                <label>Name *</label>
+                <input
+                  type="text"
+                  value={saveQueryName}
+                  onChange={(e) => setSaveQueryName(e.target.value)}
+                  placeholder="e.g., 'Chiefs Home Favorites'"
+                  autoFocus
+                />
+              </div>
+              <div className={styles.modalField}>
+                <label>Description (optional)</label>
+                <textarea
+                  value={saveQueryDescription}
+                  onChange={(e) => setSaveQueryDescription(e.target.value)}
+                  placeholder="Add a note about this build..."
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.modalCancel}
+                onClick={() => {
+                  setShowSaveModal(false)
+                  setSaveQueryName('')
+                  setSaveQueryDescription('')
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalSave}
+                onClick={handleSaveQuery}
+                disabled={savingQuery || !saveQueryName.trim()}
+              >
+                {savingQuery ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>{/* mainWrapper */}
     </div>
   )

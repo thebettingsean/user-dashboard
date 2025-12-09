@@ -2983,3 +2983,313 @@
   }
 }
 
+/* ============================================
+   SAVED QUERIES STYLES
+   ============================================ */
+
+/* Save Button */
+.saveBtn {
+  background: #2a2a3a;
+  border: 1px solid #3a3a4a;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #3a3a4a;
+  border-color: #4a4a5a;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #1a1a24;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.modalClose:hover {
+  background: #2a2a3a;
+  color: #fff;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalField {
+  margin-bottom: 1.5rem;
+}
+
+.modalField label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ccc;
+  font-size: 0.875rem;
+}
+
+.modalField input,
+.modalField textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0a0a14;
+  border: 1px solid #2a2a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.modalField input:focus,
+.modalField textarea:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+
+.modalField textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #2a2a3a;
+}
+
+.modalCancel,
+.modalSave {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.modalCancel {
+  background: #2a2a3a;
+  color: #ccc;
+}
+
+.modalCancel:hover {
+  background: #3a3a4a;
+  color: #fff;
+}
+
+.modalSave {
+  background: #4a9eff;
+  color: #fff;
+}
+
+.modalSave:hover:not(:disabled) {
+  background: #5aaeff;
+}
+
+.modalSave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* My Builds Section */
+.myBuildsSection {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.myBuildsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.myBuildsHeader h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.closeMyBuilds {
+  background: #2a2a3a;
+  border: 1px solid #3a3a4a;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.closeMyBuilds:hover {
+  background: #3a3a4a;
+}
+
+.myBuildsEmpty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #888;
+}
+
+.savedQueriesList {
+  display: grid;
+  gap: 1rem;
+}
+
+.savedQueryItem {
+  background: #1a1a24;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.savedQueryItem:hover {
+  border-color: #3a3a4a;
+  background: #1f1f2a;
+}
+
+.savedQueryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.savedQueryHeader h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.125rem;
+}
+
+.savedQueryActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.loadQueryBtn,
+.deleteQueryBtn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.loadQueryBtn {
+  background: #4a9eff;
+  color: #fff;
+}
+
+.loadQueryBtn:hover {
+  background: #5aaeff;
+}
+
+.deleteQueryBtn {
+  background: #3a2a2a;
+  color: #ff6b6b;
+}
+
+.deleteQueryBtn:hover:not(:disabled) {
+  background: #4a3a3a;
+}
+
+.deleteQueryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.savedQueryDescription {
+  color: #aaa;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
+
+.savedQueryMeta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.savedQueryDate {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.badge {
+  background: #4a9eff;
+  color: #fff;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+

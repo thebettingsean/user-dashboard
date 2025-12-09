@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Betting Insider - Style Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --b: #3b82f6;
+            --bl: #60a5fa;
+            --d1: #0f172a;
+            --d2: #1e293b;
+            --d3: #334155;
+            --g: #10b981;
+            --o: #f59e0b;
+            --r: #ef4444;
+            --w: #fff;
+        }
+
+        html {
+            background: linear-gradient(135deg, #000000 0%, #0a1018 40%, #0e172a 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--w);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 3rem;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 3rem 0 1.5rem 0;
+            color: var(--bl);
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        /* Colors */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .color-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .color-hex {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: monospace;
+        }
+
+        /* Buttons */
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--b), var(--bl));
+            color: white;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, var(--g), #34d399);
+            color: white;
+        }
+
+        .btn-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(96, 165, 250, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* Typography */
+        .typography-sample {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+        }
+
+        .text-hero {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .text-title {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .text-body {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .text-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--bl);
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--bl);
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.9375rem;
+            font-family: inherit;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--bl);
+        }
+
+        /* Spacing */
+        .spacing-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .spacing-item {
+            background: rgba(96, 165, 250, 0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bl);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        /* Border Radius */
+        .radius-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .radius-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            color: white;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        /* Shadows */
+        .shadow-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .shadow-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .shadow-card {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+
+        .shadow-button {
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .shadow-hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>The Betting Insider Style Guide</h1>
+
+    <!-- Colors Section -->
+    <div class="section">
+        <h2>Colors</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--b);"></div>
+                <div class="color-name">Blue</div>
+                <div class="color-hex">#3b82f6</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--bl);"></div>
+                <div class="color-name">Blue Light</div>
+                <div class="color-hex">#60a5fa</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--g);"></div>
+                <div class="color-name">Green</div>
+                <div class="color-hex">#10b981</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--o);"></div>
+                <div class="color-name">Orange</div>
+                <div class="color-hex">#f59e0b</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--r);"></div>
+                <div class="color-name">Red</div>
+                <div class="color-hex">#ef4444</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: #8b5cf6;"></div>
+                <div class="color-name">Purple</div>
+                <div class="color-hex">#8b5cf6</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--d1);"></div>
+                <div class="color-name">Dark 1</div>
+                <div class="color-hex">#0f172a</div>
+            </div>
+            <div class="color-card">
+                <div class="color-swatch" style="background: var(--d2);"></div>
+                <div class="color-name">Dark 2</div>
+                <div class="color-hex">#1e293b</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons Section -->
+    <div class="section">
+        <h2>Buttons</h2>
+        <div class="button-grid">
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-glass">Glass Button</button>
+            <button class="btn btn-green">Green Button</button>
+        </div>
+    </div>
+
+    <!-- Cards Section -->
+    <div class="section">
+        <h2>Cards</h2>
+        <div class="card">
+            <div class="card-title">Glass Card</div>
+            <div class="card-text">This is a glassmorphic card with backdrop blur and subtle borders. Hover to see the effect.</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Another Card</div>
+            <div class="card-text">Cards use rgba(255, 255, 255, 0.05) background with blur(20px) and border rgba(255, 255, 255, 0.1).</div>
+        </div>
+    </div>
+
+    <!-- Typography Section -->
+    <div class="section">
+        <h2>Typography</h2>
+        <div class="typography-sample">
+            <div class="text-hero">Hero Title</div>
+            <div style="font-size: 0.875rem; color: var(--bl); margin-top: 0.5rem;">clamp(2rem, 5vw, 4rem) | Weight: 900</div>
+        </div>
+        <div class="typography-sample">
+            <div class="text-title">Section Title</div>
+            <div style="font-size: 0.875rem; color: var(--bl); margin-top: 0.5rem;">2rem | Weight: 800</div>
+        </div>
+        <div class="typography-sample">
+            <div class="text-body">Body text with proper line height and color. This demonstrates the standard body text style used throughout the application.</div>
+            <div style="font-size: 0.875rem; color: var(--bl); margin-top: 0.5rem;">1rem | Line-height: 1.6 | rgba(255, 255, 255, 0.8)</div>
+        </div>
+        <div class="typography-sample">
+            <div class="text-label">Uppercase Label</div>
+            <div style="font-size: 0.875rem; color: var(--bl); margin-top: 0.5rem;">0.875rem | Weight: 600 | Letter-spacing: 0.1em</div>
+        </div>
+    </div>
+
+    <!-- Inputs Section -->
+    <div class="section">
+        <h2>Input Fields</h2>
+        <div class="input-group">
+            <label class="input-label">Text Input</label>
+            <input type="text" class="input" placeholder="Enter text here...">
+        </div>
+        <div class="input-group">
+            <label class="input-label">Email Input</label>
+            <input type="email" class="input" placeholder="email@example.com">
+        </div>
+    </div>
+
+    <!-- Spacing Section -->
+    <div class="section">
+        <h2>Spacing Scale</h2>
+        <div class="spacing-demo">
+            <div class="spacing-item" style="width: 8px; height: 40px;">8px</div>
+            <div class="spacing-item" style="width: 16px; height: 40px;">16px</div>
+            <div class="spacing-item" style="width: 24px; height: 40px;">24px</div>
+            <div class="spacing-item" style="width: 32px; height: 40px;">32px</div>
+            <div class="spacing-item" style="width: 48px; height: 40px;">48px</div>
+            <div class="spacing-item" style="width: 64px; height: 40px;">64px</div>
+        </div>
+    </div>
+
+    <!-- Border Radius Section -->
+    <div class="section">
+        <h2>Border Radius</h2>
+        <div class="radius-demo">
+            <div class="radius-item" style="border-radius: 8px;">8px</div>
+            <div class="radius-item" style="border-radius: 12px;">12px</div>
+            <div class="radius-item" style="border-radius: 16px;">16px</div>
+            <div class="radius-item" style="border-radius: 20px;">20px</div>
+            <div class="radius-item" style="border-radius: 24px;">24px</div>
+            <div class="radius-item" style="border-radius: 60px;">60px (Pill)</div>
+        </div>
+    </div>
+
+    <!-- Shadows Section -->
+    <div class="section">
+        <h2>Shadows</h2>
+        <div class="shadow-demo">
+            <div class="shadow-item shadow-card">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Card Shadow</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">0 8px 32px rgba(0,0,0,0.37)</div>
+            </div>
+            <div class="shadow-item shadow-button">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Button Shadow</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">0 12px 30px rgba(59,130,246,0.5)</div>
+            </div>
+            <div class="shadow-item shadow-hover">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Hover Shadow</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">0 20px 40px rgba(0,0,0,0.3)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glass Effect Details -->
+    <div class="section">
+        <h2>Glass Effect Properties</h2>
+        <div class="card">
+            <div class="card-title">Glassmorphism Details</div>
+            <div class="card-text" style="line-height: 2;">
+                <strong>Background:</strong> rgba(255, 255, 255, 0.05)<br>
+                <strong>Backdrop Filter:</strong> blur(20px) saturate(150%)<br>
+                <strong>Border:</strong> 1px solid rgba(255, 255, 255, 0.1)<br>
+                <strong>Border Radius:</strong> 20px<br>
+                <strong>Shadow:</strong> 0 8px 32px rgba(0, 0, 0, 0.37)
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
