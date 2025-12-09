@@ -2576,6 +2576,27 @@
     min-width: 35px;
   }
   
+  /* Team matchup with logos - ensure visible on mobile */
+  .gameTeamMatchup {
+    gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .teamLogoSmall {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    display: inline-block !important;
+  }
+  
+  .scoreTeam {
+    font-size: 0.75rem;
+  }
+  
+  .atSymbol {
+    font-size: 0.65rem;
+  }
+  
   .playerInfo {
     gap: 0.35rem;
   }
@@ -2694,6 +2715,22 @@
   
   .gameRow, .gameRowWrapper {
     padding: 0.35rem;
+  }
+  
+  /* Team matchup logos - even smaller on tiny screens */
+  .gameTeamMatchup {
+    gap: 0.2rem;
+    font-size: 0.7rem;
+  }
+  
+  .teamLogoSmall {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+  }
+  
+  .scoreTeam {
+    font-size: 0.7rem;
   }
   
   .playerHeadshot {
