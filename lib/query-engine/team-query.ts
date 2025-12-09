@@ -249,7 +249,7 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
     let odds = -110
     if (bet_type === 'moneyline') {
       // Use team's ML odds based on location
-      const isSubjectHome = location !== 'away'
+      const isSubjectHome = teamLocation !== 'away'
       odds = isSubjectHome ? (row.home_ml_close || -110) : (row.away_ml_close || -110)
     }
     
