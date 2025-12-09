@@ -5,17 +5,18 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import styles from './sports-engine.module.css'
 
 // Icons
-import { FaCheckCircle } from "react-icons/fa"
-import { HiOutlineXCircle } from "react-icons/hi2"
+import { FaCheckCircle, FaToolbox } from "react-icons/fa"
+import { FaHammer } from "react-icons/fa6"
+import { HiOutlineXCircle, HiBuildingOffice2 } from "react-icons/hi2"
 import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy } from "react-icons/pi"
 import { GiWhistle } from "react-icons/gi"
-import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming } from "react-icons/md"
+import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
-import { FiCopy, FiCheck } from "react-icons/fi"
-import { LuGitPullRequestArrow } from "react-icons/lu"
+import { FiCopy, FiCheck, FiMenu, FiChevronLeft } from "react-icons/fi"
+import { LuGitPullRequestArrow, LuBot } from "react-icons/lu"
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
@@ -276,6 +277,10 @@ function SportsEngineContent() {
   const [upcomingLoading, setUpcomingLoading] = useState(false)
   const [expandedUpcomingGameId, setExpandedUpcomingGameId] = useState<string | null>(null)
   const [upcomingSortBy, setUpcomingSortBy] = useState<'time' | 'best_odds'>('time')
+  
+  // Sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>('builder')
   
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
@@ -3201,12 +3206,99 @@ function SportsEngineContent() {
         <p className={styles.tagline}>Test historical trends with any filter combination. For premium subs only.</p>
       </header>
 
-      <div className={styles.layout}>
-        {/* Query Builder Panel */}
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2>Query Builder</h2>
-            <div className={styles.sportSelector}>
+      <div className={styles.mainWrapper}>
+        {/* Sidebar */}
+        <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+          <div className={styles.sidebarHeader}>
+            <span className={styles.sidebarTitle}>MENU</span>
+            <div className={styles.sportBadge}>
+              <img 
+                src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" 
+                alt="NFL" 
+                className={styles.sportLogo}
+              />
+            </div>
+            <button 
+              className={styles.sidebarClose}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <FiChevronLeft />
+            </button>
+          </div>
+          
+          <nav className={styles.sidebarNav}>
+            <button 
+              className={`${styles.sidebarItem} ${activeSection === 'builder' ? styles.sidebarItemActive : ''}`}
+              onClick={() => { setActiveSection('builder'); setSidebarOpen(false); }}
+            >
+              <FaHammer className={styles.sidebarIcon} />
+              <span>Builder</span>
+            </button>
+            
+            <button 
+              className={`${styles.sidebarItem} ${activeSection === 'myBuilds' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
+              onClick={() => {}}
+            >
+              <FaToolbox className={styles.sidebarIcon} />
+              <span>My Builds</span>
+              <span className={styles.soonTag}>soon</span>
+            </button>
+            
+            <button 
+              className={`${styles.sidebarItem} ${activeSection === 'buddy' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
+              onClick={() => {}}
+            >
+              <LuBot className={styles.sidebarIcon} />
+              <span>Buddy</span>
+              <span className={styles.soonTag}>soon</span>
+            </button>
+            
+            <button 
+              className={`${styles.sidebarItem} ${activeSection === 'topBuilds' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
+              onClick={() => {}}
+            >
+              <HiBuildingOffice2 className={styles.sidebarIcon} />
+              <span>Top Builds</span>
+              <span className={styles.soonTag}>soon</span>
+            </button>
+          </nav>
+          
+          <div className={styles.sidebarFooter}>
+            <button 
+              className={`${styles.sidebarItem} ${activeSection === 'preferences' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
+              onClick={() => {}}
+            >
+              <MdRoomPreferences className={styles.sidebarIcon} />
+              <span>Preferences</span>
+              <span className={styles.soonTag}>soon</span>
+            </button>
+          </div>
+        </aside>
+        
+        {/* Sidebar Toggle (when closed) */}
+        {!sidebarOpen && (
+          <button 
+            className={styles.sidebarToggle}
+            onClick={() => setSidebarOpen(true)}
+          >
+            <FiMenu />
+          </button>
+        )}
+        
+        {/* Sidebar Overlay (mobile) */}
+        {sidebarOpen && (
+          <div 
+            className={styles.sidebarOverlay}
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <div className={styles.layout}>
+          {/* Query Builder Panel */}
+          <div className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2>Query Builder</h2>
+              <div className={styles.sportSelector}>
               <img 
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg"
                 alt="NFL"
@@ -4678,6 +4770,7 @@ function SportsEngineContent() {
           )}
         </div>
       </div>
+      </div>{/* mainWrapper */}
     </div>
   )
 }
