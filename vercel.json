@@ -65,10 +65,6 @@
       "schedule": "15,45 * * * *"
     },
     {
-      "path": "/api/cron/nfl-sync?task=validate",
-      "schedule": "0 6 * * *"
-    },
-    {
       "path": "/api/clickhouse/sync-upcoming-games",
       "schedule": "0 */2 * * *"
     },
