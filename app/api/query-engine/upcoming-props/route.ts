@@ -99,6 +99,10 @@ export async function POST(request: Request) {
     
     // ===== GAME-LEVEL FILTERS =====
     
+    // Track if we need player-team filtering (location or favorite filters)
+    // These require knowing which team the player is on
+    const needsPlayerTeamFilter = filters.location || filters.is_favorite
+    
     // Total range
     if (filters.total_range) {
       const { min, max } = filters.total_range
@@ -222,6 +226,49 @@ export async function POST(request: Request) {
       ? lineFilterConditions.join(' AND ')
       : '1=1'
     
+    // Build player-team filter conditions (location + favorite/underdog)
+    // These filter which players show based on their team's home/away status and spread
+    let playerTeamCondition = ''
+    
+    if (filters.location && filters.location !== 'any') {
+      if (filters.location === 'home') {
+        // Player must be on the HOME team
+        playerTeamCondition += ` AND pl.team_id = g.home_team_id`
+        appliedFilters.push('Home')
+      } else if (filters.location === 'away') {
+        // Player must be on the AWAY team
+        playerTeamCondition += ` AND pl.team_id = g.away_team_id`
+        appliedFilters.push('Away')
+      }
+    }
+    
+    if (filters.is_favorite && filters.is_favorite !== 'any') {
+      if (filters.is_favorite === 'favorite') {
+        // Player's team must be the favorite
+        // If player is on home team, home must be favorite (home_spread < 0)
+        // If player is on away team, away must be favorite (home_spread > 0)
+        if (filters.location === 'home') {
+          playerTeamCondition += ` AND ll.home_spread < 0`
+        } else if (filters.location === 'away') {
+          playerTeamCondition += ` AND ll.home_spread > 0`
+        } else {
+          // No location specified - favorite from either side
+          playerTeamCondition += ` AND ((pl.team_id = g.home_team_id AND ll.home_spread < 0) OR (pl.team_id = g.away_team_id AND ll.home_spread > 0))`
+        }
+        appliedFilters.push('Favorite')
+      } else if (filters.is_favorite === 'underdog') {
+        // Player's team must be the underdog
+        if (filters.location === 'home') {
+          playerTeamCondition += ` AND ll.home_spread > 0`
+        } else if (filters.location === 'away') {
+          playerTeamCondition += ` AND ll.home_spread < 0`
+        } else {
+          playerTeamCondition += ` AND ((pl.team_id = g.home_team_id AND ll.home_spread > 0) OR (pl.team_id = g.away_team_id AND ll.home_spread < 0))`
+        }
+        appliedFilters.push('Underdog')
+      }
+    }
+    
     // Query for upcoming props that match filters
     // First find players with at least one book line in range, then get ALL their book lines
     const sql = `
@@ -290,7 +337,10 @@ export async function POST(request: Request) {
         -- Flag if this specific line is in the filter range
         IF(${lineFilterClause.replace(/line/g, 'p.line')}, 1, 0) AS in_filter_range,
         pl.headshot_url AS player_headshot,
-        pl.espn_player_id AS player_id
+        pl.espn_player_id AS player_id,
+        pl.team_id AS player_team_id,
+        -- Is player on home or away team?
+        IF(pl.team_id = g.home_team_id, 1, 0) AS is_home_player
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
       INNER JOIN qualifying_players qp ON g.game_id = qp.game_id
@@ -301,6 +351,7 @@ export async function POST(request: Request) {
       WHERE 1=1
       ${gameWhereClause}
       ${positionCondition}
+      ${playerTeamCondition}
       ORDER BY g.game_time ASC, p.player_name, p.line
     `
     
