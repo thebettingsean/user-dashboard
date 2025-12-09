@@ -3646,51 +3646,45 @@ function SportsEngineContent() {
                 {expandedSections.playerStats ? <MdExpandLess className={styles.chevron} /> : <MdExpandMore className={styles.chevron} />}
               </div>
               {expandedSections.playerStats && (
-                <div className={styles.filterGrid}>
+                <div className={styles.filterGrid3}>
                   {/* Targets - for WR, TE, RB */}
-                  {(propPosition === 'WR' || propPosition === 'TE' || propPosition === 'RB' || propPosition === 'any') && (
-                    <div>
-                      <span>Min Targets</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="e.g. 5"
-                        value={minTargets}
-                        onChange={(e) => setMinTargets(e.target.value.replace(/[^0-9]/g, ''))}
-                        className={styles.rangeInput}
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <span>Targets</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="5+"
+                      value={minTargets}
+                      onChange={(e) => setMinTargets(e.target.value.replace(/[^0-9]/g, ''))}
+                      className={styles.rangeInput}
+                    />
+                  </div>
                   
-                  {/* Carries - for RB */}
-                  {(propPosition === 'RB' || propPosition === 'any') && (
-                    <div>
-                      <span>Min Carries</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="e.g. 10"
-                        value={minCarries}
-                        onChange={(e) => setMinCarries(e.target.value.replace(/[^0-9]/g, ''))}
-                        className={styles.rangeInput}
-                      />
-                    </div>
-                  )}
+                  {/* Carries - for RB/any */}
+                  <div>
+                    <span>Carries</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="10+"
+                      value={minCarries}
+                      onChange={(e) => setMinCarries(e.target.value.replace(/[^0-9]/g, ''))}
+                      className={styles.rangeInput}
+                    />
+                  </div>
                   
-                  {/* Pass Attempts - for QB */}
-                  {(propPosition === 'QB' || propPosition === 'any') && (
-                    <div>
-                      <span>Min Pass Attempts</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="e.g. 20"
-                        value={minPassAttempts}
-                        onChange={(e) => setMinPassAttempts(e.target.value.replace(/[^0-9]/g, ''))}
-                        className={styles.rangeInput}
-                      />
-                    </div>
-                  )}
+                  {/* Pass Attempts - for QB/any */}
+                  <div>
+                    <span>Pass Att</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="20+"
+                      value={minPassAttempts}
+                      onChange={(e) => setMinPassAttempts(e.target.value.replace(/[^0-9]/g, ''))}
+                      className={styles.rangeInput}
+                    />
+                  </div>
                 </div>
               )}
             </div>
