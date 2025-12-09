@@ -489,8 +489,8 @@ export default function SubmitAnalystPicks() {
       }
     }))
 
-    // NEW: When sport changes to NFL, NBA, or NCAAF, load games
-    if (field === 'sport' && (value === 'NFL' || value === 'NBA' || value === 'NCAAF')) {
+    // NEW: When sport changes to NFL, NBA, NHL, or NCAAF, load games
+    if (field === 'sport' && (value === 'NFL' || value === 'NBA' || value === 'NHL' || value === 'NCAAF')) {
       loadGamesForSport(pickId, value)
     }
   }
@@ -969,7 +969,7 @@ export default function SubmitAnalystPicks() {
               
               {Object.entries(picks).map(([pickIdStr, pickData]) => {
                 const pickId = parseInt(pickIdStr)
-                const isNFLorNBAorCFB = pickData.sport === 'NFL' || pickData.sport === 'NBA' || pickData.sport === 'NCAAF'
+                const hasSupportedGames = pickData.sport === 'NFL' || pickData.sport === 'NBA' || pickData.sport === 'NHL' || pickData.sport === 'NCAAF'
                 const games = availableGames[pickId] || []
                 const isLoadingGames = loadingGames[pickId]
                 const searchQuery = gameSearchQuery[pickId] || ''
@@ -1040,8 +1040,8 @@ export default function SubmitAnalystPicks() {
                           </div>
                         </div>
                         
-                        {/* NEW: Game Selection Dropdown (NFL/NBA/NCAAF only) */}
-                        {isNFLorNBAorCFB && (
+                        {/* NEW: Game Selection Dropdown (NFL/NBA/NHL/NCAAF only) */}
+                        {hasSupportedGames && (
                           <>
                             <div style={styles.formGroup}>
                               <label style={styles.label}>
