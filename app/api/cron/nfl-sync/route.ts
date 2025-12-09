@@ -530,51 +530,86 @@ async function processCompletedGames(): Promise<SyncResult> {
             let spread = gameExists.data[0].spread_close || 0
             let total = gameExists.data[0].total_close || 0
             
-            // SELF-HEALING: If odds are missing, fetch from The Odds API
+            // SELF-HEALING: If odds are missing, try multiple sources
             if (spread === 0 || total === 0) {
+              console.log(`[NFL Sync] Missing odds for game ${game.gameId} (spread=${spread}, total=${total}), attempting recovery...`)
+              
+              // STRATEGY 1: Try ESPN pickcenter (most reliable for recent games)
               try {
-                const homeTeam = NFL_TEAM_NAMES[game.homeTeamId]
-                const awayTeam = NFL_TEAM_NAMES[game.awayTeamId]
-                
-                if (homeTeam && awayTeam) {
-                  // Query ~1 hour before game time
-                  const gameTime = new Date(game.gameDate)
-                  const snapshotTime = new Date(gameTime.getTime() - 60 * 60 * 1000)
-                  snapshotTime.setMinutes(Math.floor(snapshotTime.getMinutes() / 5) * 5)
-                  snapshotTime.setSeconds(0)
-                  snapshotTime.setMilliseconds(0)
-                  const dateParam = snapshotTime.toISOString().replace(/\.\d{3}Z$/, 'Z')
+                const summaryUrl = `${ESPN_BASE}/summary?event=${game.gameId}`
+                const summaryResp = await fetch(summaryUrl)
+                if (summaryResp.ok) {
+                  const summaryData = await summaryResp.json()
+                  const pickcenter = summaryData.pickcenter?.[0]
                   
-                  const oddsUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/odds?` +
-                    `apiKey=${ODDS_API_KEY}&date=${dateParam}&regions=us&markets=spreads,totals&oddsFormat=american`
-                  
-                  const response = await fetch(oddsUrl)
-                  if (response.ok) {
-                    const oddsData = await response.json()
-                    const matchingGame = oddsData.data?.find((event: any) => {
-                      const eventDate = new Date(event.commence_time)
-                      const timeDiff = Math.abs(eventDate.getTime() - gameTime.getTime())
-                      return event.home_team === homeTeam && event.away_team === awayTeam && timeDiff < 4 * 60 * 60 * 1000
-                    })
+                  if (pickcenter) {
+                    // ESPN spread is from home team perspective
+                    const espnSpread = pickcenter.spread || 0
+                    const espnTotal = pickcenter.overUnder || 0
                     
-                    if (matchingGame?.bookmakers?.[0]) {
-                      const bookmaker = matchingGame.bookmakers[0]
-                      const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads')
-                      const totalMarket = bookmaker.markets?.find((m: any) => m.key === 'totals')
-                      
-                      spread = spreadMarket?.outcomes?.find((o: any) => o.name === homeTeam)?.point || 0
-                      total = totalMarket?.outcomes?.find((o: any) => o.name === 'Over')?.point || 0
-                      
-                      if (spread !== 0 || total !== 0) {
-                        oddsFetched++
-                        console.log(`[NFL Sync] Fetched odds from The Odds API for ${game.gameId}: spread=${spread}, total=${total}`)
-                      }
+                    if (espnSpread !== 0 || espnTotal !== 0) {
+                      spread = espnSpread
+                      total = espnTotal
+                      oddsFetched++
+                      console.log(`[NFL Sync] ✓ Recovered odds from ESPN pickcenter for ${game.gameId}: spread=${spread}, total=${total}`)
                     }
                   }
-                  await new Promise(r => setTimeout(r, 500)) // Rate limit
                 }
-              } catch (oddsErr) {
-                console.error(`[NFL Sync] Failed to fetch odds for game ${game.gameId}:`, oddsErr)
+              } catch (espnErr) {
+                console.log(`[NFL Sync] ESPN pickcenter unavailable for ${game.gameId}`)
+              }
+              
+              // STRATEGY 2: Try The Odds API if ESPN failed
+              if (spread === 0 && total === 0) {
+                try {
+                  const homeTeam = NFL_TEAM_NAMES[game.homeTeamId]
+                  const awayTeam = NFL_TEAM_NAMES[game.awayTeamId]
+                  
+                  if (homeTeam && awayTeam) {
+                    // Query ~1 hour before game time
+                    const gameTime = new Date(game.gameDate)
+                    const snapshotTime = new Date(gameTime.getTime() - 60 * 60 * 1000)
+                    snapshotTime.setMinutes(Math.floor(snapshotTime.getMinutes() / 5) * 5)
+                    snapshotTime.setSeconds(0)
+                    snapshotTime.setMilliseconds(0)
+                    const dateParam = snapshotTime.toISOString().replace(/\.\d{3}Z$/, 'Z')
+                    
+                    const oddsUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/odds?` +
+                      `apiKey=${ODDS_API_KEY}&date=${dateParam}&regions=us&markets=spreads,totals&oddsFormat=american`
+                    
+                    const response = await fetch(oddsUrl)
+                    if (response.ok) {
+                      const oddsData = await response.json()
+                      const matchingGame = oddsData.data?.find((event: any) => {
+                        const eventDate = new Date(event.commence_time)
+                        const timeDiff = Math.abs(eventDate.getTime() - gameTime.getTime())
+                        return event.home_team === homeTeam && event.away_team === awayTeam && timeDiff < 4 * 60 * 60 * 1000
+                      })
+                      
+                      if (matchingGame?.bookmakers?.[0]) {
+                        const bookmaker = matchingGame.bookmakers[0]
+                        const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads')
+                        const totalMarket = bookmaker.markets?.find((m: any) => m.key === 'totals')
+                        
+                        spread = spreadMarket?.outcomes?.find((o: any) => o.name === homeTeam)?.point || 0
+                        total = totalMarket?.outcomes?.find((o: any) => o.name === 'Over')?.point || 0
+                        
+                        if (spread !== 0 || total !== 0) {
+                          oddsFetched++
+                          console.log(`[NFL Sync] ✓ Recovered odds from The Odds API for ${game.gameId}: spread=${spread}, total=${total}`)
+                        }
+                      }
+                    }
+                    await new Promise(r => setTimeout(r, 500)) // Rate limit
+                  }
+                } catch (oddsErr) {
+                  console.error(`[NFL Sync] The Odds API failed for game ${game.gameId}:`, oddsErr)
+                }
+              }
+              
+              // Log warning if we still couldn't get odds
+              if (spread === 0 && total === 0) {
+                console.warn(`[NFL Sync] ⚠️ COULD NOT RECOVER ODDS for game ${game.gameId} - derived fields will be incomplete`)
               }
             }
             
@@ -871,6 +906,182 @@ function parseAthleteStats(statsArray: string[], category: string): Record<strin
 }
 
 // ============================================
+// TASK: CAPTURE CLOSING ODDS (Pre-Game)
+// Runs 30-60 min before game time to ensure we have closing lines
+// ============================================
+async function captureClosingOdds(): Promise<SyncResult> {
+  try {
+    const now = new Date()
+    const nextHour = new Date(now.getTime() + 90 * 60 * 1000) // Games starting in next 90 minutes
+    
+    // Find games starting soon that don't have closing odds yet
+    const gamesNeedingOdds = await clickhouseQuery(`
+      SELECT game_id, game_time, home_team_id, away_team_id, spread_close, total_close
+      FROM nfl_games 
+      WHERE game_time > now() - INTERVAL 30 MINUTE
+        AND game_time < now() + INTERVAL 90 MINUTE
+        AND (spread_close = 0 OR total_close = 0)
+        AND season = 2025
+    `)
+    
+    if (gamesNeedingOdds.data.length === 0) {
+      return { task: 'closing_odds', success: true, details: { games_checked: 0, message: 'No games starting soon need odds' } }
+    }
+    
+    let oddsCaptured = 0
+    
+    for (const game of gamesNeedingOdds.data) {
+      let spread = 0
+      let total = 0
+      let homeMl = 0
+      let awayMl = 0
+      
+      // STRATEGY 1: ESPN pickcenter (fastest, most reliable for live games)
+      try {
+        const summaryUrl = `${ESPN_BASE}/summary?event=${game.game_id}`
+        const summaryResp = await fetch(summaryUrl)
+        if (summaryResp.ok) {
+          const summaryData = await summaryResp.json()
+          const pickcenter = summaryData.pickcenter?.[0]
+          
+          if (pickcenter) {
+            spread = pickcenter.spread || 0
+            total = pickcenter.overUnder || 0
+            homeMl = pickcenter.homeTeamOdds?.moneyLine || 0
+            awayMl = pickcenter.awayTeamOdds?.moneyLine || 0
+            console.log(`[Closing Odds] Got ESPN odds for game ${game.game_id}: spread=${spread}, total=${total}`)
+          }
+        }
+      } catch (e) {
+        console.log(`[Closing Odds] ESPN unavailable for ${game.game_id}`)
+      }
+      
+      // STRATEGY 2: The Odds API current endpoint
+      if (spread === 0 && total === 0) {
+        try {
+          const homeTeam = NFL_TEAM_NAMES[game.home_team_id]
+          const awayTeam = NFL_TEAM_NAMES[game.away_team_id]
+          
+          if (homeTeam && awayTeam) {
+            const oddsUrl = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?` +
+              `apiKey=${ODDS_API_KEY}&regions=us&markets=spreads,totals,h2h&oddsFormat=american`
+            
+            const response = await fetch(oddsUrl)
+            if (response.ok) {
+              const oddsData = await response.json()
+              const matchingGame = oddsData.find((event: any) => 
+                event.home_team === homeTeam && event.away_team === awayTeam
+              )
+              
+              if (matchingGame?.bookmakers?.[0]) {
+                const bookmaker = matchingGame.bookmakers[0]
+                const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads')
+                const totalMarket = bookmaker.markets?.find((m: any) => m.key === 'totals')
+                const h2hMarket = bookmaker.markets?.find((m: any) => m.key === 'h2h')
+                
+                spread = spreadMarket?.outcomes?.find((o: any) => o.name === homeTeam)?.point || 0
+                total = totalMarket?.outcomes?.find((o: any) => o.name === 'Over')?.point || 0
+                homeMl = h2hMarket?.outcomes?.find((o: any) => o.name === homeTeam)?.price || 0
+                awayMl = h2hMarket?.outcomes?.find((o: any) => o.name === awayTeam)?.price || 0
+                
+                console.log(`[Closing Odds] Got The Odds API odds for game ${game.game_id}: spread=${spread}, total=${total}`)
+              }
+            }
+            await new Promise(r => setTimeout(r, 500))
+          }
+        } catch (e) {
+          console.log(`[Closing Odds] The Odds API unavailable for ${game.game_id}`)
+        }
+      }
+      
+      // Update the game with closing odds
+      if (spread !== 0 || total !== 0) {
+        await clickhouseCommand(`
+          ALTER TABLE nfl_games UPDATE
+            spread_close = ${spread},
+            total_close = ${total},
+            home_ml_close = ${homeMl},
+            away_ml_close = ${awayMl},
+            updated_at = now()
+          WHERE game_id = ${game.game_id}
+        `)
+        oddsCaptured++
+        console.log(`[Closing Odds] ✓ Captured closing odds for game ${game.game_id}`)
+      } else {
+        console.warn(`[Closing Odds] ⚠️ FAILED to capture odds for game ${game.game_id}`)
+      }
+    }
+    
+    return {
+      task: 'closing_odds',
+      success: true,
+      details: { 
+        games_checked: gamesNeedingOdds.data.length, 
+        odds_captured: oddsCaptured,
+        games_without_odds: gamesNeedingOdds.data.length - oddsCaptured
+      }
+    }
+  } catch (error: any) {
+    console.error('[Closing Odds] Error:', error)
+    return { task: 'closing_odds', success: false, error: error.message }
+  }
+}
+
+// ============================================
+// TASK: DATA VALIDATION
+// Check for games with missing data and log warnings
+// ============================================
+async function validateRecentGames(): Promise<SyncResult> {
+  try {
+    // Check for completed games missing odds (should never happen with bulletproof sync)
+    const incompleteGames = await clickhouseQuery(`
+      SELECT game_id, game_date, home_team_id, away_team_id, home_score, away_score, 
+             spread_close, total_close, went_over, went_under
+      FROM nfl_games 
+      WHERE (home_score > 0 OR away_score > 0)
+        AND (spread_close = 0 OR total_close = 0)
+        AND season >= 2024
+      ORDER BY game_date DESC
+      LIMIT 20
+    `)
+    
+    // Check for completed games with invalid derived fields
+    const invalidDerived = await clickhouseQuery(`
+      SELECT game_id, game_date, total_close, total_points, went_over, went_under
+      FROM nfl_games 
+      WHERE (home_score > 0 OR away_score > 0)
+        AND total_close > 0
+        AND went_over = 0 AND went_under = 0 AND total_push = 0
+        AND season >= 2024
+      ORDER BY game_date DESC
+      LIMIT 10
+    `)
+    
+    // Log warnings for any issues found
+    for (const game of incompleteGames.data) {
+      console.warn(`[Validation] ⚠️ Game ${game.game_id} (${game.game_date}): Missing odds - spread=${game.spread_close}, total=${game.total_close}`)
+    }
+    
+    for (const game of invalidDerived.data) {
+      console.warn(`[Validation] ⚠️ Game ${game.game_id} (${game.game_date}): Invalid derived fields - total=${game.total_close}, points=${game.total_points}, over=${game.went_over}, under=${game.went_under}`)
+    }
+    
+    return {
+      task: 'validate',
+      success: true,
+      details: {
+        games_missing_odds: incompleteGames.data.length,
+        games_invalid_derived: invalidDerived.data.length,
+        all_clear: incompleteGames.data.length === 0 && invalidDerived.data.length === 0
+      }
+    }
+  } catch (error: any) {
+    console.error('[Validation] Error:', error)
+    return { task: 'validate', success: false, error: error.message }
+  }
+}
+
+// ============================================
 // MAIN HANDLER
 // ============================================
 export async function GET(request: NextRequest) {
@@ -889,6 +1100,11 @@ export async function GET(request: NextRequest) {
       results.push(await syncGameOdds())
     }
     
+    // NEW: Capture closing odds for games starting soon
+    if (task === 'all' || task === 'closing') {
+      results.push(await captureClosingOdds())
+    }
+    
     if (task === 'all' || task === 'streaks') {
       results.push(await updateStreaksAndMargins())
     }
@@ -899,6 +1115,11 @@ export async function GET(request: NextRequest) {
     
     if (task === 'all' || task === 'completed') {
       results.push(await processCompletedGames())
+    }
+    
+    // NEW: Validate data integrity
+    if (task === 'all' || task === 'validate') {
+      results.push(await validateRecentGames())
     }
     
     const elapsed = Date.now() - startTime
