@@ -15,6 +15,7 @@ import { GiWhistle } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
 import { FiCopy, FiCheck } from "react-icons/fi"
+import { LuGitPullRequestArrow } from "react-icons/lu"
 
 // Types
 type QueryType = 'prop' | 'team' | 'referee' | 'trend'
@@ -158,14 +159,12 @@ const PROP_STATS_BY_POSITION: Record<string, { value: string; label: string }[]>
     { value: 'receiving_yards', label: 'Receiving Yards' },
     { value: 'receptions', label: 'Receptions' },
     { value: 'receiving_long', label: 'Longest Reception' },
-    { value: 'targets', label: 'Targets' },
   ],
   WR: [
     { value: 'receiving_yards', label: 'Receiving Yards' },
     { value: 'receptions', label: 'Receptions' },
     { value: 'receiving_tds', label: 'Receiving TDs' },
     { value: 'receiving_long', label: 'Longest Reception' },
-    { value: 'targets', label: 'Targets' },
     { value: 'rush_yards', label: 'Rush Yards' },
   ],
   TE: [
@@ -173,7 +172,6 @@ const PROP_STATS_BY_POSITION: Record<string, { value: string; label: string }[]>
     { value: 'receptions', label: 'Receptions' },
     { value: 'receiving_tds', label: 'Receiving TDs' },
     { value: 'receiving_long', label: 'Longest Reception' },
-    { value: 'targets', label: 'Targets' },
   ],
   K: [
     { value: 'fg_made', label: 'FG Made' },
@@ -191,7 +189,6 @@ const PROP_STATS = [
   { value: 'receiving_yards', label: 'Receiving Yards' },
   { value: 'receptions', label: 'Receptions' },
   { value: 'receiving_tds', label: 'Receiving TDs' },
-  { value: 'targets', label: 'Targets' },
   { value: 'interceptions', label: 'Interceptions' },
 ]
 
@@ -282,6 +279,7 @@ function SportsEngineContent() {
   
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
+    playerStats: false,
     matchup: false,
     betting: false,
     teamStats: false
@@ -400,6 +398,11 @@ function SportsEngineContent() {
   const [bookLineMin, setBookLineMin] = useState<string>('')
   const [bookLineMax, setBookLineMax] = useState<string>('')
   
+  // Props - Player Stats Filters (game conditions, not bet types)
+  const [minTargets, setMinTargets] = useState<string>('')
+  const [minCarries, setMinCarries] = useState<string>('')
+  const [minPassAttempts, setMinPassAttempts] = useState<string>('')
+  
   // Get available stats based on position (use selected player's position if available)
   const effectivePosition = selectedPlayer?.position || propPosition
   const availablePropStats = PROP_STATS_BY_POSITION[effectivePosition] || PROP_STATS_BY_POSITION['any']
@@ -513,6 +516,11 @@ function SportsEngineContent() {
     setPropVersusTeamSearch('')
     setPropVersusTeamResults([])
     setSelectedPropVersusTeam(null)
+    
+    // Player Stats filters
+    setMinTargets('')
+    setMinCarries('')
+    setMinPassAttempts('')
     
     // Clear results
     setResult(null)
@@ -1188,6 +1196,17 @@ function SportsEngineContent() {
       if (selectedPropVersusTeam) {
         filters.push(`vs ${selectedPropVersusTeam.name}`)
       }
+      
+      // Player Stats filters
+      if (minTargets) {
+        filters.push(`${minTargets}+ Targets`)
+      }
+      if (minCarries) {
+        filters.push(`${minCarries}+ Carries`)
+      }
+      if (minPassAttempts) {
+        filters.push(`${minPassAttempts}+ Pass Att`)
+      }
     }
     
     return filters
@@ -1477,6 +1496,17 @@ function SportsEngineContent() {
         // Include location filter if not 'any'
         if (location !== 'any') {
           filters.location = location
+        }
+        
+        // Player Stats filters (game conditions)
+        if (minTargets) {
+          filters.min_targets = parseInt(minTargets)
+        }
+        if (minCarries) {
+          filters.min_carries = parseInt(minCarries)
+        }
+        if (minPassAttempts) {
+          filters.min_pass_attempts = parseInt(minPassAttempts)
         }
       }
 
@@ -2839,7 +2869,7 @@ function SportsEngineContent() {
   }
   
   // Toggle collapsible filter sections
-  const toggleSection = (section: 'matchup' | 'betting' | 'teamStats') => {
+  const toggleSection = (section: 'playerStats' | 'matchup' | 'betting' | 'teamStats') => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
@@ -3600,6 +3630,71 @@ function SportsEngineContent() {
               ))}
             </select>
           </div>
+
+          {/* ============================================ */}
+          {/* PLAYER STATS (Props only, Collapsible) */}
+          {/* ============================================ */}
+          {queryType === 'prop' && (
+            <div className={styles.filterBlock}>
+              <div 
+                className={styles.filterBlockHeaderCollapsible}
+                onClick={() => toggleSection('playerStats')}
+              >
+                <div className={styles.filterHeaderLeft}>
+                  <LuGitPullRequestArrow /> Player Stats
+                </div>
+                {expandedSections.playerStats ? <MdExpandLess className={styles.chevron} /> : <MdExpandMore className={styles.chevron} />}
+              </div>
+              {expandedSections.playerStats && (
+                <div className={styles.filterGrid}>
+                  {/* Targets - for WR, TE, RB */}
+                  {(propPosition === 'WR' || propPosition === 'TE' || propPosition === 'RB' || propPosition === 'any') && (
+                    <div>
+                      <span>Min Targets</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 5"
+                        value={minTargets}
+                        onChange={(e) => setMinTargets(e.target.value.replace(/[^0-9]/g, ''))}
+                        className={styles.rangeInput}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Carries - for RB */}
+                  {(propPosition === 'RB' || propPosition === 'any') && (
+                    <div>
+                      <span>Min Carries</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 10"
+                        value={minCarries}
+                        onChange={(e) => setMinCarries(e.target.value.replace(/[^0-9]/g, ''))}
+                        className={styles.rangeInput}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Pass Attempts - for QB */}
+                  {(propPosition === 'QB' || propPosition === 'any') && (
+                    <div>
+                      <span>Min Pass Attempts</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 20"
+                        value={minPassAttempts}
+                        onChange={(e) => setMinPassAttempts(e.target.value.replace(/[^0-9]/g, ''))}
+                        className={styles.rangeInput}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ============================================ */}
           {/* MATCHUP FILTERS (Collapsible) */}

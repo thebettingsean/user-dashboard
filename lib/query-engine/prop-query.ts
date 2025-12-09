@@ -150,6 +150,23 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     appliedFilters.push('vs Specific Opponent')
   }
   
+  // Player Stats filters (game conditions, not bet types)
+  // These filter based on the player's in-game stats for that box score
+  if (filters.min_targets && filters.min_targets > 0) {
+    boxConditions.push(`b.targets >= ${filters.min_targets}`)
+    appliedFilters.push(`${filters.min_targets}+ Targets`)
+  }
+  
+  if (filters.min_carries && filters.min_carries > 0) {
+    boxConditions.push(`b.rush_attempts >= ${filters.min_carries}`)
+    appliedFilters.push(`${filters.min_carries}+ Carries`)
+  }
+  
+  if (filters.min_pass_attempts && filters.min_pass_attempts > 0) {
+    boxConditions.push(`b.pass_attempts >= ${filters.min_pass_attempts}`)
+    appliedFilters.push(`${filters.min_pass_attempts}+ Pass Att`)
+  }
+  
   // Defense rank filter - supports position-specific rankings
   // defense_stat_position can be 'vs_wr', 'vs_te', 'vs_rb' for position-specific
   if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {

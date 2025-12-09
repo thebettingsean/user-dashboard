@@ -84,6 +84,11 @@ export interface QueryFilters {
   team_win_pct?: Range                  // Subject team's win percentage
   opp_win_pct?: Range                   // Opponent team's win percentage
   
+  // Player Stats filters (for props - game conditions)
+  min_targets?: number                  // Minimum targets in the game (WR/TE/RB)
+  min_carries?: number                  // Minimum carries in the game (RB)
+  min_pass_attempts?: number            // Minimum pass attempts in the game (QB)
+  
   // Additional filters for upcoming API
   is_division_game?: boolean            // Explicit division game filter
   is_conference_game?: boolean          // Explicit conference game filter
