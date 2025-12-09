@@ -173,12 +173,14 @@
   width: 32px;
 }
 
-/* Sidebar Overlay (mobile) */
+/* Sidebar Overlay (all screens when sidebar open) */
 .sidebarOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
   z-index: 999;
+  transition: opacity 0.25s ease;
 }
 
 .headerSpacer {
@@ -237,11 +239,19 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  max-width: 1600px;
+  grid-template-columns: 420px 1fr;
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+  max-width: 1800px;
   margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 380px 1fr;
+    padding: 1rem;
+  }
 }
 
 @media (max-width: 1024px) {

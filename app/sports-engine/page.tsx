@@ -3294,11 +3294,12 @@ function SportsEngineContent() {
         )}
 
         <div className={styles.layout}>
-          {/* Query Builder Panel */}
+          {/* Builder Panel */}
           <div className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>Query Builder</h2>
-              <div className={styles.sportSelector}>
+              <h2>Builder</h2>
+              {/* Sport selector moved to sidebar */}
+              <div className={styles.sportSelector} style={{ display: 'none' }}>
               <img 
                 src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg"
                 alt="NFL"
@@ -4244,7 +4245,7 @@ function SportsEngineContent() {
               onClick={runQuery}
               disabled={loading}
             >
-              {loading ? 'Running...' : <><IoRocketOutline /> Run Query</>}
+              {loading ? 'Running...' : <><IoRocketOutline /> Run Build</>}
             </button>
             <button
               className={styles.clearBtn}
@@ -4765,7 +4766,7 @@ function SportsEngineContent() {
 
           {!result && !error && !loading && (
             <div className={styles.placeholder}>
-              <p>Configure your query and click "Run Query" to see results</p>
+              <p>Configure your build and click "Run Build" to see results</p>
             </div>
           )}
         </div>
