@@ -8,8 +8,7 @@ interface KPIs {
   uniqueSessions: number
   uniqueUsers: number
   anonymousCount: number
-  paidCount: number
-  freeCount: number
+  signedInCount: number
 }
 
 interface SportBreakdown {
@@ -145,29 +144,27 @@ export default function CustomerSimulationsDashboard() {
         </div>
         
         <div className={`${styles.kpiCard} ${styles.kpiSuccess}`}>
-          <div className={styles.kpiLabel}>Logged-in Users</div>
+          <div className={styles.kpiLabel}>Signed-In Users</div>
           <div className={styles.kpiValue}>{data.kpis.uniqueUsers.toLocaleString()}</div>
           <div className={styles.kpiSubtext}>
-            {data.kpis.totalSimulations - data.kpis.anonymousCount} sims
-          </div>
-        </div>
-        
-        <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Anonymous Sessions</div>
-          <div className={styles.kpiValue}>{data.kpis.anonymousCount.toLocaleString()}</div>
-          <div className={styles.kpiSubtext}>
-            {((data.kpis.anonymousCount / data.kpis.totalSimulations) * 100).toFixed(1)}% of total
+            {data.kpis.signedInCount.toLocaleString()} sims
           </div>
         </div>
         
         <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
-          <div className={styles.kpiLabel}>Paid Users</div>
-          <div className={styles.kpiValue}>{data.kpis.paidCount.toLocaleString()}</div>
+          <div className={styles.kpiLabel}>Signed-In Sims</div>
+          <div className={styles.kpiValue}>{data.kpis.signedInCount.toLocaleString()}</div>
+          <div className={styles.kpiSubtext}>
+            {((data.kpis.signedInCount / data.kpis.totalSimulations) * 100).toFixed(1)}% of total
+          </div>
         </div>
         
         <div className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Free Users</div>
-          <div className={styles.kpiValue}>{data.kpis.freeCount.toLocaleString()}</div>
+          <div className={styles.kpiLabel}>Anonymous Sims</div>
+          <div className={styles.kpiValue}>{data.kpis.anonymousCount.toLocaleString()}</div>
+          <div className={styles.kpiSubtext}>
+            {((data.kpis.anonymousCount / data.kpis.totalSimulations) * 100).toFixed(1)}% of total
+          </div>
         </div>
       </div>
 
@@ -394,8 +391,8 @@ export default function CustomerSimulationsDashboard() {
                     {event.away_score} - {event.home_score}
                   </td>
                   <td>
-                    <span className={`${styles.badge} ${event.user_type === 'paid' ? styles.badgeSuccess : styles.badgeInfo}`}>
-                      {event.user_type}
+                    <span className={`${styles.badge} ${event.user_type === 'signed_in' ? styles.badgeSuccess : styles.badgeInfo}`}>
+                      {event.user_type === 'signed_in' ? 'Signed In' : 'Anonymous'}
                     </span>
                   </td>
                   <td className={styles.userIdCellSmall}>

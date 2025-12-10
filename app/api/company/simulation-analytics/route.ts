@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create client lazily to avoid build-time errors
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !key) {
+    throw new Error('Supabase environment variables not configured')
+  }
+  
+  return createClient(url, key)
+}
 
 interface SimulationEvent {
   id: string
@@ -26,6 +33,8 @@ interface ParsedMetadata {
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient()
+    
     // Fetch all simulation events
     const { data: events, error } = await supabase
       .from('simulation_events')
@@ -56,6 +65,7 @@ export async function GET() {
     const uniqueSessions = new Set(simulations.map(s => s.session_id)).size
     const uniqueUsers = new Set(simulations.filter(s => s.user_id).map(s => s.user_id)).size
     const anonymousCount = simulations.filter(s => !s.user_id).length
+    const signedInCount = simulations.filter(s => s.user_id).length
 
     // Sport breakdown
     const sportCounts: Record<string, number> = {}
@@ -69,10 +79,6 @@ export async function GET() {
         percentage: ((count / totalSimulations) * 100).toFixed(1)
       }))
       .sort((a, b) => b.count - a.count)
-
-    // User type breakdown
-    const paidCount = simulations.filter(s => s.user_type === 'paid').length
-    const freeCount = simulations.filter(s => s.user_type === 'free').length
 
     // Most popular matchups
     const matchupCounts: Record<string, { count: number; sport: string; awayTeam: string; homeTeam: string }> = {}
@@ -149,8 +155,7 @@ export async function GET() {
         uniqueSessions,
         uniqueUsers,
         anonymousCount,
-        paidCount,
-        freeCount
+        signedInCount
       },
       sportBreakdown,
       popularMatchups,
@@ -162,7 +167,7 @@ export async function GET() {
         id: e.id,
         user_id: e.user_id,
         session_id: e.session_id,
-        user_type: e.user_type,
+        user_type: e.user_id ? 'signed_in' : 'anonymous',
         sport: e.sport,
         awayTeam: e.parsedMetadata?.awayTeam,
         homeTeam: e.parsedMetadata?.homeTeam,
