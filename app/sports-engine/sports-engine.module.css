@@ -3155,6 +3155,65 @@
   cursor: not-allowed;
 }
 
+/* Success Modal */
+.successModal {
+  background: #1a1a24;
+  border: 1px solid #2a2a3a;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  width: 90%;
+  max-width: 380px;
+}
+
+.successIcon {
+  font-size: 3rem;
+  color: #4a9eff;
+  margin-bottom: 1rem;
+}
+
+.successTitle {
+  font-size: 1.25rem;
+  color: #fff;
+  margin: 0 0 1.5rem 0;
+  font-weight: 500;
+}
+
+.successButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.successBtnSecondary,
+.successBtnPrimary {
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.successBtnSecondary {
+  background: #2a2a3a;
+  color: #ccc;
+}
+
+.successBtnSecondary:hover {
+  background: #3a3a4a;
+}
+
+.successBtnPrimary {
+  background: #4a9eff;
+  color: #fff;
+}
+
+.successBtnPrimary:hover {
+  background: #5aaeff;
+}
+
 /* My Builds Section */
 .myBuildsSection {
   padding: 2rem;

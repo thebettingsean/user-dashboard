@@ -288,6 +288,7 @@ function SportsEngineContent() {
   const { user, isSignedIn } = useUser()
   const [savedQueries, setSavedQueries] = useState<any[]>([])
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [showSaveSuccessModal, setShowSaveSuccessModal] = useState(false)
   const [saveQueryName, setSaveQueryName] = useState('')
   const [saveQueryDescription, setSaveQueryDescription] = useState('')
   const [savingQuery, setSavingQuery] = useState(false)
@@ -682,12 +683,12 @@ function SportsEngineContent() {
         return
       }
       
-      // Success - reload queries and close modal
+      // Success - reload queries and show success modal
       await loadSavedQueries()
       setShowSaveModal(false)
       setSaveQueryName('')
       setSaveQueryDescription('')
-      alert('Query saved successfully!')
+      setShowSaveSuccessModal(true)
     } catch (error) {
       console.error('Error saving query:', error)
       alert('Failed to save query')
@@ -5229,7 +5230,7 @@ function SportsEngineContent() {
         <div className={styles.modalOverlay} onClick={() => setShowSaveModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>Save Query Build</h3>
+              <h3>Save Build</h3>
               <button 
                 className={styles.modalClose}
                 onClick={() => setShowSaveModal(false)}
@@ -5275,6 +5276,36 @@ function SportsEngineContent() {
                 disabled={savingQuery || !saveQueryName.trim()}
               >
                 {savingQuery ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Success Modal */}
+      {showSaveSuccessModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowSaveSuccessModal(false)}>
+          <div className={styles.successModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.successIcon}>
+              <FaToolbox />
+            </div>
+            <h3 className={styles.successTitle}>Your build has been saved!</h3>
+            <div className={styles.successButtons}>
+              <button
+                className={styles.successBtnSecondary}
+                onClick={() => {
+                  setShowSaveSuccessModal(false)
+                  setActiveSection('myBuilds')
+                  setSidebarOpen(true)
+                }}
+              >
+                View Builds
+              </button>
+              <button
+                className={styles.successBtnPrimary}
+                onClick={() => setShowSaveSuccessModal(false)}
+              >
+                Keep Building
               </button>
             </div>
           </div>
