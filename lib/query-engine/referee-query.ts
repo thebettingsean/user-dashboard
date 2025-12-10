@@ -83,6 +83,7 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
     SELECT 
       g.game_id,
       toString(g.game_date) as game_date,
+      toString(g.game_time) as game_time,
       g.home_team_id,
       g.away_team_id,
       g.home_score,
@@ -229,6 +230,7 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
     games.push({
       game_id: row.game_id,
       game_date: row.game_date,
+      game_time: row.game_time,
       opponent: `${row.away_abbr || 'Away'} @ ${row.home_abbr || 'Home'}`,
       opponent_id: row.away_team_id,
       location: side === 'away' ? 'away' : 'home',

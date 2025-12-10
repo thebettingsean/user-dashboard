@@ -527,6 +527,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.game_id,
       b.player_id,
       toString(b.game_date) as game_date,
+      toString(g.game_time) as game_time,
       b.opponent_id,
       b.is_home,
       ${statColumn} as stat_value,
@@ -618,6 +619,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.game_id,
       b.player_id,
       toString(b.game_date) as game_date,
+      toString(g.game_time) as game_time,
       b.opponent_id,
       b.is_home,
       ${statColumn} as stat_value,
@@ -805,6 +807,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     games.push({
       game_id: row.game_id,
       game_date: row.game_date, // Already formatted as string via toString()
+      game_time: row.game_time,
       opponent: row.opponent_abbr || row.opponent_name || `Team ${row.opponent_id}`,
       opponent_id: row.opponent_id,
       location: row.is_home === 1 ? 'home' : 'away',

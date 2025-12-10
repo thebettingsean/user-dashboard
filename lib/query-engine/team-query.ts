@@ -153,6 +153,7 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
     SELECT 
       g.game_id,
       toString(g.game_date) as game_date,
+      toString(g.game_time) as game_time,
       g.home_team_id,
       g.away_team_id,
       g.home_score,
@@ -328,6 +329,7 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
     games.push({
       game_id: row.game_id,
       game_date: row.game_date,
+      game_time: row.game_time,
       opponent,
       opponent_id: opponentId,
       location: gameLocation,

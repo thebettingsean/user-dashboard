@@ -2063,21 +2063,29 @@ function SportsEngineContent() {
   // ===== UNIFIED DATE FORMATTERS (EST) =====
   
   // Format historical date: "Dec 8, 2025" (EST)
-  const formatHistoricalDate = (dateStr: string) => {
-    if (!dateStr) return ''
+  // Takes either game_date (YYYY-MM-DD) or game_time (full timestamp)
+  const formatHistoricalDate = (dateStr: string, gameTime?: string) => {
+    if (!dateStr && !gameTime) return ''
     try {
-      let dateToUse = dateStr
+      let date: Date
       
-      // Handle different date formats from ClickHouse
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        dateToUse = `${dateStr}T12:00:00Z`
-      } else if (dateStr.includes(' ') && !dateStr.includes('T')) {
-        dateToUse = dateStr.replace(' ', 'T') + 'Z'
-      } else if (!dateStr.includes('Z') && dateStr.includes('T')) {
-        dateToUse = dateStr + 'Z'
+      // Prefer full timestamp (game_time) if available - it has accurate time for EST conversion
+      if (gameTime && (gameTime.includes('T') || gameTime.includes(' '))) {
+        const normalized = gameTime.includes(' ') ? gameTime.replace(' ', 'T') : gameTime
+        date = new Date(normalized + (normalized.includes('Z') ? '' : 'Z'))
       }
-      
-      const date = new Date(dateToUse)
+      // If only date string (YYYY-MM-DD), use midnight UTC
+      // This converts to 7pm EST previous day, ensuring night games show correct EST date
+      // Example: Dec 9 UTC (for Dec 8 8:15pm EST game) → Dec 9 00:00 UTC = Dec 8 7pm EST = Dec 8
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        date = new Date(`${dateStr}T00:00:00Z`)
+      } else if (dateStr.includes(' ') && !dateStr.includes('T')) {
+        date = new Date(dateStr.replace(' ', 'T') + 'Z')
+      } else if (dateStr.includes('T')) {
+        date = new Date(dateStr + (dateStr.includes('Z') ? '' : 'Z'))
+      } else {
+        date = new Date(dateStr)
+      }
       
       if (isNaN(date.getTime())) {
         return dateStr
@@ -3042,7 +3050,7 @@ function SportsEngineContent() {
         <div className={styles.propDetailsHeader}>
           <div className={styles.propPlayerInfo}>
             <span className={styles.propPlayerName}>{playerName}</span>
-            <span className={styles.propGameInfo}>vs {opponentAbbr} • {formatHistoricalDate(game.game_date)}</span>
+            <span className={styles.propGameInfo}>vs {opponentAbbr} • {formatHistoricalDate(game.game_date, game.game_time)}</span>
           </div>
         </div>
         
@@ -3161,7 +3169,7 @@ function SportsEngineContent() {
           className={`${styles.propGameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
           onClick={() => toggleGameExpanded(gameKey)}
         >
-          <span className={styles.propGameDate}>{formatHistoricalDate(game.game_date)}</span>
+          <span className={styles.propGameDate}>{formatHistoricalDate(game.game_date, game.game_time)}</span>
           <div className={styles.propMatchup}>
             <img 
               src={playerHeadshot}
@@ -3274,7 +3282,7 @@ function SportsEngineContent() {
       <div className={styles.gameDetailsExpanded}>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Date</span>
-          <span className={styles.detailValue}>{formatHistoricalDate(game.game_date)}</span>
+          <span className={styles.detailValue}>{formatHistoricalDate(game.game_date, game.game_time)}</span>
         </div>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Final Score</span>
@@ -3343,7 +3351,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date, game.game_time)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}
@@ -3373,7 +3381,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date, game.game_time)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}
@@ -3406,7 +3414,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date, game.game_time)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}

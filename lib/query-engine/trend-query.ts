@@ -164,6 +164,7 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
     SELECT 
       g.game_id,
       toString(g.game_date) as game_date,
+      toString(g.game_time) as game_time,
       g.home_team_id,
       g.away_team_id,
       g.home_score,
@@ -336,6 +337,7 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
     games.push({
       game_id: row.game_id,
       game_date: row.game_date,
+      game_time: row.game_time,
       opponent: `${subjectTeam} vs ${opponentTeam}`,
       opponent_id: subjectOpponentId,
       location: side === 'home' ? 'home' : side === 'away' ? 'away' : 'neutral',

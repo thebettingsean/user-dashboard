@@ -988,6 +988,8 @@
 .gameDate {
   color: #666;
   font-size: 0.75rem;
+  white-space: nowrap;
+  min-width: 85px;
 }
 
 .gameTeam {
@@ -1615,6 +1617,8 @@
   font-size: 0.7rem;
   color: #666;
   font-family: system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  min-width: 85px;
 }
 
 .propMatchup {
@@ -2760,7 +2764,8 @@
   
   .gameDate {
     font-size: 0.65rem;
-    min-width: 35px;
+    min-width: 75px;
+    white-space: nowrap;
   }
   
   /* Team matchup with logos - ensure visible on mobile */
