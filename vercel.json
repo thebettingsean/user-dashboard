@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/clickhouse/warmup",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/refresh-nfl-snapshots",
       "schedule": "5 * * * *"
     },

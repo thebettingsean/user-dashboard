@@ -976,13 +976,17 @@ function SportsEngineContent() {
   // Helper to check if current bet type is O/U
   const isOUQuery = betType === 'total'
 
-  // Fetch team logos on mount
+  // Fetch team logos on mount with retry logic
   useEffect(() => {
-    const fetchLogos = async () => {
+    const fetchLogos = async (retryCount = 0) => {
       try {
         const response = await fetch('/api/clickhouse/team-logos')
         if (!response.ok) {
           console.error('Team logos API returned:', response.status)
+          // Retry on server error
+          if (response.status >= 500 && retryCount < 2) {
+            setTimeout(() => fetchLogos(retryCount + 1), 2000 * (retryCount + 1))
+          }
           return
         }
         const text = await response.text()
@@ -991,15 +995,23 @@ function SportsEngineContent() {
           return
         }
         const data = JSON.parse(text)
-        if (data.logos) {
+        if (data.logos && data.logos.length > 0) {
           const logoMap: Record<number, string> = {}
           data.logos.forEach((t: { espn_team_id: number; logo_url: string }) => {
             logoMap[t.espn_team_id] = t.logo_url
           })
           setTeamLogos(logoMap)
+        } else if (retryCount < 2) {
+          // No logos returned, retry
+          console.log('No logos returned, retrying...')
+          setTimeout(() => fetchLogos(retryCount + 1), 2000 * (retryCount + 1))
         }
       } catch (err) {
         console.error('Failed to fetch team logos:', err)
+        // Retry on error
+        if (retryCount < 2) {
+          setTimeout(() => fetchLogos(retryCount + 1), 2000 * (retryCount + 1))
+        }
       }
     }
     fetchLogos()

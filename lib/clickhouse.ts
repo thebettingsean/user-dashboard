@@ -18,58 +18,83 @@ export interface ClickHouseQueryResult<T = any> {
 }
 
 /**
- * Execute a ClickHouse query
+ * Execute a ClickHouse query with retry logic for cold starts
  */
 export async function clickhouseQuery<T = any>(
   sql: string,
-  format: string = 'JSONEachRow'
+  format: string = 'JSONEachRow',
+  maxRetries: number = 2
 ): Promise<ClickHouseQueryResult<T>> {
   const startTime = Date.now()
+  let lastError: Error | null = null
   
-  try {
-    console.log('[ClickHouse] Executing query:', sql.substring(0, 150) + '...')
-    
-    const url = `${CLICKHOUSE_HOST}?format=${format}`
-    const auth = Buffer.from(`${CLICKHOUSE_KEY_ID}:${CLICKHOUSE_KEY_SECRET}`).toString('base64')
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth}`
-      },
-      body: JSON.stringify({ query: sql }),
-      cache: 'no-store'
-    })
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`[ClickHouse] Retry attempt ${attempt}/${maxRetries}...`)
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+      }
+      
+      console.log('[ClickHouse] Executing query:', sql.substring(0, 150) + '...')
+      
+      const url = `${CLICKHOUSE_HOST}?format=${format}`
+      const auth = Buffer.from(`${CLICKHOUSE_KEY_ID}:${CLICKHOUSE_KEY_SECRET}`).toString('base64')
+      
+      // Add timeout using AbortController
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${auth}`
+        },
+        body: JSON.stringify({ query: sql }),
+        cache: 'no-store',
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[ClickHouse] Query failed:', errorText)
-      throw new Error(`ClickHouse query failed: ${errorText}`)
-    }
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[ClickHouse] Query failed:', errorText)
+        throw new Error(`ClickHouse query failed: ${errorText}`)
+      }
 
-    const text = await response.text()
-    
-    // Parse JSONEachRow format (one JSON object per line)
-    const lines = text.trim().split('\n').filter(Boolean)
-    const data = lines.map(line => JSON.parse(line))
-    
-    const elapsed = Date.now() - startTime
-    console.log(`[ClickHouse] ✅ Query completed in ${elapsed}ms, returned ${data.length} rows`)
+      const text = await response.text()
+      
+      // Parse JSONEachRow format (one JSON object per line)
+      const lines = text.trim().split('\n').filter(Boolean)
+      const data = lines.map(line => JSON.parse(line))
+      
+      const elapsed = Date.now() - startTime
+      console.log(`[ClickHouse] ✅ Query completed in ${elapsed}ms, returned ${data.length} rows`)
 
-    return {
-      data,
-      rows: data.length,
-      statistics: {
-        elapsed,
-        rows_read: data.length,
-        bytes_read: text.length
+      return {
+        data,
+        rows: data.length,
+        statistics: {
+          elapsed,
+          rows_read: data.length,
+          bytes_read: text.length
+        }
+      }
+    } catch (error: any) {
+      lastError = error
+      console.error(`[ClickHouse] Attempt ${attempt + 1} failed:`, error.message)
+      
+      // Don't retry on certain errors
+      if (error.message?.includes('syntax') || error.message?.includes('Unknown column')) {
+        throw error
       }
     }
-  } catch (error) {
-    console.error('[ClickHouse] Error:', error)
-    throw error
   }
+  
+  console.error('[ClickHouse] All retries exhausted')
+  throw lastError || new Error('ClickHouse query failed after retries')
 }
 
 /**
