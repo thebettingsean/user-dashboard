@@ -14,6 +14,13 @@ CREATE TABLE IF NOT EXISTS saved_queries (
   -- Query configuration (stored as JSONB for flexibility)
   query_config JSONB NOT NULL,
   
+  -- Sport (for multi-sport support)
+  sport TEXT NOT NULL DEFAULT 'nfl',
+  
+  -- Status flags
+  is_active BOOLEAN DEFAULT true,
+  is_public BOOLEAN DEFAULT false,
+  
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -31,6 +38,13 @@ CREATE INDEX IF NOT EXISTS idx_saved_queries_user_id ON saved_queries(clerk_user
 CREATE INDEX IF NOT EXISTS idx_saved_queries_created_at ON saved_queries(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_saved_queries_updated_at ON saved_queries(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_saved_queries_last_run ON saved_queries(last_run_at DESC);
+CREATE INDEX IF NOT EXISTS idx_saved_queries_sport ON saved_queries(sport);
+CREATE INDEX IF NOT EXISTS idx_saved_queries_is_active ON saved_queries(is_active);
+CREATE INDEX IF NOT EXISTS idx_saved_queries_is_public ON saved_queries(is_public);
+
+-- Composite index for common queries (user's active builds by sport)
+CREATE INDEX IF NOT EXISTS idx_saved_queries_user_sport_active 
+  ON saved_queries(clerk_user_id, sport, is_active);
 
 -- 3. Enable Row Level Security (RLS)
 ALTER TABLE saved_queries ENABLE ROW LEVEL SECURITY;

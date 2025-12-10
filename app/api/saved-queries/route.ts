@@ -14,11 +14,25 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { data, error } = await supabaseUsers
+    // Optional filters from query params
+    const { searchParams } = new URL(request.url)
+    const sport = searchParams.get('sport')
+    const activeOnly = searchParams.get('active') === 'true'
+
+    let query = supabaseUsers
       .from('saved_queries')
       .select('*')
       .eq('clerk_user_id', userId)
-      .order('updated_at', { ascending: false })
+    
+    // Apply optional filters
+    if (sport) {
+      query = query.eq('sport', sport)
+    }
+    if (activeOnly) {
+      query = query.eq('is_active', true)
+    }
+    
+    const { data, error } = await query.order('updated_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching saved queries:', error)
@@ -54,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, query_config, last_result_summary } = body
+    const { name, description, query_config, last_result_summary, sport = 'nfl' } = body
 
     if (!name || !query_config) {
       return NextResponse.json(
@@ -85,6 +99,9 @@ export async function POST(request: NextRequest) {
         name,
         description: description || null,
         query_config,
+        sport,
+        is_active: true,
+        is_public: false,
         last_result_summary: last_result_summary || null,
         run_count: 0
       })

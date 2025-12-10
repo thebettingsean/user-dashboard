@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.SUPABASE_USERS_URL || 'https://cmulndosilihjhlurbth.supabase.co'
-const supabaseKey = process.env.SUPABASE_USERS_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtdWxuZG9zaWxpaGpobHVyYnRoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjIzMDAwMCwiZXhwIjoyMDYxODA2MDAwfQ.FPqgWV0P7bbawmTkDvPwHK3DtQwnkix1r0-2hN7shWY'
+// Users Supabase project - stores user data, saved queries, etc.
+const supabaseUrl = process.env.SUPABASE_USERS_URL || 'https://pkmqhozyorpmteytizut.supabase.co'
+const supabaseKey = process.env.SUPABASE_USERS_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbXFob3p5b3JwbXRleXRpenV0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTg0MzIyMSwiZXhwIjoyMDc1NDE5MjIxfQ.uTxRZAUpNbhRFB9rIikggnEZeGMVfG7xQGn1nE4nVAc'
 
 export const supabaseUsers = createClient(supabaseUrl, supabaseKey)
 
