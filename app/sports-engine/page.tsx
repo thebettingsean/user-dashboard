@@ -2060,19 +2060,66 @@ function SportsEngineContent() {
     return odds > 0 ? `+${odds}` : `${odds}`
   }
 
-  // Format game time for display
-  const formatGameTime = (timeStr: string) => {
+  // ===== UNIFIED DATE FORMATTERS (EST) =====
+  
+  // Format historical date: "Dec 8, 2025" (EST)
+  const formatHistoricalDate = (dateStr: string) => {
+    if (!dateStr) return ''
     try {
-      const date = new Date(timeStr + 'Z')
+      let dateToUse = dateStr
+      
+      // Handle different date formats from ClickHouse
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        dateToUse = `${dateStr}T12:00:00Z`
+      } else if (dateStr.includes(' ') && !dateStr.includes('T')) {
+        dateToUse = dateStr.replace(' ', 'T') + 'Z'
+      } else if (!dateStr.includes('Z') && dateStr.includes('T')) {
+        dateToUse = dateStr + 'Z'
+      }
+      
+      const date = new Date(dateToUse)
+      
+      if (isNaN(date.getTime())) {
+        return dateStr
+      }
+      
       return date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
+        timeZone: 'America/New_York',
+        month: 'short',
         day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
+        year: 'numeric'
       })
     } catch {
-      return timeStr
+      return dateStr
+    }
+  }
+
+  // Format upcoming date: "Dec 8, 8:15pm" (EST)
+  const formatUpcomingDate = (dateStr: string) => {
+    if (!dateStr) return ''
+    try {
+      const date = new Date(dateStr + (dateStr.includes('Z') ? '' : 'Z'))
+      
+      if (isNaN(date.getTime())) {
+        return dateStr
+      }
+      
+      const monthDay = date.toLocaleDateString('en-US', { 
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric'
+      })
+      
+      const time = date.toLocaleTimeString('en-US', { 
+        timeZone: 'America/New_York',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).toLowerCase()
+      
+      return `${monthDay}, ${time}`
+    } catch {
+      return dateStr
     }
   }
 
@@ -2995,7 +3042,7 @@ function SportsEngineContent() {
         <div className={styles.propDetailsHeader}>
           <div className={styles.propPlayerInfo}>
             <span className={styles.propPlayerName}>{playerName}</span>
-            <span className={styles.propGameInfo}>vs {opponentAbbr} • {formatDateEST(game.game_date)}</span>
+            <span className={styles.propGameInfo}>vs {opponentAbbr} • {formatHistoricalDate(game.game_date)}</span>
           </div>
         </div>
         
@@ -3097,18 +3144,7 @@ function SportsEngineContent() {
     // Find stat label for display
     const statLabel = availablePropStats.find(s => s.value === propStat)?.label || propStat
     
-    // Format date - handle various formats
-    const formatDate = (dateStr: string) => {
-      if (!dateStr) return ''
-      // Remove time portion if present
-      const datePart = dateStr.split(' ')[0].split('T')[0]
-      // Format as MM/DD
-      const parts = datePart.split('-')
-      if (parts.length === 3) {
-        return `${parts[1]}/${parts[2]}`
-      }
-      return datePart
-    }
+    // Use unified historical date formatter
     
     // Use player from game data (for position queries) or selected player
     const playerHeadshot = game.player_headshot || 
@@ -3125,7 +3161,7 @@ function SportsEngineContent() {
           className={`${styles.propGameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
           onClick={() => toggleGameExpanded(gameKey)}
         >
-          <span className={styles.propGameDate}>{formatDate(game.game_date)}</span>
+          <span className={styles.propGameDate}>{formatHistoricalDate(game.game_date)}</span>
           <div className={styles.propMatchup}>
             <img 
               src={playerHeadshot}
@@ -3170,52 +3206,6 @@ function SportsEngineContent() {
     )
   }
 
-  // Helper to format date to EST - handles various input formats
-  const formatDateEST = (dateStr: string) => {
-    if (!dateStr) return ''
-    try {
-      // Handle different date formats from ClickHouse
-      let dateToUse = dateStr
-      
-      // If it's just a date (YYYY-MM-DD), add time component
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        dateToUse = `${dateStr}T12:00:00Z` // Use noon to avoid timezone edge cases
-      } 
-      // If it has space instead of T (e.g., "2024-12-05 01:15:00")
-      else if (dateStr.includes(' ') && !dateStr.includes('T')) {
-        dateToUse = dateStr.replace(' ', 'T') + 'Z'
-      }
-      // If it doesn't have Z, add it
-      else if (!dateStr.includes('Z') && dateStr.includes('T')) {
-        dateToUse = dateStr + 'Z'
-      }
-      
-      const date = new Date(dateToUse)
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        // Fallback: try to extract just the date part
-        const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/)
-        if (match) {
-          return `${parseInt(match[2])}/${parseInt(match[3])}`
-        }
-        return dateStr
-      }
-      
-      return date.toLocaleDateString('en-US', { 
-        timeZone: 'America/New_York',
-        month: 'numeric',
-        day: 'numeric'
-      })
-    } catch {
-      // Fallback: try to extract MM/DD from the string
-      const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/)
-      if (match) {
-        return `${parseInt(match[2])}/${parseInt(match[3])}`
-      }
-      return dateStr
-    }
-  }
   
   // Helper to format bookmaker name nicely
   const formatBookmaker = (bookmaker?: string): string => {
@@ -3284,7 +3274,7 @@ function SportsEngineContent() {
       <div className={styles.gameDetailsExpanded}>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Date</span>
-          <span className={styles.detailValue}>{formatDateEST(game.game_date)}</span>
+          <span className={styles.detailValue}>{formatHistoricalDate(game.game_date)}</span>
         </div>
         <div className={styles.detailRow}>
           <span className={styles.detailLabel}>Final Score</span>
@@ -3353,7 +3343,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}
@@ -3383,7 +3373,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}
@@ -3416,7 +3406,7 @@ function SportsEngineContent() {
             className={`${styles.gameRow} ${game.hit ? styles.hit : styles.miss} ${styles.clickable}`}
             onClick={() => toggleGameExpanded(gameKey)}
           >
-            <span className={styles.gameDate}>{formatDateEST(game.game_date)}</span>
+            <span className={styles.gameDate}>{formatHistoricalDate(game.game_date)}</span>
             <span className={styles.gameTeamMatchup}>
               <span className={styles.scoreTeam}>{awayScore}</span>
               {awayLogo && <img src={awayLogo} alt={awayAbbr} className={styles.teamLogoSmall} />}
@@ -4912,7 +4902,7 @@ function SportsEngineContent() {
                           style={{ cursor: 'pointer' }}
                         >
                           <div className={styles.upcomingGameTime}>
-                            {formatGameTime(prop.game_time)}
+                            {formatUpcomingDate(prop.game_time)}
                           </div>
                           
                           <div className={styles.upcomingBetDisplay}>
@@ -5034,7 +5024,7 @@ function SportsEngineContent() {
                           )}
                         >
                           <div className={styles.upcomingGameTime}>
-                            {formatGameTime(game.game_time)}
+                            {formatUpcomingDate(game.game_time)}
                           </div>
                           
                           {/* The Bet Display */}
