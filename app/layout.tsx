@@ -92,25 +92,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en">
         <head>
           <StructuredData />
-          {/* Global error handler - must come before affiliate tracker */}
-          <Script id="error-handler" strategy="beforeInteractive">
-            {`
-              window.onerror = function(msg, url, lineNo, columnNo, error) {
-                if (url && url.includes('affiliate-tracker')) {
-                  console.warn('Affiliate tracker error suppressed:', msg);
-                  return true;
-                }
-                return false;
-              };
-            `}
-          </Script>
-          {/* Pushlap Growth Affiliate Tracker */}
+          {/* Pushlap Growth Affiliate Tracker - TEMPORARILY DISABLED due to script bug */}
+          {/* Contact pushlap support - their script crashes on null.substring() */}
+          {/*
           <Script
             src="https://pushlapgrowth.com/affiliate-tracker.js"
             data-affiliate="true"
             data-program-id="87f11ddf-fd49-4bc3-9130-d84475a34fc1"
             strategy="afterInteractive"
           />
+          */}
           {/* jQuery for Stripe Integration */}
           <Script
             src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
