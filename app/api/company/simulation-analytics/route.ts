@@ -23,7 +23,7 @@ export async function GET() {
   try {
     // Fetch all simulation events
     const { data: events, error } = await supabaseFunnel
-      .from('simulation_events')
+      .from('simulator_events')
       .select('*')
       .order('created_at', { ascending: false })
 
