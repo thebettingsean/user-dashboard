@@ -2229,7 +2229,7 @@ function SportsSelectorPageContent() {
           <button
             type="button"
             className={dashboardStyles.builderButton}
-            onClick={() => router.push('/sports-engine')}
+            onClick={() => router.push('/builder')}
           >
             <FaHammer size={14} />
             <span>Builder</span>

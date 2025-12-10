@@ -80,7 +80,7 @@ export default function Navbar() {
                 Game Scripts
               </Link>
               
-              <Link href="/sports-engine" style={styles.navLinkHighlight}>
+              <Link href="/builder" style={styles.navLinkHighlight}>
                 Builder 1.0
               </Link>
 
@@ -334,7 +334,7 @@ export default function Navbar() {
               Game Scripts
             </Link>
             
-            <Link href="/sports-engine" style={styles.mobileLinkHighlight} onClick={closeMobileMenu}>
+            <Link href="/builder" style={styles.mobileLinkHighlight} onClick={closeMobileMenu}>
               Builder 1.0
             </Link>
 

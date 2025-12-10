@@ -2743,7 +2743,7 @@ export default function DashboardLayout({ sport, initialTab, initialFilter }: Da
           <button
             type="button"
             className={styles.builderButton}
-            onClick={() => router.push('/sports-engine')}
+            onClick={() => router.push('/builder')}
           >
             <FaHammer size={14} />
             <span>Builder</span>

@@ -3050,9 +3050,9 @@
 .modal {
   background: #1a1a24;
   border: 1px solid #2a2a3a;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 90%;
-  max-width: 500px;
+  max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -3061,14 +3061,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #2a2a3a;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .modalHeader h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: #fff;
+  text-align: left;
 }
 
 .modalClose {
@@ -3092,83 +3094,104 @@
 }
 
 .modalBody {
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .modalField {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.modalField:last-child {
+  margin-bottom: 0;
 }
 
 .modalField label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #ccc;
-  font-size: 0.875rem;
+  color: #aaa;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
 }
 
 .modalField input,
 .modalField textarea {
   width: 100%;
-  padding: 0.75rem;
-  background: #0a0a14;
+  padding: 0.75rem 1rem;
+  background: #12121a;
   border: 1px solid #2a2a3a;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-family: inherit;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.modalField input::placeholder,
+.modalField textarea::placeholder {
+  color: #555;
 }
 
 .modalField input:focus,
 .modalField textarea:focus {
   outline: none;
-  border-color: #4a9eff;
+  border-color: #3b82f6;
+  background: #15151f;
 }
 
 .modalField textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 90px;
 }
 
 .modalFooter {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-top: 1px solid #2a2a3a;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .modalCancel,
 .modalSave {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   transition: all 0.2s;
 }
 
 .modalCancel {
-  background: #2a2a3a;
-  color: #ccc;
+  background: transparent;
+  color: #888;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modalCancel:hover {
-  background: #3a3a4a;
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .modalSave {
-  background: #4a9eff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: #fff;
 }
 
 .modalSave:hover:not(:disabled) {
-  background: #5aaeff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .modalSave:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Success Modal */

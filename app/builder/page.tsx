@@ -1,40 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-
-// Redirect component
-function RedirectToBuilder() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  useEffect(() => {
-    const params = searchParams.toString()
-    router.replace(`/builder${params ? `?${params}` : ''}`)
-  }, [router, searchParams])
-  
-  return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: '#0a0a14',
-      color: '#888'
-    }}>
-      Redirecting to Builder...
-    </div>
-  )
-}
-
-export default function SportsEnginePage() {
-  return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0a14' }} />}>
-      <RedirectToBuilder />
-    </Suspense>
-  )
-}
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import styles from './builder.module.css'
 
 // Icons
 import { FaCheckCircle, FaToolbox } from "react-icons/fa"
@@ -460,10 +428,10 @@ function SportsEngineContent() {
   // Navigate to query type URL (seamless transition)
   const navigateToQueryType = (type: QueryType) => {
     const paths: Record<QueryType, string> = {
-      trend: '/sports-engine',
-      team: '/sports-engine/teams',
-      referee: '/sports-engine/referees',
-      prop: '/sports-engine/props'
+      trend: '/builder',
+      team: '/builder/teams',
+      referee: '/builder/referees',
+      prop: '/builder/props'
     }
     setQueryType(type) // Update state immediately for instant UI feedback
     router.push(paths[type], { scroll: false }) // Navigate without scroll reset
@@ -1167,7 +1135,7 @@ function SportsEngineContent() {
     
     // Build the full URL
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    return `${baseUrl}/sports-engine?${params.toString()}`
+    return `${baseUrl}/builder?${params.toString()}`
   }, [queryType, betType, side, timePeriod, location, division, conference, playoff, favorite, homeFavDog,
       ownDefenseRank, ownOffenseRank, defenseRank, offenseRank, ownDefenseStat, ownOffenseStat, defenseStat, offenseStat,
       spreadMin, spreadMax, totalMin, totalMax, mlMin, mlMax, spreadMoveMin, spreadMoveMax, totalMoveMin, totalMoveMax,
