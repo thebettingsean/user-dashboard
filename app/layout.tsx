@@ -92,13 +92,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en">
         <head>
           <StructuredData />
-          {/* Pushlap Growth Affiliate Tracker */}
+          {/* Pushlap Growth Affiliate Tracker - wrapped with error handling */}
           <Script
             src="https://pushlapgrowth.com/affiliate-tracker.js"
             data-affiliate="true"
             data-program-id="87f11ddf-fd49-4bc3-9130-d84475a34fc1"
             strategy="afterInteractive"
+            onError={(e) => console.warn('Affiliate tracker failed to load:', e)}
           />
+          <Script id="affiliate-error-handler" strategy="afterInteractive">
+            {`
+              window.onerror = function(msg, url, lineNo, columnNo, error) {
+                if (url && url.includes('affiliate-tracker')) {
+                  console.warn('Affiliate tracker error suppressed:', msg);
+                  return true; // Prevents the error from bubbling up
+                }
+                return false;
+              };
+            `}
+          </Script>
           {/* jQuery for Stripe Integration */}
           <Script
             src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
