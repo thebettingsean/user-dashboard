@@ -45,14 +45,6 @@
       "schedule": "45 */2 * * *"
     },
     {
-      "path": "/api/cron/generate-nfl-blueprint",
-      "schedule": "40 23 * * 3,4,5,6,0"
-    },
-    {
-      "path": "/api/cron/generate-nba-blueprint",
-      "schedule": "20 14,18 * * *"
-    },
-    {
       "path": "/api/cron/nfl-sync?task=completed",
       "schedule": "0,30 * * * *"
     },
