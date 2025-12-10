@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 // Create client lazily to avoid build-time errors
+// Uses the USERS Supabase project where simulation_events is stored
 function getSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.SUPABASE_USERS_URL || 'https://pkmqhozyorpmteytizut.supabase.co'
+  const key = process.env.SUPABASE_USERS_SERVICE_KEY
   
-  if (!url || !key) {
-    throw new Error('Supabase environment variables not configured')
+  if (!key) {
+    throw new Error('SUPABASE_USERS_SERVICE_KEY not configured')
   }
   
   return createClient(url, key)
