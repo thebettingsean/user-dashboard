@@ -379,7 +379,7 @@ export default function CustomerSimulationsDashboard() {
                       className={styles.sportBadgeSmall}
                       style={{ backgroundColor: sportColors[event.sport] || '#60a5fa' }}
                     >
-                      {sportLabels[event.sport]?.substring(0, 3).toUpperCase() || event.sport.substring(0, 3).toUpperCase()}
+                      {sportLabels[event.sport]?.substring(0, 3).toUpperCase() || event.sport?.substring(0, 3).toUpperCase() || 'N/A'}
                     </span>
                   </td>
                   <td>
