@@ -117,8 +117,8 @@ export async function GET() {
       )
       SELECT 
         count() as total_rows,
-        countDistinct(player_name) as unique_players,
-        countDistinct(game_id) as unique_games
+        countDistinct(p.player_name) as unique_players,
+        countDistinct(g.game_id) as unique_games
       FROM nfl_upcoming_games g
       INNER JOIN latest_lines ll ON g.game_id = ll.game_id
       INNER JOIN qualifying_players qp ON g.game_id = qp.game_id
