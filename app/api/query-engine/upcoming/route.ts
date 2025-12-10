@@ -498,7 +498,7 @@ export async function POST(request: Request) {
       LEFT JOIN opening_lines ol ON g.game_id = ol.game_id AND ll.bookmaker = ol.bookmaker
       LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
       LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
-      WHERE 1=1
+      WHERE g.game_time > now()
       ${whereClause}
       ORDER BY g.game_time ASC, ll.bookmaker
     `

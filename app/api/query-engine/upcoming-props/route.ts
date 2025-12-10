@@ -348,7 +348,7 @@ export async function POST(request: Request) {
         AND p.player_name = qp.player_name 
         AND p.prop_type = qp.prop_type
       ${positionJoinClause}
-      WHERE 1=1
+      WHERE g.game_time > now()
       ${gameWhereClause}
       ${positionCondition}
       ${playerTeamCondition}
