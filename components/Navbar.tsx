@@ -169,6 +169,9 @@ export default function Navbar() {
                     <Link href="/fantasy" style={styles.dropdownLink}>
                       Fantasy
                     </Link>
+                    <Link href="/simulator" style={styles.dropdownLink}>
+                      Simulator
+                    </Link>
                     <Link href="/prop-parlay-tool" style={styles.dropdownLink}>
                       Perfect Parlays
                     </Link>
@@ -387,6 +390,7 @@ export default function Navbar() {
               {openDropdown === 'tools' && (
                 <div style={styles.mobileSubMenu}>
                   <Link href="/fantasy" style={styles.mobileSubLink} onClick={closeMobileMenu}>Fantasy</Link>
+                  <Link href="/simulator" style={styles.mobileSubLink} onClick={closeMobileMenu}>Simulator</Link>
                   <Link href="/prop-parlay-tool" style={styles.mobileSubLink} onClick={closeMobileMenu}>Perfect Parlays</Link>
                   <Link href="/bankroll-builder" style={styles.mobileSubLink} onClick={closeMobileMenu}>Bankroll Builder</Link>
                   <Link href="/betting-guide" style={styles.mobileSubLink} onClick={closeMobileMenu}>Betting Guide</Link>
