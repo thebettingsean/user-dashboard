@@ -10,13 +10,24 @@ import { PiFootballHelmetDuotone } from 'react-icons/pi'
 import { GiWhistle } from 'react-icons/gi'
 import { TbTargetArrow } from 'react-icons/tb'
 
+interface LastResultSummary {
+  hits: number
+  misses: number
+  hit_rate: number
+  total_games: number
+  roi?: number
+}
+
 interface SavedQuery {
   id: string
   name: string
   description?: string
   query_config: any
   created_at: string
+  updated_at?: string
   sport: string
+  last_result_summary?: LastResultSummary
+  run_count?: number
 }
 
 export default function MyBuildsPage() {
@@ -111,6 +122,83 @@ export default function MyBuildsPage() {
     })
   }
 
+  // Format query config into readable tags
+  const getConfigTags = (config: any): string[] => {
+    const tags: string[] = []
+    
+    if (config.betType) {
+      const betLabels: Record<string, string> = {
+        'spread': 'Spread',
+        'total': 'Total O/U',
+        'moneyline': 'Moneyline'
+      }
+      tags.push(betLabels[config.betType] || config.betType)
+    }
+    
+    if (config.side) {
+      const sideLabels: Record<string, string> = {
+        'over': 'Over',
+        'under': 'Under',
+        'home': 'Home',
+        'away': 'Away',
+        'favorite': 'Favorite',
+        'underdog': 'Underdog'
+      }
+      tags.push(sideLabels[config.side] || config.side)
+    }
+    
+    if (config.timePeriod) {
+      const timeLabels: Record<string, string> = {
+        'since_2023': 'Since 2023',
+        'since_2022': 'Since 2022',
+        'L2years': 'Last 2 Years',
+        'L3years': 'Last 3 Years',
+        'season': 'This Season'
+      }
+      tags.push(timeLabels[config.timePeriod] || config.timePeriod)
+    }
+    
+    if (config.location && config.location !== 'any') {
+      tags.push(config.location === 'home' ? 'Home' : 'Away')
+    }
+    
+    if (config.division && config.division !== 'any') {
+      tags.push(config.division === 'yes' ? 'Division' : 'Non-Division')
+    }
+    
+    if (config.conference && config.conference !== 'any') {
+      tags.push(config.conference === 'conference' ? 'Conference' : 'Non-Conference')
+    }
+    
+    if (config.favorite && config.favorite !== 'any') {
+      tags.push(config.favorite === 'favorite' ? 'Favorite' : 'Underdog')
+    }
+    
+    // Props specific
+    if (config.propStat) {
+      const statLabels: Record<string, string> = {
+        'receiving_yards': 'Rec Yards',
+        'receptions': 'Receptions',
+        'pass_yards': 'Pass Yards',
+        'rush_yards': 'Rush Yards',
+        'pass_tds': 'Pass TDs'
+      }
+      tags.push(statLabels[config.propStat] || config.propStat)
+    }
+    
+    if (config.position) {
+      tags.push(config.position.toUpperCase())
+    }
+    
+    if (config.propLineMin || config.propLineMax) {
+      const min = config.propLineMin || '0'
+      const max = config.propLineMax || '∞'
+      tags.push(`Line: ${min}-${max}`)
+    }
+    
+    return tags.slice(0, 5) // Limit to 5 tags for display
+  }
+
   if (!isLoaded || loading) {
     return (
       <div className={styles.container}>
@@ -159,16 +247,78 @@ export default function MyBuildsPage() {
         </div>
       ) : (
         <div className={styles.buildsList}>
-          {builds.map((build) => (
-            <div key={build.id} className={styles.buildCard}>
-              <div className={styles.buildIcon}>
-                {getQueryTypeIcon(build.query_config)}
-              </div>
-              <div className={styles.buildInfo}>
-                <h3 className={styles.buildName}>{build.name}</h3>
-                {build.description && (
-                  <p className={styles.buildDescription}>{build.description}</p>
+          {builds.map((build) => {
+            const configTags = getConfigTags(build.query_config)
+            const summary = build.last_result_summary
+            
+            return (
+              <div key={build.id} className={styles.buildCard}>
+                <div className={styles.buildCardHeader}>
+                  <div className={styles.buildIcon}>
+                    {getQueryTypeIcon(build.query_config)}
+                  </div>
+                  <div className={styles.buildTitleSection}>
+                    <h3 className={styles.buildName}>{build.name}</h3>
+                    {build.description && (
+                      <p className={styles.buildDescription}>{build.description}</p>
+                    )}
+                  </div>
+                  <div className={styles.buildActions}>
+                    <button 
+                      className={styles.runButton}
+                      onClick={() => handleLoadBuild(build)}
+                    >
+                      <FiPlay />
+                      Run
+                    </button>
+                    <button 
+                      className={styles.deleteButton}
+                      onClick={() => handleDelete(build.id)}
+                      disabled={deleting === build.id}
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Config Tags */}
+                {configTags.length > 0 && (
+                  <div className={styles.configTags}>
+                    {configTags.map((tag, i) => (
+                      <span key={i} className={styles.configTag}>{tag}</span>
+                    ))}
+                  </div>
                 )}
+                
+                {/* Results Summary */}
+                {summary && (
+                  <div className={styles.resultsSummary}>
+                    <div className={styles.statBox}>
+                      <span className={styles.statValue}>{summary.hits}-{summary.misses}</span>
+                      <span className={styles.statLabel}>Record</span>
+                    </div>
+                    <div className={styles.statBox}>
+                      <span className={`${styles.statValue} ${summary.hit_rate >= 52 ? styles.positive : summary.hit_rate < 48 ? styles.negative : ''}`}>
+                        {summary.hit_rate.toFixed(1)}%
+                      </span>
+                      <span className={styles.statLabel}>Hit Rate</span>
+                    </div>
+                    <div className={styles.statBox}>
+                      <span className={styles.statValue}>{summary.total_games}</span>
+                      <span className={styles.statLabel}>Games</span>
+                    </div>
+                    {summary.roi !== undefined && (
+                      <div className={styles.statBox}>
+                        <span className={`${styles.statValue} ${summary.roi >= 0 ? styles.positive : styles.negative}`}>
+                          {summary.roi >= 0 ? '+' : ''}{summary.roi.toFixed(1)}%
+                        </span>
+                        <span className={styles.statLabel}>ROI</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Footer Meta */}
                 <div className={styles.buildMeta}>
                   <span className={styles.metaItem}>
                     <FiCalendar />
@@ -177,29 +327,19 @@ export default function MyBuildsPage() {
                   <span className={styles.metaItem}>
                     {build.sport?.toUpperCase() || 'NFL'}
                   </span>
+                  {build.run_count && build.run_count > 0 && (
+                    <span className={styles.metaItem}>
+                      Run {build.run_count}x
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className={styles.buildActions}>
-                <button 
-                  className={styles.runButton}
-                  onClick={() => handleLoadBuild(build)}
-                >
-                  <FiPlay />
-                  Run
-                </button>
-                <button 
-                  className={styles.deleteButton}
-                  onClick={() => handleDelete(build.id)}
-                  disabled={deleting === build.id}
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
   )
 }
+
 

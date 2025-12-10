@@ -658,12 +658,13 @@ function SportsEngineContent() {
         minPassAttempts
       })
       
-      // Save last result summary if available
+      // Save last result summary if available (including ROI)
       const lastResultSummary = result ? {
         hits: result.hits,
         misses: result.misses,
         hit_rate: result.hit_rate,
-        total_games: result.total_games
+        total_games: result.total_games,
+        roi: result.estimated_roi
       } : null
       
       const response = await fetch('/api/saved-queries', {
