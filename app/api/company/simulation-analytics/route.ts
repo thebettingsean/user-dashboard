@@ -1,18 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Create client lazily to avoid build-time errors
-// Uses the USERS Supabase project where simulation_events is stored
-function getSupabaseClient() {
-  const url = process.env.SUPABASE_USERS_URL || 'https://pkmqhozyorpmteytizut.supabase.co'
-  const key = process.env.SUPABASE_USERS_SERVICE_KEY
-  
-  if (!key) {
-    throw new Error('SUPABASE_USERS_SERVICE_KEY not configured')
-  }
-  
-  return createClient(url, key)
-}
+import { supabaseFunnel } from '@/lib/supabase-funnel'
 
 interface SimulationEvent {
   id: string
@@ -34,10 +21,8 @@ interface ParsedMetadata {
 
 export async function GET() {
   try {
-    const supabase = getSupabaseClient()
-    
     // Fetch all simulation events
-    const { data: events, error } = await supabase
+    const { data: events, error } = await supabaseFunnel
       .from('simulation_events')
       .select('*')
       .order('created_at', { ascending: false })
