@@ -3614,8 +3614,8 @@ function SportsEngineContent() {
             </button>
             
             <button 
-              className={`${styles.sidebarItem} ${activeSection === 'myBuilds' ? styles.sidebarItemActive : ''}`}
-              onClick={() => { setActiveSection('myBuilds'); setSidebarOpen(false); }}
+              className={styles.sidebarItem}
+              onClick={() => router.push('/builder/my-builds')}
             >
               <FaToolbox className={styles.sidebarIcon} />
               <span>My Builds</span>
@@ -3669,81 +3669,6 @@ function SportsEngineContent() {
             className={styles.sidebarOverlay}
             onClick={() => setSidebarOpen(false)}
           />
-        )}
-
-        {/* My Builds Section */}
-        {activeSection === 'myBuilds' && (
-          <div className={styles.myBuildsSection}>
-            <div className={styles.myBuildsHeader}>
-              <h2>My Saved Builds</h2>
-              <button
-                className={styles.closeMyBuilds}
-                onClick={() => setActiveSection('builder')}
-              >
-                <FiChevronLeft /> Back to Builder
-              </button>
-            </div>
-            
-            {!isSignedIn ? (
-              <div className={styles.myBuildsEmpty}>
-                <p>Please sign in to save and load query builds.</p>
-              </div>
-            ) : loadingSavedQueries ? (
-              <div className={styles.myBuildsEmpty}>
-                <p>Loading saved builds...</p>
-              </div>
-            ) : savedQueries.length === 0 ? (
-              <div className={styles.myBuildsEmpty}>
-                <p>No saved builds yet. Create a build and click "Save Build" to get started!</p>
-              </div>
-            ) : (
-              <div className={styles.savedQueriesList}>
-                {savedQueries.map((query) => (
-                  <div key={query.id} className={styles.savedQueryItem}>
-                    <div className={styles.savedQueryHeader}>
-                      <h3>{query.name}</h3>
-                      <div className={styles.savedQueryActions}>
-                        <button
-                          className={styles.loadQueryBtn}
-                          onClick={() => handleLoadQuery(query)}
-                          title="Load this build"
-                        >
-                          Load
-                        </button>
-                        <button
-                          className={styles.deleteQueryBtn}
-                          onClick={() => handleDeleteQuery(query.id)}
-                          disabled={deletingQueryId === query.id}
-                          title="Delete this build"
-                        >
-                          {deletingQueryId === query.id ? '...' : 'Delete'}
-                        </button>
-                      </div>
-                    </div>
-                    {query.description && (
-                      <p className={styles.savedQueryDescription}>{query.description}</p>
-                    )}
-                    <div className={styles.savedQueryMeta}>
-                      <span>Type: {query.query_config?.queryType || 'unknown'}</span>
-                      {query.run_count > 0 && (
-                        <span>Used {query.run_count} time{query.run_count !== 1 ? 's' : ''}</span>
-                      )}
-                      {query.last_result_summary && (
-                        <span>
-                          Last: {query.last_result_summary.hit_rate}% ({query.last_result_summary.hits}-{query.last_result_summary.misses})
-                        </span>
-                      )}
-                    </div>
-                    {query.updated_at && (
-                      <div className={styles.savedQueryDate}>
-                        Updated {new Date(query.updated_at).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         )}
 
         {activeSection === 'builder' && (
