@@ -1351,6 +1351,9 @@ function getPositionValue(position: PlayerPosition): string | null {
  * Build a subquery condition for player prop line filters
  * Returns a condition like: g.game_id IN (SELECT game_id FROM nfl_prop_lines JOIN players ... GROUP BY game_id HAVING COUNT(...) >= N)
  * 
+ * IMPORTANT: This creates a NON-CORRELATED subquery that doesn't reference the outer query.
+ * ClickHouse doesn't support correlated subqueries in IN clauses.
+ * 
  * @param filters Array of PlayerStatFilter
  * @param teamSide 'home' | 'away' - which team's players to check
  * @param tableAlias The game table alias (e.g., 'g')
@@ -1389,27 +1392,25 @@ export function buildPlayerPropLineSubquery(
     
     if (lineConditions.length === 0) continue
     
-    // Determine team column based on side
-    // We join prop_lines with teams to match team names to IDs
-    const teamJoinCondition = teamSide === 'home' 
-      ? `pl.home_team = tm.abbreviation OR pl.home_team = tm.name`
-      : `pl.away_team = tm.abbreviation OR pl.away_team = tm.name`
+    // Determine which team column to match based on side
+    // For home team players: player's team should match pl.home_team
+    // For away team players: player's team should match pl.away_team
+    const teamMatchColumn = teamSide === 'home' ? 'pl.home_team' : 'pl.away_team'
     
-    const teamIdColumn = teamSide === 'home' ? 'home_team_id' : 'away_team_id'
-    
-    // Build subquery for this filter
-    // This matches games where a player of the specified position on the specified team
-    // has a prop line matching the criteria
+    // Build NON-CORRELATED subquery for this filter
+    // We join players -> teams to get the team abbreviation/name
+    // Then check if it matches the home_team or away_team in the prop line
+    // This is completely self-contained - no reference to the outer query's game table
     const subquery = `
       ${tableAlias}.game_id IN (
         SELECT DISTINCT pl.game_id
         FROM nfl_prop_lines pl
         JOIN players p ON LOWER(REPLACE(pl.player_name, '.', '')) = LOWER(REPLACE(p.name, '.', '')) AND p.sport = 'nfl'
-        JOIN teams tm ON tm.espn_team_id = ${tableAlias}.${teamIdColumn} AND tm.sport = 'nfl'
+        JOIN teams tm ON tm.team_id = p.team_id AND tm.sport = 'nfl'
         WHERE pl.prop_type = '${propType}'
           AND p.position = '${positionValue}'
           AND pl.line > 0
-          AND (${teamJoinCondition})
+          AND (LOWER(tm.abbreviation) = LOWER(${teamMatchColumn}) OR LOWER(tm.name) = LOWER(${teamMatchColumn}))
           AND ${lineConditions.join(' AND ')}
         GROUP BY pl.game_id
         HAVING COUNT(DISTINCT pl.player_name) >= ${filter.count}

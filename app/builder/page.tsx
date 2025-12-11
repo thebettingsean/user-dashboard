@@ -585,6 +585,10 @@ function SportsEngineContent() {
       prop: '/builder/props'
     }
     setQueryType(type) // Update state immediately for instant UI feedback
+    // Disable upcoming view for refs since ref data isn't available for upcoming games
+    if (type === 'referee') {
+      setShowUpcoming(false)
+    }
     router.push(paths[type], { scroll: false }) // Navigate without scroll reset
   }
   
@@ -5271,8 +5275,10 @@ function SportsEngineContent() {
                     Historical
                   </button>
                   <button
-                    className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''}`}
-                    onClick={() => setShowUpcoming(true)}
+                    className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''} ${queryType === 'referee' ? styles.disabled : ''}`}
+                    onClick={() => queryType !== 'referee' && setShowUpcoming(true)}
+                    disabled={queryType === 'referee'}
+                    title={queryType === 'referee' ? 'Referee data not available for upcoming games' : ''}
                   >
                     <BsCalendarEvent /> Upcoming
                   </button>

@@ -2055,6 +2055,13 @@
   color: #fff;
 }
 
+.toggleBtn.disabled,
+.toggleBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .headerActions {
   display: flex;
   align-items: center;
