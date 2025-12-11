@@ -214,9 +214,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         boxConditions.push(`${rankCondition} <= 10 AND ${rankCondition} > 0`)
         appliedFilters.push(`vs Top 10 ${statLabel}`)
         break
-      case 'top_15':
-        boxConditions.push(`${rankCondition} <= 15 AND ${rankCondition} > 0`)
-        appliedFilters.push(`vs Top 15 ${statLabel}`)
+      case 'top_16':
+        boxConditions.push(`${rankCondition} <= 16 AND ${rankCondition} > 0`)
+        appliedFilters.push(`vs Top 16 ${statLabel}`)
         break
       case 'bottom_5':
         boxConditions.push(`${rankCondition} >= 28`)
@@ -226,9 +226,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         boxConditions.push(`${rankCondition} >= 23`)
         appliedFilters.push(`vs Bottom 10 ${statLabel}`)
         break
-      case 'bottom_15':
-        boxConditions.push(`${rankCondition} >= 18`)
-        appliedFilters.push(`vs Bottom 15 ${statLabel}`)
+      case 'bottom_16':
+        boxConditions.push(`${rankCondition} >= 17`)
+        appliedFilters.push(`vs Bottom 16 ${statLabel}`)
         break
     }
   }
@@ -453,9 +453,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         oppRankConditions.push(`opp_rank.${column} <= 10 AND opp_rank.${column} > 0`)
         appliedFilters.push('vs Top 10 Offense')
         break
-      case 'top_15':
-        oppRankConditions.push(`opp_rank.${column} <= 15 AND opp_rank.${column} > 0`)
-        appliedFilters.push('vs Top 15 Offense')
+      case 'top_16':
+        oppRankConditions.push(`opp_rank.${column} <= 16 AND opp_rank.${column} > 0`)
+        appliedFilters.push('vs Top 16 Offense')
         break
       case 'bottom_5':
         oppRankConditions.push(`opp_rank.${column} >= 28 AND opp_rank.${column} <= 32`)
@@ -465,9 +465,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         oppRankConditions.push(`opp_rank.${column} >= 23 AND opp_rank.${column} <= 32`)
         appliedFilters.push('vs Bottom 10 Offense')
         break
-      case 'bottom_15':
-        oppRankConditions.push(`opp_rank.${column} >= 18 AND opp_rank.${column} <= 32`)
-        appliedFilters.push('vs Bottom 15 Offense')
+      case 'bottom_16':
+        oppRankConditions.push(`opp_rank.${column} >= 17 AND opp_rank.${column} <= 32`)
+        appliedFilters.push('vs Bottom 16 Offense')
         break
     }
   }

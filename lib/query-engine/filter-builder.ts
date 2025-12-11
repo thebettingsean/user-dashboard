@@ -260,14 +260,14 @@ export function buildDefenseRankFilter(
       return `${tableAlias}.${column} <= 5`
     case 'top_10':
       return `${tableAlias}.${column} <= 10`
-    case 'top_15':
-      return `${tableAlias}.${column} <= 15`
+    case 'top_16':
+      return `${tableAlias}.${column} <= 16`
     case 'bottom_5':
       return `${tableAlias}.${column} >= 28`  // 32 - 5 + 1
     case 'bottom_10':
       return `${tableAlias}.${column} >= 23` // 32 - 10 + 1
-    case 'bottom_15':
-      return `${tableAlias}.${column} >= 18` // 32 - 15 + 1
+    case 'bottom_16':
+      return `${tableAlias}.${column} >= 17` // 32 - 16 + 1
     default:
       return null
   }
@@ -299,14 +299,14 @@ export function buildVsOffenseRankFilter(
       return `${fullColumn} <= 5 AND ${fullColumn} > 0`
     case 'top_10':
       return `${fullColumn} <= 10 AND ${fullColumn} > 0`
-    case 'top_15':
-      return `${fullColumn} <= 15 AND ${fullColumn} > 0`
+    case 'top_16':
+      return `${fullColumn} <= 16 AND ${fullColumn} > 0`
     case 'bottom_5':
       return `${fullColumn} >= 28 AND ${fullColumn} <= 32`
     case 'bottom_10':
       return `${fullColumn} >= 23 AND ${fullColumn} <= 32`
-    case 'bottom_15':
-      return `${fullColumn} >= 18 AND ${fullColumn} <= 32`
+    case 'bottom_16':
+      return `${fullColumn} >= 17 AND ${fullColumn} <= 32`
     default:
       return null
   }
@@ -622,10 +622,10 @@ function buildRankRangeSQL(
   switch (rank) {
     case 'top_5': return `${column} <= 5 AND ${column} > 0`
     case 'top_10': return `${column} <= 10 AND ${column} > 0`
-    case 'top_15': return `${column} <= 15 AND ${column} > 0`
+    case 'top_16': return `${column} <= 16 AND ${column} > 0`
     case 'bottom_5': return `${column} >= 28 AND ${column} <= 32`
     case 'bottom_10': return `${column} >= 23 AND ${column} <= 32`
-    case 'bottom_15': return `${column} >= 18 AND ${column} <= 32`
+    case 'bottom_16': return `${column} >= 17 AND ${column} <= 32`
     default: return null
   }
 }

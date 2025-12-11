@@ -1835,17 +1835,16 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {defenseRank !== 'any' && (
                       <select value={defenseStat} onChange={(e) => setDefenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
+                        <option value="points">vs Points</option>
                         <option value="pass">vs Pass</option>
                         <option value="rush">vs Rush</option>
-                        <option value="points">vs Points</option>
                       </select>
                     )}
                   </div>
@@ -1855,14 +1854,13 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {offenseRank !== 'any' && (
                       <select value={offenseStat} onChange={(e) => setOffenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
                         <option value="points">Points</option>
                         <option value="pass">Passing</option>
                         <option value="rush">Rushing</option>
@@ -1899,14 +1897,14 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {awayTeamDefenseRank !== 'any' && (
                       <select value={awayTeamDefenseStat} onChange={(e) => setAwayTeamDefenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
+                        <option value="points">Points</option>
                         <option value="pass">Pass</option>
                         <option value="rush">Rush</option>
                       </select>
@@ -1918,16 +1916,16 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {awayTeamOffenseRank !== 'any' && (
                       <select value={awayTeamOffenseStat} onChange={(e) => setAwayTeamOffenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
                         <option value="points">Pts</option>
                         <option value="pass">Pass</option>
+                        <option value="rush">Rush</option>
                       </select>
                     )}
                   </div>
@@ -1946,14 +1944,14 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {homeTeamDefenseRank !== 'any' && (
                       <select value={homeTeamDefenseStat} onChange={(e) => setHomeTeamDefenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
+                        <option value="points">Points</option>
                         <option value="pass">Pass</option>
                         <option value="rush">Rush</option>
                       </select>
@@ -1965,16 +1963,16 @@ export default function TestEnginePage() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {homeTeamOffenseRank !== 'any' && (
                       <select value={homeTeamOffenseStat} onChange={(e) => setHomeTeamOffenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
                         <option value="points">Pts</option>
                         <option value="pass">Pass</option>
+                        <option value="rush">Rush</option>
                       </select>
                     )}
                   </div>

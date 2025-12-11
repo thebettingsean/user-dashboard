@@ -174,8 +174,8 @@ export async function POST(request: Request) {
         case 'top_10':
           rankCondition = `((${homeCol} <= 10 AND ${homeCol} > 0) OR (${awayCol} <= 10 AND ${awayCol} > 0))`
           break
-        case 'top_15':
-          rankCondition = `((${homeCol} <= 15 AND ${homeCol} > 0) OR (${awayCol} <= 15 AND ${awayCol} > 0))`
+        case 'top_16':
+          rankCondition = `((${homeCol} <= 16 AND ${homeCol} > 0) OR (${awayCol} <= 16 AND ${awayCol} > 0))`
           break
         case 'bottom_5':
           rankCondition = `(${homeCol} >= 28 OR ${awayCol} >= 28)`
@@ -183,8 +183,8 @@ export async function POST(request: Request) {
         case 'bottom_10':
           rankCondition = `(${homeCol} >= 23 OR ${awayCol} >= 23)`
           break
-        case 'bottom_15':
-          rankCondition = `(${homeCol} >= 18 OR ${awayCol} >= 18)`
+        case 'bottom_16':
+          rankCondition = `(${homeCol} >= 17 OR ${awayCol} >= 17)`
           break
       }
       if (rankCondition) {

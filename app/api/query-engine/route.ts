@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         is_playoff: ['playoff', 'regular', 'any'],
         is_favorite: ['favorite', 'underdog', 'any'],
         team_result: ['won', 'lost', 'any'],
-        vs_defense_rank: ['top_5', 'top_10', 'top_15', 'bottom_5', 'bottom_10', 'bottom_15', 'any'],
+        vs_defense_rank: ['top_5', 'top_10', 'top_16', 'bottom_5', 'bottom_10', 'bottom_16', 'any'],
         line_movement: ['positive', 'negative', 'any'],
         spread_range: 'object { min: number, max: number }',
         total_range: 'object { min: number, max: number }'

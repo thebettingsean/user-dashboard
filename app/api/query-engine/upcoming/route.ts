@@ -199,10 +199,10 @@ export async function POST(request: Request) {
       switch (filters.own_offense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
-        case 'top_15': conditions.push(`${col} <= 15 AND ${col} > 0`); break
+        case 'top_16': conditions.push(`${col} <= 16 AND ${col} > 0`); break
         case 'bottom_5': conditions.push(`${col} >= 28`); break
         case 'bottom_10': conditions.push(`${col} >= 23`); break
-        case 'bottom_15': conditions.push(`${col} >= 18`); break
+        case 'bottom_16': conditions.push(`${col} >= 17`); break
       }
       appliedFilters.push(`Team ${filters.own_offense_rank.replace('_', ' ')} ${statLabel}`)
     }
@@ -233,10 +233,10 @@ export async function POST(request: Request) {
       switch (filters.own_defense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
-        case 'top_15': conditions.push(`${col} <= 15 AND ${col} > 0`); break
+        case 'top_16': conditions.push(`${col} <= 16 AND ${col} > 0`); break
         case 'bottom_5': conditions.push(`${col} >= 28`); break
         case 'bottom_10': conditions.push(`${col} >= 23`); break
-        case 'bottom_15': conditions.push(`${col} >= 18`); break
+        case 'bottom_16': conditions.push(`${col} >= 17`); break
       }
       appliedFilters.push(`Team ${filters.own_defense_rank.replace('_', ' ')} ${statLabel}`)
     }
@@ -267,10 +267,10 @@ export async function POST(request: Request) {
       switch (filters.vs_offense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
-        case 'top_15': conditions.push(`${col} <= 15 AND ${col} > 0`); break
+        case 'top_16': conditions.push(`${col} <= 16 AND ${col} > 0`); break
         case 'bottom_5': conditions.push(`${col} >= 28`); break
         case 'bottom_10': conditions.push(`${col} >= 23`); break
-        case 'bottom_15': conditions.push(`${col} >= 18`); break
+        case 'bottom_16': conditions.push(`${col} >= 17`); break
       }
       appliedFilters.push(`vs ${filters.vs_offense_rank.replace('_', ' ')} ${statLabel}`)
     }
@@ -302,10 +302,10 @@ export async function POST(request: Request) {
       switch (filters.vs_defense_rank) {
         case 'top_5': conditions.push(`${col} <= 5 AND ${col} > 0`); break
         case 'top_10': conditions.push(`${col} <= 10 AND ${col} > 0`); break
-        case 'top_15': conditions.push(`${col} <= 15 AND ${col} > 0`); break
+        case 'top_16': conditions.push(`${col} <= 16 AND ${col} > 0`); break
         case 'bottom_5': conditions.push(`${col} >= 28`); break
         case 'bottom_10': conditions.push(`${col} >= 23`); break
-        case 'bottom_15': conditions.push(`${col} >= 18`); break
+        case 'bottom_16': conditions.push(`${col} >= 17`); break
       }
       appliedFilters.push(`vs ${filters.vs_defense_rank.replace('_', ' ')} ${statLabel}`)
     }

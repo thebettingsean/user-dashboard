@@ -22,7 +22,7 @@ export type FavoriteFilter = 'favorite' | 'underdog' | 'any' | boolean
 // For O/U - describes the game situation (home team's status)
 export type HomeFavDogFilter = 'home_fav' | 'home_dog' | 'any'
 
-export type DefenseRankFilter = 'top_5' | 'top_10' | 'top_15' | 'bottom_5' | 'bottom_10' | 'bottom_15' | 'any'
+export type DefenseRankFilter = 'top_5' | 'top_10' | 'top_16' | 'bottom_5' | 'bottom_10' | 'bottom_16' | 'any'
 
 export type PlayoffFilter = 'playoff' | 'regular' | 'any'
 
@@ -37,7 +37,7 @@ export interface Range {
 }
 
 // Opponent ranking filter (1-32)
-export type OpponentRankFilter = 'top_5' | 'top_10' | 'top_15' | 'bottom_5' | 'bottom_10' | 'bottom_15' | 'any'
+export type OpponentRankFilter = 'top_5' | 'top_10' | 'top_16' | 'bottom_5' | 'bottom_10' | 'bottom_16' | 'any'
 
 // Stat type for team rankings (now includes position-specific stats)
 export type RankStatType = 'overall' | 'pass' | 'rush' | 'total_yards' | 'points' | 'wr' | 'te' | 'rb'

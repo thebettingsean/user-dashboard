@@ -318,9 +318,9 @@ function SportsEngineContent() {
   const [favorite, setFavorite] = useState<string>('any')
   // Subject team's own rankings (Team Defense/Offense)
   const [ownDefenseRank, setOwnDefenseRank] = useState<string>('any')
-  const [ownDefenseStat, setOwnDefenseStat] = useState<string>('overall')
+  const [ownDefenseStat, setOwnDefenseStat] = useState<string>('points')
   const [ownOffenseRank, setOwnOffenseRank] = useState<string>('any')
-  const [ownOffenseStat, setOwnOffenseStat] = useState<string>('overall')
+  const [ownOffenseStat, setOwnOffenseStat] = useState<string>('points')
   
   // Opponent's rankings (vs Defense/Offense)
   const [defenseRank, setDefenseRank] = useState<string>('any')
@@ -384,13 +384,13 @@ function SportsEngineContent() {
   
   // O/U Four-Way Team Stats
   const [homeTeamDefenseRank, setHomeTeamDefenseRank] = useState<string>('any')
-  const [homeTeamDefenseStat, setHomeTeamDefenseStat] = useState<string>('overall')
+  const [homeTeamDefenseStat, setHomeTeamDefenseStat] = useState<string>('points')
   const [homeTeamOffenseRank, setHomeTeamOffenseRank] = useState<string>('any')
-  const [homeTeamOffenseStat, setHomeTeamOffenseStat] = useState<string>('overall')
+  const [homeTeamOffenseStat, setHomeTeamOffenseStat] = useState<string>('points')
   const [awayTeamDefenseRank, setAwayTeamDefenseRank] = useState<string>('any')
-  const [awayTeamDefenseStat, setAwayTeamDefenseStat] = useState<string>('overall')
+  const [awayTeamDefenseStat, setAwayTeamDefenseStat] = useState<string>('points')
   const [awayTeamOffenseRank, setAwayTeamOffenseRank] = useState<string>('any')
-  const [awayTeamOffenseStat, setAwayTeamOffenseStat] = useState<string>('overall')
+  const [awayTeamOffenseStat, setAwayTeamOffenseStat] = useState<string>('points')
   
   // Momentum Filters (simplified: negative = losses, positive = wins)
   // -1 = prev game loss, -2 = lost 2 in a row, 1 = prev game win, 2 = won 2 in a row
@@ -473,9 +473,9 @@ function SportsEngineContent() {
     
     // Subject team's own rankings
     setOwnDefenseRank('any')
-    setOwnDefenseStat('overall')
+    setOwnDefenseStat('points')
     setOwnOffenseRank('any')
-    setOwnOffenseStat('overall')
+    setOwnOffenseStat('points')
     
     // Opponent rankings (vs Defense/Offense)
     setDefenseRank('any')
@@ -4498,17 +4498,16 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {ownDefenseRank !== 'any' && (
                       <select value={ownDefenseStat} onChange={(e) => setOwnDefenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
+                        <option value="points">Points Allowed</option>
                         <option value="pass">Pass D</option>
                         <option value="rush">Rush D</option>
-                        <option value="points">Points Allowed</option>
                       </select>
                     )}
                   </div>
@@ -4518,14 +4517,13 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {ownOffenseRank !== 'any' && (
                       <select value={ownOffenseStat} onChange={(e) => setOwnOffenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
                         <option value="points">Points</option>
                         <option value="pass">Passing</option>
                         <option value="rush">Rushing</option>
@@ -4542,17 +4540,16 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {defenseRank !== 'any' && (
                       <select value={defenseStat} onChange={(e) => setDefenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
+                        <option value="points">vs Points</option>
                         <option value="pass">vs Pass</option>
                         <option value="rush">vs Rush</option>
-                        <option value="points">vs Points</option>
                         <option value="wr">vs WRs</option>
                         <option value="te">vs TEs</option>
                         <option value="rb">vs RBs</option>
@@ -4565,14 +4562,13 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {offenseRank !== 'any' && (
                       <select value={offenseStat} onChange={(e) => setOffenseStat(e.target.value)}>
-                        <option value="overall">Any Stat</option>
                         <option value="points">Points</option>
                         <option value="pass">Passing</option>
                         <option value="rush">Rushing</option>
@@ -4632,14 +4628,14 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {awayTeamDefenseRank !== 'any' && (
                       <select value={awayTeamDefenseStat} onChange={(e) => setAwayTeamDefenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
+                        <option value="points">Points</option>
                         <option value="pass">Pass</option>
                         <option value="rush">Rush</option>
                       </select>
@@ -4651,16 +4647,16 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {awayTeamOffenseRank !== 'any' && (
                       <select value={awayTeamOffenseStat} onChange={(e) => setAwayTeamOffenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
                         <option value="points">Pts</option>
                         <option value="pass">Pass</option>
+                        <option value="rush">Rush</option>
                       </select>
                     )}
                   </div>
@@ -4679,14 +4675,14 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {homeTeamDefenseRank !== 'any' && (
                       <select value={homeTeamDefenseStat} onChange={(e) => setHomeTeamDefenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
+                        <option value="points">Points</option>
                         <option value="pass">Pass</option>
                         <option value="rush">Rush</option>
                       </select>
@@ -4698,16 +4694,16 @@ function SportsEngineContent() {
                       <option value="any">Any</option>
                       <option value="top_5">Top 5</option>
                       <option value="top_10">Top 10</option>
-                      <option value="top_15">Top 15</option>
-                      <option value="bottom_15">Bottom 15</option>
+                      <option value="top_16">Top 16</option>
+                      <option value="bottom_16">Bottom 16</option>
                       <option value="bottom_10">Bottom 10</option>
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {homeTeamOffenseRank !== 'any' && (
                       <select value={homeTeamOffenseStat} onChange={(e) => setHomeTeamOffenseStat(e.target.value)}>
-                        <option value="overall">Any</option>
                         <option value="points">Pts</option>
                         <option value="pass">Pass</option>
+                        <option value="rush">Rush</option>
                       </select>
                     )}
                   </div>
