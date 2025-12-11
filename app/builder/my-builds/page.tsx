@@ -4,11 +4,16 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import styles from './my-builds.module.css'
-import { FiTrash2, FiPlay, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import sidebarStyles from '../builder.module.css'
+import { FiTrash2, FiPlay, FiCalendar, FiChevronDown, FiChevronUp, FiMenu, FiChevronLeft } from 'react-icons/fi'
 import { IoMdTrendingUp } from 'react-icons/io'
 import { PiFootballHelmetDuotone } from 'react-icons/pi'
 import { GiWhistle } from 'react-icons/gi'
 import { TbTargetArrow } from 'react-icons/tb'
+import { FaHammer, FaToolbox } from 'react-icons/fa6'
+import { LuBot } from 'react-icons/lu'
+import { HiBuildingOffice2 } from 'react-icons/hi2'
+import { MdRoomPreferences } from 'react-icons/md'
 
 interface LastResultSummary {
   hits: number
@@ -38,6 +43,7 @@ export default function MyBuildsPage() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [expandedBuild, setExpandedBuild] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -281,37 +287,128 @@ export default function MyBuildsPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading your builds...</div>
+      <div className={styles.pageWrapper}>
+        <div className={styles.container}>
+          <div className={styles.loading}>Loading your builds...</div>
+        </div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className={styles.container}>
-        <div className={styles.authMessage}>
-          <h2>Sign in to view your builds</h2>
-          <p>Create an account to save and manage your custom builds.</p>
+      <div className={styles.pageWrapper}>
+        <div className={styles.container}>
+          <div className={styles.authMessage}>
+            <h2>Sign in to view your builds</h2>
+            <p>Create an account to save and manage your custom builds.</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1>My Builds</h1>
-          <span className={styles.buildCount}>{builds.length} saved</span>
+    <div className={styles.pageWrapper}>
+      {/* Sidebar */}
+      <aside className={`${sidebarStyles.sidebar} ${sidebarOpen ? sidebarStyles.sidebarOpen : ''}`}>
+        <div className={sidebarStyles.sidebarHeader}>
+          <span className={sidebarStyles.sidebarTitle}>MENU</span>
+          <div className={sidebarStyles.sportBadge}>
+            <img 
+              src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" 
+              alt="NFL"
+              style={{ width: 24, height: 24, objectFit: 'contain' }}
+            />
+          </div>
+          <button 
+            className={sidebarStyles.sidebarClose}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FiChevronLeft />
+          </button>
         </div>
+        
+        <nav className={sidebarStyles.sidebarNav}>
+          <button 
+            className={sidebarStyles.sidebarItem}
+            onClick={() => router.push('/builder')}
+          >
+            <FaHammer className={sidebarStyles.sidebarIcon} />
+            <span>Builder</span>
+          </button>
+          
+          <button 
+            className={`${sidebarStyles.sidebarItem} ${sidebarStyles.sidebarItemActive}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaToolbox className={sidebarStyles.sidebarIcon} />
+            <span>My Builds</span>
+            {builds.length > 0 && <span className={sidebarStyles.badge}>{builds.length}</span>}
+          </button>
+          
+          <button 
+            className={`${sidebarStyles.sidebarItem} ${sidebarStyles.sidebarItemDisabled}`}
+            onClick={() => {}}
+          >
+            <LuBot className={sidebarStyles.sidebarIcon} />
+            <span>Buddy</span>
+            <span className={sidebarStyles.soonTag}>soon</span>
+          </button>
+          
+          <button 
+            className={`${sidebarStyles.sidebarItem} ${sidebarStyles.sidebarItemDisabled}`}
+            onClick={() => {}}
+          >
+            <HiBuildingOffice2 className={sidebarStyles.sidebarIcon} />
+            <span>Top Builds</span>
+            <span className={sidebarStyles.soonTag}>soon</span>
+          </button>
+        </nav>
+        
+        <div className={sidebarStyles.sidebarFooter}>
+          <button 
+            className={`${sidebarStyles.sidebarItem} ${sidebarStyles.sidebarItemDisabled}`}
+            onClick={() => {}}
+          >
+            <MdRoomPreferences className={sidebarStyles.sidebarIcon} />
+            <span>Preferences</span>
+            <span className={sidebarStyles.soonTag}>soon</span>
+          </button>
+        </div>
+      </aside>
+      
+      {/* Sidebar Toggle (when closed) */}
+      {!sidebarOpen && (
         <button 
-          className={styles.newBuildButton}
-          onClick={() => router.push('/builder')}
+          className={sidebarStyles.sidebarToggle}
+          onClick={() => setSidebarOpen(true)}
         >
-          + New Build
+          <FiMenu />
         </button>
-      </header>
+      )}
+      
+      {/* Sidebar Overlay (mobile) */}
+      {sidebarOpen && (
+        <div 
+          className={sidebarStyles.sidebarOverlay}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1>My Builds</h1>
+            <span className={styles.buildCount}>{builds.length} saved</span>
+          </div>
+          <button 
+            className={styles.newBuildButton}
+            onClick={() => router.push('/builder')}
+          >
+            + New Build
+          </button>
+        </header>
 
       {builds.length === 0 ? (
         <div className={styles.emptyState}>
@@ -449,8 +546,7 @@ export default function MyBuildsPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   )
 }
-
-
