@@ -1398,8 +1398,9 @@ export function buildPlayerPropLineSubquery(
     const teamMatchColumn = teamSide === 'home' ? 'pl.home_team' : 'pl.away_team'
     
     // Build NON-CORRELATED subquery for this filter
-    // We join players -> teams to get the team abbreviation/name
+    // We join players -> teams to get the team name
     // Then check if it matches the home_team or away_team in the prop line
+    // nfl_prop_lines stores full team names like "Cincinnati Bengals"
     // This is completely self-contained - no reference to the outer query's game table
     const subquery = `
       ${tableAlias}.game_id IN (
@@ -1410,7 +1411,11 @@ export function buildPlayerPropLineSubquery(
         WHERE pl.prop_type = '${propType}'
           AND p.position = '${positionValue}'
           AND pl.line > 0
-          AND (LOWER(tm.abbreviation) = LOWER(${teamMatchColumn}) OR LOWER(tm.name) = LOWER(${teamMatchColumn}))
+          AND (
+            LOWER(tm.name) = LOWER(${teamMatchColumn})
+            OR LOWER(CONCAT(tm.city, ' ', tm.name)) = LOWER(${teamMatchColumn})
+            OR LOWER(tm.abbreviation) = LOWER(${teamMatchColumn})
+          )
           AND ${lineConditions.join(' AND ')}
         GROUP BY pl.game_id
         HAVING COUNT(DISTINCT pl.player_name) >= ${filter.count}
