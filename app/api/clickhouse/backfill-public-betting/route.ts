@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { clickhouseQuery, clickhouseCommand } from '@/lib/clickhouse'
 
-const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST!
-const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID!
-const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET!
 const SPORTSDATA_IO_SPLITS_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY || '68b4610b673548e186c0267946db7c27'
 
 interface BettingSplit {
@@ -26,26 +24,6 @@ interface GameBettingSplits {
   BettingMarketSplits: BettingMarketSplit[]
 }
 
-async function executeClickHouse(sql: string, format = 'JSONEachRow') {
-  const response = await fetch(`${CLICKHOUSE_HOST}?format=${format}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain',
-      'Authorization': `Basic ${Buffer.from(`${CLICKHOUSE_KEY_ID}:${CLICKHOUSE_KEY_SECRET}`).toString('base64')}`
-    },
-    body: sql
-  })
-  
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`ClickHouse error: ${error}`)
-  }
-  
-  const text = await response.text()
-  if (!text.trim()) return []
-  
-  return text.trim().split('\n').map(line => JSON.parse(line))
-}
 
 async function fetchBettingSplits(scoreId: number): Promise<GameBettingSplits | null> {
   try {
@@ -215,7 +193,8 @@ export async function GET(request: NextRequest) {
         `
         
         try {
-          const games = await executeClickHouse(matchQuery)
+          const result = await clickhouseQuery(matchQuery)
+          const games = result.data
           
           // For now, just collect the data
           // In production, we'd match by team IDs
@@ -245,7 +224,7 @@ export async function GET(request: NextRequest) {
                   public_betting_updated_at = now()
                 WHERE game_id = ${games[0].game_id}
               `
-              await executeClickHouse(updateQuery, 'TabSeparated')
+              await clickhouseCommand(updateQuery)
               stats.updated++
             }
           } else {

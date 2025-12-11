@@ -1,26 +1,5 @@
 import { NextResponse } from 'next/server'
-
-const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST!
-const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID!
-const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET!
-
-async function executeQuery(sql: string) {
-  const response = await fetch(CLICKHOUSE_HOST, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain',
-      'Authorization': `Basic ${Buffer.from(`${CLICKHOUSE_KEY_ID}:${CLICKHOUSE_KEY_SECRET}`).toString('base64')}`
-    },
-    body: sql
-  })
-  
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`ClickHouse error: ${error}`)
-  }
-  
-  return response.text()
-}
+import { clickhouseCommand } from '@/lib/clickhouse'
 
 export async function POST() {
   try {
@@ -43,7 +22,7 @@ export async function POST() {
     for (const column of columns) {
       const columnName = column.split(' ')[0]
       try {
-        await executeQuery(`ALTER TABLE games ADD COLUMN IF NOT EXISTS ${column}`)
+        await clickhouseCommand(`ALTER TABLE games ADD COLUMN IF NOT EXISTS ${column}`)
         console.log(`✅ Added column: ${columnName}`)
         results.push({ column: columnName, status: 'added' })
       } catch (error: any) {
