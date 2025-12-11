@@ -407,6 +407,92 @@ export function buildMLMovementFilter(
   return null
 }
 
+// ============================================
+// PUBLIC BETTING FILTERS
+// ============================================
+
+/**
+ * Build public bet percentage filter
+ * Filters games where public betting % on the relevant side falls within range
+ */
+export function buildPublicBetPctFilter(
+  range: { min?: number; max?: number } | undefined,
+  tableAlias: string,
+  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+): string | null {
+  if (!range) return null
+  
+  const column = betType === 'total' 
+    ? `${tableAlias}.public_total_over_bet_pct`
+    : betType === 'moneyline'
+      ? `${tableAlias}.public_ml_home_bet_pct`
+      : `${tableAlias}.public_spread_home_bet_pct`
+  
+  if (range.min !== undefined && range.max !== undefined) {
+    return `${column} BETWEEN ${range.min} AND ${range.max}`
+  } else if (range.min !== undefined) {
+    return `${column} >= ${range.min}`
+  } else if (range.max !== undefined) {
+    return `${column} <= ${range.max}`
+  }
+  return null
+}
+
+/**
+ * Build public money percentage filter
+ */
+export function buildPublicMoneyPctFilter(
+  range: { min?: number; max?: number } | undefined,
+  tableAlias: string,
+  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+): string | null {
+  if (!range) return null
+  
+  const column = betType === 'total' 
+    ? `${tableAlias}.public_total_over_money_pct`
+    : betType === 'moneyline'
+      ? `${tableAlias}.public_ml_home_money_pct`
+      : `${tableAlias}.public_spread_home_money_pct`
+  
+  if (range.min !== undefined && range.max !== undefined) {
+    return `${column} BETWEEN ${range.min} AND ${range.max}`
+  } else if (range.min !== undefined) {
+    return `${column} >= ${range.min}`
+  } else if (range.max !== undefined) {
+    return `${column} <= ${range.max}`
+  }
+  return null
+}
+
+/**
+ * Build public bet vs money difference filter
+ * 'positive' = Money% > Bet% (sharp money)
+ * 'negative' = Bet% > Money% (public action)
+ */
+export function buildPublicBetMoneyDiffFilter(
+  diff: 'positive' | 'negative' | 'any' | undefined,
+  tableAlias: string,
+  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+): string | null {
+  if (!diff || diff === 'any') return null
+  
+  const betCol = betType === 'total' 
+    ? `${tableAlias}.public_total_over_bet_pct`
+    : betType === 'moneyline'
+      ? `${tableAlias}.public_ml_home_bet_pct`
+      : `${tableAlias}.public_spread_home_bet_pct`
+      
+  const moneyCol = betType === 'total' 
+    ? `${tableAlias}.public_total_over_money_pct`
+    : betType === 'moneyline'
+      ? `${tableAlias}.public_ml_home_money_pct`
+      : `${tableAlias}.public_spread_home_money_pct`
+  
+  return diff === 'positive'
+    ? `${moneyCol} > ${betCol}`
+    : `${betCol} > ${moneyCol}`
+}
+
 /**
  * Build referee filter
  */
@@ -1161,6 +1247,35 @@ export function buildFilterConditions(
     if (mlMoveFilter) {
       conditions.push(mlMoveFilter)
       appliedFilters.push(`ML moved ${filters.ml_movement_range.min} to ${filters.ml_movement_range.max}`)
+    }
+  }
+  
+  // Public Betting filters
+  if (filters.public_bet_pct) {
+    const betPctFilter = buildPublicBetPctFilter(filters.public_bet_pct, tableAlias)
+    if (betPctFilter) {
+      conditions.push(betPctFilter)
+      const min = filters.public_bet_pct.min
+      const max = filters.public_bet_pct.max
+      appliedFilters.push(`Public Bet %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
+    }
+  }
+  
+  if (filters.public_money_pct) {
+    const moneyPctFilter = buildPublicMoneyPctFilter(filters.public_money_pct, tableAlias)
+    if (moneyPctFilter) {
+      conditions.push(moneyPctFilter)
+      const min = filters.public_money_pct.min
+      const max = filters.public_money_pct.max
+      appliedFilters.push(`Public Money %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
+    }
+  }
+  
+  if (filters.public_bet_money_diff && filters.public_bet_money_diff !== 'any') {
+    const diffFilter = buildPublicBetMoneyDiffFilter(filters.public_bet_money_diff, tableAlias)
+    if (diffFilter) {
+      conditions.push(diffFilter)
+      appliedFilters.push(filters.public_bet_money_diff === 'positive' ? 'Sharp Action (Money% > Bet%)' : 'Public Action (Bet% > Money%)')
     }
   }
   

@@ -157,6 +157,22 @@ export interface QueryFilters {
   total_movement_range?: Range     // e.g., { min: -3, max: 3 }
   ml_movement_range?: Range        // e.g., { min: -50, max: 50 }
   
+  // ============================================
+  // PUBLIC BETTING FILTERS
+  // ============================================
+  // Public bet percentage (% of bets on the side being analyzed)
+  // For spreads: % on favorite/underdog side depending on query
+  // For O/U: % on over or under depending on query
+  public_bet_pct?: Range           // e.g., { min: 30, max: 50 } for 30-50% of bets
+  
+  // Public money percentage (% of money wagered on the side being analyzed)
+  public_money_pct?: Range         // e.g., { min: 40, max: 60 } for 40-60% of money
+  
+  // Bet% vs Money% difference filter
+  // 'positive' = money% > bet% (sharp money indicator - more money than tickets)
+  // 'negative' = bet% > money% (public favorite - more tickets than money)
+  public_bet_money_diff?: 'positive' | 'negative' | 'any'
+  
   referee_id?: string         // specific referee
 }
 

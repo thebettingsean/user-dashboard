@@ -1265,6 +1265,14 @@
   color: #60a5fa;
 }
 
+.filterHint {
+  font-size: 0.5rem;
+  font-weight: 400;
+  color: #888;
+  margin-left: 0.25rem;
+  text-transform: none;
+}
+
 /* Filter Grids */
 .filterGrid3 {
   display: grid;

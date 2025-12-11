@@ -11,7 +11,7 @@ import { HiOutlineXCircle, HiBuildingOffice2 } from "react-icons/hi2"
 import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
-import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy } from "react-icons/pi"
+import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy, PiUsersThree } from "react-icons/pi"
 import { GiWhistle } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
@@ -354,6 +354,13 @@ function SportsEngineContent() {
   const [totalMoveMax, setTotalMoveMax] = useState<string>('')
   const [mlMoveMin, setMlMoveMin] = useState<string>('')
   const [mlMoveMax, setMlMoveMax] = useState<string>('')
+  
+  // Public Betting Filters
+  const [publicBetPctMin, setPublicBetPctMin] = useState<string>('')
+  const [publicBetPctMax, setPublicBetPctMax] = useState<string>('')
+  const [publicMoneyPctMin, setPublicMoneyPctMin] = useState<string>('')
+  const [publicMoneyPctMax, setPublicMoneyPctMax] = useState<string>('')
+  const [publicBetMoneyDiff, setPublicBetMoneyDiff] = useState<string>('any')
 
   // O/U Specific Filters
   const [homeFavDog, setHomeFavDog] = useState<string>('any')
@@ -1803,6 +1810,23 @@ function SportsEngineContent() {
         if (mlMoveMin) range.min = parseFloat(mlMoveMin)
         if (mlMoveMax) range.max = parseFloat(mlMoveMax)
         filters.ml_movement_range = range
+      }
+      
+      // Public Betting filters
+      if (publicBetPctMin || publicBetPctMax) {
+        const range: any = {}
+        if (publicBetPctMin) range.min = parseFloat(publicBetPctMin)
+        if (publicBetPctMax) range.max = parseFloat(publicBetPctMax)
+        filters.public_bet_pct = range
+      }
+      if (publicMoneyPctMin || publicMoneyPctMax) {
+        const range: any = {}
+        if (publicMoneyPctMin) range.min = parseFloat(publicMoneyPctMin)
+        if (publicMoneyPctMax) range.max = parseFloat(publicMoneyPctMax)
+        filters.public_money_pct = range
+      }
+      if (publicBetMoneyDiff !== 'any') {
+        filters.public_bet_money_diff = publicBetMoneyDiff
       }
 
       let body: any = { type: queryType, filters }
@@ -4356,6 +4380,35 @@ function SportsEngineContent() {
                       <input type="text" inputMode="text" placeholder="Min" value={totalMoveMin} onChange={(e) => setTotalMoveMin(e.target.value)} />
                       <input type="text" inputMode="text" placeholder="Max" value={totalMoveMax} onChange={(e) => setTotalMoveMax(e.target.value)} />
                     </div>
+                  </div>
+                </div>
+                
+                {/* Public Betting */}
+                <div className={styles.subHeader}>
+                  <PiUsersThree /> Public Betting
+                </div>
+                <div className={styles.rangeGrid}>
+                  <div>
+                    <span>Bet %</span>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="numeric" placeholder="Min" value={publicBetPctMin} onChange={(e) => setPublicBetPctMin(e.target.value)} />
+                      <input type="text" inputMode="numeric" placeholder="Max" value={publicBetPctMax} onChange={(e) => setPublicBetPctMax(e.target.value)} />
+                    </div>
+                  </div>
+                  <div>
+                    <span>Dollars %</span>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="numeric" placeholder="Min" value={publicMoneyPctMin} onChange={(e) => setPublicMoneyPctMin(e.target.value)} />
+                      <input type="text" inputMode="numeric" placeholder="Max" value={publicMoneyPctMax} onChange={(e) => setPublicMoneyPctMax(e.target.value)} />
+                    </div>
+                  </div>
+                  <div>
+                    <span>Diff %</span>
+                    <select value={publicBetMoneyDiff} onChange={(e) => setPublicBetMoneyDiff(e.target.value)}>
+                      <option value="any">Any</option>
+                      <option value="positive">+ ($&apos;s &gt; bets)</option>
+                      <option value="negative">- (bets &gt; $&apos;s)</option>
+                    </select>
                   </div>
                 </div>
               </>
