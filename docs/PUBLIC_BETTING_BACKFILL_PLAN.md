@@ -12,9 +12,9 @@ Backfill historical NFL games with public betting percentages from SportsDataIO.
 
 ## What We Learned (Issues Encountered)
 
-### 1. Wrong API Key Used
-- **Free Trial Key:** `68b4610b673548e186c0267946db7c27` - Has Betting Splits ✅ but daily limits ❌
-- **Production Key:** `ad4d37f5374f45ffb40e571e38551af1` - NO Betting Splits ❌ (needs to be enabled)
+### 1. API Key Setup (RESOLVED ✅)
+- **Free Trial Key:** `68b4610b673548e186c0267946db7c27` - Has Betting Splits but daily limits
+- **Production Key:** `ad4d37f5374f45ffb40e571e38551af1` - **Betting Splits ENABLED** (SportsDataIO enabled Dec 11, 2025)
 
 ### 2. Timezone/Date Mismatch
 - **SportsDataIO** returns dates in local time (e.g., `2024-09-12` for Thursday Night Football)
@@ -33,14 +33,16 @@ Backfill historical NFL games with public betting percentages from SportsDataIO.
 
 ---
 
-## Current Coverage (as of last backfill)
+## Current Coverage (COMPLETED - Dec 11, 2025)
 
 | Season | Total Games | With Data | Coverage |
 |--------|-------------|-----------|----------|
-| 2022   | 283         | 218       | 77%      |
-| 2023   | 284         | 162       | 57%      |
-| 2024   | 281         | 36        | 13%      |
-| 2025   | 208         | 0         | 0% (future) |
+| 2022   | 283         | 275       | **97.2%** |
+| 2023   | 284         | 284       | **100%** ✅ |
+| 2024   | 281         | 281       | **100%** ✅ |
+| 2025   | 208         | 208       | **100%** ✅ |
+
+**Backfill completed successfully on Dec 11, 2025 using production key `ad4d37f5374f45ffb40e571e38551af1`.**
 
 ---
 
