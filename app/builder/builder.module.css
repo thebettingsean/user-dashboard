@@ -3426,3 +3426,141 @@
   margin-left: 0.5rem;
 }
 
+/* Player Prop Lines Section */
+.playerStatsSection {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.playerStatsSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.playerStatsSectionHeader span {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.addFilterBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(74, 158, 255, 0.15);
+  color: #4a9eff;
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.addFilterBtn:hover {
+  background: rgba(74, 158, 255, 0.25);
+  border-color: rgba(74, 158, 255, 0.5);
+}
+
+.playerFilterRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.playerFilterRow:last-child {
+  margin-bottom: 0;
+}
+
+.countSelect {
+  width: 55px;
+  min-width: 55px;
+  padding: 0.4rem 0.25rem;
+  font-size: 0.85rem;
+  background: #1a1a24;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e6e6e6;
+}
+
+.positionSelect {
+  width: 80px;
+  min-width: 80px;
+  padding: 0.4rem 0.25rem;
+  font-size: 0.85rem;
+  background: #1a1a24;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e6e6e6;
+}
+
+.positionSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #15151d;
+}
+
+.statTypeSelect {
+  flex: 1;
+  min-width: 90px;
+  padding: 0.4rem 0.25rem;
+  font-size: 0.85rem;
+  background: #1a1a24;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e6e6e6;
+}
+
+.lineRangeInputs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.lineRangeInputs input {
+  width: 50px;
+  padding: 0.4rem 0.25rem;
+  font-size: 0.85rem;
+  background: #1a1a24;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e6e6e6;
+  text-align: center;
+}
+
+.lineRangeInputs input::placeholder {
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .playerFilterRow {
+    flex-wrap: wrap;
+  }
+  
+  .countSelect,
+  .positionSelect,
+  .statTypeSelect {
+    flex: 1;
+    min-width: 60px;
+  }
+  
+  .lineRangeInputs {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  
+  .lineRangeInputs input {
+    flex: 1;
+  }
+}
+

@@ -5,7 +5,7 @@
  */
 
 import { clickhouseQuery } from '@/lib/clickhouse'
-import { buildFilterConditions } from './filter-builder'
+import { buildFilterConditions, buildPlayerPropLineFilters } from './filter-builder'
 import type { TrendQueryRequest, QueryResult, GameDetail } from './types'
 
 // ============================================
@@ -54,6 +54,15 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
     // Looking at underdog performance
     trendConditions.push(`g.spread_close != 0`)
   }
+  
+  // Add player prop line filters
+  const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
+    filters,
+    'g',
+    isOUQuery
+  )
+  trendConditions.push(...playerConditions)
+  appliedFilters.push(...playerDescriptions)
   
   const whereClause = trendConditions.length > 0 
     ? 'WHERE ' + trendConditions.join(' AND ')

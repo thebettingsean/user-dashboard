@@ -9,7 +9,9 @@ import type {
   DefenseRankFilter, 
   OpponentRankFilter,
   HomeFavDogFilter,
-  RankStatType 
+  RankStatType,
+  PlayerStatFilter,
+  PlayerPosition 
 } from './types'
 
 // ============================================
@@ -1310,5 +1312,188 @@ export function buildFilterConditions(
 export function buildWhereClause(conditions: string[]): string {
   if (conditions.length === 0) return ''
   return 'WHERE ' + conditions.join(' AND ')
+}
+
+// ============================================
+// PLAYER PROP LINE FILTERS
+// ============================================
+
+/**
+ * Map prop stat type to the column name in prop_lines table
+ */
+function getPropLineColumn(statType: string): string | null {
+  const mapping: Record<string, string> = {
+    'pass_yards': 'pass_yards_line',
+    'pass_tds': 'pass_tds_line',
+    'pass_attempts': 'pass_attempts_line',
+    'pass_completions': 'completions_line',
+    'interceptions': 'interceptions_line',
+    'rush_yards': 'rush_yards_line',
+    'rush_tds': 'rush_tds_line',
+    'rush_attempts': 'rush_attempts_line',
+    'receiving_yards': 'receiving_yards_line',
+    'receptions': 'receptions_line',
+    'receiving_tds': 'receiving_tds_line',
+    'targets': 'targets_line',
+  }
+  return mapping[statType] || null
+}
+
+/**
+ * Map position to the position value in players table
+ */
+function getPositionValue(position: PlayerPosition): string | null {
+  if (position === 'none') return null
+  return position // QB, WR, RB, TE match directly
+}
+
+/**
+ * Build a subquery condition for player prop line filters
+ * Returns a condition like: g.game_id IN (SELECT game_id FROM prop_lines JOIN players ... GROUP BY game_id HAVING COUNT(...) >= N)
+ * 
+ * @param filters Array of PlayerStatFilter
+ * @param teamColumn The column to use for team matching (e.g., 'g.home_team_id' or 'g.away_team_id')
+ * @param tableAlias The game table alias (e.g., 'g')
+ */
+export function buildPlayerPropLineSubquery(
+  filters: PlayerStatFilter[],
+  teamColumn: string,
+  tableAlias: string = 'g'
+): string | null {
+  // Filter out empty/invalid filters
+  const validFilters = filters.filter(f => 
+    f.position !== 'none' && 
+    f.stat_type && 
+    (f.line_min !== undefined || f.line_max !== undefined)
+  )
+  
+  if (validFilters.length === 0) return null
+  
+  const subqueries: string[] = []
+  
+  for (const filter of validFilters) {
+    const lineColumn = getPropLineColumn(filter.stat_type)
+    if (!lineColumn) continue
+    
+    const positionValue = getPositionValue(filter.position)
+    if (!positionValue) continue
+    
+    // Build the line range condition
+    const lineConditions: string[] = []
+    if (filter.line_min !== undefined && filter.line_min !== null) {
+      lineConditions.push(`pl.${lineColumn} >= ${filter.line_min}`)
+    }
+    if (filter.line_max !== undefined && filter.line_max !== null) {
+      lineConditions.push(`pl.${lineColumn} <= ${filter.line_max}`)
+    }
+    
+    if (lineConditions.length === 0) continue
+    
+    // Build subquery for this filter
+    const subquery = `
+      ${tableAlias}.game_id IN (
+        SELECT pl.game_id
+        FROM prop_lines pl
+        JOIN players p ON pl.player_id = p.player_id AND p.sport = 'nfl'
+        WHERE pl.team_id = ${teamColumn}
+          AND p.position = '${positionValue}'
+          AND pl.${lineColumn} IS NOT NULL
+          AND ${lineConditions.join(' AND ')}
+        GROUP BY pl.game_id
+        HAVING COUNT(DISTINCT pl.player_id) >= ${filter.count}
+      )
+    `.trim()
+    
+    subqueries.push(subquery)
+  }
+  
+  if (subqueries.length === 0) return null
+  
+  // Combine all subqueries with AND
+  return subqueries.join(' AND ')
+}
+
+/**
+ * Build player prop line filter conditions and descriptions
+ */
+export function buildPlayerPropLineFilters(
+  filters: QueryFilters,
+  tableAlias: string = 'g',
+  isOUQuery: boolean = false
+): { conditions: string[], descriptions: string[] } {
+  const conditions: string[] = []
+  const descriptions: string[] = []
+  
+  if (!isOUQuery) {
+    // For spread/ML queries: team_player_filters and vs_player_filters
+    if (filters.team_player_filters && filters.team_player_filters.length > 0) {
+      // Team players - use subject team column (will vary by query context)
+      const subquery = buildPlayerPropLineSubquery(
+        filters.team_player_filters,
+        'subject_team_id', // This needs to be set appropriately by the query engine
+        tableAlias
+      )
+      if (subquery) {
+        conditions.push(subquery)
+        descriptions.push(formatPlayerFilterDescription(filters.team_player_filters, 'Team'))
+      }
+    }
+    
+    if (filters.vs_player_filters && filters.vs_player_filters.length > 0) {
+      const subquery = buildPlayerPropLineSubquery(
+        filters.vs_player_filters,
+        'opponent_team_id', // This needs to be set appropriately by the query engine
+        tableAlias
+      )
+      if (subquery) {
+        conditions.push(subquery)
+        descriptions.push(formatPlayerFilterDescription(filters.vs_player_filters, 'Vs'))
+      }
+    }
+  } else {
+    // For O/U queries: home_player_filters and away_player_filters
+    if (filters.home_player_filters && filters.home_player_filters.length > 0) {
+      const subquery = buildPlayerPropLineSubquery(
+        filters.home_player_filters,
+        `${tableAlias}.home_team_id`,
+        tableAlias
+      )
+      if (subquery) {
+        conditions.push(subquery)
+        descriptions.push(formatPlayerFilterDescription(filters.home_player_filters, 'Home'))
+      }
+    }
+    
+    if (filters.away_player_filters && filters.away_player_filters.length > 0) {
+      const subquery = buildPlayerPropLineSubquery(
+        filters.away_player_filters,
+        `${tableAlias}.away_team_id`,
+        tableAlias
+      )
+      if (subquery) {
+        conditions.push(subquery)
+        descriptions.push(formatPlayerFilterDescription(filters.away_player_filters, 'Away'))
+      }
+    }
+  }
+  
+  return { conditions, descriptions }
+}
+
+/**
+ * Format a player filter for display
+ */
+function formatPlayerFilterDescription(filters: PlayerStatFilter[], prefix: string): string {
+  const parts = filters
+    .filter(f => f.position !== 'none' && f.stat_type)
+    .map(f => {
+      const lineRange = []
+      if (f.line_min !== undefined) lineRange.push(`${f.line_min}+`)
+      if (f.line_max !== undefined) lineRange.push(`≤${f.line_max}`)
+      return `${f.count}+ ${f.position} ${f.stat_type.replace(/_/g, ' ')} ${lineRange.join(' ')}`
+    })
+  
+  if (parts.length === 0) return ''
+  return `${prefix}: ${parts.join(', ')}`
 }
 

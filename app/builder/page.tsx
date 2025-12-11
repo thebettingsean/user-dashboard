@@ -12,7 +12,7 @@ import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy, PiUsersThree } from "react-icons/pi"
-import { GiWhistle } from "react-icons/gi"
+import { GiWhistle, GiAmericanFootballPlayer } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
 import { FiCopy, FiCheck, FiMenu, FiChevronLeft } from "react-icons/fi"
@@ -298,6 +298,7 @@ function SportsEngineContent() {
   // Collapsible filter sections - all closed by default
   const [expandedSections, setExpandedSections] = useState({
     playerStats: false,
+    playerLineFilters: false,
     matchup: false,
     betting: false,
     teamStats: false
@@ -362,6 +363,130 @@ function SportsEngineContent() {
   const [publicMoneyPctMax, setPublicMoneyPctMax] = useState<string>('')
   const [publicDiffMin, setPublicDiffMin] = useState<string>('')
   const [publicDiffMax, setPublicDiffMax] = useState<string>('')
+  
+  // Player Stats Filters (for game filtering based on prop lines)
+  interface PlayerStatFilterRow {
+    count: number
+    position: string
+    statType: string
+    lineMin: string
+    lineMax: string
+  }
+  
+  const defaultPlayerFilter: PlayerStatFilterRow = {
+    count: 1,
+    position: 'none',
+    statType: '',
+    lineMin: '',
+    lineMax: ''
+  }
+  
+  // Team players filters (for spread/ML)
+  const [teamPlayerFilters, setTeamPlayerFilters] = useState<PlayerStatFilterRow[]>([{ ...defaultPlayerFilter }])
+  // Vs (opponent) players filters (for spread/ML)
+  const [vsPlayerFilters, setVsPlayerFilters] = useState<PlayerStatFilterRow[]>([{ ...defaultPlayerFilter }])
+  // Home team players (for O/U)
+  const [homePlayerFilters, setHomePlayerFilters] = useState<PlayerStatFilterRow[]>([{ ...defaultPlayerFilter }])
+  // Away team players (for O/U)
+  const [awayPlayerFilters, setAwayPlayerFilters] = useState<PlayerStatFilterRow[]>([{ ...defaultPlayerFilter }])
+  
+  // Get available stat types based on position
+  const getStatTypesForPosition = (position: string) => {
+    switch (position) {
+      case 'QB':
+        return [
+          { value: 'pass_yards', label: 'Pass Yards' },
+          { value: 'pass_tds', label: 'Pass TDs' },
+          { value: 'pass_attempts', label: 'Pass Attempts' },
+          { value: 'pass_completions', label: 'Completions' },
+          { value: 'interceptions', label: 'INTs' },
+        ]
+      case 'WR':
+        return [
+          { value: 'receiving_yards', label: 'Rec Yards' },
+          { value: 'receptions', label: 'Receptions' },
+          { value: 'receiving_tds', label: 'Rec TDs' },
+          { value: 'targets', label: 'Targets' },
+        ]
+      case 'RB':
+        return [
+          { value: 'rush_yards', label: 'Rush Yards' },
+          { value: 'rush_attempts', label: 'Rush Attempts' },
+          { value: 'rush_tds', label: 'Rush TDs' },
+          { value: 'receiving_yards', label: 'Rec Yards' },
+          { value: 'receptions', label: 'Receptions' },
+        ]
+      case 'TE':
+        return [
+          { value: 'receiving_yards', label: 'Rec Yards' },
+          { value: 'receptions', label: 'Receptions' },
+          { value: 'receiving_tds', label: 'Rec TDs' },
+          { value: 'targets', label: 'Targets' },
+        ]
+      default:
+        return []
+    }
+  }
+  
+  // Add a new player filter row
+  const addPlayerFilter = (filterType: 'team' | 'vs' | 'home' | 'away') => {
+    const newFilter = { ...defaultPlayerFilter }
+    switch (filterType) {
+      case 'team':
+        setTeamPlayerFilters([...teamPlayerFilters, newFilter])
+        break
+      case 'vs':
+        setVsPlayerFilters([...vsPlayerFilters, newFilter])
+        break
+      case 'home':
+        setHomePlayerFilters([...homePlayerFilters, newFilter])
+        break
+      case 'away':
+        setAwayPlayerFilters([...awayPlayerFilters, newFilter])
+        break
+    }
+  }
+  
+  // Update a player filter row
+  const updatePlayerFilter = (
+    filterType: 'team' | 'vs' | 'home' | 'away',
+    index: number,
+    field: keyof PlayerStatFilterRow,
+    value: string | number
+  ) => {
+    const updateFilters = (filters: PlayerStatFilterRow[]) => {
+      const updated = [...filters]
+      updated[index] = { ...updated[index], [field]: value }
+      // Reset stat type if position changed
+      if (field === 'position') {
+        updated[index].statType = ''
+      }
+      return updated
+    }
+    
+    switch (filterType) {
+      case 'team':
+        setTeamPlayerFilters(updateFilters(teamPlayerFilters))
+        break
+      case 'vs':
+        setVsPlayerFilters(updateFilters(vsPlayerFilters))
+        break
+      case 'home':
+        setHomePlayerFilters(updateFilters(homePlayerFilters))
+        break
+      case 'away':
+        setAwayPlayerFilters(updateFilters(awayPlayerFilters))
+        break
+    }
+  }
+  
+  // Check if a position should be disabled in player prop line filters
+  // For props view, the selected propPosition should be disabled to prevent circular filtering
+  const isPositionDisabled = (pos: string): boolean => {
+    if (queryType !== 'prop') return false
+    if (propPosition === 'any' || propPosition === '') return false
+    return pos.toUpperCase() === propPosition.toUpperCase()
+  }
   
   // Derive sharp/square label from diff values
   const getPublicBettingLabel = () => {
@@ -563,6 +688,12 @@ function SportsEngineContent() {
     setMinTargets('')
     setMinCarries('')
     setMinPassAttempts('')
+    
+    // Player Prop Line filters
+    setTeamPlayerFilters([{ ...defaultPlayerFilter }])
+    setVsPlayerFilters([{ ...defaultPlayerFilter }])
+    setHomePlayerFilters([{ ...defaultPlayerFilter }])
+    setAwayPlayerFilters([{ ...defaultPlayerFilter }])
     
     // Clear results
     setResult(null)
@@ -1847,6 +1978,43 @@ function SportsEngineContent() {
         if (publicDiffMin) range.min = parseFloat(publicDiffMin)
         if (publicDiffMax) range.max = parseFloat(publicDiffMax)
         filters.public_diff_pct = range
+      }
+      
+      // Player Prop Line filters
+      const convertPlayerFilter = (f: PlayerStatFilterRow) => ({
+        count: f.count,
+        position: f.position as any,
+        stat_type: f.statType,
+        line_min: f.lineMin ? parseFloat(f.lineMin) : undefined,
+        line_max: f.lineMax ? parseFloat(f.lineMax) : undefined,
+      })
+      
+      // Check if any player filters are active
+      const hasActivePlayerFilter = (filters: PlayerStatFilterRow[]) => 
+        filters.some(f => f.position !== 'none' && f.statType && (f.lineMin || f.lineMax))
+      
+      if (!isOUQuery) {
+        if (hasActivePlayerFilter(teamPlayerFilters)) {
+          filters.team_player_filters = teamPlayerFilters.filter(f => 
+            f.position !== 'none' && f.statType && (f.lineMin || f.lineMax)
+          ).map(convertPlayerFilter)
+        }
+        if (hasActivePlayerFilter(vsPlayerFilters)) {
+          filters.vs_player_filters = vsPlayerFilters.filter(f => 
+            f.position !== 'none' && f.statType && (f.lineMin || f.lineMax)
+          ).map(convertPlayerFilter)
+        }
+      } else {
+        if (hasActivePlayerFilter(homePlayerFilters)) {
+          filters.home_player_filters = homePlayerFilters.filter(f => 
+            f.position !== 'none' && f.statType && (f.lineMin || f.lineMax)
+          ).map(convertPlayerFilter)
+        }
+        if (hasActivePlayerFilter(awayPlayerFilters)) {
+          filters.away_player_filters = awayPlayerFilters.filter(f => 
+            f.position !== 'none' && f.statType && (f.lineMin || f.lineMax)
+          ).map(convertPlayerFilter)
+        }
       }
 
       let body: any = { type: queryType, filters }
@@ -3332,7 +3500,7 @@ function SportsEngineContent() {
   }
   
   // Toggle collapsible filter sections
-  const toggleSection = (section: 'playerStats' | 'matchup' | 'betting' | 'teamStats') => {
+  const toggleSection = (section: 'playerStats' | 'playerLineFilters' | 'matchup' | 'betting' | 'teamStats') => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
@@ -4720,6 +4888,175 @@ function SportsEngineContent() {
                     <input type="text" inputMode="text" placeholder="Home Min" value={prevGameMarginMin} onChange={(e) => setPrevGameMarginMin(e.target.value)} />
                     <input type="text" inputMode="text" placeholder="Home Max" value={prevGameMarginMax} onChange={(e) => setPrevGameMarginMax(e.target.value)} />
                   </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ============================================ */}
+          {/* PLAYER PROP LINES (Collapsible) */}
+          {/* ============================================ */}
+          <div className={styles.filterBlock}>
+            <div 
+              className={styles.filterBlockHeaderCollapsible}
+              onClick={() => toggleSection('playerLineFilters')}
+            >
+              <div className={styles.filterHeaderLeft}>
+                <GiAmericanFootballPlayer /> Player Prop Lines
+              </div>
+              {expandedSections.playerLineFilters ? <MdExpandLess className={styles.chevron} /> : <MdExpandMore className={styles.chevron} />}
+            </div>
+            
+            {/* Non-O/U: Team Players + vs Players */}
+            {expandedSections.playerLineFilters && !isOUQuery && (
+              <>
+                {/* Team Players Section */}
+                <div className={styles.playerStatsSection}>
+                  <div className={styles.playerStatsSectionHeader}>
+                    <span>Team Players</span>
+                    <button className={styles.addFilterBtn} onClick={() => addPlayerFilter('team')} title="Add filter">+</button>
+                  </div>
+                  {teamPlayerFilters.map((filter, idx) => (
+                    <div key={`team-${idx}`} className={styles.playerFilterRow}>
+                      <select value={filter.count} onChange={(e) => updatePlayerFilter('team', idx, 'count', parseInt(e.target.value))} className={styles.countSelect}>
+                        <option value={1}>1+</option>
+                        <option value={2}>2+</option>
+                        <option value={3}>3+</option>
+                      </select>
+                      <select value={filter.position} onChange={(e) => updatePlayerFilter('team', idx, 'position', e.target.value)} className={styles.positionSelect}>
+                        <option value="none">Position</option>
+                        <option value="QB" disabled={isPositionDisabled('QB')}>QB</option>
+                        <option value="WR" disabled={isPositionDisabled('WR')}>WR</option>
+                        <option value="RB" disabled={isPositionDisabled('RB')}>RB</option>
+                        <option value="TE" disabled={isPositionDisabled('TE')}>TE</option>
+                      </select>
+                      {filter.position !== 'none' && (
+                        <select value={filter.statType} onChange={(e) => updatePlayerFilter('team', idx, 'statType', e.target.value)} className={styles.statTypeSelect}>
+                          <option value="">Stat</option>
+                          {getStatTypesForPosition(filter.position).map(st => (<option key={st.value} value={st.value}>{st.label}</option>))}
+                        </select>
+                      )}
+                      {filter.position !== 'none' && filter.statType && (
+                        <div className={styles.lineRangeInputs}>
+                          <input type="text" inputMode="numeric" placeholder="Min" value={filter.lineMin} onChange={(e) => updatePlayerFilter('team', idx, 'lineMin', e.target.value)} />
+                          <input type="text" inputMode="numeric" placeholder="Max" value={filter.lineMax} onChange={(e) => updatePlayerFilter('team', idx, 'lineMax', e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Vs Players Section */}
+                <div className={styles.playerStatsSection}>
+                  <div className={styles.playerStatsSectionHeader}>
+                    <span>Vs Players</span>
+                    <button className={styles.addFilterBtn} onClick={() => addPlayerFilter('vs')} title="Add filter">+</button>
+                  </div>
+                  {vsPlayerFilters.map((filter, idx) => (
+                    <div key={`vs-${idx}`} className={styles.playerFilterRow}>
+                      <select value={filter.count} onChange={(e) => updatePlayerFilter('vs', idx, 'count', parseInt(e.target.value))} className={styles.countSelect}>
+                        <option value={1}>1+</option>
+                        <option value={2}>2+</option>
+                        <option value={3}>3+</option>
+                      </select>
+                      <select value={filter.position} onChange={(e) => updatePlayerFilter('vs', idx, 'position', e.target.value)} className={styles.positionSelect}>
+                        <option value="none">Position</option>
+                        <option value="QB" disabled={isPositionDisabled('QB')}>QB</option>
+                        <option value="WR" disabled={isPositionDisabled('WR')}>WR</option>
+                        <option value="RB" disabled={isPositionDisabled('RB')}>RB</option>
+                        <option value="TE" disabled={isPositionDisabled('TE')}>TE</option>
+                      </select>
+                      {filter.position !== 'none' && (
+                        <select value={filter.statType} onChange={(e) => updatePlayerFilter('vs', idx, 'statType', e.target.value)} className={styles.statTypeSelect}>
+                          <option value="">Stat</option>
+                          {getStatTypesForPosition(filter.position).map(st => (<option key={st.value} value={st.value}>{st.label}</option>))}
+                        </select>
+                      )}
+                      {filter.position !== 'none' && filter.statType && (
+                        <div className={styles.lineRangeInputs}>
+                          <input type="text" inputMode="numeric" placeholder="Min" value={filter.lineMin} onChange={(e) => updatePlayerFilter('vs', idx, 'lineMin', e.target.value)} />
+                          <input type="text" inputMode="numeric" placeholder="Max" value={filter.lineMax} onChange={(e) => updatePlayerFilter('vs', idx, 'lineMax', e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {/* O/U: Home Players + Away Players */}
+            {expandedSections.playerLineFilters && isOUQuery && (
+              <>
+                {/* Home Team Players Section */}
+                <div className={styles.playerStatsSection}>
+                  <div className={styles.playerStatsSectionHeader}>
+                    <span>Home Players</span>
+                    <button className={styles.addFilterBtn} onClick={() => addPlayerFilter('home')} title="Add filter">+</button>
+                  </div>
+                  {homePlayerFilters.map((filter, idx) => (
+                    <div key={`home-${idx}`} className={styles.playerFilterRow}>
+                      <select value={filter.count} onChange={(e) => updatePlayerFilter('home', idx, 'count', parseInt(e.target.value))} className={styles.countSelect}>
+                        <option value={1}>1+</option>
+                        <option value={2}>2+</option>
+                        <option value={3}>3+</option>
+                      </select>
+                      <select value={filter.position} onChange={(e) => updatePlayerFilter('home', idx, 'position', e.target.value)} className={styles.positionSelect}>
+                        <option value="none">Position</option>
+                        <option value="QB" disabled={isPositionDisabled('QB')}>QB</option>
+                        <option value="WR" disabled={isPositionDisabled('WR')}>WR</option>
+                        <option value="RB" disabled={isPositionDisabled('RB')}>RB</option>
+                        <option value="TE" disabled={isPositionDisabled('TE')}>TE</option>
+                      </select>
+                      {filter.position !== 'none' && (
+                        <select value={filter.statType} onChange={(e) => updatePlayerFilter('home', idx, 'statType', e.target.value)} className={styles.statTypeSelect}>
+                          <option value="">Stat</option>
+                          {getStatTypesForPosition(filter.position).map(st => (<option key={st.value} value={st.value}>{st.label}</option>))}
+                        </select>
+                      )}
+                      {filter.position !== 'none' && filter.statType && (
+                        <div className={styles.lineRangeInputs}>
+                          <input type="text" inputMode="numeric" placeholder="Min" value={filter.lineMin} onChange={(e) => updatePlayerFilter('home', idx, 'lineMin', e.target.value)} />
+                          <input type="text" inputMode="numeric" placeholder="Max" value={filter.lineMax} onChange={(e) => updatePlayerFilter('home', idx, 'lineMax', e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Away Team Players Section */}
+                <div className={styles.playerStatsSection}>
+                  <div className={styles.playerStatsSectionHeader}>
+                    <span>Away Players</span>
+                    <button className={styles.addFilterBtn} onClick={() => addPlayerFilter('away')} title="Add filter">+</button>
+                  </div>
+                  {awayPlayerFilters.map((filter, idx) => (
+                    <div key={`away-${idx}`} className={styles.playerFilterRow}>
+                      <select value={filter.count} onChange={(e) => updatePlayerFilter('away', idx, 'count', parseInt(e.target.value))} className={styles.countSelect}>
+                        <option value={1}>1+</option>
+                        <option value={2}>2+</option>
+                        <option value={3}>3+</option>
+                      </select>
+                      <select value={filter.position} onChange={(e) => updatePlayerFilter('away', idx, 'position', e.target.value)} className={styles.positionSelect}>
+                        <option value="none">Position</option>
+                        <option value="QB" disabled={isPositionDisabled('QB')}>QB</option>
+                        <option value="WR" disabled={isPositionDisabled('WR')}>WR</option>
+                        <option value="RB" disabled={isPositionDisabled('RB')}>RB</option>
+                        <option value="TE" disabled={isPositionDisabled('TE')}>TE</option>
+                      </select>
+                      {filter.position !== 'none' && (
+                        <select value={filter.statType} onChange={(e) => updatePlayerFilter('away', idx, 'statType', e.target.value)} className={styles.statTypeSelect}>
+                          <option value="">Stat</option>
+                          {getStatTypesForPosition(filter.position).map(st => (<option key={st.value} value={st.value}>{st.label}</option>))}
+                        </select>
+                      )}
+                      {filter.position !== 'none' && filter.statType && (
+                        <div className={styles.lineRangeInputs}>
+                          <input type="text" inputMode="numeric" placeholder="Min" value={filter.lineMin} onChange={(e) => updatePlayerFilter('away', idx, 'lineMin', e.target.value)} />
+                          <input type="text" inputMode="numeric" placeholder="Max" value={filter.lineMax} onChange={(e) => updatePlayerFilter('away', idx, 'lineMax', e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </>
             )}

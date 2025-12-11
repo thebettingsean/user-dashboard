@@ -175,8 +175,30 @@ export interface QueryFilters {
   // e.g., { min: -30, max: -10 } = 10-30% more bets than money
   public_diff_pct?: Range
   
+  // ============================================
+  // PLAYER STATS FILTERS (for game filtering)
+  // ============================================
+  // Filter games based on player prop lines
+  // e.g., "Games where team's QB had pass yards line 200+"
+  team_player_filters?: PlayerStatFilter[]      // Subject team's players
+  vs_player_filters?: PlayerStatFilter[]        // Opponent team's players
+  // For O/U - home/away perspective
+  home_player_filters?: PlayerStatFilter[]
+  away_player_filters?: PlayerStatFilter[]
+  
   referee_id?: string         // specific referee
 }
+
+// Player stat filter for game filtering
+export interface PlayerStatFilter {
+  count: number               // Minimum number of players (1, 2, 3)
+  position: PlayerPosition    // QB, WR, RB, TE, or 'none'
+  stat_type: PropStatType | ''  // The prop stat type
+  line_min?: number           // Minimum line value
+  line_max?: number           // Maximum line value
+}
+
+export type PlayerPosition = 'none' | 'QB' | 'WR' | 'RB' | 'TE'
 
 // ============================================
 // QUERY TYPES

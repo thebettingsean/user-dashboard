@@ -4,7 +4,7 @@
  */
 
 import { clickhouseQuery } from '@/lib/clickhouse'
-import { buildFilterConditions } from './filter-builder'
+import { buildFilterConditions, buildPlayerPropLineFilters } from './filter-builder'
 import type { RefereeQueryRequest, QueryResult, GameDetail } from './types'
 
 // ============================================
@@ -46,6 +46,16 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
   } else if (bet_type === 'total') {
     refConditions.push(`g.total_close != 0`)
   }
+  
+  // Add player prop line filters
+  const isOUQuery = bet_type === 'total'
+  const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
+    filters,
+    'g',
+    isOUQuery
+  )
+  refConditions.push(...playerConditions)
+  appliedFilters.push(...playerDescriptions)
   
   const whereClause = refConditions.length > 0 
     ? 'WHERE ' + refConditions.join(' AND ')

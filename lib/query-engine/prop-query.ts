@@ -4,7 +4,7 @@
  */
 
 import { clickhouseQuery } from '@/lib/clickhouse'
-import { buildFilterConditions, buildWhereClause, getTimePeriodLimit } from './filter-builder'
+import { buildFilterConditions, buildWhereClause, getTimePeriodLimit, buildPlayerPropLineFilters } from './filter-builder'
 import type { PropQueryRequest, QueryResult, GameDetail, PropStatType } from './types'
 
 // ============================================
@@ -484,6 +484,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     'b.rush_yards < 500',
     'b.receiving_yards < 500'
   ]
+  
+  // Add player prop line filters (for game-level filtering)
+  // Note: For props, we use 'g' as the table alias for the games table
+  const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
+    filters,
+    'g',
+    false // Props are not O/U queries in this context
+  )
+  allConditions.push(...playerConditions)
+  appliedFilters.push(...playerDescriptions)
   
   // Build opponent rankings JOIN clause if needed (includes team's own ranking for team_win_pct)
   const oppRankingsJoin = needsOppRankingsJoin ? `
