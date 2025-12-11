@@ -585,7 +585,7 @@ export default function SimulatorPage() {
           <div className={styles.subtitle}>
             Powered by{' '}
             <a
-              href="https://www.versussportssimulator.com/NFL/simulations"
+              href="https://www.versussportssimulator.com/NFL/simulations?utm_source=thebettinginsider&utm_medium=referral&utm_campaign=simulator_header"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.versusLink}
@@ -777,7 +777,7 @@ export default function SimulatorPage() {
               </div>
               
               <a
-                href="https://www.versussportssimulator.com"
+                href="https://www.versussportssimulator.com?utm_source=thebettinginsider&utm_medium=referral&utm_campaign=simulator_cta"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.fullSimulatorLink}
