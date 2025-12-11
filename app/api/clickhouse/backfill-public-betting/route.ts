@@ -182,13 +182,22 @@ export async function GET(request: NextRequest) {
         const homeTeam = normalizeTeam(splits.HomeTeam)
         const awayTeam = normalizeTeam(splits.AwayTeam)
         
-        // Try to find matching game in ClickHouse
-        // We match by date and team abbreviations
+        // Try to find matching game in ClickHouse (nfl_games table)
+        // Join with teams to match by abbreviation
         const matchQuery = `
-          SELECT game_id, home_team_id, away_team_id, game_date
-          FROM games 
-          WHERE sport = 'nfl'
-            AND game_date = '${gameDate}'
+          SELECT 
+            g.game_id, 
+            g.home_team_id, 
+            g.away_team_id, 
+            g.game_date,
+            g.season,
+            g.week,
+            ht.abbreviation as home_abbrev,
+            at.abbreviation as away_abbrev
+          FROM nfl_games g
+          LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = 'nfl'
+          LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = 'nfl'
+          WHERE g.game_date = '${gameDate}'
           LIMIT 100
         `
         
@@ -196,24 +205,29 @@ export async function GET(request: NextRequest) {
           const result = await clickhouseQuery(matchQuery)
           const games = result.data
           
-          // For now, just collect the data
-          // In production, we'd match by team IDs
-          if (games.length > 0) {
+          // Match by team abbreviations
+          const matchedGame = games.find((g: any) => {
+            const homeMatch = normalizeTeam(g.home_abbrev || '') === homeTeam
+            const awayMatch = normalizeTeam(g.away_abbrev || '') === awayTeam
+            return homeMatch && awayMatch
+          })
+          
+          if (matchedGame) {
             stats.matched++
             matchedGames.push({
               scoreId: splits.ScoreId,
+              gameId: matchedGame.game_id,
               season: splits.Season,
               week: splits.Week,
               date: gameDate,
               matchup: `${awayTeam} @ ${homeTeam}`,
-              ...publicBetting,
-              possibleMatches: games.length
+              ...publicBetting
             })
             
-            if (!dryRun && games.length === 1) {
+            if (!dryRun) {
               // Update the game with public betting data
               const updateQuery = `
-                ALTER TABLE games UPDATE
+                ALTER TABLE nfl_games UPDATE
                   sportsdata_io_score_id = ${splits.ScoreId},
                   public_ml_home_bet_pct = ${publicBetting.mlHomeBetPct},
                   public_ml_home_money_pct = ${publicBetting.mlHomeMoneyPct},
@@ -222,7 +236,7 @@ export async function GET(request: NextRequest) {
                   public_total_over_bet_pct = ${publicBetting.totalOverBetPct},
                   public_total_over_money_pct = ${publicBetting.totalOverMoneyPct},
                   public_betting_updated_at = now()
-                WHERE game_id = ${games[0].game_id}
+                WHERE game_id = ${matchedGame.game_id}
               `
               await clickhouseCommand(updateQuery)
               stats.updated++

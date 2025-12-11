@@ -3,7 +3,7 @@ import { clickhouseCommand } from '@/lib/clickhouse'
 
 export async function POST() {
   try {
-    console.log('🏈 Adding public betting columns to games table...')
+    console.log('🏈 Adding public betting columns to nfl_games table...')
     
     // Add columns one by one (ClickHouse ADD COLUMN IF NOT EXISTS)
     const columns = [
@@ -22,7 +22,7 @@ export async function POST() {
     for (const column of columns) {
       const columnName = column.split(' ')[0]
       try {
-        await clickhouseCommand(`ALTER TABLE games ADD COLUMN IF NOT EXISTS ${column}`)
+        await clickhouseCommand(`ALTER TABLE nfl_games ADD COLUMN IF NOT EXISTS ${column}`)
         console.log(`✅ Added column: ${columnName}`)
         results.push({ column: columnName, status: 'added' })
       } catch (error: any) {
@@ -39,7 +39,7 @@ export async function POST() {
     
     return NextResponse.json({
       success: true,
-      message: 'Public betting columns added to games table',
+      message: 'Public betting columns added to nfl_games table',
       results
     })
     
