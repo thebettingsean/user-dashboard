@@ -1319,22 +1319,22 @@ export function buildWhereClause(conditions: string[]): string {
 // ============================================
 
 /**
- * Map prop stat type to the column name in prop_lines table
+ * Map prop stat type to the prop_type value in nfl_prop_lines table
  */
-function getPropLineColumn(statType: string): string | null {
+function getPropType(statType: string): string | null {
   const mapping: Record<string, string> = {
-    'pass_yards': 'pass_yards_line',
-    'pass_tds': 'pass_tds_line',
-    'pass_attempts': 'pass_attempts_line',
-    'pass_completions': 'completions_line',
-    'interceptions': 'interceptions_line',
-    'rush_yards': 'rush_yards_line',
-    'rush_tds': 'rush_tds_line',
-    'rush_attempts': 'rush_attempts_line',
-    'receiving_yards': 'receiving_yards_line',
-    'receptions': 'receptions_line',
-    'receiving_tds': 'receiving_tds_line',
-    'targets': 'targets_line',
+    'pass_yards': 'player_pass_yds',
+    'pass_tds': 'player_pass_tds',
+    'pass_attempts': 'player_pass_attempts',
+    'pass_completions': 'player_pass_completions',
+    'interceptions': 'player_pass_interceptions',
+    'rush_yards': 'player_rush_yds',
+    'rush_tds': 'player_rush_tds',
+    'rush_attempts': 'player_rush_attempts',
+    'receiving_yards': 'player_reception_yds',
+    'receptions': 'player_receptions',
+    'receiving_tds': 'player_reception_tds',
+    'targets': 'player_receptions', // No direct equivalent, use receptions
   }
   return mapping[statType] || null
 }
@@ -1349,15 +1349,15 @@ function getPositionValue(position: PlayerPosition): string | null {
 
 /**
  * Build a subquery condition for player prop line filters
- * Returns a condition like: g.game_id IN (SELECT game_id FROM prop_lines JOIN players ... GROUP BY game_id HAVING COUNT(...) >= N)
+ * Returns a condition like: g.game_id IN (SELECT game_id FROM nfl_prop_lines JOIN players ... GROUP BY game_id HAVING COUNT(...) >= N)
  * 
  * @param filters Array of PlayerStatFilter
- * @param teamColumn The column to use for team matching (e.g., 'g.home_team_id' or 'g.away_team_id')
+ * @param teamSide 'home' | 'away' - which team's players to check
  * @param tableAlias The game table alias (e.g., 'g')
  */
 export function buildPlayerPropLineSubquery(
   filters: PlayerStatFilter[],
-  teamColumn: string,
+  teamSide: 'home' | 'away',
   tableAlias: string = 'g'
 ): string | null {
   // Filter out empty/invalid filters
@@ -1372,8 +1372,8 @@ export function buildPlayerPropLineSubquery(
   const subqueries: string[] = []
   
   for (const filter of validFilters) {
-    const lineColumn = getPropLineColumn(filter.stat_type)
-    if (!lineColumn) continue
+    const propType = getPropType(filter.stat_type)
+    if (!propType) continue
     
     const positionValue = getPositionValue(filter.position)
     if (!positionValue) continue
@@ -1381,26 +1381,38 @@ export function buildPlayerPropLineSubquery(
     // Build the line range condition
     const lineConditions: string[] = []
     if (filter.line_min !== undefined && filter.line_min !== null) {
-      lineConditions.push(`pl.${lineColumn} >= ${filter.line_min}`)
+      lineConditions.push(`pl.line >= ${filter.line_min}`)
     }
     if (filter.line_max !== undefined && filter.line_max !== null) {
-      lineConditions.push(`pl.${lineColumn} <= ${filter.line_max}`)
+      lineConditions.push(`pl.line <= ${filter.line_max}`)
     }
     
     if (lineConditions.length === 0) continue
     
+    // Determine team column based on side
+    // We join prop_lines with teams to match team names to IDs
+    const teamJoinCondition = teamSide === 'home' 
+      ? `pl.home_team = tm.abbreviation OR pl.home_team = tm.name`
+      : `pl.away_team = tm.abbreviation OR pl.away_team = tm.name`
+    
+    const teamIdColumn = teamSide === 'home' ? 'home_team_id' : 'away_team_id'
+    
     // Build subquery for this filter
+    // This matches games where a player of the specified position on the specified team
+    // has a prop line matching the criteria
     const subquery = `
       ${tableAlias}.game_id IN (
-        SELECT pl.game_id
-        FROM prop_lines pl
-        JOIN players p ON pl.player_id = p.player_id AND p.sport = 'nfl'
-        WHERE pl.team_id = ${teamColumn}
+        SELECT DISTINCT pl.game_id
+        FROM nfl_prop_lines pl
+        JOIN players p ON LOWER(REPLACE(pl.player_name, '.', '')) = LOWER(REPLACE(p.name, '.', '')) AND p.sport = 'nfl'
+        JOIN teams tm ON tm.espn_team_id = ${tableAlias}.${teamIdColumn} AND tm.sport = 'nfl'
+        WHERE pl.prop_type = '${propType}'
           AND p.position = '${positionValue}'
-          AND pl.${lineColumn} IS NOT NULL
+          AND pl.line > 0
+          AND (${teamJoinCondition})
           AND ${lineConditions.join(' AND ')}
         GROUP BY pl.game_id
-        HAVING COUNT(DISTINCT pl.player_id) >= ${filter.count}
+        HAVING COUNT(DISTINCT pl.player_name) >= ${filter.count}
       )
     `.trim()
     
@@ -1415,22 +1427,32 @@ export function buildPlayerPropLineSubquery(
 
 /**
  * Build player prop line filter conditions and descriptions
+ * 
+ * @param filters Query filters
+ * @param tableAlias Game table alias (e.g., 'g')
+ * @param isOUQuery Whether this is an O/U query (uses home/away perspective)
+ * @param isHomeTeam For spread/ML queries, whether the subject is the home team (default: true)
  */
 export function buildPlayerPropLineFilters(
   filters: QueryFilters,
   tableAlias: string = 'g',
-  isOUQuery: boolean = false
+  isOUQuery: boolean = false,
+  isHomeTeam: boolean = true
 ): { conditions: string[], descriptions: string[] } {
   const conditions: string[] = []
   const descriptions: string[] = []
   
   if (!isOUQuery) {
     // For spread/ML queries: team_player_filters and vs_player_filters
+    // "Team" = subject team, "Vs" = opponent team
+    // The subject team depends on the location filter (home/away)
+    const subjectTeamSide: 'home' | 'away' = isHomeTeam ? 'home' : 'away'
+    const opponentTeamSide: 'home' | 'away' = isHomeTeam ? 'away' : 'home'
+    
     if (filters.team_player_filters && filters.team_player_filters.length > 0) {
-      // Team players - use subject team column (will vary by query context)
       const subquery = buildPlayerPropLineSubquery(
         filters.team_player_filters,
-        'subject_team_id', // This needs to be set appropriately by the query engine
+        subjectTeamSide,
         tableAlias
       )
       if (subquery) {
@@ -1442,7 +1464,7 @@ export function buildPlayerPropLineFilters(
     if (filters.vs_player_filters && filters.vs_player_filters.length > 0) {
       const subquery = buildPlayerPropLineSubquery(
         filters.vs_player_filters,
-        'opponent_team_id', // This needs to be set appropriately by the query engine
+        opponentTeamSide,
         tableAlias
       )
       if (subquery) {
@@ -1455,7 +1477,7 @@ export function buildPlayerPropLineFilters(
     if (filters.home_player_filters && filters.home_player_filters.length > 0) {
       const subquery = buildPlayerPropLineSubquery(
         filters.home_player_filters,
-        `${tableAlias}.home_team_id`,
+        'home',
         tableAlias
       )
       if (subquery) {
@@ -1467,7 +1489,7 @@ export function buildPlayerPropLineFilters(
     if (filters.away_player_filters && filters.away_player_filters.length > 0) {
       const subquery = buildPlayerPropLineSubquery(
         filters.away_player_filters,
-        `${tableAlias}.away_team_id`,
+        'away',
         tableAlias
       )
       if (subquery) {

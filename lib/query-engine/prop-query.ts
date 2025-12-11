@@ -579,11 +579,14 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   ]
   
   // Add player prop line filters (for game-level filtering)
-  // Note: For props, we use 'g' as the table alias for the games table
+  // Note: For props, "Team Players" refers to the player's team
+  // If location filter is 'home', player is on home team; if 'away', player is on away team
+  const isPlayerOnHomeTeam = filters.location !== 'away' // Default to home if not specified
   const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
     filters,
     'g',
-    false // Props are not O/U queries in this context
+    false, // Props are not O/U queries in this context
+    isPlayerOnHomeTeam
   )
   allConditions.push(...playerConditions)
   appliedFilters.push(...playerDescriptions)

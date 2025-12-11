@@ -56,10 +56,13 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
   }
   
   // Add player prop line filters
+  // Determine if subject team is home or away based on side
+  const isHomeTeam = side === 'home' || side === 'favorite' // Default to home perspective
   const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
     filters,
     'g',
-    isOUQuery
+    isOUQuery,
+    isHomeTeam
   )
   trendConditions.push(...playerConditions)
   appliedFilters.push(...playerDescriptions)

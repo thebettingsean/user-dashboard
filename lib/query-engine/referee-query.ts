@@ -49,10 +49,13 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
   
   // Add player prop line filters
   const isOUQuery = bet_type === 'total'
+  // For referee queries, determine home/away from side
+  const isHomeTeam = side === 'home' || side === 'favorite'
   const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
     filters,
     'g',
-    isOUQuery
+    isOUQuery,
+    isHomeTeam
   )
   refConditions.push(...playerConditions)
   appliedFilters.push(...playerDescriptions)

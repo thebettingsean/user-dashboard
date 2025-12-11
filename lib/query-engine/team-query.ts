@@ -84,10 +84,14 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
   
   // Add player prop line filters
   const isOUQuery = bet_type === 'total'
+  // For team queries, use the team's location to determine perspective
+  // If location is 'away', subject team is away; otherwise default to home
+  const subjectIsHome = teamLocation !== 'away'
   const { conditions: playerConditions, descriptions: playerDescriptions } = buildPlayerPropLineFilters(
     filters,
     'g',
-    isOUQuery
+    isOUQuery,
+    subjectIsHome
   )
   teamConditions.push(...playerConditions)
   appliedFilters.push(...playerDescriptions)
