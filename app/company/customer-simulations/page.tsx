@@ -11,6 +11,30 @@ interface KPIs {
   signedInCount: number
 }
 
+interface LinkClickKPIs {
+  totalLinkClicks: number
+  uniqueLinkClickSessions: number
+  signedInLinkClicks: number
+  anonymousLinkClicks: number
+  clickThroughRate: string
+}
+
+interface LinkClickEvent {
+  id: string
+  user_id: string | null
+  session_id: string
+  user_type: string
+  sport: string
+  awayTeam: string
+  homeTeam: string
+  created_at: string
+}
+
+interface LinkClickTimelineDay {
+  date: string
+  count: number
+}
+
 interface SportBreakdown {
   sport: string
   count: number
@@ -58,6 +82,7 @@ interface RawEvent {
 
 interface AnalyticsData {
   kpis: KPIs
+  linkClickKpis: LinkClickKPIs
   sportBreakdown: SportBreakdown[]
   popularMatchups: PopularMatchup[]
   timeline: TimelineDay[]
@@ -65,6 +90,11 @@ interface AnalyticsData {
   topUsers: TopUser[]
   avgScoresBySport: AvgScores[]
   rawData: RawEvent[]
+  // Link click data
+  linkClickSportBreakdown: SportBreakdown[]
+  mostClickedMatchups: PopularMatchup[]
+  linkClickTimeline: LinkClickTimelineDay[]
+  recentLinkClicks: LinkClickEvent[]
 }
 
 const sportColors: Record<string, string> = {
@@ -167,6 +197,133 @@ export default function CustomerSimulationsDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Link Click KPIs */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>🔗 Link Click Analytics</h2>
+        <div className={styles.kpiGrid}>
+          <div className={`${styles.kpiCard} ${styles.kpiLink}`}>
+            <div className={styles.kpiLabel}>Total Link Clicks</div>
+            <div className={styles.kpiValue}>{data.linkClickKpis.totalLinkClicks.toLocaleString()}</div>
+          </div>
+          
+          <div className={`${styles.kpiCard} ${styles.kpiPrimary}`}>
+            <div className={styles.kpiLabel}>Click-Through Rate</div>
+            <div className={styles.kpiValue}>{data.linkClickKpis.clickThroughRate}%</div>
+            <div className={styles.kpiSubtext}>
+              of simulations led to a click
+            </div>
+          </div>
+          
+          <div className={`${styles.kpiCard} ${styles.kpiSuccess}`}>
+            <div className={styles.kpiLabel}>Signed-In Clicks</div>
+            <div className={styles.kpiValue}>{data.linkClickKpis.signedInLinkClicks.toLocaleString()}</div>
+            <div className={styles.kpiSubtext}>
+              {data.linkClickKpis.totalLinkClicks > 0 
+                ? ((data.linkClickKpis.signedInLinkClicks / data.linkClickKpis.totalLinkClicks) * 100).toFixed(1) 
+                : '0'}% of clicks
+            </div>
+          </div>
+          
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>Anonymous Clicks</div>
+            <div className={styles.kpiValue}>{data.linkClickKpis.anonymousLinkClicks.toLocaleString()}</div>
+            <div className={styles.kpiSubtext}>
+              {data.linkClickKpis.totalLinkClicks > 0 
+                ? ((data.linkClickKpis.anonymousLinkClicks / data.linkClickKpis.totalLinkClicks) * 100).toFixed(1) 
+                : '0'}% of clicks
+            </div>
+          </div>
+          
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>Unique Sessions w/ Clicks</div>
+            <div className={styles.kpiValue}>{data.linkClickKpis.uniqueLinkClickSessions.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Most Clicked Matchups */}
+      {data.mostClickedMatchups && data.mostClickedMatchups.length > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>🎯 Most Clicked Matchups</h2>
+          <div className={styles.matchupGrid}>
+            {data.mostClickedMatchups.slice(0, 12).map((item, idx) => (
+              <div key={idx} className={styles.matchupCard}>
+                <div className={styles.matchupRank}>#{idx + 1}</div>
+                <div className={styles.matchupTeams}>
+                  <span className={styles.awayTeam}>{item.awayTeam}</span>
+                  <span className={styles.atSymbol}>@</span>
+                  <span className={styles.homeTeam}>{item.homeTeam}</span>
+                </div>
+                <div className={styles.matchupMeta}>
+                  <span 
+                    className={styles.sportBadge}
+                    style={{ backgroundColor: sportColors[item.sport] || '#60a5fa' }}
+                  >
+                    {sportLabels[item.sport] || item.sport}
+                  </span>
+                  <span className={styles.matchupCount}>{item.count} clicks</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Link Clicks Table */}
+      {data.recentLinkClicks && data.recentLinkClicks.length > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>📋 Recent Link Clicks</h2>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Sport</th>
+                  <th>Matchup</th>
+                  <th>User Type</th>
+                  <th>User ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentLinkClicks.slice(0, 50).map((click) => (
+                  <tr key={click.id}>
+                    <td className={styles.dateCell}>
+                      {new Date(click.created_at).toLocaleString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </td>
+                    <td>
+                      <span 
+                        className={styles.sportBadgeSmall}
+                        style={{ backgroundColor: sportColors[click.sport] || '#60a5fa' }}
+                      >
+                        {sportLabels[click.sport]?.substring(0, 3).toUpperCase() || click.sport?.substring(0, 3).toUpperCase() || 'N/A'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={styles.matchupText}>
+                        {click.awayTeam} @ {click.homeTeam}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`${styles.badge} ${click.user_type === 'signed_in' ? styles.badgeSuccess : styles.badgeInfo}`}>
+                        {click.user_type === 'signed_in' ? 'Signed In' : 'Anonymous'}
+                      </span>
+                    </td>
+                    <td className={styles.userIdCellSmall}>
+                      {click.user_id ? click.user_id.substring(0, 12) + '...' : 'Anonymous'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Sport Breakdown */}
       <div className={styles.section}>

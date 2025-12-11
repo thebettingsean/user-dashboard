@@ -32,7 +32,11 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    const simulations = events as SimulationEvent[]
+    const allEvents = events as SimulationEvent[]
+    
+    // Separate simulations from link clicks
+    const simulations = allEvents.filter(e => e.event_type === 'simulation_ran')
+    const linkClicks = allEvents.filter(e => e.event_type === 'versus_link_clicked')
     
     // Parse metadata for all events
     const parsedEvents = simulations.map(event => {
@@ -134,6 +138,79 @@ export async function GET() {
       avgTotal: ((data.totalHome + data.totalAway) / data.count).toFixed(1)
     }))
 
+    // ============================================
+    // LINK CLICK ANALYTICS
+    // ============================================
+    
+    const totalLinkClicks = linkClicks.length
+    const uniqueLinkClickSessions = new Set(linkClicks.map(c => c.session_id)).size
+    const signedInLinkClicks = linkClicks.filter(c => c.user_id).length
+    const anonymousLinkClicks = linkClicks.filter(c => !c.user_id).length
+    
+    // Link clicks by sport
+    const linkClicksBySport: Record<string, number> = {}
+    linkClicks.forEach(c => {
+      linkClicksBySport[c.sport] = (linkClicksBySport[c.sport] || 0) + 1
+    })
+    const linkClickSportBreakdown = Object.entries(linkClicksBySport)
+      .map(([sport, count]) => ({
+        sport,
+        count,
+        percentage: totalLinkClicks > 0 ? ((count / totalLinkClicks) * 100).toFixed(1) : '0'
+      }))
+      .sort((a, b) => b.count - a.count)
+    
+    // Parse link click metadata for matchup info
+    const parsedLinkClicks = linkClicks.map(click => {
+      let metadata: ParsedMetadata | null = null
+      try {
+        metadata = JSON.parse(click.metadata)
+      } catch (e) {
+        metadata = click.metadata as unknown as ParsedMetadata
+      }
+      return { ...click, parsedMetadata: metadata }
+    })
+    
+    // Most clicked matchups
+    const clickedMatchupCounts: Record<string, { count: number; sport: string; awayTeam: string; homeTeam: string }> = {}
+    parsedLinkClicks.forEach(click => {
+      if (click.parsedMetadata) {
+        const { awayTeam, homeTeam } = click.parsedMetadata
+        const key = `${awayTeam} @ ${homeTeam}`
+        if (!clickedMatchupCounts[key]) {
+          clickedMatchupCounts[key] = { count: 0, sport: click.sport, awayTeam, homeTeam }
+        }
+        clickedMatchupCounts[key].count++
+      }
+    })
+    const mostClickedMatchups = Object.entries(clickedMatchupCounts)
+      .map(([matchup, data]) => ({ matchup, ...data }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20)
+    
+    // Link click daily timeline
+    const linkClickDailyCounts: Record<string, { date: string; count: number }> = {}
+    linkClicks.forEach(c => {
+      const date = new Date(c.created_at).toISOString().split('T')[0]
+      if (!linkClickDailyCounts[date]) {
+        linkClickDailyCounts[date] = { date, count: 0 }
+      }
+      linkClickDailyCounts[date].count++
+    })
+    const linkClickTimeline = Object.values(linkClickDailyCounts).sort((a, b) => a.date.localeCompare(b.date))
+    
+    // Recent link clicks (raw data)
+    const recentLinkClicks = parsedLinkClicks.slice(0, 100).map(c => ({
+      id: c.id,
+      user_id: c.user_id,
+      session_id: c.session_id,
+      user_type: c.user_id ? 'signed_in' : 'anonymous',
+      sport: c.sport,
+      awayTeam: c.parsedMetadata?.awayTeam,
+      homeTeam: c.parsedMetadata?.homeTeam,
+      created_at: c.created_at
+    }))
+
     return NextResponse.json({
       success: true,
       kpis: {
@@ -143,12 +220,27 @@ export async function GET() {
         anonymousCount,
         signedInCount
       },
+      // Link click KPIs
+      linkClickKpis: {
+        totalLinkClicks,
+        uniqueLinkClickSessions,
+        signedInLinkClicks,
+        anonymousLinkClicks,
+        clickThroughRate: totalSimulations > 0 
+          ? ((totalLinkClicks / totalSimulations) * 100).toFixed(2) 
+          : '0'
+      },
       sportBreakdown,
       popularMatchups,
       timeline,
       hourlyDistribution,
       topUsers,
       avgScoresBySport,
+      // Link click data
+      linkClickSportBreakdown,
+      mostClickedMatchups,
+      linkClickTimeline,
+      recentLinkClicks,
       rawData: parsedEvents.slice(0, 500).map(e => ({
         id: e.id,
         user_id: e.user_id,
