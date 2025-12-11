@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, query_config, last_result_summary, sport = 'nfl' } = body
+    const { name, description, query_config, last_result_summary, sport = 'nfl', build_type = 'trends' } = body
 
     if (!name || !query_config) {
       return NextResponse.json(
@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         query_config,
         sport,
+        build_type,
         is_active: true,
         is_public: false,
         last_result_summary: last_result_summary || null,

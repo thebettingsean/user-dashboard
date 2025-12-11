@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import styles from './my-builds.module.css'
-import { FiTrash2, FiPlay, FiCalendar, FiClock, FiChevronRight } from 'react-icons/fi'
+import { FiTrash2, FiPlay, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import { IoMdTrendingUp } from 'react-icons/io'
 import { PiFootballHelmetDuotone } from 'react-icons/pi'
 import { GiWhistle } from 'react-icons/gi'
@@ -26,6 +26,7 @@ interface SavedQuery {
   created_at: string
   updated_at?: string
   sport: string
+  build_type?: string
   last_result_summary?: LastResultSummary
   run_count?: number
 }
@@ -36,6 +37,7 @@ export default function MyBuildsPage() {
   const [builds, setBuilds] = useState<SavedQuery[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [expandedBuild, setExpandedBuild] = useState<string | null>(null)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -103,14 +105,92 @@ export default function MyBuildsPage() {
     router.push(`${basePath}?${params.toString()}`)
   }
 
-  const getQueryTypeIcon = (config: any) => {
-    const type = config?.queryType || 'trend'
+  const getQueryTypeIcon = (config: any, buildType?: string) => {
+    const type = buildType || config?.queryType || 'trend'
     switch (type) {
-      case 'team': return <PiFootballHelmetDuotone />
-      case 'referee': return <GiWhistle />
-      case 'prop': return <TbTargetArrow />
+      case 'team': 
+      case 'teams': return <PiFootballHelmetDuotone />
+      case 'referee': 
+      case 'referees': return <GiWhistle />
+      case 'prop': 
+      case 'props': return <TbTargetArrow />
       default: return <IoMdTrendingUp />
     }
+  }
+  
+  const getBuildTypeLabel = (buildType?: string, config?: any): string => {
+    const type = buildType || config?.queryType || 'trend'
+    switch (type) {
+      case 'team': 
+      case 'teams': return 'Teams'
+      case 'referee': 
+      case 'referees': return 'Referees'
+      case 'prop': 
+      case 'props': return 'Props'
+      case 'trend':
+      case 'trends':
+      default: return 'Trends'
+    }
+  }
+  
+  // Format a single config key-value pair for display
+  const formatConfigValue = (key: string, value: any): string => {
+    const labels: Record<string, Record<string, string>> = {
+      side: { over: 'Over', under: 'Under', home: 'Home', away: 'Away', favorite: 'Favorite', underdog: 'Underdog' },
+      betType: { spread: 'Spread', total: 'Total O/U', moneyline: 'Moneyline' },
+      timePeriod: { since_2023: 'Since 2023', since_2022: 'Since 2022', L2years: 'Last 2 Years', season: 'This Season' },
+      location: { home: 'Home', away: 'Away', any: 'Any Location' },
+      division: { yes: 'Division', no: 'Non-Division', any: 'Any' },
+      conference: { conference: 'Conference', non_conference: 'Non-Conference', any: 'Any' },
+      playoff: { regular: 'Regular Season', playoff: 'Playoff', any: 'Any' },
+      favorite: { favorite: 'Favorite', underdog: 'Underdog', any: 'Any' },
+      propPosition: { QB: 'QB', RB: 'RB', WR: 'WR', TE: 'TE' },
+      propStat: { pass_yards: 'Pass Yards', rush_yards: 'Rush Yards', receiving_yards: 'Rec Yards', receptions: 'Receptions', pass_tds: 'Pass TDs', rush_tds: 'Rush TDs' },
+      offenseRank: { top_5: 'Top 5', top_10: 'Top 10', top_16: 'Top 16', bottom_5: 'Bottom 5', bottom_10: 'Bottom 10', bottom_16: 'Bottom 16' },
+      defenseRank: { top_5: 'Top 5', top_10: 'Top 10', top_16: 'Top 16', bottom_5: 'Bottom 5', bottom_10: 'Bottom 10', bottom_16: 'Bottom 16' },
+      ownOffenseRank: { top_5: 'Top 5', top_10: 'Top 10', top_16: 'Top 16', bottom_5: 'Bottom 5', bottom_10: 'Bottom 10', bottom_16: 'Bottom 16' },
+      ownDefenseRank: { top_5: 'Top 5', top_10: 'Top 10', top_16: 'Top 16', bottom_5: 'Bottom 5', bottom_10: 'Bottom 10', bottom_16: 'Bottom 16' },
+      propLineMode: { book: 'Book Line', manual: 'Manual', and: 'Book + Manual' },
+    }
+    
+    if (labels[key] && labels[key][value]) {
+      return labels[key][value]
+    }
+    return String(value)
+  }
+  
+  // Get human-readable label for config key
+  const getConfigKeyLabel = (key: string): string => {
+    const keyLabels: Record<string, string> = {
+      side: 'Side',
+      betType: 'Bet Type',
+      timePeriod: 'Time Period',
+      location: 'Location',
+      division: 'Division',
+      conference: 'Conference',
+      playoff: 'Season Type',
+      favorite: 'Fav/Dog',
+      propPosition: 'Position',
+      propStat: 'Stat Type',
+      propLine: 'Line',
+      propLineMode: 'Line Mode',
+      bookLineMin: 'Book Line Min',
+      bookLineMax: 'Book Line Max',
+      offenseRank: 'vs Offense',
+      defenseRank: 'vs Defense',
+      offenseStat: 'Offense Stat',
+      defenseStat: 'Defense Stat',
+      ownOffenseRank: 'Team Offense',
+      ownDefenseRank: 'Team Defense',
+      ownOffenseStat: 'Offense Stat',
+      ownDefenseStat: 'Defense Stat',
+      totalMin: 'Total Min',
+      totalMax: 'Total Max',
+      spreadMin: 'Spread Min',
+      spreadMax: 'Spread Max',
+      queryType: 'View',
+    }
+    return keyLabels[key] || key
   }
 
   const formatDate = (dateString: string) => {
@@ -250,15 +330,27 @@ export default function MyBuildsPage() {
           {builds.map((build) => {
             const configTags = getConfigTags(build.query_config)
             const summary = build.last_result_summary
+            const isExpanded = expandedBuild === build.id
+            
+            // Get all non-empty config entries for the dropdown
+            const configEntries = Object.entries(build.query_config || {}).filter(
+              ([key, value]) => value !== undefined && value !== null && value !== '' && value !== 'any'
+            )
             
             return (
               <div key={build.id} className={styles.buildCard}>
                 <div className={styles.buildCardHeader}>
                   <div className={styles.buildIcon}>
-                    {getQueryTypeIcon(build.query_config)}
+                    {getQueryTypeIcon(build.query_config, build.build_type)}
                   </div>
                   <div className={styles.buildTitleSection}>
-                    <h3 className={styles.buildName}>{build.name}</h3>
+                    <div className={styles.buildTitleRow}>
+                      <h3 className={styles.buildName}>{build.name}</h3>
+                      <div className={styles.buildBadges}>
+                        <span className={styles.sportBadge}>{build.sport?.toUpperCase() || 'NFL'}</span>
+                        <span className={styles.typeBadge}>{getBuildTypeLabel(build.build_type, build.query_config)}</span>
+                      </div>
+                    </div>
                     {build.description && (
                       <p className={styles.buildDescription}>{build.description}</p>
                     )}
@@ -281,12 +373,34 @@ export default function MyBuildsPage() {
                   </div>
                 </div>
                 
-                {/* Config Tags */}
+                {/* Config Tags (summary) */}
                 {configTags.length > 0 && (
                   <div className={styles.configTags}>
                     {configTags.map((tag, i) => (
                       <span key={i} className={styles.configTag}>{tag}</span>
                     ))}
+                  </div>
+                )}
+                
+                {/* Expandable Filter Details */}
+                <button 
+                  className={styles.expandButton}
+                  onClick={() => setExpandedBuild(isExpanded ? null : build.id)}
+                >
+                  <span>View All Filters ({configEntries.length})</span>
+                  {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                </button>
+                
+                {isExpanded && (
+                  <div className={styles.filterDetails}>
+                    <div className={styles.filterGrid}>
+                      {configEntries.map(([key, value]) => (
+                        <div key={key} className={styles.filterItem}>
+                          <span className={styles.filterKey}>{getConfigKeyLabel(key)}</span>
+                          <span className={styles.filterValue}>{formatConfigValue(key, value)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 
@@ -323,9 +437,6 @@ export default function MyBuildsPage() {
                   <span className={styles.metaItem}>
                     <FiCalendar />
                     {formatDate(build.created_at)}
-                  </span>
-                  <span className={styles.metaItem}>
-                    {build.sport?.toUpperCase() || 'NFL'}
                   </span>
                   {build.run_count && build.run_count > 0 && (
                     <span className={styles.metaItem}>

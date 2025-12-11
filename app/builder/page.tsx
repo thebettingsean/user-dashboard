@@ -5,7 +5,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import styles from './builder.module.css'
 
 // Icons
-import { FaCheckCircle, FaToolbox } from "react-icons/fa"
+import { FaCheckCircle, FaToolbox, FaShare } from "react-icons/fa"
+import { HiOutlineSave } from "react-icons/hi"
 import { FaHammer } from "react-icons/fa6"
 import { HiOutlineXCircle, HiBuildingOffice2 } from "react-icons/hi2"
 import { IoMdTrendingUp } from "react-icons/io"
@@ -289,6 +290,7 @@ function SportsEngineContent() {
   const [savedQueries, setSavedQueries] = useState<any[]>([])
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showSaveSuccessModal, setShowSaveSuccessModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [saveQueryName, setSaveQueryName] = useState('')
   const [saveQueryDescription, setSaveQueryDescription] = useState('')
   const [savingQuery, setSavingQuery] = useState(false)
@@ -822,6 +824,15 @@ function SportsEngineContent() {
         roi: result.estimated_roi
       } : null
       
+      // Determine build_type from queryType
+      const buildTypeMap: Record<string, string> = {
+        'trend': 'trends',
+        'team': 'teams',
+        'referee': 'referees',
+        'prop': 'props'
+      }
+      const buildType = buildTypeMap[queryType] || 'trends'
+      
       const response = await fetch('/api/saved-queries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -829,7 +840,8 @@ function SportsEngineContent() {
           name: saveQueryName.trim(),
           description: saveQueryDescription.trim() || null,
           query_config: queryConfig,
-          last_result_summary: lastResultSummary
+          last_result_summary: lastResultSummary,
+          build_type: buildType
         })
       })
       
@@ -1299,12 +1311,18 @@ function SportsEngineContent() {
       teamId, teamLocation, selectedVersusTeam, selectedReferee, propPosition, propStat, propLine, propLineMode, 
       bookLineMin, bookLineMax, selectedPropVersusTeam])
   
-  // Handle share button click
-  const handleShare = async () => {
+  // Handle share button click - shows confirmation modal
+  const handleShare = () => {
+    setShowShareModal(true)
+  }
+  
+  // Actually copy the share URL
+  const confirmShare = async () => {
     const url = buildShareableUrl()
     
     try {
       await navigator.clipboard.writeText(url)
+      setShowShareModal(false)
       setShowCopiedToast(true)
       setTimeout(() => setShowCopiedToast(false), 2000)
     } catch (err) {
@@ -1315,6 +1333,7 @@ function SportsEngineContent() {
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
+      setShowShareModal(false)
       setShowCopiedToast(true)
       setTimeout(() => setShowCopiedToast(false), 2000)
     }
@@ -5226,15 +5245,6 @@ function SportsEngineContent() {
               {loading ? 'Running...' : <><IoRocketOutline /> Run Build</>}
             </button>
             <button
-              className={styles.saveBtn}
-              onClick={() => setShowSaveModal(true)}
-              type="button"
-              disabled={!isSignedIn}
-              title={!isSignedIn ? 'Sign in to save queries' : 'Save this build'}
-            >
-              <FiCopy /> Save Build
-            </button>
-            <button
               className={styles.clearBtn}
               onClick={clearFilters}
               type="button"
@@ -5269,12 +5279,19 @@ function SportsEngineContent() {
                 </div>
               )}
               <button
-                className={styles.shareBtn}
-                onClick={handleShare}
-                title="Copy shareable link"
+                className={styles.iconBtn}
+                onClick={() => setShowSaveModal(true)}
+                disabled={!isSignedIn}
+                title={!isSignedIn ? 'Sign in to save' : 'Save this build'}
               >
-                {showCopiedToast ? <FiCheck /> : <BsShare />}
-                {showCopiedToast ? 'Copied!' : 'Share'}
+                <HiOutlineSave />
+              </button>
+              <button
+                className={styles.iconBtn}
+                onClick={handleShare}
+                title="Share this build"
+              >
+                {showCopiedToast ? <FiCheck /> : <FaShare />}
               </button>
             </div>
           </div>
@@ -5841,6 +5858,45 @@ function SportsEngineContent() {
                 onClick={() => setShowSaveSuccessModal(false)}
               >
                 Keep Building
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Confirmation Modal */}
+      {showShareModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowShareModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Share Your Build</h3>
+              <button 
+                className={styles.modalClose}
+                onClick={() => setShowShareModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.shareMessage}>
+                Are you sure you want to share your build?
+              </p>
+              <p className={styles.shareSubtext}>
+                This will copy a link to your clipboard that anyone can use to view your exact filters.
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.modalCancel}
+                onClick={() => setShowShareModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalSave}
+                onClick={confirmShare}
+              >
+                <FaShare style={{ marginRight: '6px' }} /> Yes, Copy Link
               </button>
             </div>
           </div>

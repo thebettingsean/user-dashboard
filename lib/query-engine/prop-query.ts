@@ -108,6 +108,10 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   delete gameFilters.opp_win_pct // Handled separately with opp_rank alias
   delete gameFilters.vs_offense_rank // Handled separately with opp_rank alias
   delete gameFilters.vs_defense_rank // Handled separately with opp_rank alias
+  delete gameFilters.own_offense_rank // Handled separately with team_rank alias
+  delete gameFilters.own_defense_rank // Handled separately with team_rank alias
+  delete gameFilters.own_offense_stat // Handled with own_offense_rank
+  delete gameFilters.own_defense_stat // Handled with own_defense_rank
   
   const { conditions: gameConditions, appliedFilters, limit } = buildFilterConditions(
     gameFilters,
@@ -468,6 +472,95 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       case 'bottom_16':
         oppRankConditions.push(`opp_rank.${column} >= 17 AND opp_rank.${column} <= 32`)
         appliedFilters.push('vs Bottom 16 Offense')
+        break
+    }
+  }
+  
+  // ============================================
+  // PLAYER'S TEAM RANKINGS (Own Offense/Defense)
+  // ============================================
+  
+  // Team Offense - player's team's offensive ranking
+  if (filters.own_offense_rank && filters.own_offense_rank !== 'any') {
+    needsOppRankingsJoin = true
+    const stat = (filters.own_offense_stat as string) || 'points'
+    const column = stat === 'points' ? 'rank_points_per_game'
+      : stat === 'passing' ? 'rank_passing_yards_per_game'
+      : stat === 'rushing' ? 'rank_rushing_yards_per_game'
+      : stat === 'total_yards' ? 'rank_total_yards_per_game'
+      : 'rank_points_per_game'
+    
+    const statLabel = stat === 'points' ? 'Points' 
+      : stat === 'passing' ? 'Pass O' 
+      : stat === 'rushing' ? 'Rush O' 
+      : 'Offense'
+    
+    switch (filters.own_offense_rank) {
+      case 'top_5':
+        oppRankConditions.push(`team_rank.${column} <= 5 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 5 ${statLabel}`)
+        break
+      case 'top_10':
+        oppRankConditions.push(`team_rank.${column} <= 10 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 10 ${statLabel}`)
+        break
+      case 'top_16':
+        oppRankConditions.push(`team_rank.${column} <= 16 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 16 ${statLabel}`)
+        break
+      case 'bottom_5':
+        oppRankConditions.push(`team_rank.${column} >= 28 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 5 ${statLabel}`)
+        break
+      case 'bottom_10':
+        oppRankConditions.push(`team_rank.${column} >= 23 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 10 ${statLabel}`)
+        break
+      case 'bottom_16':
+        oppRankConditions.push(`team_rank.${column} >= 17 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 16 ${statLabel}`)
+        break
+    }
+  }
+  
+  // Team Defense - player's team's defensive ranking
+  if (filters.own_defense_rank && filters.own_defense_rank !== 'any') {
+    needsOppRankingsJoin = true
+    const stat = (filters.own_defense_stat as string) || 'points'
+    const column = stat === 'points' ? 'rank_points_allowed_per_game'
+      : stat === 'passing' ? 'rank_passing_yards_allowed_per_game'
+      : stat === 'rushing' ? 'rank_rushing_yards_allowed_per_game'
+      : 'rank_points_allowed_per_game'
+    
+    const statLabel = stat === 'points' ? 'Points Allowed' 
+      : stat === 'passing' ? 'Pass D' 
+      : stat === 'rushing' ? 'Rush D' 
+      : 'Defense'
+    
+    switch (filters.own_defense_rank) {
+      case 'top_5':
+        oppRankConditions.push(`team_rank.${column} <= 5 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 5 ${statLabel}`)
+        break
+      case 'top_10':
+        oppRankConditions.push(`team_rank.${column} <= 10 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 10 ${statLabel}`)
+        break
+      case 'top_16':
+        oppRankConditions.push(`team_rank.${column} <= 16 AND team_rank.${column} > 0`)
+        appliedFilters.push(`Team Top 16 ${statLabel}`)
+        break
+      case 'bottom_5':
+        oppRankConditions.push(`team_rank.${column} >= 28 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 5 ${statLabel}`)
+        break
+      case 'bottom_10':
+        oppRankConditions.push(`team_rank.${column} >= 23 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 10 ${statLabel}`)
+        break
+      case 'bottom_16':
+        oppRankConditions.push(`team_rank.${column} >= 17 AND team_rank.${column} <= 32`)
+        appliedFilters.push(`Team Bottom 16 ${statLabel}`)
         break
     }
   }

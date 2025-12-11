@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS saved_queries (
   -- Sport (for multi-sport support)
   sport TEXT NOT NULL DEFAULT 'nfl',
   
+  -- Build type (view type: trends, teams, referees, props)
+  build_type TEXT DEFAULT 'trends',
+  
   -- Status flags
   is_active BOOLEAN DEFAULT true,
   is_public BOOLEAN DEFAULT false,
@@ -73,4 +76,10 @@ CREATE POLICY "Users can delete their own saved queries"
 
 -- Note: Since we're using service role key in the API, these policies are mainly for direct database access
 -- The API will handle authentication via Clerk
+
+-- ============================================
+-- MIGRATION: Add build_type column if table already exists
+-- Run this if you already have the table set up
+-- ============================================
+-- ALTER TABLE saved_queries ADD COLUMN IF NOT EXISTS build_type TEXT DEFAULT 'trends';
 
