@@ -168,10 +168,12 @@ export interface QueryFilters {
   // Public money percentage (% of money wagered on the side being analyzed)
   public_money_pct?: Range         // e.g., { min: 40, max: 60 } for 40-60% of money
   
-  // Bet% vs Money% difference filter
-  // 'positive' = money% > bet% (sharp money indicator - more money than tickets)
-  // 'negative' = bet% > money% (public favorite - more tickets than money)
-  public_bet_money_diff?: 'positive' | 'negative' | 'any'
+  // Diff% = Money% - Bet%
+  // Positive = more money than bets (sharp action)
+  // Negative = more bets than money (square action)
+  // e.g., { min: 10, max: 30 } = 10-30% more money than bets
+  // e.g., { min: -30, max: -10 } = 10-30% more bets than money
+  public_diff_pct?: Range
   
   referee_id?: string         // specific referee
 }
@@ -317,6 +319,10 @@ export interface GameDetail {
   opp_off_rank_rush?: number
   // Player perspective
   is_home?: boolean
+  // Public betting data
+  public_bet_pct?: number         // % of bets on this side
+  public_money_pct?: number       // % of money on this side
+  public_diff_pct?: number        // money% - bet% (positive = sharp, negative = square)
 }
 
 export interface QueryResult {

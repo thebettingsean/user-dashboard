@@ -180,6 +180,13 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
+      -- Public betting columns
+      g.public_ml_home_bet_pct,
+      g.public_ml_home_money_pct,
+      g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct,
+      g.public_total_over_bet_pct,
+      g.public_total_over_money_pct,
       ${hitColumn} as hit,
       ${valueColumn} as value,
       ${lineColumn} as line,
@@ -306,6 +313,44 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
       }
     }
     
+    // Calculate public betting percentages based on bet_type and perspective
+    let publicBetPct: number | undefined
+    let publicMoneyPct: number | undefined
+    
+    const isHome = team_id ? (row.home_team_id === team_id) : true
+    
+    if (bet_type === 'total') {
+      if (side === 'over') {
+        publicBetPct = row.public_total_over_bet_pct || undefined
+        publicMoneyPct = row.public_total_over_money_pct || undefined
+      } else {
+        publicBetPct = row.public_total_over_bet_pct ? (100 - row.public_total_over_bet_pct) : undefined
+        publicMoneyPct = row.public_total_over_money_pct ? (100 - row.public_total_over_money_pct) : undefined
+      }
+    } else if (bet_type === 'spread') {
+      // For team's spread, use home or away perspective
+      if (isHome) {
+        publicBetPct = row.public_spread_home_bet_pct || undefined
+        publicMoneyPct = row.public_spread_home_money_pct || undefined
+      } else {
+        publicBetPct = row.public_spread_home_bet_pct ? (100 - row.public_spread_home_bet_pct) : undefined
+        publicMoneyPct = row.public_spread_home_money_pct ? (100 - row.public_spread_home_money_pct) : undefined
+      }
+    } else {
+      // Moneyline
+      if (isHome) {
+        publicBetPct = row.public_ml_home_bet_pct || undefined
+        publicMoneyPct = row.public_ml_home_money_pct || undefined
+      } else {
+        publicBetPct = row.public_ml_home_bet_pct ? (100 - row.public_ml_home_bet_pct) : undefined
+        publicMoneyPct = row.public_ml_home_money_pct ? (100 - row.public_ml_home_money_pct) : undefined
+      }
+    }
+    
+    const publicDiffPct = (publicMoneyPct !== undefined && publicBetPct !== undefined) 
+      ? Math.round((publicMoneyPct - publicBetPct) * 10) / 10 
+      : undefined
+    
     // Determine opponent based on team perspective
     let opponent: string
     let opponentId: number
@@ -368,7 +413,11 @@ export async function executeTeamQuery(request: TeamQueryRequest): Promise<Query
       away_def_rank_rush: row.away_def_rank_rush,
       away_off_rank_points: row.away_off_rank_points,
       away_off_rank_pass: row.away_off_rank_pass,
-      away_off_rank_rush: row.away_off_rank_rush
+      away_off_rank_rush: row.away_off_rank_rush,
+      // Public betting data
+      public_bet_pct: publicBetPct,
+      public_money_pct: publicMoneyPct,
+      public_diff_pct: publicDiffPct
     })
   }
   

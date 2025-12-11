@@ -110,6 +110,13 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
+      -- Public betting columns
+      g.public_ml_home_bet_pct,
+      g.public_ml_home_money_pct,
+      g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct,
+      g.public_total_over_bet_pct,
+      g.public_total_over_money_pct,
       ${hitColumn} as hit,
       ${valueColumn} as value,
       ht.abbreviation as home_abbr,
@@ -227,6 +234,41 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
     // Subject team's spread: home team's spread_close, or flip if side=away
     const subjectSpread = side === 'away' ? -row.spread_close : row.spread_close
     
+    // Calculate public betting percentages based on bet_type and side
+    let publicBetPct: number | undefined
+    let publicMoneyPct: number | undefined
+    
+    if (bet_type === 'total') {
+      if (side === 'over') {
+        publicBetPct = row.public_total_over_bet_pct || undefined
+        publicMoneyPct = row.public_total_over_money_pct || undefined
+      } else {
+        publicBetPct = row.public_total_over_bet_pct ? (100 - row.public_total_over_bet_pct) : undefined
+        publicMoneyPct = row.public_total_over_money_pct ? (100 - row.public_total_over_money_pct) : undefined
+      }
+    } else if (bet_type === 'spread') {
+      if (side === 'home') {
+        publicBetPct = row.public_spread_home_bet_pct || undefined
+        publicMoneyPct = row.public_spread_home_money_pct || undefined
+      } else {
+        publicBetPct = row.public_spread_home_bet_pct ? (100 - row.public_spread_home_bet_pct) : undefined
+        publicMoneyPct = row.public_spread_home_money_pct ? (100 - row.public_spread_home_money_pct) : undefined
+      }
+    } else {
+      // Moneyline
+      if (side === 'home') {
+        publicBetPct = row.public_ml_home_bet_pct || undefined
+        publicMoneyPct = row.public_ml_home_money_pct || undefined
+      } else {
+        publicBetPct = row.public_ml_home_bet_pct ? (100 - row.public_ml_home_bet_pct) : undefined
+        publicMoneyPct = row.public_ml_home_money_pct ? (100 - row.public_ml_home_money_pct) : undefined
+      }
+    }
+    
+    const publicDiffPct = (publicMoneyPct !== undefined && publicBetPct !== undefined) 
+      ? Math.round((publicMoneyPct - publicBetPct) * 10) / 10 
+      : undefined
+    
     games.push({
       game_id: row.game_id,
       game_date: row.game_date,
@@ -266,7 +308,11 @@ export async function executeRefereeQuery(request: RefereeQueryRequest): Promise
       away_def_rank_rush: row.away_def_rank_rush,
       away_off_rank_points: row.away_off_rank_points,
       away_off_rank_pass: row.away_off_rank_pass,
-      away_off_rank_rush: row.away_off_rank_rush
+      away_off_rank_rush: row.away_off_rank_rush,
+      // Public betting data
+      public_bet_pct: publicBetPct,
+      public_money_pct: publicMoneyPct,
+      public_diff_pct: publicDiffPct
     } as GameDetail)
   }
   

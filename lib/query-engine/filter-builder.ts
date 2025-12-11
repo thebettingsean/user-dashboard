@@ -465,16 +465,16 @@ export function buildPublicMoneyPctFilter(
 }
 
 /**
- * Build public bet vs money difference filter
- * 'positive' = Money% > Bet% (sharp money)
- * 'negative' = Bet% > Money% (public action)
+ * Build public betting diff % filter (Money% - Bet%)
+ * Positive = more money than bets (sharp)
+ * Negative = more bets than money (square)
  */
-export function buildPublicBetMoneyDiffFilter(
-  diff: 'positive' | 'negative' | 'any' | undefined,
+export function buildPublicDiffPctFilter(
+  range: { min?: number; max?: number } | undefined,
   tableAlias: string,
   betType: 'spread' | 'total' | 'moneyline' = 'spread'
 ): string | null {
-  if (!diff || diff === 'any') return null
+  if (!range) return null
   
   const betCol = betType === 'total' 
     ? `${tableAlias}.public_total_over_bet_pct`
@@ -488,9 +488,17 @@ export function buildPublicBetMoneyDiffFilter(
       ? `${tableAlias}.public_ml_home_money_pct`
       : `${tableAlias}.public_spread_home_money_pct`
   
-  return diff === 'positive'
-    ? `${moneyCol} > ${betCol}`
-    : `${betCol} > ${moneyCol}`
+  // diff = money% - bet%
+  const diffExpr = `(${moneyCol} - ${betCol})`
+  
+  if (range.min !== undefined && range.max !== undefined) {
+    return `${diffExpr} BETWEEN ${range.min} AND ${range.max}`
+  } else if (range.min !== undefined) {
+    return `${diffExpr} >= ${range.min}`
+  } else if (range.max !== undefined) {
+    return `${diffExpr} <= ${range.max}`
+  }
+  return null
 }
 
 /**
@@ -1257,7 +1265,7 @@ export function buildFilterConditions(
       conditions.push(betPctFilter)
       const min = filters.public_bet_pct.min
       const max = filters.public_bet_pct.max
-      appliedFilters.push(`Public Bet %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
+      appliedFilters.push(`Bet %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
     }
   }
   
@@ -1267,15 +1275,20 @@ export function buildFilterConditions(
       conditions.push(moneyPctFilter)
       const min = filters.public_money_pct.min
       const max = filters.public_money_pct.max
-      appliedFilters.push(`Public Money %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
+      appliedFilters.push(`Dollars %: ${min ?? ''}${min && max ? '-' : ''}${max ?? ''}%`)
     }
   }
   
-  if (filters.public_bet_money_diff && filters.public_bet_money_diff !== 'any') {
-    const diffFilter = buildPublicBetMoneyDiffFilter(filters.public_bet_money_diff, tableAlias)
+  if (filters.public_diff_pct) {
+    const diffFilter = buildPublicDiffPctFilter(filters.public_diff_pct, tableAlias)
     if (diffFilter) {
       conditions.push(diffFilter)
-      appliedFilters.push(filters.public_bet_money_diff === 'positive' ? 'Sharp Action (Money% > Bet%)' : 'Public Action (Bet% > Money%)')
+      const min = filters.public_diff_pct.min
+      const max = filters.public_diff_pct.max
+      const label = (min !== undefined && min >= 0) || (max !== undefined && max > 0 && (min === undefined || min >= 0)) 
+        ? 'Sharp' 
+        : 'Square'
+      appliedFilters.push(`Diff %: ${min ?? ''}${min !== undefined && max !== undefined ? ' to ' : ''}${max ?? ''}% (${label})`)
     }
   }
   

@@ -360,7 +360,24 @@ function SportsEngineContent() {
   const [publicBetPctMax, setPublicBetPctMax] = useState<string>('')
   const [publicMoneyPctMin, setPublicMoneyPctMin] = useState<string>('')
   const [publicMoneyPctMax, setPublicMoneyPctMax] = useState<string>('')
-  const [publicBetMoneyDiff, setPublicBetMoneyDiff] = useState<string>('any')
+  const [publicDiffMin, setPublicDiffMin] = useState<string>('')
+  const [publicDiffMax, setPublicDiffMax] = useState<string>('')
+  
+  // Derive sharp/square label from diff values
+  const getPublicBettingLabel = () => {
+    const minVal = publicDiffMin ? parseFloat(publicDiffMin) : null
+    const maxVal = publicDiffMax ? parseFloat(publicDiffMax) : null
+    
+    // If filtering for positive diff (more money than bets) = sharp
+    if ((minVal !== null && minVal > 0) || (maxVal !== null && maxVal > 0 && (minVal === null || minVal >= 0))) {
+      return 'sharp'
+    }
+    // If filtering for negative diff (more bets than money) = square
+    if ((maxVal !== null && maxVal < 0) || (minVal !== null && minVal < 0 && (maxVal === null || maxVal <= 0))) {
+      return 'square'
+    }
+    return null
+  }
 
   // O/U Specific Filters
   const [homeFavDog, setHomeFavDog] = useState<string>('any')
@@ -1825,8 +1842,11 @@ function SportsEngineContent() {
         if (publicMoneyPctMax) range.max = parseFloat(publicMoneyPctMax)
         filters.public_money_pct = range
       }
-      if (publicBetMoneyDiff !== 'any') {
-        filters.public_bet_money_diff = publicBetMoneyDiff
+      if (publicDiffMin || publicDiffMax) {
+        const range: any = {}
+        if (publicDiffMin) range.min = parseFloat(publicDiffMin)
+        if (publicDiffMax) range.max = parseFloat(publicDiffMax)
+        filters.public_diff_pct = range
       }
 
       let body: any = { type: queryType, filters }
@@ -2753,6 +2773,23 @@ function SportsEngineContent() {
       }
     }
 
+    // Public Betting - show if any public betting filters are applied and data exists
+    if ((publicBetPctMin || publicBetPctMax || publicMoneyPctMin || publicMoneyPctMax || publicDiffMin || publicDiffMax) 
+        && (game.public_bet_pct !== undefined || game.public_money_pct !== undefined)) {
+      if (game.public_bet_pct !== undefined && game.public_money_pct !== undefined) {
+        const diffPct = game.public_diff_pct ?? (game.public_money_pct - game.public_bet_pct)
+        const label = diffPct >= 0 ? 'Sharp' : 'Square'
+        reasons.push({ 
+          label: `Public (${label})`, 
+          value: `${game.public_bet_pct.toFixed(0)}% bets, ${game.public_money_pct.toFixed(0)}% $'s (${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%)`
+        })
+      } else if (game.public_bet_pct !== undefined) {
+        reasons.push({ label: 'Public Bets', value: `${game.public_bet_pct.toFixed(0)}%` })
+      } else if (game.public_money_pct !== undefined) {
+        reasons.push({ label: 'Public $\'s', value: `${game.public_money_pct.toFixed(0)}%` })
+      }
+    }
+
     return reasons
   }
   
@@ -3013,6 +3050,23 @@ function SportsEngineContent() {
       const oppWinPct = game.opp_win_pct
       if (oppWinPct !== undefined && oppWinPct !== null) {
         reasons.push({ label: 'Opp Win%', value: `${(oppWinPct * 100).toFixed(0)}%` })
+      }
+    }
+
+    // Public Betting - show if any public betting filters are applied and data exists
+    if ((publicBetPctMin || publicBetPctMax || publicMoneyPctMin || publicMoneyPctMax || publicDiffMin || publicDiffMax) 
+        && (game.public_bet_pct !== undefined || game.public_money_pct !== undefined)) {
+      if (game.public_bet_pct !== undefined && game.public_money_pct !== undefined) {
+        const diffPct = game.public_diff_pct ?? (game.public_money_pct - game.public_bet_pct)
+        const label = diffPct >= 0 ? 'Sharp' : 'Square'
+        reasons.push({ 
+          label: `Public (${label})`, 
+          value: `${game.public_bet_pct.toFixed(0)}% bets, ${game.public_money_pct.toFixed(0)}% $'s (${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%)`
+        })
+      } else if (game.public_bet_pct !== undefined) {
+        reasons.push({ label: 'Public Bets', value: `${game.public_bet_pct.toFixed(0)}%` })
+      } else if (game.public_money_pct !== undefined) {
+        reasons.push({ label: 'Public $\'s', value: `${game.public_money_pct.toFixed(0)}%` })
       }
     }
 
@@ -4386,6 +4440,11 @@ function SportsEngineContent() {
                 {/* Public Betting */}
                 <div className={styles.subHeader}>
                   <PiUsersThree /> Public Betting
+                  {getPublicBettingLabel() && (
+                    <span className={`${styles.bettingLabel} ${getPublicBettingLabel() === 'sharp' ? styles.sharpLabel : styles.squareLabel}`}>
+                      {getPublicBettingLabel()}
+                    </span>
+                  )}
                 </div>
                 <div className={styles.rangeGrid}>
                   <div>
@@ -4404,11 +4463,10 @@ function SportsEngineContent() {
                   </div>
                   <div>
                     <span>Diff %</span>
-                    <select value={publicBetMoneyDiff} onChange={(e) => setPublicBetMoneyDiff(e.target.value)}>
-                      <option value="any">Any</option>
-                      <option value="positive">+ ($&apos;s &gt; bets)</option>
-                      <option value="negative">- (bets &gt; $&apos;s)</option>
-                    </select>
+                    <div className={styles.rangeRow}>
+                      <input type="text" inputMode="text" placeholder="Min" value={publicDiffMin} onChange={(e) => setPublicDiffMin(e.target.value)} />
+                      <input type="text" inputMode="text" placeholder="Max" value={publicDiffMax} onChange={(e) => setPublicDiffMax(e.target.value)} />
+                    </div>
                   </div>
                 </div>
               </>

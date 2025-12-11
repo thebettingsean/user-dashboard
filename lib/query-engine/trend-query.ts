@@ -191,6 +191,13 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
+      -- Public betting columns
+      g.public_ml_home_bet_pct,
+      g.public_ml_home_money_pct,
+      g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct,
+      g.public_total_over_bet_pct,
+      g.public_total_over_money_pct,
       ${hitColumn} as hit,
       ${valueColumn} as value,
       ${lineColumn} as line,
@@ -303,6 +310,47 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       }
     }
     
+    // Calculate public betting percentages based on bet_type and side
+    let publicBetPct: number | undefined
+    let publicMoneyPct: number | undefined
+    
+    if (bet_type === 'total') {
+      // For O/U, over% is stored directly
+      if (side === 'over') {
+        publicBetPct = row.public_total_over_bet_pct || undefined
+        publicMoneyPct = row.public_total_over_money_pct || undefined
+      } else {
+        // Under = 100 - over
+        publicBetPct = row.public_total_over_bet_pct ? (100 - row.public_total_over_bet_pct) : undefined
+        publicMoneyPct = row.public_total_over_money_pct ? (100 - row.public_total_over_money_pct) : undefined
+      }
+    } else if (bet_type === 'spread') {
+      const homeIsFav = row.spread_close < 0
+      // Home spread % is stored
+      if (side === 'home' || (side === 'favorite' && homeIsFav) || (side === 'underdog' && !homeIsFav)) {
+        publicBetPct = row.public_spread_home_bet_pct || undefined
+        publicMoneyPct = row.public_spread_home_money_pct || undefined
+      } else {
+        // Away = 100 - home
+        publicBetPct = row.public_spread_home_bet_pct ? (100 - row.public_spread_home_bet_pct) : undefined
+        publicMoneyPct = row.public_spread_home_money_pct ? (100 - row.public_spread_home_money_pct) : undefined
+      }
+    } else {
+      // Moneyline
+      const homeIsFav = row.spread_close < 0
+      if (side === 'home' || (side === 'favorite' && homeIsFav) || (side === 'underdog' && !homeIsFav)) {
+        publicBetPct = row.public_ml_home_bet_pct || undefined
+        publicMoneyPct = row.public_ml_home_money_pct || undefined
+      } else {
+        publicBetPct = row.public_ml_home_bet_pct ? (100 - row.public_ml_home_bet_pct) : undefined
+        publicMoneyPct = row.public_ml_home_money_pct ? (100 - row.public_ml_home_money_pct) : undefined
+      }
+    }
+    
+    const publicDiffPct = (publicMoneyPct !== undefined && publicBetPct !== undefined) 
+      ? Math.round((publicMoneyPct - publicBetPct) * 10) / 10 
+      : undefined
+    
     // Determine which team was the "subject" based on side
     let subjectTeam: string
     let opponentTeam: string
@@ -373,7 +421,11 @@ export async function executeTrendQuery(request: TrendQueryRequest): Promise<Que
       away_def_rank_rush: row.away_def_rank_rush,
       away_off_rank_points: row.away_off_rank_points,
       away_off_rank_pass: row.away_off_rank_pass,
-      away_off_rank_rush: row.away_off_rank_rush
+      away_off_rank_rush: row.away_off_rank_rush,
+      // Public betting data
+      public_bet_pct: publicBetPct,
+      public_money_pct: publicMoneyPct,
+      public_diff_pct: publicDiffPct
     })
   }
   

@@ -575,6 +575,13 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
+      -- Public betting columns
+      g.public_ml_home_bet_pct,
+      g.public_ml_home_money_pct,
+      g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct,
+      g.public_total_over_bet_pct,
+      g.public_total_over_money_pct,
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
       t.division as opponent_division,
@@ -663,6 +670,13 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
+      -- Public betting columns
+      g.public_ml_home_bet_pct,
+      g.public_ml_home_money_pct,
+      g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct,
+      g.public_total_over_bet_pct,
+      g.public_total_over_money_pct,
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
       t.division as opponent_division,
@@ -804,6 +818,25 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     // Player's team spread: spread_close if home, else flip it
     const playerSpread = row.is_home === 1 ? row.spread_close : -row.spread_close
     
+    // Calculate public betting percentages based on player's team perspective
+    // For props, we generally care about spread/ML since it relates to game script
+    const playerIsHome = row.is_home === 1
+    let publicBetPct: number | undefined
+    let publicMoneyPct: number | undefined
+    
+    // Use spread public betting for props (game script relevance)
+    if (playerIsHome) {
+      publicBetPct = row.public_spread_home_bet_pct || undefined
+      publicMoneyPct = row.public_spread_home_money_pct || undefined
+    } else {
+      publicBetPct = row.public_spread_home_bet_pct ? (100 - row.public_spread_home_bet_pct) : undefined
+      publicMoneyPct = row.public_spread_home_money_pct ? (100 - row.public_spread_home_money_pct) : undefined
+    }
+    
+    const publicDiffPct = (publicMoneyPct !== undefined && publicBetPct !== undefined) 
+      ? Math.round((publicMoneyPct - publicBetPct) * 10) / 10 
+      : undefined
+    
     games.push({
       game_id: row.game_id,
       game_date: row.game_date, // Already formatted as string via toString()
@@ -866,7 +899,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       opp_off_rank_pass: row.opp_off_rank_pass,
       opp_off_rank_rush: row.opp_off_rank_rush,
       // Track if player is home for context
-      is_home: row.is_home === 1
+      is_home: row.is_home === 1,
+      // Public betting data
+      public_bet_pct: publicBetPct,
+      public_money_pct: publicMoneyPct,
+      public_diff_pct: publicDiffPct
     })
   }
   
