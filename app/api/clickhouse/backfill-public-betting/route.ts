@@ -184,6 +184,7 @@ export async function GET(request: NextRequest) {
         
         // Try to find matching game in ClickHouse (nfl_games table)
         // Join with teams to match by abbreviation
+        // Use a 2-day window to handle timezone differences (TNF/MNF games)
         const matchQuery = `
           SELECT 
             g.game_id, 
@@ -197,7 +198,8 @@ export async function GET(request: NextRequest) {
           FROM nfl_games g
           LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = 'nfl'
           LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = 'nfl'
-          WHERE g.game_date = '${gameDate}'
+          WHERE g.game_date >= date_sub(day, 1, toDate('${gameDate}'))
+            AND g.game_date <= date_add(day, 1, toDate('${gameDate}'))
           LIMIT 100
         `
         
