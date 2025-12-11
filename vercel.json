@@ -71,6 +71,10 @@
     {
       "path": "/api/clickhouse/calculate-nfl-rankings",
       "schedule": "0 11 * * 2"
+    },
+    {
+      "path": "/api/cron/sync-public-betting",
+      "schedule": "10,40 * * * *"
     }
   ]
 }
