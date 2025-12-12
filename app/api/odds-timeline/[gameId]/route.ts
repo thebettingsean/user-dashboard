@@ -36,9 +36,9 @@ interface SummaryData {
 
 export async function GET(
   request: Request,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
-  const gameId = params.gameId
+  const { gameId } = await params
   
   if (!gameId) {
     return NextResponse.json({ error: 'gameId is required' }, { status: 400 })
