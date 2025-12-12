@@ -70,7 +70,8 @@ export async function GET(
       ORDER BY snapshot_time ASC
     `
     
-    const rawTimeline = await clickhouseQuery(timelineQuery)
+    const result = await clickhouseQuery(timelineQuery)
+    const rawTimeline = result.data || []
     
     if (!rawTimeline || rawTimeline.length === 0) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 })
