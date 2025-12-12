@@ -75,6 +75,10 @@
     {
       "path": "/api/cron/sync-public-betting",
       "schedule": "10,40 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-live-odds",
+      "schedule": "5,35 * * * *"
     }
   ]
 }
