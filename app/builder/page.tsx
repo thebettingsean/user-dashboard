@@ -306,20 +306,73 @@ function SportsEngineContent() {
     teamStats: false
   })
   
-  // Filter history for "Back" button - tracks filter name and previous value
-  const [filterHistory, setFilterHistory] = useState<Array<{ name: string; value: any; setter: (v: any) => void }>>([])
+  // Filter history for "Back" button - tracks changed filters in order
+  // Each entry is: { name, previousValue, currentSetter }
+  interface FilterHistoryEntry {
+    name: string
+    previousValue: any
+    revert: () => void
+  }
+  const [filterHistory, setFilterHistory] = useState<FilterHistoryEntry[]>([])
   
-  // Track filter changes
-  const trackFilterChange = (name: string, value: any, setter: (v: any) => void) => {
-    setFilterHistory(prev => [...prev.slice(-20), { name, value, setter }]) // Keep last 20 changes
+  // Helper to add to filter history
+  const pushFilterHistory = (name: string, previousValue: any, revert: () => void) => {
+    setFilterHistory(prev => [...prev.slice(-20), { name, previousValue, revert }])
   }
   
   // Undo last filter change
   const undoLastFilter = () => {
     if (filterHistory.length === 0) return
     const lastChange = filterHistory[filterHistory.length - 1]
-    lastChange.setter(lastChange.value)
+    lastChange.revert()
     setFilterHistory(prev => prev.slice(0, -1))
+  }
+  
+  // Wrapped setters that track history
+  const setLocationWithHistory = (val: string) => {
+    const prev = location
+    pushFilterHistory('Location', prev, () => setLocation(prev))
+    setLocation(val)
+  }
+  const setDivisionWithHistory = (val: string) => {
+    const prev = division
+    pushFilterHistory('Division', prev, () => setDivision(prev))
+    setDivision(val)
+  }
+  const setConferenceWithHistory = (val: string) => {
+    const prev = conference
+    pushFilterHistory('Conference', prev, () => setConference(prev))
+    setConference(val)
+  }
+  const setPlayoffWithHistory = (val: string) => {
+    const prev = playoff
+    pushFilterHistory('Playoff', prev, () => setPlayoff(prev))
+    setPlayoff(val)
+  }
+  const setFavoriteWithHistory = (val: string) => {
+    const prev = favorite
+    pushFilterHistory('Favorite/Dog', prev, () => setFavorite(prev))
+    setFavorite(val)
+  }
+  const setDefenseRankWithHistory = (val: string) => {
+    const prev = defenseRank
+    pushFilterHistory('vs Defense Rank', prev, () => setDefenseRank(prev))
+    setDefenseRank(val)
+  }
+  const setOffenseRankWithHistory = (val: string) => {
+    const prev = offenseRank
+    pushFilterHistory('vs Offense Rank', prev, () => setOffenseRank(prev))
+    setOffenseRank(val)
+  }
+  const setOwnDefenseRankWithHistory = (val: string) => {
+    const prev = ownDefenseRank
+    pushFilterHistory('Team Defense', prev, () => setOwnDefenseRank(prev))
+    setOwnDefenseRank(val)
+  }
+  const setOwnOffenseRankWithHistory = (val: string) => {
+    const prev = ownOffenseRank
+    pushFilterHistory('Team Offense', prev, () => setOwnOffenseRank(prev))
+    setOwnOffenseRank(val)
   }
   
   // Referees from database
@@ -1837,6 +1890,41 @@ function SportsEngineContent() {
   }
 
   const runQuery = async () => {
+    // Validation: Don't allow running query with ONLY bet type + time period for spread/ML
+    const hasAdditionalFilters = () => {
+      // Check if any filter beyond the defaults is set
+      if (location !== 'any') return true
+      if (division !== 'any') return true
+      if (conference !== 'any') return true
+      if (playoff !== 'any') return true
+      if (favorite !== 'any') return true
+      if (defenseRank !== 'any') return true
+      if (offenseRank !== 'any') return true
+      if (ownDefenseRank !== 'any') return true
+      if (ownOffenseRank !== 'any') return true
+      if (spreadMin || spreadMax) return true
+      if (totalMin || totalMax) return true
+      if (teamWinPctMin || teamWinPctMax) return true
+      if (oppWinPctMin || oppWinPctMax) return true
+      // For props, position selection counts as a filter
+      if (queryType === 'prop' && propPosition !== 'any') return true
+      // For teams, team selection counts
+      if (queryType === 'team' && teamId) return true
+      // For refs, referee selection counts
+      if (queryType === 'referee' && selectedReferee) return true
+      // Check player stat filters
+      const hasPlayerFilter = [...teamPlayerFilters, ...vsPlayerFilters, ...homePlayerFilters, ...awayPlayerFilters]
+        .some(f => f.position !== 'none' && f.statType && (f.lineMin || f.lineMax))
+      if (hasPlayerFilter) return true
+      return false
+    }
+    
+    // Block spread/ML queries with just time period
+    if ((betType === 'spread' || betType === 'moneyline') && queryType === 'trend' && !hasAdditionalFilters()) {
+      setError('Please add at least one filter beyond time period for Spread or Moneyline queries.')
+      return
+    }
+    
     setLoading(true)
     setError(null)
     setResult(null)
@@ -4618,7 +4706,7 @@ function SportsEngineContent() {
                 {!isOUQuery && queryType !== 'team' && (
                   <div>
                     <span>Home/Away</span>
-                    <select value={location} onChange={(e) => setLocation(e.target.value)}>
+                    <select value={location} onChange={(e) => setLocationWithHistory(e.target.value)}>
                       <option value="any">Any</option>
                       <option value="home">Home</option>
                       <option value="away">Away</option>
@@ -4675,7 +4763,7 @@ function SportsEngineContent() {
                 )}
                 <div>
                   <span>Division</span>
-                  <select value={division} onChange={(e) => setDivision(e.target.value)}>
+                  <select value={division} onChange={(e) => setDivisionWithHistory(e.target.value)}>
                     <option value="any">Any</option>
                     <option value="division">Division</option>
                     <option value="non_division">Non-Division</option>
@@ -4683,7 +4771,7 @@ function SportsEngineContent() {
                 </div>
                 <div>
                   <span>Conference</span>
-                  <select value={conference} onChange={(e) => setConference(e.target.value)}>
+                  <select value={conference} onChange={(e) => setConferenceWithHistory(e.target.value)}>
                     <option value="any">Any</option>
                     <option value="conference">Conference</option>
                     <option value="non_conference">Non-Conference</option>
@@ -4691,7 +4779,7 @@ function SportsEngineContent() {
                 </div>
                 <div>
                   <span>Season Type</span>
-                  <select value={playoff} onChange={(e) => setPlayoff(e.target.value)}>
+                  <select value={playoff} onChange={(e) => setPlayoffWithHistory(e.target.value)}>
                     <option value="any">Any</option>
                     <option value="playoff">Playoff</option>
                     <option value="regular">Regular Season</option>
@@ -4722,7 +4810,7 @@ function SportsEngineContent() {
                   {!isOUQuery ? (
                     <div>
                       <span>Fav/Dog</span>
-                      <select value={favorite} onChange={(e) => setFavorite(e.target.value)}>
+                      <select value={favorite} onChange={(e) => setFavoriteWithHistory(e.target.value)}>
                         <option value="any">Any</option>
                         <option value="favorite">Favorite</option>
                         <option value="underdog">Underdog</option>
@@ -5263,6 +5351,15 @@ function SportsEngineContent() {
               disabled={loading}
             >
               {loading ? 'Running...' : <><IoRocketOutline /> Run Build</>}
+            </button>
+            <button
+              className={styles.backBtn}
+              onClick={undoLastFilter}
+              type="button"
+              disabled={filterHistory.length === 0}
+              title={filterHistory.length > 0 ? `Undo: ${filterHistory[filterHistory.length - 1]?.name}` : 'No filters to undo'}
+            >
+              ← Back
             </button>
             <button
               className={styles.clearBtn}
