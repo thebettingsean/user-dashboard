@@ -1354,7 +1354,10 @@ function getPositionValue(position: PlayerPosition): string | null {
  * IMPORTANT: This creates a NON-CORRELATED subquery that doesn't reference the outer query.
  * ClickHouse doesn't support correlated subqueries in IN clauses.
  * 
- * Uses nfl_box_scores to determine which team a player is on (via is_home flag)
+ * Uses the teams table to determine if a player is on the home or away team by:
+ * 1. Joining players to teams to get the team's full name
+ * 2. Comparing that team name to nfl_prop_lines.home_team or away_team
+ * 3. Joining to nfl_games to get the game_id
  * 
  * @param filters Array of PlayerStatFilter
  * @param teamSide 'home' | 'away' - which team's players to check
@@ -1394,26 +1397,31 @@ export function buildPlayerPropLineSubquery(
     
     if (lineConditions.length === 0) continue
     
-    // Determine is_home condition based on team side
-    // is_home = 1 means player is on home team, is_home = 0 means away team
-    const isHomeCondition = teamSide === 'home' ? 'bs.is_home = 1' : 'bs.is_home = 0'
+    // Determine which prop_lines team column to match and which game team to verify
+    // For "home" side: player's team should match home_team in prop_lines AND home_team_id in games
+    // For "away" side: player's team should match away_team in prop_lines AND away_team_id in games
+    const propTeamColumn = teamSide === 'home' ? 'pl.home_team' : 'pl.away_team'
+    const gameTeamIdColumn = teamSide === 'home' ? 'ng.home_team_id' : 'ng.away_team_id'
     
-    // Build NON-CORRELATED subquery using box_scores to determine player's team
+    // Build NON-CORRELATED subquery using teams table to determine player's team
     // 1. Join prop_lines to players by name
-    // 2. Join players to box_scores by player_id and game date
-    // 3. Use box_scores.is_home to filter by home/away team
+    // 2. Join players to teams by team_id
+    // 3. Compare team name to prop_lines.home_team or away_team
+    // 4. Join to nfl_games by game_time and verify team_id matches
     const subquery = `
-      toUInt32(${tableAlias}.game_id) IN (
-        SELECT DISTINCT bs.game_id
+      ${tableAlias}.game_id IN (
+        SELECT DISTINCT ng.game_id
         FROM nfl_prop_lines pl
         JOIN players p ON LOWER(REPLACE(pl.player_name, '.', '')) = LOWER(REPLACE(p.name, '.', '')) AND p.sport = 'nfl'
-        JOIN nfl_box_scores bs ON bs.player_id = p.player_id AND toDate(pl.game_time) = bs.game_date
+        JOIN teams t ON t.team_id = p.team_id AND t.sport = 'nfl'
+        JOIN nfl_games ng ON toDate(ng.game_time) = toDate(pl.game_time) 
+          AND ${gameTeamIdColumn} = t.team_id
         WHERE pl.prop_type = '${propType}'
           AND p.position = '${positionValue}'
           AND pl.line > 0
-          AND ${isHomeCondition}
+          AND (t.name = ${propTeamColumn} OR CONCAT(t.city, ' ', t.name) = ${propTeamColumn})
           AND ${lineConditions.join(' AND ')}
-        GROUP BY bs.game_id
+        GROUP BY ng.game_id
         HAVING COUNT(DISTINCT pl.player_name) >= ${filter.count}
       )
     `.trim()
