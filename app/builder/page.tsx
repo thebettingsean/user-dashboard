@@ -306,6 +306,22 @@ function SportsEngineContent() {
     teamStats: false
   })
   
+  // Filter history for "Back" button - tracks filter name and previous value
+  const [filterHistory, setFilterHistory] = useState<Array<{ name: string; value: any; setter: (v: any) => void }>>([])
+  
+  // Track filter changes
+  const trackFilterChange = (name: string, value: any, setter: (v: any) => void) => {
+    setFilterHistory(prev => [...prev.slice(-20), { name, value, setter }]) // Keep last 20 changes
+  }
+  
+  // Undo last filter change
+  const undoLastFilter = () => {
+    if (filterHistory.length === 0) return
+    const lastChange = filterHistory[filterHistory.length - 1]
+    lastChange.setter(lastChange.value)
+    setFilterHistory(prev => prev.slice(0, -1))
+  }
+  
   // Referees from database
   const [refereeList, setRefereeList] = useState<RefereeResult[]>([])
   const [refereeSearch, setRefereeSearch] = useState<string>('')

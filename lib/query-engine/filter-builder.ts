@@ -1349,10 +1349,12 @@ function getPositionValue(position: PlayerPosition): string | null {
 
 /**
  * Build a subquery condition for player prop line filters
- * Returns a condition like: g.game_id IN (SELECT game_id FROM nfl_prop_lines JOIN players ... GROUP BY game_id HAVING COUNT(...) >= N)
+ * Returns a condition like: g.game_id IN (SELECT game_id FROM nfl_prop_lines JOIN ... GROUP BY game_id HAVING COUNT(...) >= N)
  * 
  * IMPORTANT: This creates a NON-CORRELATED subquery that doesn't reference the outer query.
  * ClickHouse doesn't support correlated subqueries in IN clauses.
+ * 
+ * Uses nfl_box_scores to determine which team a player is on (via is_home flag)
  * 
  * @param filters Array of PlayerStatFilter
  * @param teamSide 'home' | 'away' - which team's players to check
@@ -1392,32 +1394,26 @@ export function buildPlayerPropLineSubquery(
     
     if (lineConditions.length === 0) continue
     
-    // Determine which team column to match based on side
-    // For home team players: player's team should match pl.home_team
-    // For away team players: player's team should match pl.away_team
-    const teamMatchColumn = teamSide === 'home' ? 'pl.home_team' : 'pl.away_team'
+    // Determine is_home condition based on team side
+    // is_home = 1 means player is on home team, is_home = 0 means away team
+    const isHomeCondition = teamSide === 'home' ? 'bs.is_home = 1' : 'bs.is_home = 0'
     
-    // Build NON-CORRELATED subquery for this filter
-    // We join players -> teams to get the team name
-    // Then check if it matches the home_team or away_team in the prop line
-    // nfl_prop_lines stores full team names like "Cincinnati Bengals"
-    // This is completely self-contained - no reference to the outer query's game table
+    // Build NON-CORRELATED subquery using box_scores to determine player's team
+    // 1. Join prop_lines to players by name
+    // 2. Join players to box_scores by player_id and game date
+    // 3. Use box_scores.is_home to filter by home/away team
     const subquery = `
-      ${tableAlias}.game_id IN (
-        SELECT DISTINCT pl.game_id
+      toUInt32(${tableAlias}.game_id) IN (
+        SELECT DISTINCT bs.game_id
         FROM nfl_prop_lines pl
         JOIN players p ON LOWER(REPLACE(pl.player_name, '.', '')) = LOWER(REPLACE(p.name, '.', '')) AND p.sport = 'nfl'
-        JOIN teams tm ON tm.team_id = p.team_id AND tm.sport = 'nfl'
+        JOIN nfl_box_scores bs ON bs.player_id = p.player_id AND toDate(pl.game_time) = bs.game_date
         WHERE pl.prop_type = '${propType}'
           AND p.position = '${positionValue}'
           AND pl.line > 0
-          AND (
-            LOWER(tm.name) = LOWER(${teamMatchColumn})
-            OR LOWER(CONCAT(tm.city, ' ', tm.name)) = LOWER(${teamMatchColumn})
-            OR LOWER(tm.abbreviation) = LOWER(${teamMatchColumn})
-          )
+          AND ${isHomeCondition}
           AND ${lineConditions.join(' AND ')}
-        GROUP BY pl.game_id
+        GROUP BY bs.game_id
         HAVING COUNT(DISTINCT pl.player_name) >= ${filter.count}
       )
     `.trim()
