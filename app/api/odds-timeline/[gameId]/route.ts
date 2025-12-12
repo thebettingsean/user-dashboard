@@ -45,47 +45,14 @@ export async function GET(
   }
   
   try {
-    // Get game info and summary
-    const summaryQuery = `
+    // Get full timeline from snapshots table
+    const timelineQuery = `
       SELECT 
         odds_api_game_id,
         sport,
         home_team,
         away_team,
-        game_time,
-        opening_spread,
-        opening_total,
-        opening_ml_home,
-        opening_ml_away,
-        opening_time,
-        current_spread,
-        current_total,
-        current_ml_home,
-        current_ml_away,
-        current_time,
-        spread_movement,
-        total_movement,
-        public_spread_bet_pct,
-        public_spread_money_pct,
-        public_ml_bet_pct,
-        public_ml_money_pct,
-        snapshot_count,
-        last_updated
-      FROM live_odds_summary FINAL
-      WHERE odds_api_game_id = '${gameId}'
-    `
-    
-    const summaryResult = await clickhouseQuery(summaryQuery)
-    
-    if (!summaryResult || summaryResult.length === 0) {
-      return NextResponse.json({ error: 'Game not found' }, { status: 404 })
-    }
-    
-    const summary = summaryResult[0]
-    
-    // Get full timeline
-    const timelineQuery = `
-      SELECT 
+        toString(game_time) as game_time,
         toString(snapshot_time) as snapshot_time,
         spread,
         spread_juice_home,
@@ -103,7 +70,43 @@ export async function GET(
       ORDER BY snapshot_time ASC
     `
     
-    const timeline: TimelineSnapshot[] = await clickhouseQuery(timelineQuery)
+    const rawTimeline = await clickhouseQuery(timelineQuery)
+    
+    if (!rawTimeline || rawTimeline.length === 0) {
+      return NextResponse.json({ error: 'Game not found' }, { status: 404 })
+    }
+    
+    // Build summary from timeline data
+    const firstSnapshot = rawTimeline[0]
+    const lastSnapshot = rawTimeline[rawTimeline.length - 1]
+    
+    const summary = {
+      odds_api_game_id: firstSnapshot.odds_api_game_id,
+      sport: firstSnapshot.sport,
+      home_team: firstSnapshot.home_team,
+      away_team: firstSnapshot.away_team,
+      game_time: firstSnapshot.game_time,
+      opening_spread: firstSnapshot.spread,
+      opening_total: firstSnapshot.total,
+      opening_ml_home: firstSnapshot.ml_home,
+      opening_ml_away: firstSnapshot.ml_away,
+      opening_time: firstSnapshot.snapshot_time,
+      current_spread: lastSnapshot.spread,
+      current_total: lastSnapshot.total,
+      current_ml_home: lastSnapshot.ml_home,
+      current_ml_away: lastSnapshot.ml_away,
+      current_time: lastSnapshot.snapshot_time,
+      spread_movement: (lastSnapshot.spread || 0) - (firstSnapshot.spread || 0),
+      total_movement: (lastSnapshot.total || 0) - (firstSnapshot.total || 0),
+      public_spread_bet_pct: lastSnapshot.public_spread_bet_pct || 0,
+      public_spread_money_pct: lastSnapshot.public_spread_money_pct || 0,
+      public_ml_bet_pct: lastSnapshot.public_ml_bet_pct || 0,
+      public_ml_money_pct: lastSnapshot.public_ml_money_pct || 0,
+      snapshot_count: rawTimeline.length,
+      last_updated: lastSnapshot.snapshot_time,
+    }
+    
+    const timeline: TimelineSnapshot[] = rawTimeline
     
     // Calculate analysis
     const analysis = analyzeMovement(summary, timeline)
