@@ -58,6 +58,7 @@ export async function GET(request: Request) {
   
   try {
     // Query that gets both opening (first) and current (latest) snapshots per game
+    // ONLY upcoming games (game_time > now())
     const query = `
       WITH 
       latest AS (
@@ -83,8 +84,10 @@ export async function GET(request: Request) {
           SELECT odds_api_game_id, max(snapshot_time)
           FROM live_odds_snapshots
           WHERE snapshot_time > now() - INTERVAL 72 HOUR
+          AND game_time > now()
           GROUP BY odds_api_game_id
         )
+        AND game_time > now()
         ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
       ),
       opening AS (
@@ -98,9 +101,10 @@ export async function GET(request: Request) {
         WHERE (odds_api_game_id, snapshot_time) IN (
           SELECT odds_api_game_id, min(snapshot_time)
           FROM live_odds_snapshots
-          WHERE snapshot_time > now() - INTERVAL 72 HOUR
+          WHERE game_time > now()
           GROUP BY odds_api_game_id
         )
+        AND game_time > now()
         ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
       )
       SELECT 
@@ -133,6 +137,10 @@ export async function GET(request: Request) {
       // Calculate line movements
       const spread_movement = (game.current_spread || 0) - (game.opening_spread || game.current_spread || 0)
       const total_movement = (game.current_total || 0) - (game.opening_total || game.current_total || 0)
+      
+      // ML movement (absolute change, not percentage - e.g., +275 to +315 = +40)
+      const ml_home_movement = (game.current_ml_home || 0) - (game.opening_ml_home || game.current_ml_home || 0)
+      const ml_away_movement = (game.current_ml_away || 0) - (game.opening_ml_away || game.current_ml_away || 0)
       
       // Get percentages - use actual values, default to 50 only if truly zero/null
       const spreadBetPct = game.public_spread_home_bet_pct > 0 ? game.public_spread_home_bet_pct : 50
@@ -196,6 +204,8 @@ export async function GET(request: Request) {
         opening_ml_away: game.opening_ml_away || game.current_ml_away || 0,
         current_ml_home: game.current_ml_home || 0,
         current_ml_away: game.current_ml_away || 0,
+        ml_home_movement: ml_home_movement,
+        ml_away_movement: ml_away_movement,
         
         // Public betting - SPREAD
         public_spread_bet_pct: spreadBetPct,
