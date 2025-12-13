@@ -1,186 +1,99 @@
 import { NextResponse } from 'next/server'
 import { clickhouseQuery } from '@/lib/clickhouse'
 
-interface LiveOddsGame {
-  odds_api_game_id: string
-  sport: string
-  home_team: string
-  away_team: string
-  game_time: string
-  
-  // Opening values (first snapshot)
-  opening_spread: number
-  opening_total: number
-  opening_ml_home: number
-  opening_ml_away: number
-  opening_time: string
-  
-  // Current values (latest snapshot)
-  current_spread: number
-  current_total: number
-  current_ml_home: number
-  current_ml_away: number
-  current_time: string
-  
-  // Movement
-  spread_movement: number
-  total_movement: number
-  
-  // Public betting (from latest snapshot)
-  public_spread_bet_pct: number
-  public_spread_money_pct: number
-  public_ml_bet_pct: number
-  public_ml_money_pct: number
-  public_total_bet_pct: number
-  public_total_money_pct: number
-  
-  // Meta
-  snapshot_count: number
-  last_updated: string
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const sport = searchParams.get('sport') || 'all'
   
   try {
-    // Query to get aggregated game data with opening/current lines
+    // Simple query: Get latest snapshot for each game
     const query = `
-      WITH game_data AS (
-        SELECT 
-          odds_api_game_id,
-          sport,
-          home_team,
-          away_team,
-          game_time,
-          spread,
-          total,
-          ml_home,
-          ml_away,
-          public_spread_home_bet_pct,
-          public_spread_home_money_pct,
-          public_ml_home_bet_pct,
-          public_ml_home_money_pct,
-          public_total_over_bet_pct,
-          public_total_over_money_pct,
-          snapshot_time,
-          ROW_NUMBER() OVER (PARTITION BY odds_api_game_id ORDER BY snapshot_time ASC) as first_rank,
-          ROW_NUMBER() OVER (PARTITION BY odds_api_game_id ORDER BY snapshot_time DESC) as last_rank
-        FROM live_odds_snapshots
-        WHERE snapshot_time > now() - INTERVAL 24 HOUR
-        ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
-      )
       SELECT 
-        g.odds_api_game_id,
-        g.sport,
-        g.home_team,
-        g.away_team,
-        toString(g.game_time) as game_time,
-        
-        -- Opening values
-        f.spread as opening_spread,
-        f.total as opening_total,
-        f.ml_home as opening_ml_home,
-        f.ml_away as opening_ml_away,
-        toString(f.snapshot_time) as opening_time,
-        
-        -- Current values
-        l.spread as current_spread,
-        l.total as current_total,
-        l.ml_home as current_ml_home,
-        l.ml_away as current_ml_away,
-        toString(l.snapshot_time) as current_time,
-        
-        -- Movement
-        l.spread - f.spread as spread_movement,
-        l.total - f.total as total_movement,
-        
-        -- Public betting (from latest)
-        l.public_spread_home_bet_pct as public_spread_bet_pct,
-        l.public_spread_home_money_pct as public_spread_money_pct,
-        l.public_ml_home_bet_pct as public_ml_bet_pct,
-        l.public_ml_home_money_pct as public_ml_money_pct,
-        l.public_total_over_bet_pct as public_total_bet_pct,
-        l.public_total_over_money_pct as public_total_money_pct,
-        
-        -- Meta
-        (SELECT count() FROM game_data WHERE odds_api_game_id = g.odds_api_game_id) as snapshot_count,
-        toString(l.snapshot_time) as last_updated
-        
-      FROM game_data g
-      INNER JOIN game_data f ON g.odds_api_game_id = f.odds_api_game_id AND f.first_rank = 1
-      INNER JOIN game_data l ON g.odds_api_game_id = l.odds_api_game_id AND l.last_rank = 1
-      WHERE g.last_rank = 1
-      ORDER BY g.game_time ASC
+        odds_api_game_id as id,
+        sport,
+        home_team,
+        away_team,
+        toString(game_time) as game_time,
+        spread as current_spread,
+        total as current_total,
+        ml_home as current_ml_home,
+        ml_away as current_ml_away,
+        public_spread_home_bet_pct as public_spread_bet_pct,
+        public_spread_home_money_pct as public_spread_money_pct,
+        public_ml_home_bet_pct as public_ml_bet_pct,
+        public_ml_home_money_pct as public_ml_money_pct,
+        public_total_over_bet_pct as public_total_bet_pct,
+        public_total_over_money_pct as public_total_money_pct,
+        toString(snapshot_time) as last_updated
+      FROM live_odds_snapshots
+      WHERE (odds_api_game_id, snapshot_time) IN (
+        SELECT odds_api_game_id, max(snapshot_time)
+        FROM live_odds_snapshots
+        WHERE snapshot_time > now() - INTERVAL 48 HOUR
+        GROUP BY odds_api_game_id
+      )
+      ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
+      ORDER BY game_time ASC
       LIMIT 100
     `
     
-    const result = await clickhouseQuery<LiveOddsGame>(query)
+    const result = await clickhouseQuery<any>(query)
     
     if (!result.data || result.data.length === 0) {
-      // Return mock data as fallback if no real data
       return NextResponse.json({
         success: true,
         games: [],
         total: 0,
         source: 'clickhouse',
-        message: 'No upcoming games found in live_odds_snapshots',
+        message: 'No upcoming games found',
         updated_at: new Date().toISOString()
       })
     }
     
-    // Process games with additional computed fields
-    const processedGames = result.data.map(game => {
-      // Calculate RLM indicator
-      const publicOnHome = game.public_spread_bet_pct > 55
-      const publicOnAway = game.public_spread_bet_pct < 45
-      const lineMovedToHome = game.spread_movement < -0.5 // Negative = home getting more points
-      const lineMovedToAway = game.spread_movement > 0.5  // Positive = away getting more points
+    // Process games - add computed fields
+    const games = result.data.map((game: any) => {
+      // For now, set opening = current (we'll improve this)
+      const opening_spread = game.current_spread
+      const spread_movement = 0 // Will calculate when we have multiple snapshots
+      
+      // Calculate RLM based on public betting split
+      const publicOnHome = (game.public_spread_bet_pct || 50) > 55
+      const publicOnAway = (game.public_spread_bet_pct || 50) < 45
+      
+      // Money vs Bets differential
+      const moneyVsBetsDiff = Math.abs((game.public_spread_money_pct || 50) - (game.public_spread_bet_pct || 50))
       
       let rlm = '-'
-      let rlmSide = ''
+      let respected = ''
       
-      // RLM: Public on one side, line moves opposite
-      if (publicOnHome && lineMovedToAway) {
-        rlm = 'RLM'
-        rlmSide = 'away'
-      } else if (publicOnAway && lineMovedToHome) {
-        rlm = 'RLM'
-        rlmSide = 'home'
-      } else if (Math.abs(game.spread_movement) >= 1) {
-        rlm = 'Steam'
-        rlmSide = game.spread_movement > 0 ? 'away' : 'home'
+      // Sharp money indicator (big $ vs bet discrepancy)
+      if (moneyVsBetsDiff >= 10) {
+        respected = 'Sharp'
+        rlm = moneyVsBetsDiff >= 15 ? 'RLM' : 'Steam'
+      } else if (moneyVsBetsDiff >= 5) {
+        respected = 'Lean'
       }
       
-      // Calculate "Respected" indicator (big money vs bets differential)
-      const moneyVsBetsDiff = Math.abs(game.public_spread_money_pct - game.public_spread_bet_pct)
-      const respected = moneyVsBetsDiff >= 10 ? 'Sharp' : moneyVsBetsDiff >= 5 ? 'Lean' : ''
-      const respectedSide = game.public_spread_money_pct > game.public_spread_bet_pct ? 'home' : 'away'
-      
       return {
-        id: game.odds_api_game_id,
+        id: game.id,
         sport: game.sport,
         home_team: game.home_team,
         away_team: game.away_team,
         game_time: game.game_time,
         
-        // Spreads
-        opening_spread: game.opening_spread,
-        current_spread: game.current_spread,
-        spread_movement: game.spread_movement,
-        
-        // Totals
-        opening_total: game.opening_total,
-        current_total: game.current_total,
-        total_movement: game.total_movement,
+        // Lines
+        opening_spread,
+        current_spread: game.current_spread || 0,
+        spread_movement,
+        opening_total: game.current_total,
+        current_total: game.current_total || 0,
+        total_movement: 0,
         
         // Moneylines
-        opening_ml_home: game.opening_ml_home,
-        opening_ml_away: game.opening_ml_away,
-        current_ml_home: game.current_ml_home,
-        current_ml_away: game.current_ml_away,
+        current_ml_home: game.current_ml_home || 0,
+        current_ml_away: game.current_ml_away || 0,
         
-        // Public betting (home team perspective for spread/ML)
+        // Public betting %
         public_spread_bet_pct: game.public_spread_bet_pct || 50,
         public_spread_money_pct: game.public_spread_money_pct || 50,
         public_ml_bet_pct: game.public_ml_bet_pct || 50,
@@ -190,37 +103,29 @@ export async function GET(request: Request) {
         
         // Indicators
         rlm,
-        rlm_side: rlmSide,
         respected,
-        respected_side: respectedSide,
         money_vs_bets_diff: moneyVsBetsDiff,
         
-        // Timing info
-        opening_time: game.opening_time,
-        current_time: game.current_time,
-        snapshot_count: game.snapshot_count,
         last_updated: game.last_updated
       }
     })
     
     return NextResponse.json({
       success: true,
-      games: processedGames,
-      total: processedGames.length,
+      games,
+      total: games.length,
       source: 'clickhouse',
       sports_breakdown: {
-        nfl: processedGames.filter(g => g.sport === 'nfl').length,
-        nba: processedGames.filter(g => g.sport === 'nba').length,
-        nhl: processedGames.filter(g => g.sport === 'nhl').length,
-        cfb: processedGames.filter(g => g.sport === 'cfb').length,
+        nfl: games.filter((g: any) => g.sport === 'nfl').length,
+        nba: games.filter((g: any) => g.sport === 'nba').length,
+        nhl: games.filter((g: any) => g.sport === 'nhl').length,
+        cfb: games.filter((g: any) => g.sport === 'cfb').length,
       },
       updated_at: new Date().toISOString()
     })
     
   } catch (error: any) {
     console.error('[Live Odds API] Error:', error)
-    
-    // Return error with details
     return NextResponse.json({
       success: false,
       error: error.message,
