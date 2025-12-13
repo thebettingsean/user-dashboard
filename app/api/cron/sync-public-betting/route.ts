@@ -119,7 +119,6 @@ export async function GET() {
       LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
       WHERE g.game_time >= now() - INTERVAL 1 HOUR
         AND g.game_time <= now() + INTERVAL 7 DAY
-        AND g.sport = 'nfl'
       ORDER BY g.game_time ASC
       LIMIT 50
     `
