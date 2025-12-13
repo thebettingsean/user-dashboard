@@ -9,15 +9,14 @@
 
 /* Header */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 16px;
 }
 
-.headerLeft {
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -37,73 +36,50 @@
   margin: 0;
 }
 
-.headerRight {
+/* Filters Row - Sports left, Markets right */
+.filtersRow {
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
-.sportFilters {
+.sportFilters,
+.marketFilters {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
   gap: 4px;
-  padding: 4px;
-  background: rgba(29, 37, 48, 0.6);
-  border-radius: 10px;
-  border: 1px solid #323335;
+  height: 32px;
 }
 
-.sportBtn {
-  padding: 6px 14px;
-  font-size: 13px;
+.filterBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  height: 28px;
+  font-size: 12px;
   font-weight: 500;
   color: #696969;
   background: transparent;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.sportBtn:hover {
+.filterBtn:hover {
   color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
 }
 
-.sportBtn.active {
-  background: rgba(41, 47, 63, 0.8);
+.filterBtn.active {
   color: #FFFFFF;
-}
-
-/* Market Tabs */
-.marketTabsContainer {
-  margin-bottom: 16px;
-}
-
-.marketTabs {
-  display: inline-flex;
-  gap: 4px;
-  background: rgba(29, 37, 48, 0.6);
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid #323335;
-}
-
-.marketTab {
-  padding: 8px 16px;
-  font-size: 13px;
-  color: #696969;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.marketTab:hover {
-  color: #FFFFFF;
-}
-
-.marketTab.active {
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
 }
 
 /* Table Card */
@@ -114,10 +90,6 @@
   overflow: hidden;
 }
 
-.tableWrapper {
-  overflow-x: auto;
-}
-
 /* Desktop Table */
 .desktopTable {
   width: 100%;
@@ -126,12 +98,12 @@
 
 .desktopTable th {
   text-align: left;
-  padding: 14px 16px;
+  padding: 12px 14px;
   font-size: 11px;
   font-weight: 600;
   color: #696969;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1C2632 100%);
   border-bottom: 1px solid #323335;
   white-space: nowrap;
@@ -158,93 +130,78 @@
 }
 
 .desktopTable td {
-  padding: 12px 16px;
+  padding: 10px 14px;
   font-size: 13px;
   color: #FFFFFF;
-  border-bottom: 1px solid rgba(50, 51, 53, 0.3);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.2);
   vertical-align: middle;
 }
 
 .awayRow {
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .awayRow:hover {
-  background: rgba(41, 47, 63, 0.3);
+  background: rgba(41, 47, 63, 0.25);
 }
 
 .homeRow {
   cursor: pointer;
-  border-bottom: 2px solid rgba(50, 51, 53, 0.5) !important;
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5) !important;
 }
 
 .homeRow:hover {
-  background: rgba(41, 47, 63, 0.3);
+  background: rgba(41, 47, 63, 0.25);
 }
 
 .homeRow td {
-  padding-top: 8px;
-  padding-bottom: 14px;
-  color: #B0B0B0;
+  padding-top: 6px;
+  padding-bottom: 12px;
+  color: #9CA3AF;
 }
 
 .expanded {
-  background: rgba(41, 47, 63, 0.2);
+  background: rgba(41, 47, 63, 0.15);
 }
 
 /* Team Cell */
 .teamCell {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.sportTag {
-  font-size: 9px;
-  font-weight: 700;
-  color: #98ADD1;
-  background: rgba(152, 173, 209, 0.15);
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.03em;
+  gap: 8px;
 }
 
 .teamName {
   font-weight: 500;
 }
 
-.atSymbol {
-  font-size: 11px;
-  color: #696969;
-  margin-left: 26px;
-  margin-right: 6px;
-}
-
 /* Movement */
 .moveUp {
   color: #22C55E !important;
+  font-weight: 500;
 }
 
 .moveDown {
   color: #EF4444 !important;
+  font-weight: 500;
 }
 
 /* Percentage Stack */
 .pctStack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 50px;
 }
 
 .pctValue {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #FFFFFF;
 }
 
-/* Mini Meters */
+/* Mini Meters - Stronger Gradients */
 .miniMeterBlue {
   width: 100%;
   height: 4px;
@@ -255,9 +212,10 @@
 
 .miniMeterBlue > div {
   height: 100%;
-  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
+  background: linear-gradient(90deg, #2563EB 0%, #3B82F6 40%, #60A5FA 100%);
   border-radius: 2px;
   transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
 }
 
 .miniMeterGreen {
@@ -270,14 +228,20 @@
 
 .miniMeterGreen > div {
   height: 100%;
-  background: linear-gradient(90deg, #22C55E 0%, #4ADE80 100%);
+  background: linear-gradient(90deg, #16A34A 0%, #22C55E 40%, #4ADE80 100%);
   border-radius: 2px;
   transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
 }
 
-/* Diff */
-.highDiff {
+/* Diff Colors */
+.diffPositive {
   color: #22C55E !important;
+  font-weight: 600;
+}
+
+.diffNegative {
+  color: #EF4444 !important;
   font-weight: 600;
 }
 
@@ -285,9 +249,9 @@
 .rlmBadge {
   font-size: 11px;
   color: #696969;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 4px;
-  background: rgba(105, 105, 105, 0.15);
+  background: transparent;
 }
 
 .rlmBadge.hasRlm {
@@ -299,30 +263,30 @@
 /* Details Row */
 .detailsRow td {
   padding: 0 !important;
-  background: rgba(22, 31, 43, 0.8);
+  background: rgba(22, 31, 43, 0.6);
+  border-bottom: 2px solid rgba(50, 51, 53, 0.5) !important;
 }
 
 .gameDetails {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  padding: 16px 20px;
 }
 
 .detailSection h4 {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #696969;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
 }
 
 .lineMovement {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .linePoint {
@@ -337,37 +301,30 @@
 }
 
 .lineValue {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #FFFFFF;
 }
 
 .lineArrow {
-  color: #3B82F6;
-  font-size: 20px;
+  color: #696969;
+  font-size: 14px;
 }
 
 .totalInfo {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .totalInfo span:first-child {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
 .totalMove {
   font-size: 12px;
   color: #696969;
-}
-
-.analysisText {
-  font-size: 13px;
-  color: #B0B0B0;
-  line-height: 1.5;
-  margin: 0;
 }
 
 /* Loading & Empty */
@@ -382,10 +339,28 @@
   display: none;
 }
 
+.mobileHeader {
+  display: grid;
+  grid-template-columns: 50px 55px 1fr 1fr 50px;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1C2632 100%);
+  border-bottom: 1px solid #323335;
+}
+
+.mobileHeaderCell {
+  font-size: 10px;
+  font-weight: 600;
+  color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .mobileGameCard {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(50, 51, 53, 0.4);
   cursor: pointer;
+  position: relative;
 }
 
 .mobileGameCard:last-child {
@@ -393,29 +368,18 @@
 }
 
 .mobileGameCard.expanded {
-  background: rgba(41, 47, 63, 0.2);
+  background: rgba(41, 47, 63, 0.15);
 }
 
 .mobileRow {
   display: grid;
-  grid-template-columns: 70px 50px 1fr 1fr 40px;
+  grid-template-columns: 50px 55px 1fr 1fr 50px;
   gap: 8px;
   align-items: center;
-  padding: 4px 0;
+  padding: 3px 0;
 }
 
 .mobileTeam {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.mobileAt {
-  font-size: 10px;
-  color: #696969;
-}
-
-.mobileAbbrev {
   font-size: 13px;
   font-weight: 600;
   color: #FFFFFF;
@@ -432,33 +396,41 @@
   gap: 2px;
 }
 
-.mobilePctVal {
-  font-size: 12px;
+.mobilePct span {
+  font-size: 11px;
   color: #FFFFFF;
 }
 
-.mobileRlm {
-  text-align: center;
-  font-size: 12px;
+.mobileDiff {
+  font-size: 11px;
   color: #696969;
+  text-align: right;
 }
 
-.mobileRlm .hasRlm {
+.mobileRlmTag {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 600;
   color: #22C55E;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .mobileDetails {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px dashed rgba(50, 51, 53, 0.5);
 }
 
 .mobileDetailRow {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
   color: #696969;
-  padding: 4px 0;
+  padding: 3px 0;
 }
 
 /* Responsive */
@@ -475,35 +447,26 @@
     padding: 16px;
   }
   
-  .header {
+  .filtersRow {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 10px;
   }
   
-  .sportFilters {
-    width: 100%;
+  .sportFilters,
+  .marketFilters {
     justify-content: space-between;
   }
   
-  .sportBtn {
+  .filterBtn {
     flex: 1;
     text-align: center;
-    padding: 8px 8px;
-    font-size: 12px;
-  }
-  
-  .marketTabs {
-    width: 100%;
-    display: flex;
-  }
-  
-  .marketTab {
-    flex: 1;
-    text-align: center;
+    padding: 6px 8px;
+    font-size: 11px;
   }
   
   .gameDetails {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 }

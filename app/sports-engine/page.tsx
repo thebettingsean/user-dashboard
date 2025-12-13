@@ -13,8 +13,8 @@ function RedirectToBuilder() {
     const params = searchParams.toString()
     router.replace(`/builder${params ? `?${params}` : ''}`)
   }, [router, searchParams])
-  
-  return (
+    
+    return (
     <div style={{ 
       minHeight: '100vh', 
       display: 'flex', 
@@ -24,12 +24,12 @@ function RedirectToBuilder() {
       color: '#888'
     }}>
       Redirecting to Builder...
-    </div>
-  )
-}
+      </div>
+    )
+  }
 
 export default function SportsEnginePage() {
-  return (
+    return (
     <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0a14' }} />}>
       <RedirectToBuilder />
     </Suspense>
