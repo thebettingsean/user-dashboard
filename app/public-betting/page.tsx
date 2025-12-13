@@ -29,13 +29,24 @@ interface GameOdds {
   opening_total: number
   current_total: number
   total_movement: number
+  opening_ml_home: number
+  opening_ml_away: number
+  current_ml_home: number
+  current_ml_away: number
   public_spread_home_bet_pct: number
   public_spread_home_money_pct: number
   public_spread_away_bet_pct: number
   public_spread_away_money_pct: number
   public_total_over_bet_pct: number
   public_total_over_money_pct: number
+  public_ml_home_bet_pct: number
+  public_ml_home_money_pct: number
   rlm: string
+  rlm_side: string
+  respected: string
+  respected_side: string
+  money_vs_bets_diff: number
+  snapshot_count: number
 }
 
 type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'rlm' | 'movement' | null
@@ -343,15 +354,27 @@ export default function PublicBettingPage() {
           ...game,
           home_abbrev: getAbbrev(game.home_team),
           away_abbrev: getAbbrev(game.away_team),
+          // Away percentages are inverse of home
           public_spread_away_bet_pct: 100 - (game.public_spread_bet_pct || 50),
           public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
           public_spread_home_bet_pct: game.public_spread_bet_pct || 50,
           public_spread_home_money_pct: game.public_spread_money_pct || 50,
           public_total_over_bet_pct: game.public_total_bet_pct || 50,
           public_total_over_money_pct: game.public_total_money_pct || 50,
-          rlm: calculateRLM(game)
+          public_ml_home_bet_pct: game.public_ml_bet_pct || 50,
+          public_ml_home_money_pct: game.public_ml_money_pct || 50,
+          // RLM comes from API now
+          rlm: game.rlm || '-',
+          rlm_side: game.rlm_side || '',
+          respected: game.respected || '',
+          respected_side: game.respected_side || '',
+          money_vs_bets_diff: game.money_vs_bets_diff || 0,
+          snapshot_count: game.snapshot_count || 1
         }))
         setGames(processedGames)
+        console.log(`[Public Betting] Loaded ${processedGames.length} games from ${data.source}`)
+      } else {
+        console.log('[Public Betting] No games returned:', data.message)
       }
     } catch (error) {
       console.error('Error fetching games:', error)
