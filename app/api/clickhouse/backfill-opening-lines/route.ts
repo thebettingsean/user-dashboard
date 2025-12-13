@@ -41,13 +41,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results: { date: string; gamesFound: number; newOpenings: number }[] = []
+    const results: { date: string; gamesFound: number; newOpenings: number; updated: number }[] = []
+    const forceUpdate = searchParams.get('force') === 'true'
     
-    // Get games we've already seen
-    const seenGamesResult = await clickhouseQuery<{ odds_api_game_id: string }>(`
-      SELECT odds_api_game_id FROM game_first_seen WHERE sport = '${sport}'
+    // Get games we've already seen with their first_seen_time
+    const seenGamesResult = await clickhouseQuery<{ odds_api_game_id: string; first_seen_time: string }>(`
+      SELECT odds_api_game_id, toString(first_seen_time) as first_seen_time 
+      FROM game_first_seen WHERE sport = '${sport}'
     `)
-    const seenGameIds = new Set((seenGamesResult.data || []).map(g => g.odds_api_game_id))
+    const seenGameIds = new Map((seenGamesResult.data || []).map(g => [g.odds_api_game_id, g.first_seen_time]))
     
     // Check historical odds for each day going back
     for (let i = daysBack; i >= 0; i--) {
@@ -73,10 +75,18 @@ export async function GET(request: Request) {
       console.log(`[BACKFILL] Found ${games.length} games for ${dateStr.split('T')[0]}`)
       
       let newOpenings = 0
+      let updated = 0
       
       for (const game of games) {
-        // Skip if we've already recorded this game's opening
-        if (seenGameIds.has(game.id)) continue
+        const existingTime = seenGameIds.get(game.id)
+        const snapshotTime = data.timestamp || dateStr.replace('T', ' ').substring(0, 19)
+        
+        // Skip if we have an EARLIER opening already (unless force=true)
+        if (existingTime && !forceUpdate) {
+          const existingDate = new Date(existingTime)
+          const newDate = new Date(snapshotTime)
+          if (existingDate <= newDate) continue // Already have earlier data
+        }
         
         if (!game.bookmakers || game.bookmakers.length === 0) continue
         
@@ -132,10 +142,10 @@ export async function GET(request: Request) {
         const consensusMlAway = Math.round(median(mlAways))
         
         // Record as opening line
-        const snapshotTime = data.timestamp || dateStr.replace('T', ' ').substring(0, 19)
         const gameTime = game.commence_time.replace('T', ' ').replace('Z', '')
+        const isUpdate = seenGameIds.has(game.id)
         
-        // Insert into game_first_seen
+        // For ReplacingMergeTree, we can just INSERT and it will replace based on ORDER BY
         await clickhouseCommand(`
           INSERT INTO game_first_seen (
             odds_api_game_id, sport, first_seen_time, 
@@ -145,6 +155,10 @@ export async function GET(request: Request) {
             ${consensusSpread}, ${consensusTotal}, ${consensusMlHome}, ${consensusMlAway}, ${game.bookmakers.length}
           )
         `)
+        
+        if (isUpdate) {
+          updated++
+        }
         
         // Also insert as opening snapshot
         await clickhouseCommand(`
@@ -173,12 +187,12 @@ export async function GET(request: Request) {
           )
         `)
         
-        seenGameIds.add(game.id)
+        seenGameIds.set(game.id, snapshotTime)
         newOpenings++
-        console.log(`[BACKFILL] NEW OPENING: ${game.away_team} @ ${game.home_team} - Spread: ${consensusSpread}`)
+        console.log(`[BACKFILL] ${isUpdate ? 'UPDATED' : 'NEW'} OPENING: ${game.away_team} @ ${game.home_team} - Spread: ${consensusSpread} @ ${snapshotTime}`)
       }
       
-      results.push({ date: dateStr.split('T')[0], gamesFound: games.length, newOpenings })
+      results.push({ date: dateStr.split('T')[0], gamesFound: games.length, newOpenings, updated })
       
       // Rate limit: wait 1 second between requests
       await new Promise(resolve => setTimeout(resolve, 1000))
