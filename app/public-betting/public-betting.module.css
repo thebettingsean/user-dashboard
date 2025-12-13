@@ -1126,3 +1126,13 @@
     font-size: 12px;
   }
 }
+
+/* Graph Loading State */
+.graphLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  color: #696969;
+  font-size: 14px;
+}

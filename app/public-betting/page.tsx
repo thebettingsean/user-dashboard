@@ -159,7 +159,9 @@ const MobileExpandedView = ({
   graphMarketType, 
   setGraphMarketType,
   formatSpread,
-  getTeamName
+  getTeamName,
+  timelineData,
+  timelineLoading
 }: {
   game: GameOdds
   graphTimeFilter: TimeFilter
@@ -168,13 +170,18 @@ const MobileExpandedView = ({
   setGraphMarketType: (m: MarketType) => void
   formatSpread: (s: number, isHome: boolean) => string
   getTeamName: (name: string) => string
+  timelineData: LineMovementPoint[]
+  timelineLoading: boolean
 }) => {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyTeam, setHistoryTeam] = useState<'home' | 'away'>('home')
   const [marketDropdownOpen, setMarketDropdownOpen] = useState(false)
   
-  const mobileData = generateMobileLineMovement(game.opening_spread, graphTimeFilter)
-  const historyData = generateSampleLineMovement(game.opening_spread, 'all')
+  // Use real timeline data, or fallback to simple 2-point view if not available
+  const mobileData = timelineData.length >= 2 
+    ? [timelineData[0], timelineData[timelineData.length - 1]]
+    : [{ time: 'Open', homeLine: game.opening_spread, awayLine: -game.opening_spread, homeBetPct: 50, awayBetPct: 50, homeMoneyPct: 50, awayMoneyPct: 50 },
+       { time: 'Current', homeLine: game.current_spread, awayLine: -game.current_spread, homeBetPct: game.public_spread_home_bet_pct, awayBetPct: game.public_spread_away_bet_pct, homeMoneyPct: game.public_spread_home_money_pct, awayMoneyPct: game.public_spread_away_money_pct }]
   
   return (
     <div className={styles.mobileExpandedPanel} onClick={(e) => e.stopPropagation()}>
@@ -313,19 +320,23 @@ const MobileExpandedView = ({
                 </tr>
               </thead>
               <tbody>
-                {historyData.map((point, idx) => (
-                  <tr key={idx}>
-                    <td>{point.time}</td>
-                    <td>
-                      {historyTeam === 'home' 
-                        ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine)
-                        : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine)
-                      }
-                    </td>
-                    <td>{historyTeam === 'home' ? point.homeBetPct : point.awayBetPct}%</td>
-                    <td>{historyTeam === 'home' ? point.homeMoneyPct : point.awayMoneyPct}%</td>
-                  </tr>
-                ))}
+                {timelineData.length === 0 ? (
+                  <tr><td colSpan={4}>No history</td></tr>
+                ) : (
+                  timelineData.map((point, idx) => (
+                    <tr key={idx}>
+                      <td>{point.time}</td>
+                      <td>
+                        {historyTeam === 'home' 
+                          ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine)
+                          : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine)
+                        }
+                      </td>
+                      <td>{historyTeam === 'home' ? point.homeBetPct : point.awayBetPct}%</td>
+                      <td>{historyTeam === 'home' ? point.homeMoneyPct : point.awayMoneyPct}%</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -347,10 +358,42 @@ export default function PublicBettingPage() {
   const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
   const [graphTimeFilter, setGraphTimeFilter] = useState<TimeFilter>('all')
   const [graphMarketType, setGraphMarketType] = useState<MarketType>('spread')
+  const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
+  const [timelineLoading, setTimelineLoading] = useState(false)
 
   useEffect(() => {
     fetchGames()
   }, [])
+
+  // Fetch timeline data when a game is expanded
+  useEffect(() => {
+    if (expandedGame) {
+      fetchTimelineData(expandedGame)
+    } else {
+      setTimelineData([])
+    }
+  }, [expandedGame, graphTimeFilter])
+
+  const fetchTimelineData = async (gameId: string) => {
+    setTimelineLoading(true)
+    try {
+      const response = await fetch(`/api/public-betting/game-timeline/${gameId}?timeFilter=${graphTimeFilter}`)
+      const data = await response.json()
+      
+      if (data.success && data.timeline) {
+        setTimelineData(data.timeline)
+        console.log(`[Timeline] Loaded ${data.snapshotCount} snapshots for game ${gameId}`)
+      } else {
+        setTimelineData([])
+        console.log('[Timeline] No data:', data.message)
+      }
+    } catch (error) {
+      console.error('Error fetching timeline:', error)
+      setTimelineData([])
+    } finally {
+      setTimelineLoading(false)
+    }
+  }
 
   const fetchGames = async () => {
     setLoading(true)
@@ -526,10 +569,10 @@ export default function PublicBettingPage() {
           moneyPct: isHome ? game.public_ml_home_money_pct : game.public_ml_away_money_pct
         }
       case 'total':
-        // For totals: "home row" = Over, "away row" = Under
+        // For totals: "away row" (top) = Over, "home row" (bottom) = Under
         return {
-          betPct: isHome ? game.public_total_over_bet_pct : game.public_total_under_bet_pct,
-          moneyPct: isHome ? game.public_total_over_money_pct : game.public_total_under_money_pct
+          betPct: isHome ? game.public_total_under_bet_pct : game.public_total_over_bet_pct,
+          moneyPct: isHome ? game.public_total_under_money_pct : game.public_total_over_money_pct
         }
     }
   }
@@ -550,8 +593,9 @@ export default function PublicBettingPage() {
           ? formatML(game.current_ml_home) 
           : formatML(game.current_ml_away)
       case 'total':
+        // Away row (top) = Over, Home row (bottom) = Under
         const total = isOpening ? game.opening_total : game.current_total
-        return isHome ? `O ${total}` : `U ${total}`
+        return isHome ? `U ${total}` : `O ${total}`
     }
   }
 
@@ -576,10 +620,23 @@ export default function PublicBettingPage() {
 
   // Format game date/time for display
   const formatGameTime = (gameTime: string) => {
-    const date = new Date(gameTime + ' UTC')
-    return {
-      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    if (!gameTime) return { date: '', time: '' }
+    
+    try {
+      // Handle format "2025-12-14 18:00:00" from ClickHouse
+      const cleanTime = gameTime.replace(' ', 'T') + 'Z'
+      const date = new Date(cleanTime)
+      
+      if (isNaN(date.getTime())) {
+        return { date: '', time: '' }
+      }
+      
+      return {
+        date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      }
+    } catch {
+      return { date: '', time: '' }
     }
   }
 
@@ -729,11 +786,11 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        {game.away_logo && (
+                        {game.away_logo && selectedMarket !== 'total' && (
                           <img src={game.away_logo} alt="" className={styles.teamLogo} />
                         )}
                         <span className={styles.teamName}>
-                          {selectedMarket === 'total' ? 'Under' : getTeamName(game.away_team)}
+                          {selectedMarket === 'total' ? 'Over' : getTeamName(game.away_team)}
                         </span>
                       </td>
                       <td>{getMarketOdds(game, false, true)}</td>
@@ -772,11 +829,11 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        {game.home_logo && (
+                        {game.home_logo && selectedMarket !== 'total' && (
                           <img src={game.home_logo} alt="" className={styles.teamLogo} />
                         )}
                         <span className={styles.teamName}>
-                          {selectedMarket === 'total' ? 'Over' : getTeamName(game.home_team)}
+                          {selectedMarket === 'total' ? 'Under' : getTeamName(game.home_team)}
                         </span>
                       </td>
                       <td>{getMarketOdds(game, true, true)}</td>
@@ -864,61 +921,67 @@ export default function PublicBettingPage() {
                               
                               {/* Graph Content */}
                               <div className={styles.graphContent}>
-                                <ResponsiveContainer width="100%" height={220}>
-                                  <ComposedChart 
-                                    data={generateSampleLineMovement(game.opening_spread, graphTimeFilter)}
-                                    margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
-                                  >
-                                    <defs>
-                                      <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
-                                        <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
-                                      </linearGradient>
-                                    </defs>
-                                    <XAxis 
-                                      dataKey="time" 
-                                      axisLine={false}
-                                      tickLine={false}
-                                      tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                      dy={10}
-                                    />
-                                    <YAxis 
-                                      axisLine={false}
-                                      tickLine={false}
-                                      tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                      domain={['auto', 'auto']}
-                                      tickFormatter={(val) => val > 0 ? `+${val}` : val}
-                                      dx={-5}
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />
-                                    <Area 
-                                      type="monotone" 
-                                      dataKey="homeLine" 
-                                      fill={`url(#areaGradient-${game.id})`}
-                                      stroke="none"
-                                    />
-                                    <Line 
-                                      type="monotone" 
-                                      dataKey="homeLine" 
-                                      stroke="#98ADD1" 
-                                      strokeWidth={2}
-                                      dot={false}
-                                      activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
-                                      name={getTeamName(game.home_team)}
-                                    />
-                                    <Line 
-                                      type="monotone" 
-                                      dataKey="awayLine" 
-                                      stroke="#EF4444" 
-                                      strokeWidth={2}
-                                      dot={false}
-                                      activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
-                                      name={getTeamName(game.away_team)}
-                                      strokeDasharray="5 5"
-                                    />
-                                  </ComposedChart>
-                                </ResponsiveContainer>
+                                {timelineLoading ? (
+                                  <div className={styles.graphLoading}>Loading timeline data...</div>
+                                ) : timelineData.length === 0 ? (
+                                  <div className={styles.graphLoading}>No historical data available</div>
+                                ) : (
+                                  <ResponsiveContainer width="100%" height={220}>
+                                    <ComposedChart 
+                                      data={timelineData}
+                                      margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
+                                    >
+                                      <defs>
+                                        <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
+                                          <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+                                        </linearGradient>
+                                      </defs>
+                                      <XAxis 
+                                        dataKey="time" 
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                        dy={10}
+                                      />
+                                      <YAxis 
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                        domain={['auto', 'auto']}
+                                        tickFormatter={(val) => val > 0 ? `+${val}` : val}
+                                        dx={-5}
+                                      />
+                                      <Tooltip content={<CustomTooltip />} />
+                                      <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />
+                                      <Area 
+                                        type="monotone" 
+                                        dataKey="homeLine" 
+                                        fill={`url(#areaGradient-${game.id})`}
+                                        stroke="none"
+                                      />
+                                      <Line 
+                                        type="monotone" 
+                                        dataKey="homeLine" 
+                                        stroke="#98ADD1" 
+                                        strokeWidth={2}
+                                        dot={false}
+                                        activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        name={getTeamName(game.home_team)}
+                                      />
+                                      <Line 
+                                        type="monotone" 
+                                        dataKey="awayLine" 
+                                        stroke="#EF4444" 
+                                        strokeWidth={2}
+                                        dot={false}
+                                        activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        name={getTeamName(game.away_team)}
+                                        strokeDasharray="5 5"
+                                      />
+                                    </ComposedChart>
+                                  </ResponsiveContainer>
+                                )}
                                 
                                 {/* Legend */}
                                 <div className={styles.graphLegend}>
@@ -949,23 +1012,27 @@ export default function PublicBettingPage() {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {generateSampleLineMovement(game.opening_spread).map((point, idx) => (
-                                      <tr key={idx} className={idx === 8 ? styles.currentRow : ''}>
-                                        <td>{point.time}</td>
-                                        <td>{point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine}</td>
-                                        <td>{point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine}</td>
-                                        <td>
-                                          <span className={styles.historyPctAway}>{point.awayBetPct}%</span>
-                                          <span className={styles.historyPctDivider}>/</span>
-                                          <span className={styles.historyPctHome}>{point.homeBetPct}%</span>
-                                        </td>
-                                        <td>
-                                          <span className={styles.historyPctAway}>{point.awayMoneyPct}%</span>
-                                          <span className={styles.historyPctDivider}>/</span>
-                                          <span className={styles.historyPctHome}>{point.homeMoneyPct}%</span>
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    {timelineData.length === 0 ? (
+                                      <tr><td colSpan={5} className={styles.emptyCell}>No history available</td></tr>
+                                    ) : (
+                                      timelineData.map((point, idx) => (
+                                        <tr key={idx} className={idx === timelineData.length - 1 ? styles.currentRow : ''}>
+                                          <td>{point.time}</td>
+                                          <td>{point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine}</td>
+                                          <td>{point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine}</td>
+                                          <td>
+                                            <span className={styles.historyPctAway}>{point.awayBetPct}%</span>
+                                            <span className={styles.historyPctDivider}>/</span>
+                                            <span className={styles.historyPctHome}>{point.homeBetPct}%</span>
+                                          </td>
+                                          <td>
+                                            <span className={styles.historyPctAway}>{point.awayMoneyPct}%</span>
+                                            <span className={styles.historyPctDivider}>/</span>
+                                            <span className={styles.historyPctHome}>{point.homeMoneyPct}%</span>
+                                          </td>
+                                        </tr>
+                                      ))
+                                    )}
                                   </tbody>
                                 </table>
                               </div>
@@ -1073,6 +1140,8 @@ export default function PublicBettingPage() {
                       setGraphMarketType={setGraphMarketType}
                       formatSpread={formatSpread}
                       getTeamName={getTeamName}
+                      timelineData={timelineData}
+                      timelineLoading={timelineLoading}
                     />
                   )}
                 </div>
