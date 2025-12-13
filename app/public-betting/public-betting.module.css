@@ -391,71 +391,291 @@
   font-weight: 600;
 }
 
-/* Details Row */
+/* Expanded Panel (Details Row) */
 .detailsRow td {
   padding: 0 !important;
-  background: rgba(22, 31, 43, 0.6);
   border-bottom: 2px solid rgba(50, 51, 53, 0.5) !important;
 }
 
-.gameDetails {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+.expandedPanel {
+  background: linear-gradient(100.07deg, #161F2B 1.42%, #0C0E12 23.56%, #0D1116 40.37%, #161F2B 59.2%, #121111 90.05%);
+  border-radius: 0 0 12px 12px;
+}
+
+/* Graph Container */
+.graphContainer {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Graph Header */
+.graphHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
   padding: 16px 20px;
+  background: linear-gradient(90.65deg, #1D2530 0.09%, #13181D 41.33%, #1C2632 65.47%, #13181D 100%);
+  box-shadow: 0px 13px 21.4px rgba(13, 16, 21, 0.15);
 }
 
-.detailSection h4 {
-  font-size: 10px;
-  font-weight: 600;
-  color: #696969;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 8px 0;
+.graphHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.lineMovement {
+.graphTitle {
+  font-size: 16px;
+  font-weight: 400;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.graphStats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.graphStatValue {
+  font-size: 24px;
+  font-weight: 500;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.graphStatChange {
+  font-size: 14px;
+  font-weight: 400;
+  color: #73F97C;
+  letter-spacing: -0.02em;
+}
+
+.graphHeaderRight {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.linePoint {
+/* Graph Filter Group (Spread/O/U/ML) */
+.graphFilterGroup {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  gap: 0;
+  border: 1px solid #323335;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.graphFilterBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.graphFilterBtn:hover {
+  color: #FFFFFF;
+}
+
+.graphFilterBtn.active {
+  background: rgba(41, 47, 63, 0.5);
+  color: #FFFFFF;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+}
+
+/* Graph Time Filter (All/24hr) */
+.graphTimeFilter {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(41, 47, 63, 0.5);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.graphTimeBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.graphTimeBtn:hover {
+  color: #FFFFFF;
+}
+
+.graphTimeBtn.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #FFFFFF;
+}
+
+/* Graph Content */
+.graphContent {
+  padding: 16px 20px 20px;
+}
+
+/* Graph Legend */
+.graphLegend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.legendLine {
+  display: inline-block;
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legendLineDashed {
+  display: inline-block;
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #EF4444,
+    #EF4444 4px,
+    transparent 4px,
+    transparent 6px
+  ) !important;
+}
+
+/* Graph Tooltip */
+.graphTooltip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  background: linear-gradient(276.49deg, #232B37 0%, #171C24 74.87%);
+  box-shadow: 36px 52px 25px rgba(0, 0, 0, 0.01), 20px 29px 21px rgba(0, 0, 0, 0.05), 9px 13px 16px rgba(0, 0, 0, 0.09), 2px 3px 9px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.tooltipContent {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.lineLabel {
-  font-size: 10px;
-  color: #696969;
+.tooltipValue {
+  font-size: 18px;
+  font-weight: 500;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
 }
 
-.lineValue {
-  font-size: 16px;
-  font-weight: 600;
+.tooltipLabel {
+  font-size: 12px;
+  color: #73F97C;
+}
+
+.tooltipBadge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3px 8px;
+  background: #2F7C2C;
+  box-shadow: inset 0px 3px 4px rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
   color: #FFFFFF;
 }
 
-.lineArrow {
-  color: #696969;
-  font-size: 14px;
+/* Odds History Section */
+.oddsHistorySection {
+  padding: 0 20px 20px;
 }
 
-.totalInfo {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.totalInfo span:first-child {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.totalMove {
+.historyTitle {
   font-size: 12px;
+  font-weight: 600;
   color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+}
+
+.historyTableWrapper {
+  overflow-x: auto;
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.historyTable th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(29, 37, 48, 0.5);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.historyTable td {
+  padding: 10px 12px;
+  color: #9CA3AF;
+  border-bottom: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.historyTable tr:last-child td {
+  border-bottom: none;
+}
+
+.historyTable .currentRow td {
+  background: rgba(59, 130, 246, 0.1);
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.historyPctAway {
+  color: #EF4444;
+}
+
+.historyPctHome {
+  color: #3B82F6;
+}
+
+.historyPctDivider {
+  color: #4B5563;
+  margin: 0 4px;
 }
 
 /* Loading & Empty */
@@ -556,18 +776,82 @@
   font-weight: 600;
 }
 
-.mobileDetails {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(50, 51, 53, 0.5);
+/* Mobile Expanded Panel */
+.mobileExpandedPanel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
 }
 
-.mobileDetailRow {
+.mobileGraphContainer {
+  background: linear-gradient(100.07deg, #161F2B 1.42%, #0C0E12 50%, #161F2B 100%);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.mobileGraphHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobileGraphTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.mobileGraphFilters {
+  display: flex;
+  gap: 4px;
+  background: rgba(41, 47, 63, 0.5);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.mobileGraphFilterBtn {
+  padding: 4px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
   font-size: 11px;
   color: #696969;
-  padding: 3px 0;
+  cursor: pointer;
+}
+
+.mobileGraphFilterBtn.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #FFFFFF;
+}
+
+.mobileSummaryStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.mobileStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(41, 47, 63, 0.3);
+  border-radius: 8px;
+}
+
+.mobileStatLabel {
+  font-size: 10px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.mobileStatValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 /* Responsive */

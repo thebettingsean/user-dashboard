@@ -3,6 +3,17 @@
 import { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
 import { FiChevronDown, FiChevronUp, FiSearch } from 'react-icons/fi'
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer,
+  ReferenceLine,
+  Area,
+  ComposedChart
+} from 'recharts'
 
 interface GameOdds {
   id: string
@@ -29,6 +40,66 @@ interface GameOdds {
 
 type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'rlm' | 'movement' | null
 type MarketType = 'spread' | 'total' | 'ml'
+type TimeFilter = 'all' | '24hr'
+
+interface LineMovementPoint {
+  time: string
+  awayLine: number
+  homeLine: number
+  awayBetPct: number
+  homeBetPct: number
+  awayMoneyPct: number
+  homeMoneyPct: number
+}
+
+// Sample line movement data generator
+const generateSampleLineMovement = (openingSpread: number): LineMovementPoint[] => {
+  const points: LineMovementPoint[] = []
+  const times = ['Open', '48hr', '36hr', '24hr', '12hr', '6hr', '3hr', '1hr', 'Now']
+  let currentSpread = openingSpread
+  
+  times.forEach((time, i) => {
+    // Simulate realistic line movement
+    if (i > 0) {
+      const movement = (Math.random() - 0.5) * 1 // ±0.5 movement
+      currentSpread = Math.round((currentSpread + movement) * 2) / 2 // Round to 0.5
+    }
+    
+    const baseBetPct = 45 + Math.random() * 20
+    const baseMoneyPct = 40 + Math.random() * 25
+    
+    points.push({
+      time,
+      homeLine: currentSpread,
+      awayLine: -currentSpread,
+      homeBetPct: Math.round(baseBetPct),
+      awayBetPct: Math.round(100 - baseBetPct),
+      homeMoneyPct: Math.round(baseMoneyPct),
+      awayMoneyPct: Math.round(100 - baseMoneyPct),
+    })
+  })
+  
+  return points
+}
+
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload || !payload.length) return null
+  
+  const data = payload[0].payload
+  
+  return (
+    <div className={styles.graphTooltip}>
+      <div className={styles.tooltipContent}>
+        <div className={styles.tooltipValue}>{data.homeLine > 0 ? `+${data.homeLine}` : data.homeLine}</div>
+        <div className={styles.tooltipLabel}>{label}</div>
+      </div>
+      <div className={styles.tooltipBadge}>
+        {data.homeBetPct}%
+      </div>
+    </div>
+  )
+}
 
 export default function PublicBettingPage() {
   const [games, setGames] = useState<GameOdds[]>([])
@@ -40,6 +111,8 @@ export default function PublicBettingPage() {
   const [expandedGame, setExpandedGame] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
+  const [graphTimeFilter, setGraphTimeFilter] = useState<TimeFilter>('all')
+  const [graphMarketType, setGraphMarketType] = useState<MarketType>('spread')
 
   useEffect(() => {
     fetchGames()
@@ -395,28 +468,159 @@ export default function PublicBettingPage() {
                     {isExpanded && (
                       <tr key={`${game.id}-details`} className={styles.detailsRow}>
                         <td colSpan={8}>
-                          <div className={styles.gameDetails}>
-                            <div className={styles.detailSection}>
-                              <h4>Line Movement</h4>
-                              <div className={styles.lineMovement}>
-                                <div className={styles.linePoint}>
-                                  <span className={styles.lineLabel}>Open</span>
-                                  <span className={styles.lineValue}>{formatSpread(game.opening_spread, true)}</span>
+                          <div className={styles.expandedPanel}>
+                            {/* Graph Container */}
+                            <div className={styles.graphContainer}>
+                              {/* Graph Header */}
+                              <div className={styles.graphHeader}>
+                                <div className={styles.graphHeaderLeft}>
+                                  <div className={styles.graphTitle}>Line Movement</div>
+                                  <div className={styles.graphStats}>
+                                    <span className={styles.graphStatValue}>
+                                      {formatSpread(game.current_spread, true)}
+                                    </span>
+                                    <span className={styles.graphStatChange}>
+                                      {game.spread_movement > 0 ? '+' : ''}{game.spread_movement.toFixed(1)} from open
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className={styles.lineArrow}>→</div>
-                                <div className={styles.linePoint}>
-                                  <span className={styles.lineLabel}>Current</span>
-                                  <span className={styles.lineValue}>{formatSpread(game.current_spread, true)}</span>
+                                <div className={styles.graphHeaderRight}>
+                                  {/* Market Type Filter */}
+                                  <div className={styles.graphFilterGroup}>
+                                    {(['spread', 'total', 'ml'] as const).map(market => (
+                                      <button
+                                        key={market}
+                                        className={`${styles.graphFilterBtn} ${graphMarketType === market ? styles.active : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setGraphMarketType(market) }}
+                                      >
+                                        {market === 'ml' ? 'ML' : market === 'total' ? 'O/U' : 'Spread'}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  {/* Time Filter */}
+                                  <div className={styles.graphTimeFilter}>
+                                    <button
+                                      className={`${styles.graphTimeBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
+                                      onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('all') }}
+                                    >
+                                      All
+                                    </button>
+                                    <button
+                                      className={`${styles.graphTimeBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
+                                      onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('24hr') }}
+                                    >
+                                      24hr
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Graph Content */}
+                              <div className={styles.graphContent}>
+                                <ResponsiveContainer width="100%" height={220}>
+                                  <ComposedChart 
+                                    data={generateSampleLineMovement(game.opening_spread)}
+                                    margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
+                                  >
+                                    <defs>
+                                      <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
+                                        <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+                                      </linearGradient>
+                                    </defs>
+                                    <XAxis 
+                                      dataKey="time" 
+                                      axisLine={false}
+                                      tickLine={false}
+                                      tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                      dy={10}
+                                    />
+                                    <YAxis 
+                                      axisLine={false}
+                                      tickLine={false}
+                                      tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                      domain={['auto', 'auto']}
+                                      tickFormatter={(val) => val > 0 ? `+${val}` : val}
+                                      dx={-5}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />
+                                    <Area 
+                                      type="monotone" 
+                                      dataKey="homeLine" 
+                                      fill={`url(#areaGradient-${game.id})`}
+                                      stroke="none"
+                                    />
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey="homeLine" 
+                                      stroke="#98ADD1" 
+                                      strokeWidth={2}
+                                      dot={false}
+                                      activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                      name={getTeamName(game.home_team)}
+                                    />
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey="awayLine" 
+                                      stroke="#EF4444" 
+                                      strokeWidth={2}
+                                      dot={false}
+                                      activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                      name={getTeamName(game.away_team)}
+                                      strokeDasharray="5 5"
+                                    />
+                                  </ComposedChart>
+                                </ResponsiveContainer>
+                                
+                                {/* Legend */}
+                                <div className={styles.graphLegend}>
+                                  <div className={styles.legendItem}>
+                                    <span className={styles.legendLine} style={{ background: '#98ADD1' }}></span>
+                                    <span>{getTeamName(game.home_team)}</span>
+                                  </div>
+                                  <div className={styles.legendItem}>
+                                    <span className={styles.legendLineDashed} style={{ background: '#EF4444' }}></span>
+                                    <span>{getTeamName(game.away_team)}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div className={styles.detailSection}>
-                              <h4>Total (O/U)</h4>
-                              <div className={styles.totalInfo}>
-                                <span>{game.current_total}</span>
-                                <span className={styles.totalMove}>
-                                  ({game.total_movement > 0 ? '+' : ''}{game.total_movement.toFixed(1)} from open)
-                                </span>
+                            
+                            {/* Odds History Table */}
+                            <div className={styles.oddsHistorySection}>
+                              <h4 className={styles.historyTitle}>Odds & Public Betting History</h4>
+                              <div className={styles.historyTableWrapper}>
+                                <table className={styles.historyTable}>
+                                  <thead>
+                                    <tr>
+                                      <th>Time</th>
+                                      <th>{getTeamName(game.away_team)}</th>
+                                      <th>{getTeamName(game.home_team)}</th>
+                                      <th>Bet %</th>
+                                      <th>Money %</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {generateSampleLineMovement(game.opening_spread).map((point, idx) => (
+                                      <tr key={idx} className={idx === 8 ? styles.currentRow : ''}>
+                                        <td>{point.time}</td>
+                                        <td>{point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine}</td>
+                                        <td>{point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine}</td>
+                                        <td>
+                                          <span className={styles.historyPctAway}>{point.awayBetPct}%</span>
+                                          <span className={styles.historyPctDivider}>/</span>
+                                          <span className={styles.historyPctHome}>{point.homeBetPct}%</span>
+                                        </td>
+                                        <td>
+                                          <span className={styles.historyPctAway}>{point.awayMoneyPct}%</span>
+                                          <span className={styles.historyPctDivider}>/</span>
+                                          <span className={styles.historyPctHome}>{point.homeMoneyPct}%</span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             </div>
                           </div>
@@ -504,14 +708,92 @@ export default function PublicBettingPage() {
                   </div>
                   
                   {isExpanded && (
-                    <div className={styles.mobileDetails}>
-                      <div className={styles.mobileDetailRow}>
-                        <span>Open: {formatSpread(game.opening_spread, true)}</span>
-                        <span>Move: {formatMove(game.spread_movement)}</span>
+                    <div className={styles.mobileExpandedPanel} onClick={(e) => e.stopPropagation()}>
+                      {/* Mobile Graph */}
+                      <div className={styles.mobileGraphContainer}>
+                        <div className={styles.mobileGraphHeader}>
+                          <span className={styles.mobileGraphTitle}>Line Movement</span>
+                          <div className={styles.mobileGraphFilters}>
+                            <button
+                              className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
+                              onClick={() => setGraphTimeFilter('all')}
+                            >
+                              All
+                            </button>
+                            <button
+                              className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
+                              onClick={() => setGraphTimeFilter('24hr')}
+                            >
+                              24hr
+                            </button>
+                          </div>
+                        </div>
+                        <ResponsiveContainer width="100%" height={160}>
+                          <ComposedChart 
+                            data={generateSampleLineMovement(game.opening_spread)}
+                            margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                          >
+                            <defs>
+                              <linearGradient id={`mobileGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
+                                <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis 
+                              dataKey="time" 
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: '#FFFFFF', fontSize: 10 }}
+                              interval={2}
+                            />
+                            <YAxis 
+                              hide
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="homeLine" 
+                              fill={`url(#mobileGradient-${game.id})`}
+                              stroke="none"
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="homeLine" 
+                              stroke="#98ADD1" 
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="awayLine" 
+                              stroke="#EF4444" 
+                              strokeWidth={2}
+                              dot={false}
+                              strokeDasharray="4 4"
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
                       </div>
-                      <div className={styles.mobileDetailRow}>
-                        <span>O/U: {game.current_total}</span>
-                        <span>{game.rlm !== '-' ? game.rlm : ''}</span>
+                      
+                      {/* Mobile Summary Stats */}
+                      <div className={styles.mobileSummaryStats}>
+                        <div className={styles.mobileStat}>
+                          <span className={styles.mobileStatLabel}>Open</span>
+                          <span className={styles.mobileStatValue}>{formatSpread(game.opening_spread, true)}</span>
+                        </div>
+                        <div className={styles.mobileStat}>
+                          <span className={styles.mobileStatLabel}>Current</span>
+                          <span className={styles.mobileStatValue}>{formatSpread(game.current_spread, true)}</span>
+                        </div>
+                        <div className={styles.mobileStat}>
+                          <span className={styles.mobileStatLabel}>Move</span>
+                          <span className={`${styles.mobileStatValue} ${game.spread_movement !== 0 ? (game.spread_movement > 0 ? styles.moveUp : styles.moveDown) : ''}`}>
+                            {formatMove(game.spread_movement)}
+                          </span>
+                        </div>
+                        <div className={styles.mobileStat}>
+                          <span className={styles.mobileStatLabel}>O/U</span>
+                          <span className={styles.mobileStatValue}>{game.current_total}</span>
+                        </div>
                       </div>
                     </div>
                   )}
