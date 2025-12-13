@@ -3,79 +3,70 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY
   
-  // Also check alternative key names
-  const NFL_KEY = process.env.SPORTSDATA_NFL_KEY
-  const GENERIC_KEY = process.env.SPORTSDATA_API_KEY
-  
-  // Try to find a working key
-  const keyToUse = SPORTSDATA_API_KEY || NFL_KEY || GENERIC_KEY
-  
-  if (!keyToUse) {
+  if (!SPORTSDATA_API_KEY) {
     return NextResponse.json({ 
       error: 'No SportsDataIO key found', 
-      hasKey: false,
-      envVars: {
-        SPORTSDATA_IO_SPLITS_KEY: !!SPORTSDATA_API_KEY,
-        SPORTSDATA_NFL_KEY: !!NFL_KEY,
-        SPORTSDATA_API_KEY: !!GENERIC_KEY
-      }
+      hasKey: false
     }, { status: 500 })
   }
 
-  const results: any[] = []
-  let testGame: any = null
-
   try {
-    // Try the schedule endpoint first
+    // Test 1: Try ScoresByDate endpoint
     const today = new Date().toISOString().split('T')[0]
-    
-    // Test with scores endpoint (might be different from splits)
-    const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/ScoresByDate/${today}?key=${keyToUse}`
+    const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/ScoresByDate/${today}?key=${SPORTSDATA_API_KEY}`
     const scheduleResponse = await fetch(scheduleUrl)
     
-    if (scheduleResponse.status === 401) {
-      // Key is unauthorized - let's show what keys we have
-      return NextResponse.json({
-        error: 'API key unauthorized (401)',
-        message: 'The SportsDataIO API key is being rejected. It may have expired or lacks permissions for this endpoint.',
-        keyPrefix: keyToUse.substring(0, 10) + '...',
-        keyLength: keyToUse.length,
-        endpoint: 'scores/json/ScoresByDate',
-        envVars: {
-          SPORTSDATA_IO_SPLITS_KEY: !!SPORTSDATA_API_KEY,
-          SPORTSDATA_NFL_KEY: !!NFL_KEY,
-          SPORTSDATA_API_KEY: !!GENERIC_KEY
-        }
+    const scheduleResult = {
+      endpoint: 'scores/json/ScoresByDate',
+      status: scheduleResponse.status,
+      ok: scheduleResponse.ok
+    }
+    
+    // Test 2: Try BettingSplitsByScoreId DIRECTLY with known ScoreID (Week 15 games)
+    // Week 15 2024 ScoreIDs are around 19200-19250
+    const testScoreIds = [19229, 19230, 19231, 19232, 19233]
+    const splitsResults: any[] = []
+    
+    for (const scoreId of testScoreIds) {
+      const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${scoreId}?key=${SPORTSDATA_API_KEY}`
+      const splitsResponse = await fetch(splitsUrl)
+      
+      let data = null
+      if (splitsResponse.ok) {
+        data = await splitsResponse.json()
+      }
+      
+      splitsResults.push({
+        scoreId,
+        status: splitsResponse.status,
+        ok: splitsResponse.ok,
+        hasData: !!data?.BettingMarketSplits,
+        homeTeam: data?.HomeTeam,
+        awayTeam: data?.AwayTeam,
+        spreadBetPct: data?.BettingMarketSplits?.find((m: any) => m.BettingBetType === 'Spread')
+          ?.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')?.BetPercentage
       })
     }
     
-    // Loop through next 7 days
-    for (let i = 0; i < 7; i++) {
-      const date = new Date()
-      date.setDate(date.getDate() + i)
-      const dateStr = date.toISOString().split('T')[0]
-      
-      const scheduleUrl2 = `https://api.sportsdata.io/v3/nfl/scores/json/ScoresByDate/${dateStr}?key=${keyToUse}`
-      const scheduleResponse2 = await fetch(scheduleUrl2)
-      
-      if (!scheduleResponse2.ok) {
-        results.push({ date: dateStr, status: scheduleResponse2.status, gamesCount: 0 })
-        continue
-      }
-      
-      const scheduleGames = await scheduleResponse2.json()
-      results.push({ date: dateStr, status: 200, gamesCount: scheduleGames.length })
-      
-      // Find a game to test splits
-      if (!testGame) {
-        testGame = scheduleGames.find((g: any) => g.ScoreID)
-      }
-    }
+    return NextResponse.json({
+      success: true,
+      keyPresent: true,
+      scheduleEndpoint: scheduleResult,
+      splitsEndpoint: {
+        tested: splitsResults.length,
+        working: splitsResults.filter(r => r.ok).length,
+        samples: splitsResults
+      },
+      conclusion: splitsResults.some(r => r.ok) 
+        ? 'BettingSplitsByScoreId works! Use ScoreIDs from nfl_games table instead of ScoresByDate'
+        : 'Both endpoints failing - API key may be expired'
+    })
     
-    // Test splits for a game
-    let splitsResult: any = null
-    if (testGame) {
-      const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${testGame.ScoreID}?key=${keyToUse}`
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
       const splitsResponse = await fetch(splitsUrl)
       
       if (splitsResponse.ok) {
