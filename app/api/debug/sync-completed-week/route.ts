@@ -20,7 +20,10 @@ export async function GET(request: Request) {
   try {
     console.log(`Fetching Week ${week} games from ESPN...`)
     
-    const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&dates=${season}`
+    // ESPN uses the calendar year for dates parameter, but reports season.year as next year
+    // For the 2024-2025 season (reported as season 2025), we use dates=2024
+    const calendarYear = season > 2024 ? season - 1 : season
+    const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&dates=${calendarYear}`
     const response = await fetch(espnUrl)
     
     if (!response.ok) {
