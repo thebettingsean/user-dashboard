@@ -83,6 +83,121 @@
   background: rgba(41, 47, 63, 0.6);
 }
 
+/* Search Container */
+.searchContainer {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 8px;
+  width: 280px;
+  height: 32px;
+  background: #161920;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.searchContainer:focus-within {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.searchIcon {
+  color: #696969;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.searchInput::placeholder {
+  color: #4B5563;
+}
+
+/* Mobile Sport Dropdown */
+.mobileSportDropdown {
+  display: none;
+  position: relative;
+}
+
+.sportDropdownBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  width: 92px;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sportDropdownBtn:hover {
+  background: rgba(41, 47, 63, 0.7);
+}
+
+.sportDropdownBtn svg {
+  transition: transform 0.2s ease;
+  font-size: 14px;
+  color: #696969;
+}
+
+.sportDropdownBtn svg.rotated {
+  transform: rotate(180deg);
+}
+
+.sportDropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  width: 92px;
+  background: #1D2530;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.sportDropdownItem {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: #9CA3AF;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sportDropdownItem:hover {
+  background: rgba(41, 47, 63, 0.5);
+  color: #FFFFFF;
+}
+
+.sportDropdownItem.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+}
+
 /* Table Card */
 .tableCard {
   background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
@@ -461,16 +576,36 @@
   
   .container {
     padding: 16px;
+    padding-top: 24px;
   }
   
   .filtersRow {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 10px;
   }
   
-  .sportFilters,
+  /* Hide desktop sport buttons on mobile */
+  .sportFilters {
+    display: none;
+  }
+  
+  /* Show mobile sport dropdown */
+  .mobileSportDropdown {
+    display: block;
+  }
+  
+  /* Search bar takes remaining space */
+  .searchContainer {
+    flex: 1;
+    width: auto;
+    min-width: 140px;
+  }
+  
+  /* Market filters on full width row */
   .marketFilters {
+    width: 100%;
     justify-content: space-between;
   }
   

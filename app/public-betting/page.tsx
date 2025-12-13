@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
-import { FiChevronDown, FiChevronUp, FiTrendingUp, FiTrendingDown } from 'react-icons/fi'
+import { FiChevronDown, FiChevronUp, FiSearch } from 'react-icons/fi'
 
 interface GameOdds {
   id: string
@@ -38,6 +38,8 @@ export default function PublicBettingPage() {
   const [sortField, setSortField] = useState<SortField>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [expandedGame, setExpandedGame] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
 
   useEffect(() => {
     fetchGames()
@@ -111,6 +113,17 @@ export default function PublicBettingPage() {
   const getSortedGames = () => {
     let filtered = games.filter(g => g.sport === selectedSport)
 
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(g => 
+        g.home_team.toLowerCase().includes(query) ||
+        g.away_team.toLowerCase().includes(query) ||
+        g.home_abbrev.toLowerCase().includes(query) ||
+        g.away_abbrev.toLowerCase().includes(query)
+      )
+    }
+
     if (!sortField) return filtered
 
     return [...filtered].sort((a, b) => {
@@ -181,6 +194,7 @@ export default function PublicBettingPage() {
         </div>
         
         <div className={styles.filtersRow}>
+          {/* Desktop Sport Filters */}
           <div className={styles.sportFilters}>
             {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
               <button
@@ -191,6 +205,45 @@ export default function PublicBettingPage() {
                 {sport.toUpperCase()}
               </button>
             ))}
+          </div>
+
+          {/* Mobile Sport Dropdown */}
+          <div className={styles.mobileSportDropdown}>
+            <button 
+              className={styles.sportDropdownBtn}
+              onClick={() => setSportDropdownOpen(!sportDropdownOpen)}
+            >
+              {selectedSport.toUpperCase()}
+              <FiChevronDown className={sportDropdownOpen ? styles.rotated : ''} />
+            </button>
+            {sportDropdownOpen && (
+              <div className={styles.sportDropdownMenu}>
+                {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+                  <button
+                    key={sport}
+                    className={`${styles.sportDropdownItem} ${selectedSport === sport ? styles.active : ''}`}
+                    onClick={() => {
+                      setSelectedSport(sport)
+                      setSportDropdownOpen(false)
+                    }}
+                  >
+                    {sport.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className={styles.searchContainer}>
+            <FiSearch className={styles.searchIcon} />
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Search teams..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           
           <div className={styles.marketFilters}>
