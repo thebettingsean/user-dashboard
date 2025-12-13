@@ -816,17 +816,8 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        {selectedMarket === 'total' ? (
-                          <>
-                            <span className={styles.teamName}>Over</span>
-                            <span className={styles.matchupLabel}>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
-                          </>
-                        ) : (
-                          <>
-                            {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
-                            <span className={styles.teamName}>{getTeamName(game.away_team)}</span>
-                          </>
-                        )}
+                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
+                        <span className={styles.teamName}>{getTeamName(game.away_team)}</span>
                       </td>
                       <td>{getMarketOdds(game, false, true)}</td>
                       <td>{getMarketOdds(game, false, false)}</td>
@@ -864,14 +855,8 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        {selectedMarket === 'total' ? (
-                          <span className={styles.teamName}>Under</span>
-                        ) : (
-                          <>
-                            {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}
-                            <span className={styles.teamName}>{getTeamName(game.home_team)}</span>
-                          </>
-                        )}
+                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}
+                        <span className={styles.teamName}>{getTeamName(game.home_team)}</span>
                       </td>
                       <td>{getMarketOdds(game, true, true)}</td>
                       <td>{getMarketOdds(game, true, false)}</td>
