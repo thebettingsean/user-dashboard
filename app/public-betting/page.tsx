@@ -33,7 +33,7 @@ type MarketType = 'spread' | 'total' | 'ml'
 export default function PublicBettingPage() {
   const [games, setGames] = useState<GameOdds[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedSport, setSelectedSport] = useState<string>('all')
+  const [selectedSport, setSelectedSport] = useState<string>('nfl')
   const [selectedMarket, setSelectedMarket] = useState<MarketType>('spread')
   const [sortField, setSortField] = useState<SortField>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
@@ -109,9 +109,7 @@ export default function PublicBettingPage() {
   }
 
   const getSortedGames = () => {
-    let filtered = selectedSport === 'all' 
-      ? games 
-      : games.filter(g => g.sport === selectedSport)
+    let filtered = games.filter(g => g.sport === selectedSport)
 
     if (!sortField) return filtered
 
@@ -178,19 +176,19 @@ export default function PublicBettingPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <h1 className={styles.title}>Public Betting</h1>
-            <p className={styles.subtitle}>Real-time odds & sharp money indicators</p>
+            <p className={styles.subtitle}>Public betting splits, movements & indicators from 150 sportsbooks.</p>
           </div>
         </div>
         
         <div className={styles.filtersRow}>
           <div className={styles.sportFilters}>
-            {['all', 'nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+            {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
               <button
                 key={sport}
                 className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
                 onClick={() => setSelectedSport(sport)}
               >
-                {sport === 'all' ? 'All' : sport.toUpperCase()}
+                {sport.toUpperCase()}
               </button>
             ))}
           </div>
@@ -381,9 +379,24 @@ export default function PublicBettingPage() {
           <div className={styles.mobileHeader}>
             <div className={styles.mobileHeaderCell}>Team</div>
             <div className={styles.mobileHeaderCell}>Odds</div>
-            <div className={styles.mobileHeaderCell}>Bets</div>
-            <div className={styles.mobileHeaderCell}>$$$</div>
-            <div className={styles.mobileHeaderCell}>Diff</div>
+            <div 
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'bet_pct' ? styles.sorted : ''}`}
+              onClick={() => handleSort('bet_pct')}
+            >
+              Bets
+            </div>
+            <div 
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'money_pct' ? styles.sorted : ''}`}
+              onClick={() => handleSort('money_pct')}
+            >
+              $$$
+            </div>
+            <div 
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'rlm' ? styles.sorted : ''}`}
+              onClick={() => handleSort('rlm')}
+            >
+              RLM
+            </div>
           </div>
           
           {loading ? (
@@ -415,8 +428,8 @@ export default function PublicBettingPage() {
                       <span>{Math.round(awayMoneyPct)}%</span>
                       <div className={styles.miniMeterGreen}><div style={{ width: `${awayMoneyPct}%` }} /></div>
                     </div>
-                    <div className={`${styles.mobileDiff} ${getDiffClass(awayBetPct, awayMoneyPct)}`}>
-                      {formatDiff(awayBetPct, awayMoneyPct)}
+                    <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
+                      {game.rlm}
                     </div>
                   </div>
                   <div className={styles.mobileRow}>
@@ -430,14 +443,8 @@ export default function PublicBettingPage() {
                       <span>{Math.round(homeMoneyPct)}%</span>
                       <div className={styles.miniMeterGreen}><div style={{ width: `${homeMoneyPct}%` }} /></div>
                     </div>
-                    <div className={`${styles.mobileDiff} ${getDiffClass(homeBetPct, homeMoneyPct)}`}>
-                      {formatDiff(homeBetPct, homeMoneyPct)}
-                    </div>
+                    <div className={styles.mobileRlm}></div>
                   </div>
-                  
-                  {game.rlm !== '-' && (
-                    <div className={styles.mobileRlmTag}>{game.rlm}</div>
-                  )}
                   
                   {isExpanded && (
                     <div className={styles.mobileDetails}>
