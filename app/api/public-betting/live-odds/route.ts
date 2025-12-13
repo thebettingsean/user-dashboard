@@ -1,68 +1,155 @@
 import { NextResponse } from 'next/server'
-import { clickhouseQuery } from '@/lib/clickhouse'
 
 export async function GET() {
-  try {
-    // Get all upcoming games from live_odds_snapshots
-    const query = `
-      WITH upcoming_games AS (
-        SELECT DISTINCT odds_api_game_id
-        FROM live_odds_snapshots
-        WHERE game_time > now()
-      )
-      SELECT 
-        s.odds_api_game_id as id,
-        any(s.sport) as sport,
-        any(s.home_team) as home_team,
-        any(s.away_team) as away_team,
-        toString(any(s.game_time)) as game_time,
-        
-        argMin(s.spread, s.snapshot_time) as opening_spread,
-        argMin(s.total, s.snapshot_time) as opening_total,
-        argMin(s.ml_home, s.snapshot_time) as opening_ml_home,
-        argMin(s.ml_away, s.snapshot_time) as opening_ml_away,
-        
-        argMax(s.spread, s.snapshot_time) as current_spread,
-        argMax(s.total, s.snapshot_time) as current_total,
-        argMax(s.ml_home, s.snapshot_time) as current_ml_home,
-        argMax(s.ml_away, s.snapshot_time) as current_ml_away,
-        
-        argMax(s.spread, s.snapshot_time) - argMin(s.spread, s.snapshot_time) as spread_movement,
-        argMax(s.total, s.snapshot_time) - argMin(s.total, s.snapshot_time) as total_movement,
-        
-        argMax(s.public_spread_home_bet_pct, s.snapshot_time) as public_spread_bet_pct,
-        argMax(s.public_spread_home_money_pct, s.snapshot_time) as public_spread_money_pct,
-        argMax(s.public_ml_home_bet_pct, s.snapshot_time) as public_ml_bet_pct,
-        argMax(s.public_ml_home_money_pct, s.snapshot_time) as public_ml_money_pct,
-        argMax(s.public_total_over_bet_pct, s.snapshot_time) as public_total_bet_pct,
-        argMax(s.public_total_over_money_pct, s.snapshot_time) as public_total_money_pct,
-        
-        count() as snapshot_count,
-        toString(max(s.snapshot_time)) as last_updated
-        
-      FROM live_odds_snapshots s
-      INNER JOIN upcoming_games u ON s.odds_api_game_id = u.odds_api_game_id
-      GROUP BY s.odds_api_game_id
-      ORDER BY any(s.game_time) ASC
-    `
-    
-    const result = await clickhouseQuery(query)
-    const games = result.data || []
-    
-    return NextResponse.json({
-      success: true,
-      games,
-      total: games.length,
-      updated_at: new Date().toISOString()
-    })
-    
-  } catch (error: any) {
-    console.error('Error fetching live odds:', error)
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      games: []
-    }, { status: 500 })
-  }
+  // Mock data to test the design - will connect to real data later
+  const mockGames = [
+    {
+      id: '1',
+      sport: 'nfl',
+      home_team: 'Buffalo Bills',
+      away_team: 'New England Patriots',
+      game_time: '2025-12-15 13:00:00',
+      opening_spread: -3,
+      current_spread: -2.5,
+      spread_movement: 0.5,
+      opening_total: 44.5,
+      current_total: 45,
+      total_movement: 0.5,
+      public_spread_bet_pct: 72,
+      public_spread_money_pct: 58,
+      public_ml_bet_pct: 68,
+      public_ml_money_pct: 52,
+      public_total_bet_pct: 65,
+      public_total_money_pct: 60,
+      snapshot_count: 12
+    },
+    {
+      id: '2',
+      sport: 'nfl',
+      home_team: 'Houston Texans',
+      away_team: 'Arizona Cardinals',
+      game_time: '2025-12-14 18:00:00',
+      opening_spread: -9.5,
+      current_spread: -9.5,
+      spread_movement: 0,
+      opening_total: 42.5,
+      current_total: 43,
+      total_movement: 0.5,
+      public_spread_bet_pct: 55,
+      public_spread_money_pct: 48,
+      public_ml_bet_pct: 60,
+      public_ml_money_pct: 45,
+      public_total_bet_pct: 58,
+      public_total_money_pct: 55,
+      snapshot_count: 8
+    },
+    {
+      id: '3',
+      sport: 'nfl',
+      home_team: 'Kansas City Chiefs',
+      away_team: 'Denver Broncos',
+      game_time: '2025-12-15 16:25:00',
+      opening_spread: -7,
+      current_spread: -6.5,
+      spread_movement: 0.5,
+      opening_total: 46,
+      current_total: 45.5,
+      total_movement: -0.5,
+      public_spread_bet_pct: 78,
+      public_spread_money_pct: 45,
+      public_ml_bet_pct: 82,
+      public_ml_money_pct: 55,
+      public_total_bet_pct: 70,
+      public_total_money_pct: 62,
+      snapshot_count: 15
+    },
+    {
+      id: '4',
+      sport: 'nba',
+      home_team: 'Boston Celtics',
+      away_team: 'Milwaukee Bucks',
+      game_time: '2025-12-14 19:30:00',
+      opening_spread: -4.5,
+      current_spread: -5.5,
+      spread_movement: -1,
+      opening_total: 228.5,
+      current_total: 230,
+      total_movement: 1.5,
+      public_spread_bet_pct: 62,
+      public_spread_money_pct: 70,
+      public_ml_bet_pct: 58,
+      public_ml_money_pct: 65,
+      public_total_bet_pct: 72,
+      public_total_money_pct: 68,
+      snapshot_count: 10
+    },
+    {
+      id: '5',
+      sport: 'nba',
+      home_team: 'Los Angeles Lakers',
+      away_team: 'Golden State Warriors',
+      game_time: '2025-12-14 22:00:00',
+      opening_spread: 2.5,
+      current_spread: 1.5,
+      spread_movement: -1,
+      opening_total: 234,
+      current_total: 233,
+      total_movement: -1,
+      public_spread_bet_pct: 75,
+      public_spread_money_pct: 48,
+      public_ml_bet_pct: 70,
+      public_ml_money_pct: 42,
+      public_total_bet_pct: 68,
+      public_total_money_pct: 55,
+      snapshot_count: 18
+    },
+    {
+      id: '6',
+      sport: 'nhl',
+      home_team: 'Toronto Maple Leafs',
+      away_team: 'Montreal Canadiens',
+      game_time: '2025-12-14 19:00:00',
+      opening_spread: -1.5,
+      current_spread: -1.5,
+      spread_movement: 0,
+      opening_total: 6.5,
+      current_total: 6.5,
+      total_movement: 0,
+      public_spread_bet_pct: 68,
+      public_spread_money_pct: 55,
+      public_ml_bet_pct: 72,
+      public_ml_money_pct: 60,
+      public_total_bet_pct: 58,
+      public_total_money_pct: 52,
+      snapshot_count: 6
+    },
+    {
+      id: '7',
+      sport: 'cfb',
+      home_team: 'Texas Longhorns',
+      away_team: 'Ohio State Buckeyes',
+      game_time: '2025-12-21 20:00:00',
+      opening_spread: 3.5,
+      current_spread: 2.5,
+      spread_movement: -1,
+      opening_total: 54.5,
+      current_total: 55,
+      total_movement: 0.5,
+      public_spread_bet_pct: 65,
+      public_spread_money_pct: 42,
+      public_ml_bet_pct: 60,
+      public_ml_money_pct: 38,
+      public_total_bet_pct: 62,
+      public_total_money_pct: 58,
+      snapshot_count: 20
+    }
+  ]
+
+  return NextResponse.json({
+    success: true,
+    games: mockGames,
+    total: mockGames.length,
+    updated_at: new Date().toISOString()
+  })
 }
 
