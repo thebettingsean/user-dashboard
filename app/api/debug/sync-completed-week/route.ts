@@ -98,12 +98,12 @@ export async function GET(request: Request) {
           game_id, season, week, game_date, game_time,
           home_team_id, away_team_id, home_score, away_score,
           spread_close, total_close, home_covered,
-          is_division_game, is_conference_game, season_type
+          is_division_game, is_conference_game
         ) VALUES (
           ${gameId}, ${season}, ${week}, '${gameDate}', '${gameTime}',
           ${homeTeamId}, ${awayTeamId}, ${homeScore}, ${awayScore},
           ${spread}, ${total}, ${homeCovered},
-          ${isDivisionGame}, ${isConferenceGame}, 'regular'
+          ${isDivisionGame}, ${isConferenceGame}
         )
       `
       
