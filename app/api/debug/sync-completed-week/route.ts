@@ -93,22 +93,16 @@ export async function GET(request: Request) {
         homeCovered = pointDiff + spread > 0 ? 1 : (pointDiff + spread < 0 ? 0 : -1)
       }
       
-      const totalPoints = homeScore + awayScore
-      let overHit = 0
-      if (homeScore > 0 && total > 0) {
-        overHit = totalPoints > total ? 1 : (totalPoints < total ? 0 : -1)
-      }
-      
       const insertSql = `
         INSERT INTO nfl_games (
           game_id, season, week, game_date, game_time,
           home_team_id, away_team_id, home_score, away_score,
-          spread_close, total_close, home_covered, over_hit,
+          spread_close, total_close, home_covered,
           is_division_game, is_conference_game, season_type
         ) VALUES (
           ${gameId}, ${season}, ${week}, '${gameDate}', '${gameTime}',
           ${homeTeamId}, ${awayTeamId}, ${homeScore}, ${awayScore},
-          ${spread}, ${total}, ${homeCovered}, ${overHit},
+          ${spread}, ${total}, ${homeCovered},
           ${isDivisionGame}, ${isConferenceGame}, 'regular'
         )
       `
