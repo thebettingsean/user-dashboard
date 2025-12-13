@@ -45,13 +45,14 @@ export async function GET(request: Request) {
   
   try {
     // Query to get aggregated game data with opening/current lines
+    // Games within next 7 days that have snapshots from last 24 hours
     const query = `
       SELECT 
         odds_api_game_id,
         sport,
         any(home_team) as home_team,
         any(away_team) as away_team,
-        any(game_time) as game_time,
+        toString(any(game_time)) as game_time,
         
         -- Opening values (first snapshot)
         argMin(spread, snapshot_time) as opening_spread,
@@ -84,10 +85,9 @@ export async function GET(request: Request) {
         toString(max(snapshot_time)) as last_updated
         
       FROM live_odds_snapshots
-      WHERE game_time > now() - INTERVAL 6 HOUR
+      WHERE snapshot_time > now() - INTERVAL 24 HOUR
       ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
       GROUP BY odds_api_game_id, sport
-      HAVING any(game_time) > now() - INTERVAL 1 HOUR
       ORDER BY any(game_time) ASC
       LIMIT 100
     `
