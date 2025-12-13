@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
-import { FiFilter, FiTrendingUp, FiTrendingDown, FiChevronDown } from 'react-icons/fi'
-import { MdSportsSoccer, MdSportsFootball, MdSportsBasketball, MdSportsHockey } from 'react-icons/md'
+import { FiChevronDown, FiChevronUp, FiTrendingUp, FiTrendingDown } from 'react-icons/fi'
 
 interface GameOdds {
   id: string
   sport: string
   home_team: string
   away_team: string
+  home_abbrev: string
+  away_abbrev: string
   game_time: string
   opening_spread: number
   current_spread: number
@@ -17,39 +18,30 @@ interface GameOdds {
   opening_total: number
   current_total: number
   total_movement: number
-  public_spread_bet_pct: number
-  public_spread_money_pct: number
-  public_ml_bet_pct: number
-  public_ml_money_pct: number
-  public_total_bet_pct: number
-  public_total_money_pct: number
-  snapshot_count: number
-  vegas_score?: number
-  verdict?: string
+  public_spread_home_bet_pct: number
+  public_spread_home_money_pct: number
+  public_spread_away_bet_pct: number
+  public_spread_away_money_pct: number
+  public_total_over_bet_pct: number
+  public_total_over_money_pct: number
+  rlm: string
 }
 
-interface SummaryStats {
-  total_games: number
-  vegas_backed_count: number
-  avg_public_lean: number
-  biggest_rlm: GameOdds | null
-}
+type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'rlm' | 'movement' | null
+type MarketType = 'spread' | 'total' | 'ml'
 
 export default function PublicBettingPage() {
   const [games, setGames] = useState<GameOdds[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSport, setSelectedSport] = useState<string>('all')
-  const [selectedMarket, setSelectedMarket] = useState<'spread' | 'total' | 'ml'>('spread')
-  const [stats, setStats] = useState<SummaryStats>({
-    total_games: 0,
-    vegas_backed_count: 0,
-    avg_public_lean: 0,
-    biggest_rlm: null
-  })
+  const [selectedMarket, setSelectedMarket] = useState<MarketType>('spread')
+  const [sortField, setSortField] = useState<SortField>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [expandedGame, setExpandedGame] = useState<string | null>(null)
 
   useEffect(() => {
     fetchGames()
-  }, [selectedSport])
+  }, [])
 
   const fetchGames = async () => {
     setLoading(true)
@@ -57,14 +49,20 @@ export default function PublicBettingPage() {
       const response = await fetch('/api/public-betting/live-odds')
       const data = await response.json()
       
-      if (data.success) {
-        const gamesWithScores = data.games.map((game: GameOdds) => ({
+      if (data.success && data.games) {
+        const processedGames = data.games.map((game: any) => ({
           ...game,
-          ...calculateVegasScore(game)
+          home_abbrev: getAbbrev(game.home_team),
+          away_abbrev: getAbbrev(game.away_team),
+          public_spread_away_bet_pct: 100 - (game.public_spread_bet_pct || 50),
+          public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
+          public_spread_home_bet_pct: game.public_spread_bet_pct || 50,
+          public_spread_home_money_pct: game.public_spread_money_pct || 50,
+          public_total_over_bet_pct: game.public_total_bet_pct || 50,
+          public_total_over_money_pct: game.public_total_money_pct || 50,
+          rlm: calculateRLM(game)
         }))
-        
-        setGames(gamesWithScores)
-        calculateStats(gamesWithScores)
+        setGames(processedGames)
       }
     } catch (error) {
       console.error('Error fetching games:', error)
@@ -73,86 +71,88 @@ export default function PublicBettingPage() {
     }
   }
 
-  const calculateVegasScore = (game: GameOdds) => {
-    let score = 0
+  const getAbbrev = (teamName: string): string => {
+    const abbrevMap: Record<string, string> = {
+      'Buffalo Bills': 'BUF', 'New England Patriots': 'NE', 'Houston Texans': 'HOU',
+      'Arizona Cardinals': 'ARI', 'Kansas City Chiefs': 'KC', 'Denver Broncos': 'DEN',
+      'Boston Celtics': 'BOS', 'Milwaukee Bucks': 'MIL', 'Los Angeles Lakers': 'LAL',
+      'Golden State Warriors': 'GSW', 'Toronto Maple Leafs': 'TOR', 'Montreal Canadiens': 'MTL',
+      'Texas Longhorns': 'TEX', 'Ohio State Buckeyes': 'OSU'
+    }
+    return abbrevMap[teamName] || teamName.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK'
+  }
+
+  const getTeamName = (fullName: string): string => {
+    // Return just the team name (last word), not city
+    const parts = fullName.split(' ')
+    return parts[parts.length - 1]
+  }
+
+  const calculateRLM = (game: any): string => {
     const publicBetPct = game.public_spread_bet_pct || 50
-    const publicMoneyPct = game.public_spread_money_pct || 50
     const movement = game.spread_movement || 0
+    const publicOnHome = publicBetPct > 55
+    const publicOnAway = publicBetPct < 45
     
-    // Public lean intensity (0-30 pts)
-    const publicLean = Math.abs(publicBetPct - 50)
-    if (publicLean > 25) score += 30
-    else if (publicLean > 15) score += 20
-    else if (publicLean > 5) score += 10
-    
-    // Line movement against public (0-40 pts)
-    const publicOnHome = publicBetPct > 50
-    const lineMovedTowardAway = movement > 0.5
-    const lineMovedTowardHome = movement < -0.5
-    
-    if (publicOnHome && lineMovedTowardAway) score += 40
-    else if (!publicOnHome && lineMovedTowardHome) score += 40
-    else if (Math.abs(movement) <= 0.5 && publicLean > 15) score += 15
-    
-    // Money vs Bets split (0-20 pts)
-    const betMoneyDiff = Math.abs(publicBetPct - publicMoneyPct)
-    if (betMoneyDiff > 20) score += 20
-    else if (betMoneyDiff > 10) score += 10
-    
-    let verdict = 'NEUTRAL'
-    if (score >= 70) verdict = 'VEGAS BACKED'
-    else if (score >= 50) verdict = 'SHARP LEAN'
-    else if (score >= 30) verdict = 'SLIGHT EDGE'
-    else if (publicLean > 20 && Math.abs(movement) > 0.5) verdict = 'PUBLIC MOVE'
-    
-    return { vegas_score: score, verdict }
+    // RLM = Public heavy on one side, but line moves opposite
+    if (publicOnHome && movement > 0.5) return 'RLM Away'
+    if (publicOnAway && movement < -0.5) return 'RLM Home'
+    if (Math.abs(movement) > 0.5) return 'Steam'
+    return '-'
   }
 
-  const calculateStats = (gamesData: GameOdds[]) => {
-    const vegasBacked = gamesData.filter(g => (g.vegas_score || 0) >= 70)
-    const avgLean = gamesData.reduce((acc, g) => acc + Math.abs((g.public_spread_bet_pct || 50) - 50), 0) / gamesData.length
-    const biggestRlm = gamesData.reduce((max, g) => 
-      Math.abs(g.spread_movement || 0) > Math.abs(max?.spread_movement || 0) ? g : max
-    , gamesData[0])
-    
-    setStats({
-      total_games: gamesData.length,
-      vegas_backed_count: vegasBacked.length,
-      avg_public_lean: avgLean,
-      biggest_rlm: biggestRlm
-    })
-  }
-
-  const filteredGames = selectedSport === 'all' 
-    ? games 
-    : games.filter(g => g.sport === selectedSport)
-
-  const vegasBackedGames = filteredGames
-    .filter(g => (g.vegas_score || 0) >= 50)
-    .sort((a, b) => (b.vegas_score || 0) - (a.vegas_score || 0))
-    .slice(0, 5)
-
-  const getSportIcon = (sport: string) => {
-    switch (sport) {
-      case 'nfl': case 'cfb': return <MdSportsFootball />
-      case 'nba': return <MdSportsBasketball />
-      case 'nhl': return <MdSportsHockey />
-      default: return <MdSportsSoccer />
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
     }
   }
 
-  const formatSpread = (spread: number) => {
-    if (spread > 0) return `+${spread}`
-    return spread.toString()
+  const getSortedGames = () => {
+    let filtered = selectedSport === 'all' 
+      ? games 
+      : games.filter(g => g.sport === selectedSport)
+
+    if (!sortField) return filtered
+
+    return [...filtered].sort((a, b) => {
+      let aVal = 0, bVal = 0
+      
+      switch (sortField) {
+        case 'bet_pct':
+          aVal = Math.abs((a.public_spread_home_bet_pct || 50) - 50)
+          bVal = Math.abs((b.public_spread_home_bet_pct || 50) - 50)
+          break
+        case 'money_pct':
+          aVal = Math.abs((a.public_spread_home_money_pct || 50) - 50)
+          bVal = Math.abs((b.public_spread_home_money_pct || 50) - 50)
+          break
+        case 'diff':
+          aVal = Math.abs((a.public_spread_home_bet_pct || 50) - (a.public_spread_home_money_pct || 50))
+          bVal = Math.abs((b.public_spread_home_bet_pct || 50) - (b.public_spread_home_money_pct || 50))
+          break
+        case 'movement':
+          aVal = Math.abs(a.spread_movement || 0)
+          bVal = Math.abs(b.spread_movement || 0)
+          break
+        case 'rlm':
+          aVal = a.rlm !== '-' ? 1 : 0
+          bVal = b.rlm !== '-' ? 1 : 0
+          break
+      }
+      
+      return sortDirection === 'desc' ? bVal - aVal : aVal - bVal
+    })
   }
 
-  const getMovementClass = (movement: number, publicOnHome: boolean) => {
-    if (Math.abs(movement) < 0.5) return styles.neutral
-    // Movement against public = sharp
-    if (publicOnHome && movement > 0) return styles.sharp
-    if (!publicOnHome && movement < 0) return styles.sharp
-    return styles.public
+  const formatSpread = (spread: number, isHome: boolean) => {
+    const val = isHome ? spread : -spread
+    return val > 0 ? `+${val}` : val.toString()
   }
+
+  const sortedGames = getSortedGames()
 
   return (
     <div className={styles.container}>
@@ -160,7 +160,7 @@ export default function PublicBettingPage() {
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <h1 className={styles.title}>Public Betting</h1>
-          <p className={styles.subtitle}>Real-time odds movement & sharp money indicators</p>
+          <p className={styles.subtitle}>Real-time odds & sharp money indicators</p>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.sportFilters}>
@@ -177,216 +177,270 @@ export default function PublicBettingPage() {
         </div>
       </header>
 
-      {/* Stats Cards */}
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Total Games</span>
-          <div className={styles.statValue}>
-            <span className={styles.statNumber}>{stats.total_games}</span>
-            <span className={styles.statChange}>Live tracking</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Vegas Backed</span>
-          <div className={styles.statValue}>
-            <span className={styles.statNumber}>{stats.vegas_backed_count}</span>
-            <span className={styles.statChangePositive}>Sharp plays</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Avg Public Lean</span>
-          <div className={styles.statValue}>
-            <span className={styles.statNumber}>{stats.avg_public_lean.toFixed(1)}%</span>
-            <span className={styles.statChange}>from 50/50</span>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statLabel}>Biggest RLM</span>
-          <div className={styles.statValue}>
-            <span className={styles.statNumber}>
-              {stats.biggest_rlm ? `${Math.abs(stats.biggest_rlm.spread_movement).toFixed(1)} pts` : '-'}
-            </span>
-            <span className={styles.statChangePositive}>
-              {stats.biggest_rlm?.away_team?.split(' ').pop() || '-'}
-            </span>
-          </div>
+      {/* Market Tabs */}
+      <div className={styles.marketTabsContainer}>
+        <div className={styles.marketTabs}>
+          {(['spread', 'total', 'ml'] as const).map(market => (
+            <button
+              key={market}
+              className={`${styles.marketTab} ${selectedMarket === market ? styles.active : ''}`}
+              onClick={() => setSelectedMarket(market)}
+            >
+              {market === 'ml' ? 'Moneyline' : market === 'total' ? 'Over/Under' : 'Spread'}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className={styles.mainContent}>
-        {/* Vegas Backed Section */}
-        <div className={styles.vegasBackedSection}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <FiTrendingUp className={styles.sectionIcon} />
-              Vegas Backed Plays
-            </h2>
-            <span className={styles.sectionBadge}>{vegasBackedGames.length} plays</span>
-          </div>
-          
-          <div className={styles.vegasBackedList}>
-            {loading ? (
-              <div className={styles.loading}>Loading...</div>
-            ) : vegasBackedGames.length === 0 ? (
-              <div className={styles.empty}>No strong Vegas backed plays right now</div>
-            ) : (
-              vegasBackedGames.map(game => (
-                <div key={game.id} className={styles.vegasCard}>
-                  <div className={styles.vegasCardHeader}>
-                    <div className={styles.matchup}>
-                      <span className={styles.sportBadge}>{game.sport.toUpperCase()}</span>
-                      <span className={styles.teams}>
-                        {game.away_team} @ {game.home_team}
-                      </span>
-                    </div>
-                    <div className={styles.vegasScore}>
-                      <span className={styles.scoreValue}>{game.vegas_score}</span>
-                      <span className={styles.scoreLabel}>Score</span>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.vegasCardBody}>
-                    <div className={styles.lineInfo}>
-                      <div className={styles.lineItem}>
-                        <span className={styles.lineLabel}>Open</span>
-                        <span className={styles.lineValue}>{formatSpread(game.opening_spread)}</span>
-                      </div>
-                      <div className={styles.lineArrow}>
-                        {game.spread_movement > 0 ? <FiTrendingUp /> : game.spread_movement < 0 ? <FiTrendingDown /> : '→'}
-                      </div>
-                      <div className={styles.lineItem}>
-                        <span className={styles.lineLabel}>Current</span>
-                        <span className={styles.lineValue}>{formatSpread(game.current_spread)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className={styles.publicInfo}>
-                      <div className={styles.publicBar}>
-                        <div 
-                          className={styles.publicFill}
-                          style={{ width: `${game.public_spread_bet_pct || 50}%` }}
-                        />
-                      </div>
-                      <div className={styles.publicLabels}>
-                        <span>{Math.round(game.public_spread_bet_pct || 50)}% bets</span>
-                        <span>{Math.round(game.public_spread_money_pct || 50)}% money</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.vegasCardFooter}>
-                    <span className={`${styles.verdict} ${styles[game.verdict?.replace(' ', '').toLowerCase() || 'neutral']}`}>
-                      {game.verdict}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* All Games Table */}
-        <div className={styles.allGamesSection}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>All Games</h2>
-            <div className={styles.marketTabs}>
-              {(['spread', 'total', 'ml'] as const).map(market => (
-                <button
-                  key={market}
-                  className={`${styles.marketTab} ${selectedMarket === market ? styles.active : ''}`}
-                  onClick={() => setSelectedMarket(market)}
+      {/* Games Table */}
+      <div className={styles.tableCard}>
+        <div className={styles.tableWrapper}>
+          {/* Desktop Table */}
+          <table className={styles.desktopTable}>
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Open</th>
+                <th>Current</th>
+                <th 
+                  className={`${styles.sortable} ${sortField === 'movement' ? styles.sorted : ''}`}
+                  onClick={() => handleSort('movement')}
                 >
-                  {market === 'ml' ? 'Moneyline' : market.charAt(0).toUpperCase() + market.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
+                  Move {sortField === 'movement' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                </th>
+                <th 
+                  className={`${styles.sortable} ${sortField === 'bet_pct' ? styles.sorted : ''}`}
+                  onClick={() => handleSort('bet_pct')}
+                >
+                  Bet % {sortField === 'bet_pct' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                </th>
+                <th 
+                  className={`${styles.sortable} ${sortField === 'money_pct' ? styles.sorted : ''}`}
+                  onClick={() => handleSort('money_pct')}
+                >
+                  Money % {sortField === 'money_pct' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                </th>
+                <th 
+                  className={`${styles.sortable} ${sortField === 'diff' ? styles.sorted : ''}`}
+                  onClick={() => handleSort('diff')}
+                >
+                  Diff {sortField === 'diff' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                </th>
+                <th 
+                  className={`${styles.sortable} ${sortField === 'rlm' ? styles.sorted : ''}`}
+                  onClick={() => handleSort('rlm')}
+                >
+                  RLM {sortField === 'rlm' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={8} className={styles.loadingCell}>Loading...</td></tr>
+              ) : sortedGames.length === 0 ? (
+                <tr><td colSpan={8} className={styles.emptyCell}>No games found</td></tr>
+              ) : (
+                sortedGames.map(game => {
+                  const homeBetPct = game.public_spread_home_bet_pct
+                  const awayBetPct = game.public_spread_away_bet_pct
+                  const homeMoneyPct = game.public_spread_home_money_pct
+                  const awayMoneyPct = game.public_spread_away_money_pct
+                  const diff = Math.abs(homeBetPct - homeMoneyPct)
+                  const isExpanded = expandedGame === game.id
 
-          <div className={styles.tableContainer}>
-            <table className={styles.gamesTable}>
-              <thead>
-                <tr>
-                  <th>Game</th>
-                  <th>Open</th>
-                  <th>Current</th>
-                  <th>Move</th>
-                  <th>Bets %</th>
-                  <th>Money %</th>
-                  <th>Diff</th>
-                  <th>Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={8} className={styles.loadingCell}>Loading games...</td>
-                  </tr>
-                ) : filteredGames.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className={styles.emptyCell}>No games found</td>
-                  </tr>
-                ) : (
-                  filteredGames.map(game => {
-                    const betPct = selectedMarket === 'spread' ? game.public_spread_bet_pct 
-                      : selectedMarket === 'total' ? game.public_total_bet_pct 
-                      : game.public_ml_bet_pct
-                    const moneyPct = selectedMarket === 'spread' ? game.public_spread_money_pct
-                      : selectedMarket === 'total' ? game.public_total_money_pct
-                      : game.public_ml_money_pct
-                    const diff = Math.abs((betPct || 50) - (moneyPct || 50))
-                    
-                    return (
-                      <tr key={game.id}>
-                        <td>
-                          <div className={styles.gameCell}>
-                            <span className={styles.sportIcon}>{getSportIcon(game.sport)}</span>
-                            <div className={styles.gameInfo}>
-                              <span className={styles.awayTeam}>{game.away_team}</span>
-                              <span className={styles.atSymbol}>@</span>
-                              <span className={styles.homeTeam}>{game.home_team}</span>
-                            </div>
-                          </div>
+                  return (
+                    <>
+                      <tr 
+                        key={`${game.id}-away`} 
+                        className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''}`}
+                        onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                      >
+                        <td className={styles.teamCell}>
+                          <span className={styles.sportTag}>{game.sport.toUpperCase()}</span>
+                          <span className={styles.teamName}>{getTeamName(game.away_team)}</span>
                         </td>
-                        <td>{formatSpread(game.opening_spread)}</td>
-                        <td>{formatSpread(game.current_spread)}</td>
-                        <td className={getMovementClass(game.spread_movement, (game.public_spread_bet_pct || 50) > 50)}>
+                        <td>{formatSpread(game.opening_spread, false)}</td>
+                        <td>{formatSpread(game.current_spread, false)}</td>
+                        <td className={game.spread_movement !== 0 ? (game.spread_movement > 0 ? styles.moveUp : styles.moveDown) : ''}>
                           {game.spread_movement > 0 ? '+' : ''}{game.spread_movement.toFixed(1)}
                         </td>
                         <td>
-                          <div className={styles.pctCell}>
-                            <div className={styles.miniBar}>
-                              <div style={{ width: `${betPct || 50}%` }} />
+                          <div className={styles.pctStack}>
+                            <span className={styles.pctValue}>{Math.round(awayBetPct)}%</span>
+                            <div className={styles.miniMeterBlue}>
+                              <div style={{ width: `${awayBetPct}%` }} />
                             </div>
-                            <span>{Math.round(betPct || 50)}%</span>
                           </div>
                         </td>
                         <td>
-                          <div className={styles.pctCell}>
-                            <div className={styles.miniBar}>
-                              <div style={{ width: `${moneyPct || 50}%` }} />
+                          <div className={styles.pctStack}>
+                            <span className={styles.pctValue}>{Math.round(awayMoneyPct)}%</span>
+                            <div className={styles.miniMeterGreen}>
+                              <div style={{ width: `${awayMoneyPct}%` }} />
                             </div>
-                            <span>{Math.round(moneyPct || 50)}%</span>
                           </div>
                         </td>
-                        <td className={diff > 15 ? styles.sharpDiff : ''}>
-                          {diff.toFixed(0)}%
-                        </td>
+                        <td className={diff > 10 ? styles.highDiff : ''}>{diff.toFixed(0)}%</td>
                         <td>
-                          <span className={`${styles.signalBadge} ${styles[game.verdict?.replace(' ', '').toLowerCase() || 'neutral']}`}>
-                            {game.verdict || 'NEUTRAL'}
+                          <span className={`${styles.rlmBadge} ${game.rlm !== '-' ? styles.hasRlm : ''}`}>
+                            {game.rlm}
                           </span>
                         </td>
                       </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+                      <tr 
+                        key={`${game.id}-home`} 
+                        className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''}`}
+                        onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                      >
+                        <td className={styles.teamCell}>
+                          <span className={styles.atSymbol}>@</span>
+                          <span className={styles.teamName}>{getTeamName(game.home_team)}</span>
+                        </td>
+                        <td>{formatSpread(game.opening_spread, true)}</td>
+                        <td>{formatSpread(game.current_spread, true)}</td>
+                        <td></td>
+                        <td>
+                          <div className={styles.pctStack}>
+                            <span className={styles.pctValue}>{Math.round(homeBetPct)}%</span>
+                            <div className={styles.miniMeterBlue}>
+                              <div style={{ width: `${homeBetPct}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.pctStack}>
+                            <span className={styles.pctValue}>{Math.round(homeMoneyPct)}%</span>
+                            <div className={styles.miniMeterGreen}>
+                              <div style={{ width: `${homeMoneyPct}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${game.id}-details`} className={styles.detailsRow}>
+                          <td colSpan={8}>
+                            <div className={styles.gameDetails}>
+                              <div className={styles.detailSection}>
+                                <h4>Line Movement</h4>
+                                <div className={styles.lineMovement}>
+                                  <div className={styles.linePoint}>
+                                    <span className={styles.lineLabel}>Open</span>
+                                    <span className={styles.lineValue}>{formatSpread(game.opening_spread, true)}</span>
+                                  </div>
+                                  <div className={styles.lineArrow}>
+                                    {game.spread_movement > 0 ? <FiTrendingUp /> : game.spread_movement < 0 ? <FiTrendingDown /> : '→'}
+                                  </div>
+                                  <div className={styles.linePoint}>
+                                    <span className={styles.lineLabel}>Current</span>
+                                    <span className={styles.lineValue}>{formatSpread(game.current_spread, true)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className={styles.detailSection}>
+                                <h4>Total</h4>
+                                <div className={styles.totalInfo}>
+                                  <span>O/U {game.current_total}</span>
+                                  <span className={styles.totalMove}>
+                                    ({game.total_movement > 0 ? '+' : ''}{game.total_movement.toFixed(1)} from open)
+                                  </span>
+                                </div>
+                              </div>
+                              <div className={styles.detailSection}>
+                                <h4>Analysis</h4>
+                                <p className={styles.analysisText}>
+                                  {diff > 15 
+                                    ? `Sharp money indicator: ${diff}% split between bets and money suggests professional action.`
+                                    : game.rlm !== '-'
+                                    ? `Reverse line movement detected. Line moving against ${homeBetPct > 50 ? 'public favorite' : 'public underdog'}.`
+                                    : 'No significant sharp indicators at this time.'}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+
+          {/* Mobile Table */}
+          <div className={styles.mobileTable}>
+            {loading ? (
+              <div className={styles.loadingCell}>Loading...</div>
+            ) : sortedGames.length === 0 ? (
+              <div className={styles.emptyCell}>No games found</div>
+            ) : (
+              sortedGames.map(game => {
+                const homeBetPct = game.public_spread_home_bet_pct
+                const awayBetPct = game.public_spread_away_bet_pct
+                const homeMoneyPct = game.public_spread_home_money_pct
+                const awayMoneyPct = game.public_spread_away_money_pct
+                const isExpanded = expandedGame === game.id
+
+                return (
+                  <div 
+                    key={game.id} 
+                    className={`${styles.mobileGameCard} ${isExpanded ? styles.expanded : ''}`}
+                    onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                  >
+                    <div className={styles.mobileRow}>
+                      <div className={styles.mobileTeam}>
+                        <span className={styles.mobileAbbrev}>{game.away_abbrev}</span>
+                      </div>
+                      <div className={styles.mobileOdds}>{formatSpread(game.current_spread, false)}</div>
+                      <div className={styles.mobilePct}>
+                        <span className={styles.mobilePctVal}>{Math.round(awayBetPct)}%</span>
+                        <div className={styles.miniMeterBlue}><div style={{ width: `${awayBetPct}%` }} /></div>
+                      </div>
+                      <div className={styles.mobilePct}>
+                        <span className={styles.mobilePctVal}>{Math.round(awayMoneyPct)}%</span>
+                        <div className={styles.miniMeterGreen}><div style={{ width: `${awayMoneyPct}%` }} /></div>
+                      </div>
+                      <div className={styles.mobileRlm}>
+                        <span className={game.rlm !== '-' ? styles.hasRlm : ''}>{game.rlm === '-' ? '-' : '✓'}</span>
+                      </div>
+                    </div>
+                    <div className={styles.mobileRow}>
+                      <div className={styles.mobileTeam}>
+                        <span className={styles.mobileAt}>@</span>
+                        <span className={styles.mobileAbbrev}>{game.home_abbrev}</span>
+                      </div>
+                      <div className={styles.mobileOdds}>{formatSpread(game.current_spread, true)}</div>
+                      <div className={styles.mobilePct}>
+                        <span className={styles.mobilePctVal}>{Math.round(homeBetPct)}%</span>
+                        <div className={styles.miniMeterBlue}><div style={{ width: `${homeBetPct}%` }} /></div>
+                      </div>
+                      <div className={styles.mobilePct}>
+                        <span className={styles.mobilePctVal}>{Math.round(homeMoneyPct)}%</span>
+                        <div className={styles.miniMeterGreen}><div style={{ width: `${homeMoneyPct}%` }} /></div>
+                      </div>
+                      <div className={styles.mobileRlm}></div>
+                    </div>
+                    
+                    {isExpanded && (
+                      <div className={styles.mobileDetails}>
+                        <div className={styles.mobileDetailRow}>
+                          <span>Open: {formatSpread(game.opening_spread, true)}</span>
+                          <span>Move: {game.spread_movement > 0 ? '+' : ''}{game.spread_movement.toFixed(1)}</span>
+                        </div>
+                        <div className={styles.mobileDetailRow}>
+                          <span>O/U: {game.current_total}</span>
+                          <span>Diff: {Math.abs(homeBetPct - homeMoneyPct).toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       </div>
     </div>
   )
 }
-
