@@ -3,37 +3,13 @@ import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 
 // Sport configurations
 const SPORTS_CONFIG = [
-  { 
-    key: 'americanfootball_nfl', 
-    sport: 'nfl',
-    sportsdataPath: 'nfl',
-    season: 2025,
-    active: true 
-  },
-  { 
-    key: 'basketball_nba', 
-    sport: 'nba',
-    sportsdataPath: 'nba',
-    season: 2025,
-    active: true 
-  },
-  { 
-    key: 'icehockey_nhl', 
-    sport: 'nhl',
-    sportsdataPath: 'nhl',
-    season: 2025,
-    active: true 
-  },
-  { 
-    key: 'americanfootball_ncaaf', 
-    sport: 'cfb',
-    sportsdataPath: 'cfb',
-    season: 2025,
-    active: true 
-  },
+  { key: 'americanfootball_nfl', sport: 'nfl', sportsdataPath: 'nfl', season: 2025, active: true },
+  { key: 'basketball_nba', sport: 'nba', sportsdataPath: 'nba', season: 2025, active: true },
+  { key: 'icehockey_nhl', sport: 'nhl', sportsdataPath: 'nhl', season: 2025, active: true },
+  { key: 'americanfootball_ncaaf', sport: 'cfb', sportsdataPath: 'cfb', season: 2025, active: true },
 ]
 
-// Team abbreviation mapping: Odds API full name -> SportsDataIO abbreviation
+// Team abbreviation mapping
 const TEAM_ABBREV_MAP: Record<string, string> = {
   // NFL
   'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimore Ravens': 'BAL',
@@ -69,8 +45,8 @@ const TEAM_ABBREV_MAP: Record<string, string> = {
   'Philadelphia Flyers': 'PHI', 'Pittsburgh Penguins': 'PIT', 'San Jose Sharks': 'SJ',
   'Seattle Kraken': 'SEA', 'St Louis Blues': 'STL', 'St. Louis Blues': 'STL',
   'Tampa Bay Lightning': 'TB', 'Toronto Maple Leafs': 'TOR', 'Utah Hockey Club': 'UTAH',
-  'Utah Mammoth': 'UTAH', 'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VGK',
-  'Washington Capitals': 'WAS', 'Winnipeg Jets': 'WPG',
+  'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VGK', 'Washington Capitals': 'WAS',
+  'Winnipeg Jets': 'WPG',
 }
 
 interface OddsApiGame {
@@ -81,39 +57,103 @@ interface OddsApiGame {
   commence_time: string
   bookmakers: {
     key: string
+    title: string
     markets: {
       key: string
-      outcomes: {
-        name: string
-        price: number
-        point?: number
-      }[]
+      outcomes: { name: string; price: number; point?: number }[]
     }[]
   }[]
 }
 
-interface ScheduleGame {
-  ScoreID: number
-  HomeTeam: string
-  AwayTeam: string
-  Date: string
-  Week?: number
+interface BookOdds {
+  spread: number
+  spreadJuice: number
+  total: number
+  totalJuice: number
+  mlHome: number
+  mlAway: number
 }
 
-interface BettingSplit {
-  BettingOutcomeType: string
-  BetPercentage: number
-  MoneyPercentage: number
+// Calculate median of array
+function median(arr: number[]): number {
+  if (arr.length === 0) return 0
+  const sorted = [...arr].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
-interface BettingMarketSplit {
-  BettingBetType: string
-  BettingSplits: BettingSplit[]
+// Extract odds from a bookmaker for a specific team
+function extractBookOdds(bookmaker: OddsApiGame['bookmakers'][0], homeTeam: string): BookOdds {
+  let spread = 0, spreadJuice = -110, total = 0, totalJuice = -110, mlHome = 0, mlAway = 0
+
+  for (const market of bookmaker.markets) {
+    if (market.key === 'spreads') {
+      for (const outcome of market.outcomes) {
+        if (outcome.name === homeTeam) {
+          spread = outcome.point || 0
+          spreadJuice = outcome.price
+        }
+      }
+    } else if (market.key === 'totals') {
+      for (const outcome of market.outcomes) {
+        if (outcome.name === 'Over') {
+          total = outcome.point || 0
+          totalJuice = outcome.price
+        }
+      }
+    } else if (market.key === 'h2h') {
+      for (const outcome of market.outcomes) {
+        if (outcome.name === homeTeam) {
+          mlHome = outcome.price
+        } else {
+          mlAway = outcome.price
+        }
+      }
+    }
+  }
+
+  return { spread, spreadJuice, total, totalJuice, mlHome, mlAway }
+}
+
+// Calculate consensus from all bookmakers
+function calculateConsensus(bookmakers: OddsApiGame['bookmakers'], homeTeam: string): {
+  consensus: BookOdds
+  allBooks: Record<string, BookOdds>
+  bookCount: number
+} {
+  const allBooks: Record<string, BookOdds> = {}
+  const spreads: number[] = []
+  const totals: number[] = []
+  const mlHomes: number[] = []
+  const mlAways: number[] = []
+
+  for (const book of bookmakers) {
+    const odds = extractBookOdds(book, homeTeam)
+    allBooks[book.key] = odds
+    
+    if (odds.spread !== 0) spreads.push(odds.spread)
+    if (odds.total !== 0) totals.push(odds.total)
+    if (odds.mlHome !== 0) mlHomes.push(odds.mlHome)
+    if (odds.mlAway !== 0) mlAways.push(odds.mlAway)
+  }
+
+  return {
+    consensus: {
+      spread: median(spreads),
+      spreadJuice: -110,
+      total: median(totals),
+      totalJuice: -110,
+      mlHome: Math.round(median(mlHomes)),
+      mlAway: Math.round(median(mlAways)),
+    },
+    allBooks,
+    bookCount: bookmakers.length
+  }
 }
 
 export async function GET(request: Request) {
   const startTime = Date.now()
-  const results: { sport: string; status: string; gamesProcessed: number; gamesWithSplits: number; error?: string }[] = []
+  const results: { sport: string; status: string; gamesProcessed: number; newGames: number; gamesWithSplits: number; error?: string }[] = []
   
   const ODDS_API_KEY = process.env.ODDS_API_KEY
   const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY
@@ -122,17 +162,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'ODDS_API_KEY not configured' }, { status: 500 })
   }
   
-  if (!SPORTSDATA_API_KEY) {
-    console.log('[SYNC-LIVE-ODDS] WARNING: SPORTSDATA_IO_SPLITS_KEY not configured - public betting will be 50%')
-  }
-  
   const snapshotTime = new Date().toISOString().replace('T', ' ').substring(0, 19)
   
   for (const sportConfig of SPORTS_CONFIG.filter(s => s.active)) {
     try {
       console.log(`[${sportConfig.sport.toUpperCase()}] Starting sync...`)
       
-      // Step 1: Fetch current odds from Odds API
+      // Step 1: Fetch current odds from Odds API (ALL bookmakers)
       const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=spreads,totals,h2h&oddsFormat=american`
       const oddsResponse = await fetch(oddsUrl)
       
@@ -143,143 +179,144 @@ export async function GET(request: Request) {
       const oddsGames: OddsApiGame[] = await oddsResponse.json()
       console.log(`[${sportConfig.sport.toUpperCase()}] Found ${oddsGames.length} games with odds`)
       
+      // Log remaining API requests
+      const remaining = oddsResponse.headers.get('x-requests-remaining')
+      const used = oddsResponse.headers.get('x-requests-used')
+      console.log(`[ODDS-API] Requests - Used: ${used}, Remaining: ${remaining}`)
+      
       if (oddsGames.length === 0) {
-        results.push({ sport: sportConfig.sport, status: 'no_games', gamesProcessed: 0, gamesWithSplits: 0 })
+        results.push({ sport: sportConfig.sport, status: 'no_games', gamesProcessed: 0, newGames: 0, gamesWithSplits: 0 })
         continue
       }
       
-      // Step 2: Build ScoreID map from SportsDataIO schedule (for NFL only right now)
-      const scoreIdMap = new Map<string, number>() // "HomeTeam_AwayTeam" -> ScoreID
+      // Step 2: Get games we've already seen (for opening detection)
+      const gameIds = oddsGames.map(g => `'${g.id}'`).join(',')
+      const seenGamesQuery = await clickhouseQuery<{ odds_api_game_id: string }>(`
+        SELECT DISTINCT odds_api_game_id 
+        FROM game_first_seen 
+        WHERE odds_api_game_id IN (${gameIds})
+      `)
+      const seenGameIds = new Set((seenGamesQuery.data || []).map(g => g.odds_api_game_id))
       
-      if (SPORTSDATA_API_KEY && sportConfig.sport === 'nfl') {
+      // Step 3: Fetch public betting from SportsDataIO
+      const publicBettingMap = new Map<string, { spreadBet: number; spreadMoney: number; mlBet: number; mlMoney: number; totalBet: number; totalMoney: number }>()
+      
+      if (SPORTSDATA_API_KEY) {
         try {
-          console.log(`[${sportConfig.sport.toUpperCase()}] Fetching NFL schedule for ScoreIDs...`)
-          const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${sportConfig.season}?key=${SPORTSDATA_API_KEY}`
-          const scheduleResponse = await fetch(scheduleUrl)
-          
-          if (scheduleResponse.ok) {
-            const schedule: ScheduleGame[] = await scheduleResponse.json()
+          // Get schedule to find ScoreIDs
+          const today = new Date()
+          for (let i = 0; i < 7; i++) {
+            const date = new Date(today)
+            date.setDate(date.getDate() + i)
+            const dateStr = date.toISOString().split('T')[0]
             
-            // Build lookup map for upcoming games (status = Scheduled)
-            for (const game of schedule) {
-              if (game.ScoreID && game.HomeTeam && game.AwayTeam && game.HomeTeam !== 'BYE') {
-                const key = `${game.HomeTeam}_${game.AwayTeam}`.toUpperCase()
-                scoreIdMap.set(key, game.ScoreID)
+            const scheduleUrl = sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb'
+              ? `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/ScoresByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+              : `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+            
+            const scheduleResponse = await fetch(scheduleUrl)
+            if (!scheduleResponse.ok) continue
+            
+            const scheduleGames = await scheduleResponse.json()
+            
+            for (const game of scheduleGames) {
+              const scoreId = game.ScoreID || game.GameID
+              if (!scoreId) continue
+              
+              try {
+                const splitsUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/odds/json/BettingSplitsByScoreId/${scoreId}?key=${SPORTSDATA_API_KEY}`
+                const splitsResponse = await fetch(splitsUrl)
+                
+                if (splitsResponse.ok) {
+                  const splits = await splitsResponse.json()
+                  if (splits?.BettingMarketSplits) {
+                    const homeAbbrev = TEAM_ABBREV_MAP[game.HomeTeam] || game.HomeTeam
+                    const awayAbbrev = TEAM_ABBREV_MAP[game.AwayTeam] || game.AwayTeam
+                    const key = `${homeAbbrev}_${awayAbbrev}`.toUpperCase()
+                    
+                    let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
+                    
+                    for (const market of splits.BettingMarketSplits) {
+                      const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
+                      const overSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Over')
+                      
+                      if (market.BettingBetType === 'Spread' && homeSplit) {
+                        spreadBet = homeSplit.BetPercentage || 50
+                        spreadMoney = homeSplit.MoneyPercentage || 50
+                      } else if (market.BettingBetType === 'Moneyline' && homeSplit) {
+                        mlBet = homeSplit.BetPercentage || 50
+                        mlMoney = homeSplit.MoneyPercentage || 50
+                      } else if (market.BettingBetType === 'Total Points' && overSplit) {
+                        totalBet = overSplit.BetPercentage || 50
+                        totalMoney = overSplit.MoneyPercentage || 50
+                      }
+                    }
+                    
+                    publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+                  }
+                }
+              } catch (e) {
+                // Continue if single game fails
               }
             }
-            console.log(`[${sportConfig.sport.toUpperCase()}] Built ScoreID map with ${scoreIdMap.size} games`)
-          } else {
-            console.log(`[${sportConfig.sport.toUpperCase()}] Schedule fetch failed: ${scheduleResponse.status}`)
           }
+          console.log(`[${sportConfig.sport.toUpperCase()}] Loaded ${publicBettingMap.size} games with public betting`)
         } catch (e: any) {
-          console.log(`[${sportConfig.sport.toUpperCase()}] Schedule fetch error: ${e.message}`)
+          console.error(`[${sportConfig.sport.toUpperCase()}] Public betting fetch error:`, e.message)
         }
       }
       
-      // Step 3: Process each Odds API game
+      // Step 4: Process each game
       let gamesProcessed = 0
+      let newGames = 0
       let gamesWithSplits = 0
       
       for (const game of oddsGames) {
         try {
-          // Extract odds from first bookmaker (or consensus)
-          const bookmaker = game.bookmakers[0]
-          if (!bookmaker) continue
+          if (game.bookmakers.length === 0) continue
           
-          let spread = 0, spreadJuiceHome = -110, spreadJuiceAway = -110
-          let total = 0, totalJuiceOver = -110, totalJuiceUnder = -110
-          let mlHome = 0, mlAway = 0
+          // Calculate consensus from ALL bookmakers
+          const { consensus, allBooks, bookCount } = calculateConsensus(game.bookmakers, game.home_team)
           
-          for (const market of bookmaker.markets) {
-            if (market.key === 'spreads') {
-              for (const outcome of market.outcomes) {
-                if (outcome.name === game.home_team) {
-                  spread = outcome.point || 0
-                  spreadJuiceHome = outcome.price
-                } else {
-                  spreadJuiceAway = outcome.price
-                }
-              }
-            } else if (market.key === 'totals') {
-              for (const outcome of market.outcomes) {
-                if (outcome.name === 'Over') {
-                  total = outcome.point || 0
-                  totalJuiceOver = outcome.price
-                } else {
-                  totalJuiceUnder = outcome.price
-                }
-              }
-            } else if (market.key === 'h2h') {
-              for (const outcome of market.outcomes) {
-                if (outcome.name === game.home_team) {
-                  mlHome = outcome.price
-                } else {
-                  mlAway = outcome.price
-                }
-              }
-            }
+          // Check if this is a NEW game (opening line)
+          const isOpening = !seenGameIds.has(game.id) ? 1 : 0
+          if (isOpening) {
+            newGames++
+            // Record this as first seen
+            const gameTime = game.commence_time.replace('T', ' ').replace('Z', '')
+            await clickhouseCommand(`
+              INSERT INTO game_first_seen (
+                odds_api_game_id, sport, first_seen_time, 
+                opening_spread, opening_total, opening_ml_home, opening_ml_away, bookmaker_count
+              ) VALUES (
+                '${game.id}', '${sportConfig.sport}', '${snapshotTime}',
+                ${consensus.spread}, ${consensus.total}, ${consensus.mlHome}, ${consensus.mlAway}, ${bookCount}
+              )
+            `)
+            console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: ${consensus.spread}`)
           }
           
-          // Step 4: Try to get public betting data
-          let publicSpreadBetPct = 0, publicSpreadMoneyPct = 0
-          let publicMlBetPct = 0, publicMlMoneyPct = 0
-          let publicTotalBetPct = 0, publicTotalMoneyPct = 0
-          let sportsdataScoreId = 0
+          // Try to match public betting data
+          const homeAbbrev = TEAM_ABBREV_MAP[game.home_team] || game.home_team.split(' ').pop()?.substring(0, 3).toUpperCase()
+          const awayAbbrev = TEAM_ABBREV_MAP[game.away_team] || game.away_team.split(' ').pop()?.substring(0, 3).toUpperCase()
+          const bettingKey = `${homeAbbrev}_${awayAbbrev}`.toUpperCase()
+          const publicData = publicBettingMap.get(bettingKey)
           
-          if (SPORTSDATA_API_KEY && sportConfig.sport === 'nfl') {
-            // Get team abbreviations
-            const homeAbbrev = TEAM_ABBREV_MAP[game.home_team]
-            const awayAbbrev = TEAM_ABBREV_MAP[game.away_team]
-            
-            if (homeAbbrev && awayAbbrev) {
-              const key = `${homeAbbrev}_${awayAbbrev}`.toUpperCase()
-              const scoreId = scoreIdMap.get(key)
-              
-              if (scoreId) {
-                sportsdataScoreId = scoreId
-                
-                try {
-                  const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${scoreId}?key=${SPORTSDATA_API_KEY}`
-                  const splitsResponse = await fetch(splitsUrl)
-                  
-                  if (splitsResponse.ok) {
-                    const splitsData = await splitsResponse.json()
-                    
-                    if (splitsData?.BettingMarketSplits) {
-                      for (const market of splitsData.BettingMarketSplits as BettingMarketSplit[]) {
-                        const homeSplit = market.BettingSplits?.find((s: BettingSplit) => s.BettingOutcomeType === 'Home')
-                        const overSplit = market.BettingSplits?.find((s: BettingSplit) => s.BettingOutcomeType === 'Over')
-                        
-                        if (market.BettingBetType === 'Spread' && homeSplit) {
-                          publicSpreadBetPct = homeSplit.BetPercentage || 0
-                          publicSpreadMoneyPct = homeSplit.MoneyPercentage || 0
-                        } else if (market.BettingBetType === 'Moneyline' && homeSplit) {
-                          publicMlBetPct = homeSplit.BetPercentage || 0
-                          publicMlMoneyPct = homeSplit.MoneyPercentage || 0
-                        } else if (market.BettingBetType === 'Total Points' && overSplit) {
-                          publicTotalBetPct = overSplit.BetPercentage || 0
-                          publicTotalMoneyPct = overSplit.MoneyPercentage || 0
-                        }
-                      }
-                      
-                      if (publicSpreadBetPct > 0 || publicMlBetPct > 0) {
-                        gamesWithSplits++
-                        console.log(`[${sportConfig.sport.toUpperCase()}] Got splits for ${game.home_team}: Spread ${publicSpreadBetPct}%/${publicSpreadMoneyPct}%`)
-                      }
-                    }
-                  }
-                } catch (e) {
-                  // Silently skip if betting splits not available
-                }
-              } else {
-                console.log(`[${sportConfig.sport.toUpperCase()}] No ScoreID for ${homeAbbrev} vs ${awayAbbrev}`)
-              }
-            }
-          }
+          if (publicData) gamesWithSplits++
           
-          // Step 5: Insert snapshot into ClickHouse
+          // Prepare all_books JSON strings
+          const allBooksSpreads = JSON.stringify(Object.fromEntries(
+            Object.entries(allBooks).map(([k, v]) => [k, v.spread])
+          ))
+          const allBooksTotals = JSON.stringify(Object.fromEntries(
+            Object.entries(allBooks).map(([k, v]) => [k, v.total])
+          ))
+          const allBooksMl = JSON.stringify(Object.fromEntries(
+            Object.entries(allBooks).map(([k, v]) => [k, { home: v.mlHome, away: v.mlAway }])
+          ))
+          
+          // Insert snapshot with consensus + all books
           const gameTime = game.commence_time.replace('T', ' ').replace('Z', '')
-          
           const insertSql = `
             INSERT INTO live_odds_snapshots (
               odds_api_game_id, sportsdata_score_id, sport, snapshot_time,
@@ -290,17 +327,21 @@ export async function GET(request: Request) {
               public_spread_home_bet_pct, public_spread_home_money_pct,
               public_ml_home_bet_pct, public_ml_home_money_pct,
               public_total_over_bet_pct, public_total_over_money_pct,
-              sportsbook
+              sportsbook, is_opening, bookmaker_count,
+              all_books_spreads, all_books_totals, all_books_ml
             ) VALUES (
-              '${game.id}', ${sportsdataScoreId}, '${sportConfig.sport}', '${snapshotTime}',
+              '${game.id}', 0, '${sportConfig.sport}', '${snapshotTime}',
               '${game.home_team.replace(/'/g, "''")}', '${game.away_team.replace(/'/g, "''")}', '${gameTime}',
-              ${spread}, ${spreadJuiceHome}, ${spreadJuiceAway},
-              ${total}, ${totalJuiceOver}, ${totalJuiceUnder},
-              ${mlHome}, ${mlAway},
-              ${publicSpreadBetPct}, ${publicSpreadMoneyPct},
-              ${publicMlBetPct}, ${publicMlMoneyPct},
-              ${publicTotalBetPct}, ${publicTotalMoneyPct},
-              '${bookmaker.key}'
+              ${consensus.spread}, ${consensus.spreadJuice}, ${consensus.spreadJuice},
+              ${consensus.total}, ${consensus.totalJuice}, ${consensus.totalJuice},
+              ${consensus.mlHome}, ${consensus.mlAway},
+              ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
+              ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
+              ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
+              'consensus', ${isOpening}, ${bookCount},
+              '${allBooksSpreads.replace(/'/g, "''")}', 
+              '${allBooksTotals.replace(/'/g, "''")}', 
+              '${allBooksMl.replace(/'/g, "''")}'
             )
           `
           
@@ -308,7 +349,7 @@ export async function GET(request: Request) {
           gamesProcessed++
           
         } catch (gameError: any) {
-          console.error(`Error processing game ${game.id}:`, gameError.message)
+          console.error(`[${sportConfig.sport.toUpperCase()}] Error processing game ${game.id}:`, gameError.message)
         }
       }
       
@@ -316,15 +357,17 @@ export async function GET(request: Request) {
         sport: sportConfig.sport, 
         status: 'success', 
         gamesProcessed,
+        newGames,
         gamesWithSplits
       })
       
     } catch (sportError: any) {
-      console.error(`Error processing ${sportConfig.sport}:`, sportError)
+      console.error(`[${sportConfig.sport.toUpperCase()}] Error:`, sportError)
       results.push({ 
         sport: sportConfig.sport, 
         status: 'error', 
         gamesProcessed: 0,
+        newGames: 0,
         gamesWithSplits: 0,
         error: sportError.message 
       })
@@ -332,18 +375,17 @@ export async function GET(request: Request) {
   }
   
   const duration = Date.now() - startTime
-  
-  // Log summary
   const totalGames = results.reduce((sum, r) => sum + r.gamesProcessed, 0)
-  const totalWithSplits = results.reduce((sum, r) => sum + r.gamesWithSplits, 0)
-  console.log(`[SYNC-LIVE-ODDS] Completed in ${duration}ms. Processed ${totalGames} games, ${totalWithSplits} with public betting data.`)
+  const totalNewGames = results.reduce((sum, r) => sum + r.newGames, 0)
+  
+  console.log(`[SYNC-LIVE-ODDS] Completed in ${duration}ms. Processed ${totalGames} games (${totalNewGames} new).`)
   
   return NextResponse.json({
     success: true,
     snapshotTime,
     duration: `${duration}ms`,
     totalGamesProcessed: totalGames,
-    totalGamesWithSplits: totalWithSplits,
+    totalNewGames,
     results
   })
 }
