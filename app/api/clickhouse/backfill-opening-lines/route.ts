@@ -73,6 +73,12 @@ export async function GET(request: Request) {
       const data = await response.json()
       const games = data.data || []
       
+      console.log(`[BACKFILL] Response for ${dateStr}:`, {
+        hasData: !!data.data,
+        dataLength: data.data?.length,
+        timestamp: data.timestamp,
+        keys: Object.keys(data)
+      })
       console.log(`[BACKFILL] Found ${games.length} games for ${dateStr.split('T')[0]}`)
       
       let newOpenings = 0
@@ -203,8 +209,11 @@ export async function GET(request: Request) {
       success: true,
       sport,
       daysBack,
+      forceUpdate,
+      existingGamesCount: seenGameIds.size,
       results,
-      totalNewOpenings: results.reduce((sum, r) => sum + r.newOpenings, 0)
+      totalNewOpenings: results.reduce((sum, r) => sum + r.newOpenings, 0),
+      totalUpdated: results.reduce((sum, r) => sum + (r.updated || 0), 0)
     })
     
   } catch (error: any) {
