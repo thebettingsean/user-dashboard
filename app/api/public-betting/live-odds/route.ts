@@ -10,7 +10,7 @@ export async function GET() {
         sport,
         home_team,
         away_team,
-        toString(game_time) as game_time,
+        toString(any(game_time)) as game_time,
         
         -- Opening (first snapshot)
         argMin(spread, snapshot_time) as opening_spread,
@@ -38,12 +38,12 @@ export async function GET() {
         
         -- Metadata
         count() as snapshot_count,
-        max(snapshot_time) as last_updated
+        toString(max(snapshot_time)) as last_updated
         
       FROM live_odds_snapshots
       WHERE game_time > now()
-      GROUP BY odds_api_game_id, sport, home_team, away_team, game_time
-      ORDER BY game_time ASC
+      GROUP BY odds_api_game_id, sport, home_team, away_team
+      ORDER BY any(game_time) ASC
     `
     
     const result = await clickhouseQuery(query)
