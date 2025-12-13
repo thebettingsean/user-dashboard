@@ -59,9 +59,11 @@ export async function GET(request: Request) {
   try {
     // Query that gets both opening (first) and current (latest) snapshots per game
     // ONLY upcoming games (game_time > now())
+    // Prefer snapshots WITH public betting data for current percentages
     const query = `
       WITH 
-      latest AS (
+      -- Get latest snapshot with ACTUAL public betting data (non-zero)
+      latest_with_betting AS (
         SELECT 
           odds_api_game_id,
           sport,
@@ -83,12 +85,48 @@ export async function GET(request: Request) {
         WHERE (odds_api_game_id, snapshot_time) IN (
           SELECT odds_api_game_id, max(snapshot_time)
           FROM live_odds_snapshots
-          WHERE snapshot_time > now() - INTERVAL 72 HOUR
-          AND game_time > now()
+          WHERE game_time > now()
+          AND (public_spread_home_bet_pct > 0 AND public_spread_home_bet_pct != 50)
           GROUP BY odds_api_game_id
         )
         AND game_time > now()
         ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
+      ),
+      -- Fallback: latest snapshot regardless of betting data
+      latest_any AS (
+        SELECT 
+          odds_api_game_id,
+          sport,
+          home_team,
+          away_team,
+          game_time,
+          spread as current_spread,
+          total as current_total,
+          ml_home as current_ml_home,
+          ml_away as current_ml_away,
+          public_spread_home_bet_pct,
+          public_spread_home_money_pct,
+          public_ml_home_bet_pct,
+          public_ml_home_money_pct,
+          public_total_over_bet_pct,
+          public_total_over_money_pct,
+          snapshot_time as last_updated
+        FROM live_odds_snapshots
+        WHERE (odds_api_game_id, snapshot_time) IN (
+          SELECT odds_api_game_id, max(snapshot_time)
+          FROM live_odds_snapshots
+          WHERE game_time > now()
+          GROUP BY odds_api_game_id
+        )
+        AND game_time > now()
+        ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
+      ),
+      -- Combine: prefer with betting, fallback to any
+      latest AS (
+        SELECT * FROM latest_with_betting
+        UNION ALL
+        SELECT * FROM latest_any
+        WHERE odds_api_game_id NOT IN (SELECT odds_api_game_id FROM latest_with_betting)
       ),
       opening AS (
         SELECT 
