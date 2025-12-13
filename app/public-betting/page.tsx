@@ -35,6 +35,8 @@ interface GameOdds {
   opening_ml_away: number
   current_ml_home: number
   current_ml_away: number
+  ml_home_movement: number
+  ml_away_movement: number
   // Spread percentages
   public_spread_home_bet_pct: number
   public_spread_home_money_pct: number
@@ -133,19 +135,39 @@ const generateMobileLineMovement = (openingSpread: number, timeFilter: TimeFilte
 }
 
 // Custom Tooltip Component
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, marketType }: any) => {
   if (!active || !payload || !payload.length) return null
   
   const data = payload[0].payload
   
+  // Get value based on market type
+  let value: number = 0
+  let betPct: number = 50
+  
+  if (marketType === 'spread') {
+    value = data.homeLine
+    betPct = data.homeBetPct
+  } else if (marketType === 'ml') {
+    value = data.mlHome
+    betPct = data.mlHomeBetPct || 50
+  } else if (marketType === 'total') {
+    value = data.total
+    betPct = data.totalOverBetPct || 50
+  }
+  
+  // Format value
+  const formattedValue = marketType === 'total' 
+    ? value.toString() 
+    : (value > 0 ? `+${value}` : value.toString())
+  
   return (
     <div className={styles.graphTooltip}>
       <div className={styles.tooltipContent}>
-        <div className={styles.tooltipValue}>{data.homeLine > 0 ? `+${data.homeLine}` : data.homeLine}</div>
+        <div className={styles.tooltipValue}>{formattedValue}</div>
         <div className={styles.tooltipLabel}>{label}</div>
       </div>
       <div className={styles.tooltipBadge}>
-        {data.homeBetPct}%
+        {betPct}%
       </div>
     </div>
   )
@@ -613,8 +635,8 @@ export default function PublicBettingPage() {
       case 'total':
         return game.total_movement
       case 'ml':
-        // No movement tracking for ML yet
-        return 0
+        // ML movement (e.g., +275 to +315 = +40)
+        return isHome ? (game.ml_home_movement || 0) : (game.ml_away_movement || 0)
     }
   }
 
@@ -795,7 +817,7 @@ export default function PublicBettingPage() {
                       </td>
                       <td>{getMarketOdds(game, false, true)}</td>
                       <td>{getMarketOdds(game, false, false)}</td>
-                      <td className={awayMove !== 0 ? (awayMove > 0 ? styles.moveUp : styles.moveDown) : ''}>
+                      <td className={awayMove !== 0 ? (awayMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
                         {formatMove(awayMove)}
                       </td>
                       <td>
@@ -838,7 +860,7 @@ export default function PublicBettingPage() {
                       </td>
                       <td>{getMarketOdds(game, true, true)}</td>
                       <td>{getMarketOdds(game, true, false)}</td>
-                      <td className={homeMove !== 0 ? (homeMove > 0 ? styles.moveUp : styles.moveDown) : ''}>
+                      <td className={homeMove !== 0 ? (homeMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
                         {formatMove(homeMove)}
                       </td>
                       <td>
@@ -945,36 +967,38 @@ export default function PublicBettingPage() {
                                         tickLine={false}
                                         tick={{ fill: '#FFFFFF', fontSize: 12 }}
                                         domain={['auto', 'auto']}
-                                        tickFormatter={(val) => val > 0 ? `+${val}` : val}
+                                        tickFormatter={(val) => graphMarketType === 'ml' ? (val > 0 ? `+${val}` : val) : (val > 0 ? `+${val}` : val)}
                                         dx={-5}
                                       />
-                                      <Tooltip content={<CustomTooltip />} />
-                                      <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />
+                                      <Tooltip content={<CustomTooltip marketType={graphMarketType} />} />
+                                      {graphMarketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
                                       <Area 
                                         type="monotone" 
-                                        dataKey="homeLine" 
+                                        dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
                                         fill={`url(#areaGradient-${game.id})`}
                                         stroke="none"
                                       />
                                       <Line 
                                         type="monotone" 
-                                        dataKey="homeLine" 
+                                        dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
                                         stroke="#98ADD1" 
                                         strokeWidth={2}
                                         dot={{ r: 3, fill: '#98ADD1', stroke: '#151E2A', strokeWidth: 1 }}
                                         activeDot={{ r: 6, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
-                                        name={getTeamName(game.home_team)}
+                                        name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team)}
                                       />
-                                      <Line 
-                                        type="monotone" 
-                                        dataKey="awayLine" 
-                                        stroke="#EF4444" 
-                                        strokeWidth={2}
-                                        dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
-                                        activeDot={{ r: 6, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
-                                        name={getTeamName(game.away_team)}
-                                        strokeDasharray="5 5"
-                                      />
+                                      {graphMarketType !== 'total' && (
+                                        <Line 
+                                          type="monotone" 
+                                          dataKey={graphMarketType === 'spread' ? 'awayLine' : 'mlAway'} 
+                                          stroke="#EF4444" 
+                                          strokeWidth={2}
+                                          dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
+                                          activeDot={{ r: 6, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                          name={getTeamName(game.away_team)}
+                                          strokeDasharray="5 5"
+                                        />
+                                      )}
                                     </ComposedChart>
                                   </ResponsiveContainer>
                                 )}
@@ -983,26 +1007,30 @@ export default function PublicBettingPage() {
                                 <div className={styles.graphLegend}>
                                   <div className={styles.legendItem}>
                                     <span className={styles.legendLine} style={{ background: '#98ADD1' }}></span>
-                                    <span>{getTeamName(game.home_team)}</span>
+                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team)}</span>
                                   </div>
-                                  <div className={styles.legendItem}>
-                                    <span className={styles.legendLineDashed} style={{ background: '#EF4444' }}></span>
-                                    <span>{getTeamName(game.away_team)}</span>
-                                  </div>
+                                  {graphMarketType !== 'total' && (
+                                    <div className={styles.legendItem}>
+                                      <span className={styles.legendLineDashed} style={{ background: '#EF4444' }}></span>
+                                      <span>{getTeamName(game.away_team)}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
                             
                             {/* Odds History Table */}
                             <div className={styles.oddsHistorySection}>
-                              <h4 className={styles.historyTitle}>Odds & Public Betting History</h4>
+                              <h4 className={styles.historyTitle}>
+                                {graphMarketType === 'spread' ? 'Spread' : graphMarketType === 'ml' ? 'Moneyline' : 'Total'} History
+                              </h4>
                               <div className={styles.historyTableWrapper}>
                                 <table className={styles.historyTable}>
                                   <thead>
                                     <tr>
                                       <th>Time</th>
-                                      <th>{getTeamName(game.away_team)}</th>
-                                      <th>{getTeamName(game.home_team)}</th>
+                                      <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
+                                      <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
                                       <th>Bet %</th>
                                       <th>Money %</th>
                                     </tr>
@@ -1011,23 +1039,54 @@ export default function PublicBettingPage() {
                                     {timelineData.length === 0 ? (
                                       <tr><td colSpan={5} className={styles.emptyCell}>No history available</td></tr>
                                     ) : (
-                                      timelineData.map((point, idx) => (
-                                        <tr key={idx} className={idx === timelineData.length - 1 ? styles.currentRow : ''}>
-                                          <td>{point.time}</td>
-                                          <td>{point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine}</td>
-                                          <td>{point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine}</td>
-                                          <td>
-                                            <span className={styles.historyPctAway}>{point.awayBetPct}%</span>
-                                            <span className={styles.historyPctDivider}>/</span>
-                                            <span className={styles.historyPctHome}>{point.homeBetPct}%</span>
-                                          </td>
-                                          <td>
-                                            <span className={styles.historyPctAway}>{point.awayMoneyPct}%</span>
-                                            <span className={styles.historyPctDivider}>/</span>
-                                            <span className={styles.historyPctHome}>{point.homeMoneyPct}%</span>
-                                          </td>
-                                        </tr>
-                                      ))
+                                      timelineData.map((point: any, idx) => {
+                                        // Get values based on market type
+                                        let awayVal: string, homeVal: string
+                                        let awayBet: number, homeBet: number
+                                        let awayMoney: number, homeMoney: number
+                                        
+                                        if (graphMarketType === 'spread') {
+                                          awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
+                                          homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
+                                          awayBet = point.awayBetPct
+                                          homeBet = point.homeBetPct
+                                          awayMoney = point.awayMoneyPct
+                                          homeMoney = point.homeMoneyPct
+                                        } else if (graphMarketType === 'ml') {
+                                          awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
+                                          homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
+                                          awayBet = 100 - (point.mlHomeBetPct || 50)
+                                          homeBet = point.mlHomeBetPct || 50
+                                          awayMoney = 100 - (point.mlHomeMoneyPct || 50)
+                                          homeMoney = point.mlHomeMoneyPct || 50
+                                        } else {
+                                          // Total
+                                          awayVal = `O ${point.total}`
+                                          homeVal = `U ${point.total}`
+                                          awayBet = point.totalOverBetPct || 50
+                                          homeBet = 100 - (point.totalOverBetPct || 50)
+                                          awayMoney = point.totalOverMoneyPct || 50
+                                          homeMoney = 100 - (point.totalOverMoneyPct || 50)
+                                        }
+                                        
+                                        return (
+                                          <tr key={idx} className={idx === timelineData.length - 1 ? styles.currentRow : ''}>
+                                            <td>{point.time}</td>
+                                            <td>{awayVal}</td>
+                                            <td>{homeVal}</td>
+                                            <td>
+                                              <span className={styles.historyPctAway}>{Math.round(awayBet)}%</span>
+                                              <span className={styles.historyPctDivider}>/</span>
+                                              <span className={styles.historyPctHome}>{Math.round(homeBet)}%</span>
+                                            </td>
+                                            <td>
+                                              <span className={styles.historyPctAway}>{Math.round(awayMoney)}%</span>
+                                              <span className={styles.historyPctDivider}>/</span>
+                                              <span className={styles.historyPctHome}>{Math.round(homeMoney)}%</span>
+                                            </td>
+                                          </tr>
+                                        )
+                                      })
                                     )}
                                   </tbody>
                                 </table>

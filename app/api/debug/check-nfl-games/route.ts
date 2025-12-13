@@ -10,7 +10,8 @@ export async function GET() {
         season,
         week,
         toString(game_date) as game_date,
-        toString(game_time) as game_time,
+        toString(game_time) as game_time_str,
+        game_time,
         sportsdata_io_score_id,
         home_team_id,
         away_team_id
