@@ -194,58 +194,62 @@ export default function PublicBettingPage() {
         </div>
         
         <div className={styles.filtersRow}>
-          {/* Desktop Sport Filters */}
-          <div className={styles.sportFilters}>
-            {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
-              <button
-                key={sport}
-                className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
-                onClick={() => setSelectedSport(sport)}
+          {/* Left side: Sports + Search */}
+          <div className={styles.leftFilters}>
+            {/* Desktop Sport Filters */}
+            <div className={styles.sportFilters}>
+              {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+                <button
+                  key={sport}
+                  className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
+                  onClick={() => setSelectedSport(sport)}
+                >
+                  {sport.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Sport Dropdown */}
+            <div className={styles.mobileSportDropdown}>
+              <button 
+                className={styles.sportDropdownBtn}
+                onClick={() => setSportDropdownOpen(!sportDropdownOpen)}
               >
-                {sport.toUpperCase()}
+                {selectedSport.toUpperCase()}
+                <FiChevronDown className={sportDropdownOpen ? styles.rotated : ''} />
               </button>
-            ))}
-          </div>
+              {sportDropdownOpen && (
+                <div className={styles.sportDropdownMenu}>
+                  {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+                    <button
+                      key={sport}
+                      className={`${styles.sportDropdownItem} ${selectedSport === sport ? styles.active : ''}`}
+                      onClick={() => {
+                        setSelectedSport(sport)
+                        setSportDropdownOpen(false)
+                      }}
+                    >
+                      {sport.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Mobile Sport Dropdown */}
-          <div className={styles.mobileSportDropdown}>
-            <button 
-              className={styles.sportDropdownBtn}
-              onClick={() => setSportDropdownOpen(!sportDropdownOpen)}
-            >
-              {selectedSport.toUpperCase()}
-              <FiChevronDown className={sportDropdownOpen ? styles.rotated : ''} />
-            </button>
-            {sportDropdownOpen && (
-              <div className={styles.sportDropdownMenu}>
-                {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
-                  <button
-                    key={sport}
-                    className={`${styles.sportDropdownItem} ${selectedSport === sport ? styles.active : ''}`}
-                    onClick={() => {
-                      setSelectedSport(sport)
-                      setSportDropdownOpen(false)
-                    }}
-                  >
-                    {sport.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Search Bar */}
-          <div className={styles.searchContainer}>
-            <FiSearch className={styles.searchIcon} />
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Search teams..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            {/* Search Bar */}
+            <div className={styles.searchContainer}>
+              <FiSearch className={styles.searchIcon} />
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="Search teams..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
           
+          {/* Right side: Bet Types */}
           <div className={styles.marketFilters}>
             {(['spread', 'total', 'ml'] as const).map(market => (
               <button
