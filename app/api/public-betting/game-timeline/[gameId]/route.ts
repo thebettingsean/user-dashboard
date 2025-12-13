@@ -20,7 +20,7 @@ export async function GET(
       timeCondition = `AND snapshot_time >= now() - INTERVAL 24 HOUR`
     }
     
-    // Get all snapshots for this game
+    // Get all snapshots for this game, marking which have real betting data
     const query = `
       SELECT 
         toString(snapshot_time) as time,
@@ -36,7 +36,11 @@ export async function GET(
         public_ml_home_bet_pct as mlHomeBetPct,
         public_ml_home_money_pct as mlHomeMoneyPct,
         public_total_over_bet_pct as totalOverBetPct,
-        public_total_over_money_pct as totalOverMoneyPct
+        public_total_over_money_pct as totalOverMoneyPct,
+        CASE 
+          WHEN public_spread_home_bet_pct > 0 AND public_spread_home_bet_pct != 50 THEN true
+          ELSE false
+        END as hasRealBetting
       FROM live_odds_snapshots
       WHERE odds_api_game_id = '${gameId}'
       ${timeCondition}
@@ -100,9 +104,16 @@ export async function GET(
         mlHomeBetPct: snap.mlHomeBetPct || 50,
         mlHomeMoneyPct: snap.mlHomeMoneyPct || 50,
         totalOverBetPct: snap.totalOverBetPct || 50,
-        totalOverMoneyPct: snap.totalOverMoneyPct || 50
+        totalOverMoneyPct: snap.totalOverMoneyPct || 50,
+        hasRealBetting: snap.hasRealBetting || false
       }
     })
+    
+    // Get the most recent snapshot with REAL betting data for current percentages
+    const snapshotsWithBetting = formattedTimeline.filter((s: any) => s.hasRealBetting)
+    const latestWithBetting = snapshotsWithBetting.length > 0 
+      ? snapshotsWithBetting[snapshotsWithBetting.length - 1] 
+      : null
     
     // For graphs, we want a reasonable number of points (max ~10)
     // If we have more than 10 snapshots, sample them
@@ -120,8 +131,17 @@ export async function GET(
       success: true,
       gameId,
       snapshotCount: snapshots.length,
+      snapshotsWithRealBetting: snapshotsWithBetting.length,
       timeline: timelineForGraph,
-      fullTimeline: formattedTimeline
+      fullTimeline: formattedTimeline,
+      latestBetting: latestWithBetting ? {
+        spreadHomeBet: latestWithBetting.homeBetPct,
+        spreadHomeMoney: latestWithBetting.homeMoneyPct,
+        mlHomeBet: latestWithBetting.mlHomeBetPct,
+        mlHomeMoney: latestWithBetting.mlHomeMoneyPct,
+        totalOverBet: latestWithBetting.totalOverBetPct,
+        totalOverMoney: latestWithBetting.totalOverMoneyPct
+      } : null
     })
     
   } catch (error: any) {

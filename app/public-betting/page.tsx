@@ -68,10 +68,18 @@ interface LineMovementPoint {
   time: string
   awayLine: number
   homeLine: number
+  total: number
+  mlHome: number
+  mlAway: number
   awayBetPct: number
   homeBetPct: number
   awayMoneyPct: number
   homeMoneyPct: number
+  mlHomeBetPct: number
+  mlHomeMoneyPct: number
+  totalOverBetPct: number
+  totalOverMoneyPct: number
+  hasRealBetting: boolean
 }
 
 // Sample line movement data generator
@@ -1076,20 +1084,35 @@ export default function PublicBettingPage() {
                                           homeMoney = 100 - (point.totalOverMoneyPct || 50)
                                         }
                                         
+                                        const isCurrent = idx === timelineData.length - 1
+                                        const hasRealData = point.hasRealBetting
+                                        
                                         return (
-                                          <tr key={idx} className={idx === timelineData.length - 1 ? styles.currentRow : ''}>
+                                          <tr key={idx} className={`${isCurrent ? styles.currentRow : ''} ${!hasRealData ? styles.noDataRow : ''}`}>
                                             <td>{point.time}</td>
                                             <td>{awayVal}</td>
                                             <td>{homeVal}</td>
                                             <td>
-                                              <span className={styles.historyPctAway}>{Math.round(awayBet)}%</span>
-                                              <span className={styles.historyPctDivider}>/</span>
-                                              <span className={styles.historyPctHome}>{Math.round(homeBet)}%</span>
+                                              {hasRealData ? (
+                                                <>
+                                                  <span className={styles.historyPctAway}>{Math.round(awayBet)}%</span>
+                                                  <span className={styles.historyPctDivider}>/</span>
+                                                  <span className={styles.historyPctHome}>{Math.round(homeBet)}%</span>
+                                                </>
+                                              ) : (
+                                                <span className={styles.noDataLabel}>-</span>
+                                              )}
                                             </td>
                                             <td>
-                                              <span className={styles.historyPctAway}>{Math.round(awayMoney)}%</span>
-                                              <span className={styles.historyPctDivider}>/</span>
-                                              <span className={styles.historyPctHome}>{Math.round(homeMoney)}%</span>
+                                              {hasRealData ? (
+                                                <>
+                                                  <span className={styles.historyPctAway}>{Math.round(awayMoney)}%</span>
+                                                  <span className={styles.historyPctDivider}>/</span>
+                                                  <span className={styles.historyPctHome}>{Math.round(homeMoney)}%</span>
+                                                </>
+                                              ) : (
+                                                <span className={styles.noDataLabel}>-</span>
+                                              )}
                                             </td>
                                           </tr>
                                         )

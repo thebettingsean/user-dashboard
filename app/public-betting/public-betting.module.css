@@ -692,6 +692,15 @@
   font-weight: 500;
 }
 
+.historyTable .noDataRow td:nth-child(4),
+.historyTable .noDataRow td:nth-child(5) {
+  opacity: 0.5;
+}
+
+.noDataLabel {
+  color: #696969;
+}
+
 .historyPctAway {
   color: #EF4444;
 }
