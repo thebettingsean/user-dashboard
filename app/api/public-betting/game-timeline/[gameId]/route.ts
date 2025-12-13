@@ -3,9 +3,9 @@ import { clickhouseQuery } from '@/lib/clickhouse'
 
 export async function GET(
   request: Request,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
-  const gameId = params.gameId
+  const { gameId } = await params
   const { searchParams } = new URL(request.url)
   const timeFilter = searchParams.get('timeFilter') || 'all'
   
