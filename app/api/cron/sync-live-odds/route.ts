@@ -1,36 +1,41 @@
 import { NextResponse } from 'next/server'
 import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 
-// Sport configurations
+// Sport configurations with sport-specific API keys
 const SPORTS_CONFIG = [
   { 
     key: 'americanfootball_nfl', 
     sport: 'nfl',
     sportsdataPath: 'nfl',
+    apiKeyEnv: 'SPORTSDATAIO_NFL_KEY',
     active: true 
   },
   { 
     key: 'basketball_nba', 
     sport: 'nba',
     sportsdataPath: 'nba',
+    apiKeyEnv: 'SPORTSDATAIO_NBA_KEY',
     active: true 
   },
   { 
     key: 'icehockey_nhl', 
     sport: 'nhl',
     sportsdataPath: 'nhl',
+    apiKeyEnv: 'SPORTSDATAIO_NHL_KEY',
     active: true 
   },
   { 
     key: 'americanfootball_ncaaf', 
     sport: 'cfb',
     sportsdataPath: 'cfb',
+    apiKeyEnv: 'SPORTSDATAIO_CFB_KEY',
     active: true 
   },
   { 
     key: 'baseball_mlb', 
     sport: 'mlb',
     sportsdataPath: 'mlb',
+    apiKeyEnv: 'SPORTSDATAIO_MLB_KEY',
     active: false // Enable during MLB season
   },
 ]
@@ -76,7 +81,7 @@ export async function GET(request: Request) {
   const results: { sport: string; status: string; gamesProcessed: number; error?: string }[] = []
   
   const ODDS_API_KEY = process.env.ODDS_API_KEY
-  const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_KEY
+  const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY
   
   if (!ODDS_API_KEY) {
     return NextResponse.json({ error: 'ODDS_API_KEY not configured' }, { status: 500 })
@@ -109,8 +114,9 @@ export async function GET(request: Request) {
       
       if (SPORTSDATA_API_KEY) {
         try {
+          console.log(`[${sportConfig.sport.toUpperCase()}] Fetching public betting with key: ${SPORTSDATA_API_KEY.substring(0, 8)}...`)
+          
           // Get upcoming games with betting splits
-          // We need to fetch by date range - get games for next 7 days
           const today = new Date()
           const schedulePromises = []
           
@@ -122,7 +128,6 @@ export async function GET(request: Request) {
             // Different endpoints for different sports
             let scheduleUrl = ''
             if (sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb') {
-              // NFL uses season/week format, but we can also use schedule
               scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/ScoresByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
             } else {
               scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
@@ -130,16 +135,27 @@ export async function GET(request: Request) {
             
             schedulePromises.push(
               fetch(scheduleUrl)
-                .then(r => r.ok ? r.json() : [])
-                .catch(() => [])
+                .then(r => {
+                  if (!r.ok) {
+                    console.log(`[${sportConfig.sport.toUpperCase()}] Schedule fetch failed for ${dateStr}: ${r.status}`)
+                    return []
+                  }
+                  return r.json()
+                })
+                .catch((err) => {
+                  console.log(`[${sportConfig.sport.toUpperCase()}] Schedule fetch error for ${dateStr}: ${err.message}`)
+                  return []
+                })
             )
           }
           
           const scheduleResults = await Promise.all(schedulePromises)
           const allScheduledGames = scheduleResults.flat()
+          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${allScheduledGames.length} scheduled games`)
           
           // For each game, try to get betting splits
-          for (const game of allScheduledGames) {
+          let splitsFound = 0
+          for (const game of allScheduledGames.slice(0, 20)) { // Limit to first 20 to avoid timeout
             const scoreId = game.ScoreID || game.GameID || game.ScoreId
             if (!scoreId) continue
             
@@ -149,10 +165,19 @@ export async function GET(request: Request) {
               
               if (splitsResponse.ok) {
                 const splits = await splitsResponse.json()
-                if (splits && splits.BettingMarketSplits) {
-                  // Create a key from team names for matching
-                  const key = `${game.HomeTeam || game.HomeTeamName}_${game.AwayTeam || game.AwayTeamName}`.toLowerCase()
+                if (splits && splits.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
+                  // Create keys from team names for matching
+                  const homeTeam = game.HomeTeam || game.HomeTeamName || ''
+                  const awayTeam = game.AwayTeam || game.AwayTeamName || ''
+                  const key = `${homeTeam}_${awayTeam}`.toLowerCase()
                   publicBettingMap.set(key, splits)
+                  splitsFound++
+                  
+                  // Log first found split for debugging
+                  if (splitsFound === 1) {
+                    const firstSplit = splits.BettingMarketSplits[0]
+                    console.log(`[${sportConfig.sport.toUpperCase()}] Sample split: ${homeTeam} vs ${awayTeam}, Type: ${firstSplit?.BettingBetType}`)
+                  }
                 }
               }
             } catch (e) {
@@ -160,10 +185,12 @@ export async function GET(request: Request) {
             }
           }
           
-          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${publicBettingMap.size} games with public betting data`)
-        } catch (e) {
-          console.log(`[${sportConfig.sport.toUpperCase()}] Could not fetch public betting: ${e}`)
+          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${publicBettingMap.size} games with public betting splits`)
+        } catch (e: any) {
+          console.log(`[${sportConfig.sport.toUpperCase()}] Could not fetch public betting: ${e.message}`)
         }
+      } else {
+        console.log(`[${sportConfig.sport.toUpperCase()}] No SPORTSDATA_IO_SPLITS_KEY configured`)
       }
       
       // Step 3: Process each game and insert snapshot
