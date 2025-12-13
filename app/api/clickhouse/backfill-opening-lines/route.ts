@@ -55,9 +55,10 @@ export async function GET(request: Request) {
     for (let i = daysBack; i >= 0; i--) {
       const checkDate = new Date()
       checkDate.setDate(checkDate.getDate() - i)
-      const dateStr = checkDate.toISOString()
+      // Format as YYYY-MM-DDT12:00:00Z (noon UTC for consistent results)
+      const dateStr = checkDate.toISOString().split('T')[0] + 'T12:00:00Z'
       
-      console.log(`[BACKFILL] Checking ${sport} odds for ${dateStr.split('T')[0]}...`)
+      console.log(`[BACKFILL] Checking ${sport} odds for ${dateStr}...`)
       
       const historicalUrl = `https://api.the-odds-api.com/v4/historical/sports/${sportConfig.key}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=spreads,totals,h2h&oddsFormat=american&date=${dateStr}`
       
@@ -65,7 +66,7 @@ export async function GET(request: Request) {
       
       if (!response.ok) {
         console.log(`[BACKFILL] Historical API error for ${dateStr}: ${response.status}`)
-        results.push({ date: dateStr.split('T')[0], gamesFound: 0, newOpenings: 0 })
+        results.push({ date: dateStr.split('T')[0], gamesFound: 0, newOpenings: 0, updated: 0 })
         continue
       }
       
