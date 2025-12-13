@@ -52,7 +52,7 @@ export async function GET(request: Request) {
         sport,
         any(home_team) as home_team,
         any(away_team) as away_team,
-        toString(any(game_time)) as game_time,
+        toString(min(game_time)) as game_time,
         
         -- Opening values (first snapshot)
         argMin(spread, snapshot_time) as opening_spread,
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
       WHERE snapshot_time > now() - INTERVAL 24 HOUR
       ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
       GROUP BY odds_api_game_id, sport
-      ORDER BY any(game_time) ASC
+      ORDER BY min(game_time) ASC
       LIMIT 100
     `
     
