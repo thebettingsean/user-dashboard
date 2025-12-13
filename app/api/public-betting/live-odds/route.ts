@@ -7,9 +7,9 @@ export async function GET() {
     const query = `
       SELECT 
         odds_api_game_id as id,
-        sport,
-        home_team,
-        away_team,
+        any(sport) as sport,
+        any(home_team) as home_team,
+        any(away_team) as away_team,
         toString(any(game_time)) as game_time,
         
         -- Opening (first snapshot)
@@ -41,9 +41,9 @@ export async function GET() {
         toString(max(snapshot_time)) as last_updated
         
       FROM live_odds_snapshots
-      WHERE game_time > now()
-      GROUP BY odds_api_game_id, sport, home_team, away_team
-      ORDER BY any(game_time) ASC
+      GROUP BY odds_api_game_id
+      HAVING max(game_time) > now()
+      ORDER BY max(game_time) ASC
     `
     
     const result = await clickhouseQuery(query)
