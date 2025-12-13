@@ -866,26 +866,22 @@ export default function PublicBettingPage() {
                       <tr key={`${game.id}-details`} className={styles.detailsRow}>
                         <td colSpan={8}>
                           <div className={styles.expandedPanel}>
-                            {/* Game Info Header */}
-                            <div className={styles.gameInfoHeader}>
-                              <div className={styles.gameMatchup}>
-                                {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogo} />}
-                                <span className={styles.vsText}>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
-                                {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogo} />}
-                              </div>
-                              <div className={styles.gameTime}>
-                                {formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}
-                              </div>
-                            </div>
-                            
-                            {/* Graph Container */}
+                            {/* Graph Container - Combined Header */}
                             <div className={styles.graphContainer}>
-                              {/* Graph Header */}
+                              {/* Combined Header: Game Info + Line Movement Title + Filters */}
                               <div className={styles.graphHeader}>
                                 <div className={styles.graphHeaderLeft}>
+                                  {/* Game Matchup - smaller when expanded */}
+                                  <div className={styles.expandedMatchupRow}>
+                                    {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
+                                    <span className={styles.expandedTeamText}>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
+                                    {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
+                                    <span className={styles.expandedGameTime}>{formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}</span>
+                                  </div>
+                                  {/* Line Movement Title */}
                                   <div className={styles.graphTitleRow}>
-                                    <span className={styles.graphTitle}>Line Movement</span>
                                     <FiTrendingUp className={styles.graphTitleIcon} />
+                                    <span className={styles.graphTitle}>Line Movement</span>
                                   </div>
                                 </div>
                                 <div className={styles.graphHeaderRight}>
@@ -965,8 +961,8 @@ export default function PublicBettingPage() {
                                         dataKey="homeLine" 
                                         stroke="#98ADD1" 
                                         strokeWidth={2}
-                                        dot={false}
-                                        activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        dot={{ r: 3, fill: '#98ADD1', stroke: '#151E2A', strokeWidth: 1 }}
+                                        activeDot={{ r: 6, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
                                         name={getTeamName(game.home_team)}
                                       />
                                       <Line 
@@ -974,8 +970,8 @@ export default function PublicBettingPage() {
                                         dataKey="awayLine" 
                                         stroke="#EF4444" 
                                         strokeWidth={2}
-                                        dot={false}
-                                        activeDot={{ r: 6, fill: '#151E2A', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
+                                        activeDot={{ r: 6, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
                                         name={getTeamName(game.away_team)}
                                         strokeDasharray="5 5"
                                       />
