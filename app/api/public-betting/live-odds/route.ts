@@ -45,50 +45,73 @@ export async function GET(request: Request) {
   
   try {
     // Query to get aggregated game data with opening/current lines
-    // Games within next 7 days that have snapshots from last 24 hours
     const query = `
+      WITH game_data AS (
+        SELECT 
+          odds_api_game_id,
+          sport,
+          home_team,
+          away_team,
+          game_time,
+          spread,
+          total,
+          ml_home,
+          ml_away,
+          public_spread_home_bet_pct,
+          public_spread_home_money_pct,
+          public_ml_home_bet_pct,
+          public_ml_home_money_pct,
+          public_total_over_bet_pct,
+          public_total_over_money_pct,
+          snapshot_time,
+          ROW_NUMBER() OVER (PARTITION BY odds_api_game_id ORDER BY snapshot_time ASC) as first_rank,
+          ROW_NUMBER() OVER (PARTITION BY odds_api_game_id ORDER BY snapshot_time DESC) as last_rank
+        FROM live_odds_snapshots
+        WHERE snapshot_time > now() - INTERVAL 24 HOUR
+        ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
+      )
       SELECT 
-        odds_api_game_id,
-        sport,
-        any(home_team) as home_team,
-        any(away_team) as away_team,
-        toString(min(game_time)) as game_time,
+        g.odds_api_game_id,
+        g.sport,
+        g.home_team,
+        g.away_team,
+        toString(g.game_time) as game_time,
         
-        -- Opening values (first snapshot)
-        argMin(spread, snapshot_time) as opening_spread,
-        argMin(total, snapshot_time) as opening_total,
-        argMin(ml_home, snapshot_time) as opening_ml_home,
-        argMin(ml_away, snapshot_time) as opening_ml_away,
-        toString(min(snapshot_time)) as opening_time,
+        -- Opening values
+        f.spread as opening_spread,
+        f.total as opening_total,
+        f.ml_home as opening_ml_home,
+        f.ml_away as opening_ml_away,
+        toString(f.snapshot_time) as opening_time,
         
-        -- Current values (latest snapshot)
-        argMax(spread, snapshot_time) as current_spread,
-        argMax(total, snapshot_time) as current_total,
-        argMax(ml_home, snapshot_time) as current_ml_home,
-        argMax(ml_away, snapshot_time) as current_ml_away,
-        toString(max(snapshot_time)) as current_time,
+        -- Current values
+        l.spread as current_spread,
+        l.total as current_total,
+        l.ml_home as current_ml_home,
+        l.ml_away as current_ml_away,
+        toString(l.snapshot_time) as current_time,
         
-        -- Movement (current - opening)
-        argMax(spread, snapshot_time) - argMin(spread, snapshot_time) as spread_movement,
-        argMax(total, snapshot_time) - argMin(total, snapshot_time) as total_movement,
+        -- Movement
+        l.spread - f.spread as spread_movement,
+        l.total - f.total as total_movement,
         
-        -- Public betting (from latest snapshot)
-        argMax(public_spread_home_bet_pct, snapshot_time) as public_spread_bet_pct,
-        argMax(public_spread_home_money_pct, snapshot_time) as public_spread_money_pct,
-        argMax(public_ml_home_bet_pct, snapshot_time) as public_ml_bet_pct,
-        argMax(public_ml_home_money_pct, snapshot_time) as public_ml_money_pct,
-        argMax(public_total_over_bet_pct, snapshot_time) as public_total_bet_pct,
-        argMax(public_total_over_money_pct, snapshot_time) as public_total_money_pct,
+        -- Public betting (from latest)
+        l.public_spread_home_bet_pct as public_spread_bet_pct,
+        l.public_spread_home_money_pct as public_spread_money_pct,
+        l.public_ml_home_bet_pct as public_ml_bet_pct,
+        l.public_ml_home_money_pct as public_ml_money_pct,
+        l.public_total_over_bet_pct as public_total_bet_pct,
+        l.public_total_over_money_pct as public_total_money_pct,
         
         -- Meta
-        count() as snapshot_count,
-        toString(max(snapshot_time)) as last_updated
+        (SELECT count() FROM game_data WHERE odds_api_game_id = g.odds_api_game_id) as snapshot_count,
+        toString(l.snapshot_time) as last_updated
         
-      FROM live_odds_snapshots
-      WHERE snapshot_time > now() - INTERVAL 24 HOUR
-      ${sport !== 'all' ? `AND sport = '${sport}'` : ''}
-      GROUP BY odds_api_game_id, sport
-      ORDER BY min(game_time) ASC
+      FROM game_data g
+      INNER JOIN game_data f ON g.odds_api_game_id = f.odds_api_game_id AND f.first_rank = 1
+      INNER JOIN game_data l ON g.odds_api_game_id = l.odds_api_game_id AND l.last_rank = 1
+      WHERE g.last_rank = 1
+      ORDER BY g.game_time ASC
       LIMIT 100
     `
     
