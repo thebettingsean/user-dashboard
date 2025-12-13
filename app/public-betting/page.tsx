@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
-import { FiChevronDown, FiChevronUp, FiSearch } from 'react-icons/fi'
+import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp } from 'react-icons/fi'
 import { 
   LineChart, 
   Line, 
@@ -53,9 +53,11 @@ interface LineMovementPoint {
 }
 
 // Sample line movement data generator
-const generateSampleLineMovement = (openingSpread: number): LineMovementPoint[] => {
+const generateSampleLineMovement = (openingSpread: number, timeFilter: TimeFilter = 'all'): LineMovementPoint[] => {
   const points: LineMovementPoint[] = []
-  const times = ['Open', '48hr', '36hr', '24hr', '12hr', '6hr', '3hr', '1hr', 'Now']
+  const allTimes = ['Open', '48hr', '36hr', '24hr', '12hr', '6hr', '3hr', '1hr', 'Current']
+  const times24hr = ['24hr Ago', '12hr', '6hr', '3hr', '1hr', 'Current']
+  const times = timeFilter === '24hr' ? times24hr : allTimes
   let currentSpread = openingSpread
   
   times.forEach((time, i) => {
@@ -82,6 +84,34 @@ const generateSampleLineMovement = (openingSpread: number): LineMovementPoint[] 
   return points
 }
 
+// Mobile-optimized data (only 2 points for cleaner display)
+const generateMobileLineMovement = (openingSpread: number, timeFilter: TimeFilter = 'all'): LineMovementPoint[] => {
+  const startLabel = timeFilter === '24hr' ? '24hr Ago' : 'Open'
+  const movement = (Math.random() - 0.3) * 1.5
+  const currentSpread = Math.round((openingSpread + movement) * 2) / 2
+  
+  return [
+    {
+      time: startLabel,
+      homeLine: openingSpread,
+      awayLine: -openingSpread,
+      homeBetPct: 48,
+      awayBetPct: 52,
+      homeMoneyPct: 45,
+      awayMoneyPct: 55,
+    },
+    {
+      time: 'Current',
+      homeLine: currentSpread,
+      awayLine: -currentSpread,
+      homeBetPct: 55,
+      awayBetPct: 45,
+      homeMoneyPct: 52,
+      awayMoneyPct: 48,
+    }
+  ]
+}
+
 // Custom Tooltip Component
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null
@@ -96,6 +126,190 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       </div>
       <div className={styles.tooltipBadge}>
         {data.homeBetPct}%
+      </div>
+    </div>
+  )
+}
+
+// Mobile Expanded View Component
+const MobileExpandedView = ({ 
+  game, 
+  graphTimeFilter, 
+  setGraphTimeFilter, 
+  graphMarketType, 
+  setGraphMarketType,
+  formatSpread,
+  getTeamName
+}: {
+  game: GameOdds
+  graphTimeFilter: TimeFilter
+  setGraphTimeFilter: (f: TimeFilter) => void
+  graphMarketType: MarketType
+  setGraphMarketType: (m: MarketType) => void
+  formatSpread: (s: number, isHome: boolean) => string
+  getTeamName: (name: string) => string
+}) => {
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyTeam, setHistoryTeam] = useState<'home' | 'away'>('home')
+  const [marketDropdownOpen, setMarketDropdownOpen] = useState(false)
+  
+  const mobileData = generateMobileLineMovement(game.opening_spread, graphTimeFilter)
+  const historyData = generateSampleLineMovement(game.opening_spread, 'all')
+  
+  return (
+    <div className={styles.mobileExpandedPanel} onClick={(e) => e.stopPropagation()}>
+      {/* Mobile Graph */}
+      <div className={styles.mobileGraphContainer}>
+        <div className={styles.mobileGraphHeader}>
+          {/* Icon only on mobile */}
+          <FiTrendingUp className={styles.mobileGraphIcon} />
+          
+          <div className={styles.mobileGraphControls}>
+            {/* Bet Type Dropdown */}
+            <div className={styles.mobileMarketDropdown}>
+              <button 
+                className={styles.mobileMarketBtn}
+                onClick={() => setMarketDropdownOpen(!marketDropdownOpen)}
+              >
+                {graphMarketType === 'spread' ? 'Spread' : graphMarketType === 'total' ? 'O/U' : 'ML'}
+                <FiChevronDown className={marketDropdownOpen ? styles.rotated : ''} />
+              </button>
+              {marketDropdownOpen && (
+                <div className={styles.mobileMarketMenu}>
+                  {(['spread', 'total', 'ml'] as const).map(market => (
+                    <button
+                      key={market}
+                      className={`${styles.mobileMarketItem} ${graphMarketType === market ? styles.active : ''}`}
+                      onClick={() => {
+                        setGraphMarketType(market)
+                        setMarketDropdownOpen(false)
+                      }}
+                    >
+                      {market === 'spread' ? 'Spread' : market === 'total' ? 'O/U' : 'ML'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Time Filter */}
+            <div className={styles.mobileGraphFilters}>
+              <button
+                className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
+                onClick={() => setGraphTimeFilter('all')}
+              >
+                All
+              </button>
+              <button
+                className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
+                onClick={() => setGraphTimeFilter('24hr')}
+              >
+                24hr
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <ResponsiveContainer width="100%" height={140}>
+          <ComposedChart 
+            data={mobileData}
+            margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+          >
+            <defs>
+              <linearGradient id={`mobileGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+              </linearGradient>
+            </defs>
+            <XAxis 
+              dataKey="time" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#FFFFFF', fontSize: 11, fontWeight: 500 }}
+              padding={{ left: 20, right: 20 }}
+            />
+            <YAxis hide />
+            <Area 
+              type="monotone" 
+              dataKey="homeLine" 
+              fill={`url(#mobileGradient-${game.id})`}
+              stroke="none"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="homeLine" 
+              stroke="#98ADD1" 
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="awayLine" 
+              stroke="#EF4444" 
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+              strokeDasharray="4 4"
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      
+      {/* Collapsible History Section */}
+      <div className={styles.mobileHistorySection}>
+        <button 
+          className={styles.mobileHistoryToggle}
+          onClick={() => setHistoryOpen(!historyOpen)}
+        >
+          <span>History</span>
+          <FiChevronDown className={historyOpen ? styles.rotated : ''} />
+        </button>
+        
+        {historyOpen && (
+          <div className={styles.mobileHistoryContent}>
+            {/* Home/Away Toggle */}
+            <div className={styles.mobileHistoryTeamToggle}>
+              <button
+                className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'away' ? styles.active : ''}`}
+                onClick={() => setHistoryTeam('away')}
+              >
+                {getTeamName(game.away_team)}
+              </button>
+              <button
+                className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'home' ? styles.active : ''}`}
+                onClick={() => setHistoryTeam('home')}
+              >
+                {getTeamName(game.home_team)}
+              </button>
+            </div>
+            
+            {/* History Table */}
+            <table className={styles.mobileHistoryTable}>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Odds</th>
+                  <th>Bet%</th>
+                  <th>$$$%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyData.map((point, idx) => (
+                  <tr key={idx}>
+                    <td>{point.time}</td>
+                    <td>
+                      {historyTeam === 'home' 
+                        ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine)
+                        : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine)
+                      }
+                    </td>
+                    <td>{historyTeam === 'home' ? point.homeBetPct : point.awayBetPct}%</td>
+                    <td>{historyTeam === 'home' ? point.homeMoneyPct : point.awayMoneyPct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -474,14 +688,9 @@ export default function PublicBettingPage() {
                               {/* Graph Header */}
                               <div className={styles.graphHeader}>
                                 <div className={styles.graphHeaderLeft}>
-                                  <div className={styles.graphTitle}>Line Movement</div>
-                                  <div className={styles.graphStats}>
-                                    <span className={styles.graphStatValue}>
-                                      {formatSpread(game.current_spread, true)}
-                                    </span>
-                                    <span className={styles.graphStatChange}>
-                                      {game.spread_movement > 0 ? '+' : ''}{game.spread_movement.toFixed(1)} from open
-                                    </span>
+                                  <div className={styles.graphTitleRow}>
+                                    <span className={styles.graphTitle}>Line Movement</span>
+                                    <FiTrendingUp className={styles.graphTitleIcon} />
                                   </div>
                                 </div>
                                 <div className={styles.graphHeaderRight}>
@@ -519,7 +728,7 @@ export default function PublicBettingPage() {
                               <div className={styles.graphContent}>
                                 <ResponsiveContainer width="100%" height={220}>
                                   <ComposedChart 
-                                    data={generateSampleLineMovement(game.opening_spread)}
+                                    data={generateSampleLineMovement(game.opening_spread, graphTimeFilter)}
                                     margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
                                   >
                                     <defs>
@@ -708,94 +917,15 @@ export default function PublicBettingPage() {
                   </div>
                   
                   {isExpanded && (
-                    <div className={styles.mobileExpandedPanel} onClick={(e) => e.stopPropagation()}>
-                      {/* Mobile Graph */}
-                      <div className={styles.mobileGraphContainer}>
-                        <div className={styles.mobileGraphHeader}>
-                          <span className={styles.mobileGraphTitle}>Line Movement</span>
-                          <div className={styles.mobileGraphFilters}>
-                            <button
-                              className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
-                              onClick={() => setGraphTimeFilter('all')}
-                            >
-                              All
-                            </button>
-                            <button
-                              className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
-                              onClick={() => setGraphTimeFilter('24hr')}
-                            >
-                              24hr
-                            </button>
-                          </div>
-                        </div>
-                        <ResponsiveContainer width="100%" height={160}>
-                          <ComposedChart 
-                            data={generateSampleLineMovement(game.opening_spread)}
-                            margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
-                          >
-                            <defs>
-                              <linearGradient id={`mobileGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
-                                <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
-                              </linearGradient>
-                            </defs>
-                            <XAxis 
-                              dataKey="time" 
-                              axisLine={false}
-                              tickLine={false}
-                              tick={{ fill: '#FFFFFF', fontSize: 10 }}
-                              interval={2}
-                            />
-                            <YAxis 
-                              hide
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="homeLine" 
-                              fill={`url(#mobileGradient-${game.id})`}
-                              stroke="none"
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="homeLine" 
-                              stroke="#98ADD1" 
-                              strokeWidth={2}
-                              dot={false}
-                            />
-                            <Line 
-                              type="monotone" 
-                              dataKey="awayLine" 
-                              stroke="#EF4444" 
-                              strokeWidth={2}
-                              dot={false}
-                              strokeDasharray="4 4"
-                            />
-                          </ComposedChart>
-                        </ResponsiveContainer>
-                      </div>
-                      
-                      {/* Mobile Summary Stats */}
-                      <div className={styles.mobileSummaryStats}>
-                        <div className={styles.mobileStat}>
-                          <span className={styles.mobileStatLabel}>Open</span>
-                          <span className={styles.mobileStatValue}>{formatSpread(game.opening_spread, true)}</span>
-                        </div>
-                        <div className={styles.mobileStat}>
-                          <span className={styles.mobileStatLabel}>Current</span>
-                          <span className={styles.mobileStatValue}>{formatSpread(game.current_spread, true)}</span>
-                        </div>
-                        <div className={styles.mobileStat}>
-                          <span className={styles.mobileStatLabel}>Move</span>
-                          <span className={`${styles.mobileStatValue} ${game.spread_movement !== 0 ? (game.spread_movement > 0 ? styles.moveUp : styles.moveDown) : ''}`}>
-                            {formatMove(game.spread_movement)}
-                          </span>
-                        </div>
-                        <div className={styles.mobileStat}>
-                          <span className={styles.mobileStatLabel}>O/U</span>
-                          <span className={styles.mobileStatValue}>{game.current_total}</span>
-                        </div>
-                      </div>
-                    </div>
+                    <MobileExpandedView 
+                      game={game}
+                      graphTimeFilter={graphTimeFilter}
+                      setGraphTimeFilter={setGraphTimeFilter}
+                      graphMarketType={graphMarketType}
+                      setGraphMarketType={setGraphMarketType}
+                      formatSpread={formatSpread}
+                      getTeamName={getTeamName}
+                    />
                   )}
                 </div>
               )
