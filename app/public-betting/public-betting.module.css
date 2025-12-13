@@ -1047,3 +1047,82 @@
     gap: 12px;
   }
 }
+
+/* Team Logos - Desktop */
+.teamLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Team Logos - Mobile */
+.mobileTeamLogo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* Team Cell - Desktop */
+.teamCell {
+  display: flex;
+  align-items: center;
+}
+
+/* Game Info Header in Expanded Panel */
+.gameInfoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(29, 37, 48, 0.6);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.gameMatchup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.expandedLogo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.vsText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.gameTime {
+  font-size: 13px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+/* Mobile adjustments for expanded logo */
+@media (max-width: 900px) {
+  .gameInfoHeader {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  
+  .expandedLogo {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .vsText {
+    font-size: 13px;
+  }
+  
+  .gameTime {
+    font-size: 12px;
+  }
+}

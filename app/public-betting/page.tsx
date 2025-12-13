@@ -22,6 +22,8 @@ interface GameOdds {
   away_team: string
   home_abbrev: string
   away_abbrev: string
+  home_logo: string
+  away_logo: string
   game_time: string
   opening_spread: number
   current_spread: number
@@ -33,14 +35,21 @@ interface GameOdds {
   opening_ml_away: number
   current_ml_home: number
   current_ml_away: number
+  // Spread percentages
   public_spread_home_bet_pct: number
   public_spread_home_money_pct: number
   public_spread_away_bet_pct: number
   public_spread_away_money_pct: number
+  // Total percentages (over = home perspective)
   public_total_over_bet_pct: number
   public_total_over_money_pct: number
+  public_total_under_bet_pct: number
+  public_total_under_money_pct: number
+  // Moneyline percentages
   public_ml_home_bet_pct: number
   public_ml_home_money_pct: number
+  public_ml_away_bet_pct: number
+  public_ml_away_money_pct: number
   rlm: string
   rlm_side: string
   respected: string
@@ -352,17 +361,30 @@ export default function PublicBettingPage() {
       if (data.success && data.games) {
         const processedGames = data.games.map((game: any) => ({
           ...game,
-          home_abbrev: getAbbrev(game.home_team),
-          away_abbrev: getAbbrev(game.away_team),
-          // Away percentages are inverse of home
-          public_spread_away_bet_pct: 100 - (game.public_spread_bet_pct || 50),
-          public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
+          // Logos from API
+          home_logo: game.home_logo || '',
+          away_logo: game.away_logo || '',
+          home_abbrev: game.home_abbrev || getAbbrev(game.home_team),
+          away_abbrev: game.away_abbrev || getAbbrev(game.away_team),
+          
+          // Spread percentages - away is inverse of home
           public_spread_home_bet_pct: game.public_spread_bet_pct || 50,
           public_spread_home_money_pct: game.public_spread_money_pct || 50,
+          public_spread_away_bet_pct: 100 - (game.public_spread_bet_pct || 50),
+          public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
+          
+          // Totals percentages - over/under
           public_total_over_bet_pct: game.public_total_bet_pct || 50,
           public_total_over_money_pct: game.public_total_money_pct || 50,
+          public_total_under_bet_pct: 100 - (game.public_total_bet_pct || 50),
+          public_total_under_money_pct: 100 - (game.public_total_money_pct || 50),
+          
+          // Moneyline percentages - home/away
           public_ml_home_bet_pct: game.public_ml_bet_pct || 50,
           public_ml_home_money_pct: game.public_ml_money_pct || 50,
+          public_ml_away_bet_pct: 100 - (game.public_ml_bet_pct || 50),
+          public_ml_away_money_pct: 100 - (game.public_ml_money_pct || 50),
+          
           // RLM comes from API now
           rlm: game.rlm || '-',
           rlm_side: game.rlm_side || '',
@@ -488,6 +510,77 @@ export default function PublicBettingPage() {
   const formatMove = (movement: number) => {
     if (movement === 0) return '-'
     return movement > 0 ? `+${movement.toFixed(1)}` : movement.toFixed(1)
+  }
+
+  // Get percentages based on selected market type
+  const getMarketPcts = (game: GameOdds, isHome: boolean) => {
+    switch (selectedMarket) {
+      case 'spread':
+        return {
+          betPct: isHome ? game.public_spread_home_bet_pct : game.public_spread_away_bet_pct,
+          moneyPct: isHome ? game.public_spread_home_money_pct : game.public_spread_away_money_pct
+        }
+      case 'ml':
+        return {
+          betPct: isHome ? game.public_ml_home_bet_pct : game.public_ml_away_bet_pct,
+          moneyPct: isHome ? game.public_ml_home_money_pct : game.public_ml_away_money_pct
+        }
+      case 'total':
+        // For totals: "home row" = Over, "away row" = Under
+        return {
+          betPct: isHome ? game.public_total_over_bet_pct : game.public_total_under_bet_pct,
+          moneyPct: isHome ? game.public_total_over_money_pct : game.public_total_under_money_pct
+        }
+    }
+  }
+
+  // Get odds based on selected market type
+  const getMarketOdds = (game: GameOdds, isHome: boolean, isOpening: boolean) => {
+    switch (selectedMarket) {
+      case 'spread':
+        const spread = isOpening ? game.opening_spread : game.current_spread
+        return formatSpread(spread, isHome)
+      case 'ml':
+        if (isOpening) {
+          return isHome 
+            ? formatML(game.opening_ml_home) 
+            : formatML(game.opening_ml_away)
+        }
+        return isHome 
+          ? formatML(game.current_ml_home) 
+          : formatML(game.current_ml_away)
+      case 'total':
+        const total = isOpening ? game.opening_total : game.current_total
+        return isHome ? `O ${total}` : `U ${total}`
+    }
+  }
+
+  const formatML = (ml: number) => {
+    if (ml === 0) return '-'
+    return ml > 0 ? `+${ml}` : ml.toString()
+  }
+
+  // Get movement based on market type
+  const getMarketMove = (game: GameOdds, isHome: boolean) => {
+    switch (selectedMarket) {
+      case 'spread':
+        const spreadMove = game.spread_movement
+        return isHome ? spreadMove : -spreadMove
+      case 'total':
+        return game.total_movement
+      case 'ml':
+        // No movement tracking for ML yet
+        return 0
+    }
+  }
+
+  // Format game date/time for display
+  const formatGameTime = (gameTime: string) => {
+    const date = new Date(gameTime + ' UTC')
+    return {
+      date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    }
   }
 
   const sortedGames = getSortedGames()
@@ -622,10 +715,10 @@ export default function PublicBettingPage() {
               <tr><td colSpan={8} className={styles.emptyCell}>No games found</td></tr>
             ) : (
               sortedGames.map(game => {
-                const homeBetPct = game.public_spread_home_bet_pct
-                const awayBetPct = game.public_spread_away_bet_pct
-                const homeMoneyPct = game.public_spread_home_money_pct
-                const awayMoneyPct = game.public_spread_away_money_pct
+                const awayPcts = getMarketPcts(game, false)
+                const homePcts = getMarketPcts(game, true)
+                const awayMove = getMarketMove(game, false)
+                const homeMove = getMarketMove(game, true)
                 const isExpanded = expandedGame === game.id
 
                 return (
@@ -636,31 +729,36 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        <span className={styles.teamName}>{getTeamName(game.away_team)}</span>
+                        {game.away_logo && (
+                          <img src={game.away_logo} alt="" className={styles.teamLogo} />
+                        )}
+                        <span className={styles.teamName}>
+                          {selectedMarket === 'total' ? 'Under' : getTeamName(game.away_team)}
+                        </span>
                       </td>
-                      <td>{formatSpread(game.opening_spread, false)}</td>
-                      <td>{formatSpread(game.current_spread, false)}</td>
-                      <td className={game.spread_movement !== 0 ? (game.spread_movement > 0 ? styles.moveUp : styles.moveDown) : ''}>
-                        {formatMove(-game.spread_movement)}
+                      <td>{getMarketOdds(game, false, true)}</td>
+                      <td>{getMarketOdds(game, false, false)}</td>
+                      <td className={awayMove !== 0 ? (awayMove > 0 ? styles.moveUp : styles.moveDown) : ''}>
+                        {formatMove(awayMove)}
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(awayBetPct)}%</span>
+                          <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
                           <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${awayBetPct}%` }} />
+                            <div style={{ width: `${awayPcts.betPct}%` }} />
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(awayMoneyPct)}%</span>
+                          <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
                           <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${awayMoneyPct}%` }} />
+                            <div style={{ width: `${awayPcts.moneyPct}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className={getDiffClass(awayBetPct, awayMoneyPct)}>
-                        {formatDiff(awayBetPct, awayMoneyPct)}
+                      <td className={getDiffClass(awayPcts.betPct, awayPcts.moneyPct)}>
+                        {formatDiff(awayPcts.betPct, awayPcts.moneyPct)}
                       </td>
                       <td>
                         <span className={`${styles.rlmBadge} ${game.rlm !== '-' ? styles.hasRlm : ''}`}>
@@ -674,31 +772,36 @@ export default function PublicBettingPage() {
                       onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                     >
                       <td className={styles.teamCell}>
-                        <span className={styles.teamName}>{getTeamName(game.home_team)}</span>
+                        {game.home_logo && (
+                          <img src={game.home_logo} alt="" className={styles.teamLogo} />
+                        )}
+                        <span className={styles.teamName}>
+                          {selectedMarket === 'total' ? 'Over' : getTeamName(game.home_team)}
+                        </span>
                       </td>
-                      <td>{formatSpread(game.opening_spread, true)}</td>
-                      <td>{formatSpread(game.current_spread, true)}</td>
-                      <td className={game.spread_movement !== 0 ? (game.spread_movement < 0 ? styles.moveUp : styles.moveDown) : ''}>
-                        {formatMove(game.spread_movement)}
+                      <td>{getMarketOdds(game, true, true)}</td>
+                      <td>{getMarketOdds(game, true, false)}</td>
+                      <td className={homeMove !== 0 ? (homeMove > 0 ? styles.moveUp : styles.moveDown) : ''}>
+                        {formatMove(homeMove)}
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(homeBetPct)}%</span>
+                          <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
                           <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${homeBetPct}%` }} />
+                            <div style={{ width: `${homePcts.betPct}%` }} />
                           </div>
                         </div>
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(homeMoneyPct)}%</span>
+                          <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
                           <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${homeMoneyPct}%` }} />
+                            <div style={{ width: `${homePcts.moneyPct}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className={getDiffClass(homeBetPct, homeMoneyPct)}>
-                        {formatDiff(homeBetPct, homeMoneyPct)}
+                      <td className={getDiffClass(homePcts.betPct, homePcts.moneyPct)}>
+                        {formatDiff(homePcts.betPct, homePcts.moneyPct)}
                       </td>
                       <td></td>
                     </tr>
@@ -706,6 +809,18 @@ export default function PublicBettingPage() {
                       <tr key={`${game.id}-details`} className={styles.detailsRow}>
                         <td colSpan={8}>
                           <div className={styles.expandedPanel}>
+                            {/* Game Info Header */}
+                            <div className={styles.gameInfoHeader}>
+                              <div className={styles.gameMatchup}>
+                                {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogo} />}
+                                <span className={styles.vsText}>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
+                                {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogo} />}
+                              </div>
+                              <div className={styles.gameTime}>
+                                {formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}
+                              </div>
+                            </div>
+                            
                             {/* Graph Container */}
                             <div className={styles.graphContainer}>
                               {/* Graph Header */}
@@ -898,10 +1013,8 @@ export default function PublicBettingPage() {
             <div className={styles.emptyCell}>No games found</div>
           ) : (
             sortedGames.map(game => {
-              const homeBetPct = game.public_spread_home_bet_pct
-              const awayBetPct = game.public_spread_away_bet_pct
-              const homeMoneyPct = game.public_spread_home_money_pct
-              const awayMoneyPct = game.public_spread_away_money_pct
+              const awayPcts = getMarketPcts(game, false)
+              const homePcts = getMarketPcts(game, true)
               const isExpanded = expandedGame === game.id
 
               return (
@@ -911,30 +1024,42 @@ export default function PublicBettingPage() {
                   onClick={() => setExpandedGame(isExpanded ? null : game.id)}
                 >
                   <div className={styles.mobileRow}>
-                    <div className={styles.mobileTeam}>{game.away_abbrev}</div>
-                    <div className={styles.mobileOdds}>{formatSpread(game.current_spread, false)}</div>
+                    <div className={styles.mobileTeam}>
+                      {game.away_logo ? (
+                        <img src={game.away_logo} alt="" className={styles.mobileTeamLogo} />
+                      ) : (
+                        <span>{game.away_abbrev}</span>
+                      )}
+                    </div>
+                    <div className={styles.mobileOdds}>{getMarketOdds(game, false, false)}</div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(awayBetPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${awayBetPct}%` }} /></div>
+                      <span>{Math.round(awayPcts.betPct)}%</span>
+                      <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
                     </div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(awayMoneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${awayMoneyPct}%` }} /></div>
+                      <span>{Math.round(awayPcts.moneyPct)}%</span>
+                      <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
                     </div>
                     <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
                       {game.rlm}
                     </div>
                   </div>
                   <div className={styles.mobileRow}>
-                    <div className={styles.mobileTeam}>{game.home_abbrev}</div>
-                    <div className={styles.mobileOdds}>{formatSpread(game.current_spread, true)}</div>
+                    <div className={styles.mobileTeam}>
+                      {game.home_logo ? (
+                        <img src={game.home_logo} alt="" className={styles.mobileTeamLogo} />
+                      ) : (
+                        <span>{game.home_abbrev}</span>
+                      )}
+                    </div>
+                    <div className={styles.mobileOdds}>{getMarketOdds(game, true, false)}</div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(homeBetPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${homeBetPct}%` }} /></div>
+                      <span>{Math.round(homePcts.betPct)}%</span>
+                      <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
                     </div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(homeMoneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${homeMoneyPct}%` }} /></div>
+                      <span>{Math.round(homePcts.moneyPct)}%</span>
+                      <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
                     </div>
                     <div className={styles.mobileRlm}></div>
                   </div>
