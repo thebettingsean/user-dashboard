@@ -1,0 +1,564 @@
+/* Design System from Figma Template */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  padding: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #323335;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #696969;
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sportFilters {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1C2632 100%);
+  border-radius: 10px;
+  border: 1px solid #323335;
+}
+
+.sportBtn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sportBtn:hover {
+  color: #FFFFFF;
+}
+
+.sportBtn.active {
+  background: rgba(41, 47, 63, 0.8);
+  color: #FFFFFF;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: linear-gradient(100deg, #161F2B 1%, #0C0E12 24%, #0D1116 40%, #161F2B 59%, #121111 90%);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #696969;
+  letter-spacing: -0.02em;
+}
+
+.statValue {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.statNumber {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+
+.statChange {
+  font-size: 14px;
+  color: #696969;
+}
+
+.statChangePositive {
+  font-size: 14px;
+  color: #73F97C;
+}
+
+.statChangeNegative {
+  font-size: 14px;
+  color: #EF4444;
+}
+
+/* Main Content */
+.mainContent {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+}
+
+/* Section Headers */
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.sectionIcon {
+  color: #73F97C;
+}
+
+.sectionBadge {
+  font-size: 12px;
+  color: #73F97C;
+  background: rgba(47, 124, 44, 0.3);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Vegas Backed Section */
+.vegasBackedSection {
+  background: linear-gradient(100deg, #161F2B 1%, #0C0E12 24%, #0D1116 40%, #161F2B 59%, #121111 90%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.vegasBackedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vegasCard {
+  background: linear-gradient(276deg, #232B37 0%, #171C24 75%);
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vegasCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.vegasCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.matchup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sportBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #98ADD1;
+  background: rgba(152, 173, 209, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.teams {
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.vegasScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(47, 124, 44, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.scoreValue {
+  font-size: 20px;
+  font-weight: 600;
+  color: #73F97C;
+}
+
+.scoreLabel {
+  font-size: 10px;
+  color: #696969;
+}
+
+.vegasCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lineInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lineItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lineLabel {
+  font-size: 11px;
+  color: #696969;
+}
+
+.lineValue {
+  font-size: 18px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.lineArrow {
+  color: #73F97C;
+  font-size: 20px;
+}
+
+.publicInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.publicBar {
+  height: 6px;
+  background: #323335;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.publicFill {
+  height: 100%;
+  background: linear-gradient(90deg, #73F97C, #2F7C2C);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.publicLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #696969;
+}
+
+.vegasCardFooter {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.verdict {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.verdict.vegasbacked {
+  color: #73F97C;
+  background: rgba(47, 124, 44, 0.3);
+}
+
+.verdict.sharplean {
+  color: #98ADD1;
+  background: rgba(152, 173, 209, 0.2);
+}
+
+.verdict.slightedge {
+  color: #FFA500;
+  background: rgba(255, 165, 0, 0.2);
+}
+
+.verdict.publicmove {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.verdict.neutral {
+  color: #696969;
+  background: rgba(105, 105, 105, 0.2);
+}
+
+/* All Games Section */
+.allGamesSection {
+  background: linear-gradient(100deg, #161F2B 1%, #0C0E12 24%, #0D1116 40%, #161F2B 59%, #121111 90%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.marketTabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(41, 47, 63, 0.5);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.marketTab {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marketTab:hover {
+  color: #FFFFFF;
+}
+
+.marketTab.active {
+  background: rgba(41, 47, 63, 0.8);
+  color: #FFFFFF;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.gamesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gamesTable th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #323335;
+  background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1C2632 100%);
+}
+
+.gamesTable td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #FFFFFF;
+  border-bottom: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.gamesTable tbody tr {
+  transition: background 0.2s ease;
+}
+
+.gamesTable tbody tr:hover {
+  background: rgba(41, 47, 63, 0.3);
+}
+
+.gameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sportIcon {
+  color: #98ADD1;
+  font-size: 18px;
+}
+
+.gameInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.awayTeam {
+  font-weight: 500;
+}
+
+.atSymbol {
+  font-size: 11px;
+  color: #696969;
+}
+
+.homeTeam {
+  font-weight: 400;
+  color: #B0B0B0;
+}
+
+/* Movement Colors */
+.sharp {
+  color: #73F97C !important;
+  font-weight: 500;
+}
+
+.public {
+  color: #EF4444 !important;
+}
+
+.neutral {
+  color: #696969;
+}
+
+.sharpDiff {
+  color: #73F97C;
+  font-weight: 500;
+}
+
+/* Percentage Cell */
+.pctCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.miniBar {
+  width: 40px;
+  height: 4px;
+  background: #323335;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.miniBar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #98ADD1, #73F97C);
+  border-radius: 2px;
+}
+
+/* Signal Badge */
+.signalBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.signalBadge.vegasbacked {
+  color: #73F97C;
+  background: rgba(47, 124, 44, 0.3);
+}
+
+.signalBadge.sharplean {
+  color: #98ADD1;
+  background: rgba(152, 173, 209, 0.2);
+}
+
+.signalBadge.slightedge {
+  color: #FFA500;
+  background: rgba(255, 165, 0, 0.2);
+}
+
+.signalBadge.publicmove {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.signalBadge.neutral {
+  color: #696969;
+  background: rgba(105, 105, 105, 0.2);
+}
+
+/* Loading & Empty States */
+.loading, .empty, .loadingCell, .emptyCell {
+  text-align: center;
+  padding: 40px;
+  color: #696969;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sportFilters {
+    flex-wrap: wrap;
+  }
+  
+  .gamesTable th,
+  .gamesTable td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}
+
