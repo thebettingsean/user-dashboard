@@ -168,9 +168,20 @@ export async function GET(request: Request) {
       const spread_movement = (game.current_spread || 0) - (game.opening_spread || game.current_spread || 0)
       const total_movement = (game.current_total || 0) - (game.opening_total || game.current_total || 0)
       
-      // ML movement (absolute change, not percentage - e.g., +275 to +315 = +40)
-      const ml_home_movement = (game.current_ml_home || 0) - (game.opening_ml_home || game.current_ml_home || 0)
-      const ml_away_movement = (game.current_ml_away || 0) - (game.opening_ml_away || game.current_ml_away || 0)
+      // ML movement - convert to "cents from even" to handle +/- crossing
+      // +115 means 15 cents above even, -103 means 3 cents below even
+      // +115 to -103 = 15 to -3 = -18 movement (not -218)
+      const mlToCents = (ml: number) => {
+        if (ml === 0) return 0
+        return ml > 0 ? (ml - 100) : (100 + ml)
+      }
+      const openingMlHomeCents = mlToCents(game.opening_ml_home || game.current_ml_home || 0)
+      const currentMlHomeCents = mlToCents(game.current_ml_home || 0)
+      const openingMlAwayCents = mlToCents(game.opening_ml_away || game.current_ml_away || 0)
+      const currentMlAwayCents = mlToCents(game.current_ml_away || 0)
+      
+      const ml_home_movement = currentMlHomeCents - openingMlHomeCents
+      const ml_away_movement = currentMlAwayCents - openingMlAwayCents
       
       // Get percentages - use actual values, default to 50 only if truly zero/null
       const spreadBetPct = game.public_spread_home_bet_pct > 0 ? game.public_spread_home_bet_pct : 50

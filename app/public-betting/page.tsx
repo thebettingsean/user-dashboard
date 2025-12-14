@@ -984,7 +984,8 @@ export default function PublicBettingPage() {
                                         stroke="#98ADD1" 
                                         strokeWidth={2}
                                         dot={{ r: 3, fill: '#98ADD1', stroke: '#151E2A', strokeWidth: 1 }}
-                                        activeDot={{ r: 6, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        activeDot={{ r: 5, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        isAnimationActive={false}
                                         name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team)}
                                       />
                                       {graphMarketType !== 'total' && (
@@ -994,7 +995,8 @@ export default function PublicBettingPage() {
                                           stroke="#EF4444" 
                                           strokeWidth={2}
                                           dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
-                                          activeDot={{ r: 6, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                          activeDot={{ r: 5, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                          isAnimationActive={false}
                                           name={getTeamName(game.away_team)}
                                           strokeDasharray="5 5"
                                         />
