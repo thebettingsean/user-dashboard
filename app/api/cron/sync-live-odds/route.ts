@@ -272,40 +272,64 @@ export async function GET(request: Request) {
         }
       }
       
-      // NBA, NHL, CFB: Use GamesByDate to get GameIDs, then BettingSplitsByGameId
+      // NBA, NHL, CFB: Fetch public betting data
       if (SPORTSDATA_API_KEY && (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl' || sportConfig.sport === 'cfb')) {
         try {
-          const today = new Date()
           const gamesToFetch: { gameId: number; homeAbbr: string; awayAbbr: string }[] = []
+          const today = new Date()
+          const todayStr = today.toISOString().split('T')[0]
+          const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
           
-          // Get games for next 7 days
-          for (let i = 0; i < 7; i++) {
-            const date = new Date(today)
-            date.setDate(date.getDate() + i)
-            const dateStr = date.toISOString().split('T')[0]
+          if (sportConfig.sport === 'nba') {
+            // NBA: Use GamesByDate (API key has access)
+            for (let i = 0; i < 7; i++) {
+              const date = new Date(today)
+              date.setDate(date.getDate() + i)
+              const dateStr = date.toISOString().split('T')[0]
+              
+              try {
+                const scheduleUrl = `https://api.sportsdata.io/v3/nba/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+                const scheduleResp = await fetch(scheduleUrl)
+                if (scheduleResp.ok) {
+                  const games = await scheduleResp.json()
+                  for (const game of games || []) {
+                    const gameId = game.GameID || game.GameId
+                    if (gameId && game.HomeTeam && game.AwayTeam) {
+                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                    }
+                  }
+                }
+              } catch (e) {
+                // Continue
+              }
+            }
+          } else {
+            // NHL and CFB: Use Games/{season} endpoint (GamesByDate returns 401)
+            const season = sportConfig.sport === 'cfb' ? 2024 : 2025
+            const gamesUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/Games/${season}?key=${SPORTSDATA_API_KEY}`
             
             try {
-              // All use GamesByDate (CFB might need ScoresByDate, but try GamesByDate first)
-              const scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
-              
-              const scheduleResp = await fetch(scheduleUrl)
-              if (scheduleResp.ok) {
-                const games = await scheduleResp.json()
-                for (const game of games || []) {
-                  const gameId = game.GameID || game.GameId || game.ScoreID
-                  const homeAbbr = game.HomeTeam || ''
-                  const awayAbbr = game.AwayTeam || ''
-                  if (gameId && homeAbbr && awayAbbr) {
-                    gamesToFetch.push({ gameId, homeAbbr, awayAbbr })
+              const gamesResp = await fetch(gamesUrl)
+              if (gamesResp.ok) {
+                const allGames = await gamesResp.json()
+                // Filter for upcoming games (within next 7 days)
+                for (const game of allGames || []) {
+                  if (!game.Day) continue
+                  const gameDate = game.Day.split('T')[0]
+                  if (gameDate >= todayStr && gameDate <= nextWeek) {
+                    const gameId = game.GameID || game.GameId || game.ScoreID
+                    if (gameId && game.HomeTeam && game.AwayTeam) {
+                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                    }
                   }
                 }
               }
             } catch (e) {
-              // Continue if single date fails
+              console.error(`[${sportConfig.sport.toUpperCase()}] Error fetching season schedule:`, e)
             }
           }
           
-          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${gamesToFetch.length} games from schedule`)
+          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${gamesToFetch.length} upcoming games`)
           
           // Fetch betting splits for each game (limit to 30 to avoid rate limits)
           for (const game of gamesToFetch.slice(0, 30)) {
