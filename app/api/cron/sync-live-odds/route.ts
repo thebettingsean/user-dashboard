@@ -277,8 +277,6 @@ export async function GET(request: Request) {
         try {
           const gamesToFetch: { gameId: number; homeAbbr: string; awayAbbr: string }[] = []
           const today = new Date()
-          const todayStr = today.toISOString().split('T')[0]
-          const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
           
           if (sportConfig.sport === 'nba') {
             // NBA: Use GamesByDate (API key has access)
@@ -312,11 +310,18 @@ export async function GET(request: Request) {
               const gamesResp = await fetch(gamesUrl)
               if (gamesResp.ok) {
                 const allGames = await gamesResp.json()
+                
+                // Use actual calendar dates (not the season year)
+                // SportsDataIO uses calendar dates like 2024-12-14 for NHL 2025 season
+                const now = new Date()
+                const realTodayStr = now.toISOString().split('T')[0] // e.g., "2024-12-14"
+                const realNextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                
                 // Filter for upcoming games (within next 7 days)
                 for (const game of allGames || []) {
                   if (!game.Day) continue
                   const gameDate = game.Day.split('T')[0]
-                  if (gameDate >= todayStr && gameDate <= nextWeek) {
+                  if (gameDate >= realTodayStr && gameDate <= realNextWeek) {
                     const gameId = game.GameID || game.GameId || game.ScoreID
                     if (gameId && game.HomeTeam && game.AwayTeam) {
                       gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
