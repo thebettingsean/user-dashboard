@@ -314,37 +314,45 @@ export async function GET(request: Request) {
               
               const splitsResponse = await fetch(splitsUrl)
               
-              if (splitsResponse.ok) {
-                const splits = await splitsResponse.json()
-                if (splits?.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
-                  const key = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
-                  
-                  let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
-                  
-                  for (const market of splits.BettingMarketSplits) {
-                    const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
-                    const overSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Over')
-                    
-                    const betType = (market.BettingBetType || '').toLowerCase()
-                    
-                    // Handle different bet type names: Spread, Point Spread, Puck Line
-                    if ((betType.includes('spread') || betType.includes('puck line')) && homeSplit) {
-                      spreadBet = homeSplit.BetPercentage || 50
-                      spreadMoney = homeSplit.MoneyPercentage || 50
-                    } else if (betType.includes('money') && homeSplit) {
-                      mlBet = homeSplit.BetPercentage || 50
-                      mlMoney = homeSplit.MoneyPercentage || 50
-                    } else if ((betType.includes('total') || betType.includes('over')) && overSplit) {
-                      totalBet = overSplit.BetPercentage || 50
-                      totalMoney = overSplit.MoneyPercentage || 50
-                    }
-                  }
-                  
-                  publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+              if (!splitsResponse.ok) {
+                // Log errors for first few games to help debug
+                if (gamesToFetch.indexOf(game) < 3) {
+                  console.log(`[${sportConfig.sport.toUpperCase()}] Splits API error for game ${game.gameId} (${game.awayAbbr}@${game.homeAbbr}): ${splitsResponse.status}`)
                 }
+                continue
               }
-            } catch (e) {
-              // Continue if single game fails
+              
+              const splits = await splitsResponse.json()
+              if (splits?.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
+                const key = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
+                
+                let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
+                
+                for (const market of splits.BettingMarketSplits) {
+                  const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
+                  const overSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Over')
+                  
+                  const betType = (market.BettingBetType || '').toLowerCase()
+                  
+                  // Handle different bet type names: Spread, Point Spread, Puck Line
+                  if ((betType.includes('spread') || betType.includes('puck line')) && homeSplit) {
+                    spreadBet = homeSplit.BetPercentage || 50
+                    spreadMoney = homeSplit.MoneyPercentage || 50
+                  } else if (betType.includes('money') && homeSplit) {
+                    mlBet = homeSplit.BetPercentage || 50
+                    mlMoney = homeSplit.MoneyPercentage || 50
+                  } else if ((betType.includes('total') || betType.includes('over')) && overSplit) {
+                    totalBet = overSplit.BetPercentage || 50
+                    totalMoney = overSplit.MoneyPercentage || 50
+                  }
+                }
+                
+                publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+                gamesWithSplits++
+              }
+            } catch (e: any) {
+              // Log errors for debugging
+              console.error(`[${sportConfig.sport.toUpperCase()}] Error fetching splits for game ${game.gameId}:`, e.message)
             }
           }
           console.log(`[${sportConfig.sport.toUpperCase()}] Loaded ${publicBettingMap.size} games with public betting`)
