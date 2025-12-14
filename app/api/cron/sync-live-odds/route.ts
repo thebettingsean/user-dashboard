@@ -272,71 +272,36 @@ export async function GET(request: Request) {
         }
       }
       
-      // NBA, NHL, CFB: Fetch public betting data
+      // NBA, NHL, CFB: Fetch public betting data using GamesByDate
       if (SPORTSDATA_API_KEY && (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl' || sportConfig.sport === 'cfb')) {
         try {
           const gamesToFetch: { gameId: number; homeAbbr: string; awayAbbr: string }[] = []
           const today = new Date()
           
-          if (sportConfig.sport === 'nba') {
-            // NBA: Use GamesByDate (API key has access)
-            for (let i = 0; i < 7; i++) {
-              const date = new Date(today)
-              date.setDate(date.getDate() + i)
-              const dateStr = date.toISOString().split('T')[0]
-              
-              try {
-                const scheduleUrl = `https://api.sportsdata.io/v3/nba/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
-                const scheduleResp = await fetch(scheduleUrl)
-                if (scheduleResp.ok) {
-                  const games = await scheduleResp.json()
-                  for (const game of games || []) {
-                    const gameId = game.GameID || game.GameId
-                    if (gameId && game.HomeTeam && game.AwayTeam) {
-                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
-                    }
-                  }
-                }
-              } catch (e) {
-                // Continue
-              }
-            }
-          } else {
-            // NHL and CFB: Use Games/{season} endpoint (GamesByDate returns 401)
-            // NHL season year = year the season ENDS (playoffs), so Dec 2025 games = 2026 season
-            // CFB season year = calendar year of the season
-            const currentYear = new Date().getFullYear()
-            const currentMonth = new Date().getMonth() // 0-11
-            const season = sportConfig.sport === 'nhl' 
-              ? (currentMonth >= 8 ? currentYear + 1 : currentYear) // NHL: Aug+ = next year's season
-              : currentYear // CFB: calendar year
-            const gamesUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/Games/${season}?key=${SPORTSDATA_API_KEY}`
+          // ALL sports: Use GamesByDate endpoint (as per SportsDataIO documentation)
+          for (let i = 0; i < 7; i++) {
+            const date = new Date(today)
+            date.setDate(date.getDate() + i)
+            const dateStr = date.toISOString().split('T')[0]
             
             try {
-              const gamesResp = await fetch(gamesUrl)
-              if (gamesResp.ok) {
-                const allGames = await gamesResp.json()
-                
-                // Use actual calendar dates (not the season year)
-                // SportsDataIO uses calendar dates like 2024-12-14 for NHL 2025 season
-                const now = new Date()
-                const realTodayStr = now.toISOString().split('T')[0] // e.g., "2024-12-14"
-                const realNextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                
-                // Filter for upcoming games (within next 7 days)
-                for (const game of allGames || []) {
-                  if (!game.Day) continue
-                  const gameDate = game.Day.split('T')[0]
-                  if (gameDate >= realTodayStr && gameDate <= realNextWeek) {
-                    const gameId = game.GameID || game.GameId || game.ScoreID
-                    if (gameId && game.HomeTeam && game.AwayTeam) {
-                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
-                    }
+              const scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+              const scheduleResp = await fetch(scheduleUrl)
+              
+              if (scheduleResp.ok) {
+                const games = await scheduleResp.json()
+                for (const game of games || []) {
+                  const gameId = game.GameID || game.GameId
+                  if (gameId && game.HomeTeam && game.AwayTeam) {
+                    gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
                   }
                 }
+              } else if (scheduleResp.status !== 404) {
+                // Log non-404 errors (404 just means no games that day)
+                console.log(`[${sportConfig.sport.toUpperCase()}] GamesByDate failed for ${dateStr}: ${scheduleResp.status}`)
               }
             } catch (e) {
-              console.error(`[${sportConfig.sport.toUpperCase()}] Error fetching season schedule:`, e)
+              // Continue if single date fails
             }
           }
           
