@@ -303,7 +303,13 @@ export async function GET(request: Request) {
             }
           } else {
             // NHL and CFB: Use Games/{season} endpoint (GamesByDate returns 401)
-            const season = sportConfig.sport === 'cfb' ? 2024 : 2025
+            // NHL season year = year the season ENDS (playoffs), so Dec 2025 games = 2026 season
+            // CFB season year = calendar year of the season
+            const currentYear = new Date().getFullYear()
+            const currentMonth = new Date().getMonth() // 0-11
+            const season = sportConfig.sport === 'nhl' 
+              ? (currentMonth >= 8 ? currentYear + 1 : currentYear) // NHL: Aug+ = next year's season
+              : currentYear // CFB: calendar year
             const gamesUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/Games/${season}?key=${SPORTSDATA_API_KEY}`
             
             try {
