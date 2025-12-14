@@ -8,50 +8,47 @@ let teamDataCacheTime = 0
 // Fetch all team data from ClickHouse teams table (cached for 1 hour)
 async function getTeamData(): Promise<Map<string, { logo: string; abbreviation: string }>> {
   const now = Date.now()
-  if (teamDataCache && (now - teamDataCacheTime) < 60 * 60 * 1000) {
+  if (teamDataCache && teamDataCache.size > 0 && (now - teamDataCacheTime) < 60 * 60 * 1000) {
     return teamDataCache
   }
   
   try {
+    // Query using correct column names: name, abbreviation, city, logo_url
     const result = await clickhouseQuery<{
       name: string
-      display_name: string
       abbreviation: string
+      city: string
       logo_url: string
       sport: string
     }>(`
-      SELECT name, display_name, abbreviation, logo_url, sport 
+      SELECT name, abbreviation, city, logo_url, sport 
       FROM teams 
-      WHERE sport IN ('nfl', 'nba', 'nhl', 'cfb', 'ncaab')
+      WHERE logo_url != ''
     `)
     
     const map = new Map<string, { logo: string; abbreviation: string }>()
     
     for (const team of result.data || []) {
-      // Map by various name formats to handle Odds API naming variations
-      const variants = [
-        team.name,
-        team.display_name,
-        team.name?.replace(' State ', ' St '),
-        team.display_name?.replace(' State ', ' St '),
-        // Variations for college teams
-        team.name?.replace(' Wildcats', '').replace(' Tigers', '').replace(' Bulldogs', ''),
-      ].filter(Boolean)
+      if (!team.name || !team.logo_url) continue
       
-      for (const variant of variants) {
-        if (variant) {
-          const key = variant.toLowerCase().trim()
-          map.set(key, {
-            logo: team.logo_url || '',
-            abbreviation: team.abbreviation || ''
-          })
-        }
+      const teamInfo = { logo: team.logo_url, abbreviation: team.abbreviation || '' }
+      
+      // Map by full name (e.g., "Denver Broncos")
+      const fullName = team.city ? `${team.city} ${team.name}` : team.name
+      map.set(fullName.toLowerCase(), teamInfo)
+      
+      // Map by team name only (e.g., "Broncos")
+      map.set(team.name.toLowerCase(), teamInfo)
+      
+      // Map by city + name variations
+      if (team.city) {
+        map.set(`${team.city} ${team.name}`.toLowerCase(), teamInfo)
       }
     }
     
     teamDataCache = map
     teamDataCacheTime = now
-    console.log(`[Team Data] Cached ${map.size} team entries`)
+    console.log(`[Team Data] Cached ${map.size} team entries from DB`)
     return map
   } catch (e) {
     console.error('[Team Data] Error fetching teams:', e)
@@ -59,26 +56,31 @@ async function getTeamData(): Promise<Map<string, { logo: string; abbreviation: 
   }
 }
 
-// Helper to get logo for a team name
-function getTeamInfo(teamName: string, teamData: Map<string, { logo: string; abbreviation: string }>) {
-  // Try exact match first
-  let info = teamData.get(teamName.toLowerCase().trim())
+// Helper to get logo for a team name - tries multiple matching strategies
+function getTeamInfo(teamName: string, teamData: Map<string, { logo: string; abbreviation: string }>): { logo: string; abbreviation: string } {
+  const nameLower = teamName.toLowerCase().trim()
   
-  // Try removing city prefix (e.g., "Los Angeles Lakers" -> "Lakers")
-  if (!info) {
-    const words = teamName.split(' ')
-    if (words.length > 1) {
-      info = teamData.get(words[words.length - 1].toLowerCase())
-    }
+  // Try exact match
+  let info = teamData.get(nameLower)
+  if (info?.logo) return info
+  
+  // Try just the mascot (last word) - e.g., "Broncos" from "Denver Broncos"
+  const words = teamName.split(' ')
+  if (words.length > 1) {
+    info = teamData.get(words[words.length - 1].toLowerCase())
+    if (info?.logo) return info
   }
   
-  // Try last two words (e.g., "Golden State Warriors" -> "warriors")
-  if (!info && teamName.split(' ').length > 2) {
-    const words = teamName.split(' ')
-    info = teamData.get(words.slice(-2).join(' ').toLowerCase())
-  }
+  // Try without common suffixes
+  const cleaned = nameLower.replace(' state', '').replace(' university', '')
+  info = teamData.get(cleaned)
+  if (info?.logo) return info
   
-  return info || { logo: '', abbreviation: teamName.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK' }
+  // Fallback - generate abbreviation
+  return { 
+    logo: '', 
+    abbreviation: words[words.length - 1].substring(0, 3).toUpperCase() 
+  }
 }
 
 export async function GET(request: Request) {
@@ -88,6 +90,8 @@ export async function GET(request: Request) {
   try {
     // Pre-fetch team data for logos and abbreviations
     const teamData = await getTeamData()
+    console.log(`[Live Odds] Using ${teamData.size} cached teams for logo lookup`)
+    
     // Query that gets both opening (first) and current (latest) snapshots per game
     // ONLY upcoming games (game_time > now())
     // Use absolute latest snapshot for current lines (to match timeline graph)
