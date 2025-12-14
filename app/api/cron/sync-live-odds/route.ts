@@ -312,29 +312,36 @@ export async function GET(request: Request) {
               ? (currentMonth >= 9 ? currentYear + 1 : currentYear) // Oct+ = next year's season
               : currentYear // CFB uses calendar year
             
-            try {
-              const gamesUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/Games/${season}?key=${SPORTSDATA_API_KEY}`
-              const gamesResp = await fetch(gamesUrl)
-              
-              if (gamesResp.ok) {
-                const allGames = await gamesResp.json()
-                const todayStr = today.toISOString().split('T')[0]
-                const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-                const nextWeekStr = nextWeek.toISOString().split('T')[0]
+            // CFB needs both REG and POST season games (bowl games)
+            const seasonsToQuery = sportConfig.sport === 'cfb' 
+              ? [season.toString(), `${season}POST`]
+              : [season.toString()]
+            
+            for (const seasonStr of seasonsToQuery) {
+              try {
+                const gamesUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/Games/${seasonStr}?key=${SPORTSDATA_API_KEY}`
+                const gamesResp = await fetch(gamesUrl)
                 
-                // Filter for upcoming games (within next 7 days)
-                for (const game of allGames || []) {
-                  const gameDate = (game.Day || game.DateTime || '').split('T')[0]
-                  if (gameDate >= todayStr && gameDate <= nextWeekStr) {
-                    const gameId = game.GameID || game.GameId
-                    if (gameId && game.HomeTeam && game.AwayTeam) {
-                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                if (gamesResp.ok) {
+                  const allGames = await gamesResp.json()
+                  const todayStr = today.toISOString().split('T')[0]
+                  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+                  const nextWeekStr = nextWeek.toISOString().split('T')[0]
+                  
+                  // Filter for upcoming games (within next 7 days)
+                  for (const game of allGames || []) {
+                    const gameDate = (game.Day || game.DateTime || '').split('T')[0]
+                    if (gameDate >= todayStr && gameDate <= nextWeekStr) {
+                      const gameId = game.GameID || game.GameId
+                      if (gameId && game.HomeTeam && game.AwayTeam) {
+                        gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                      }
                     }
                   }
                 }
+              } catch (e) {
+                console.error(`[${sportConfig.sport.toUpperCase()}] Error fetching Games/${seasonStr}:`, e)
               }
-            } catch (e) {
-              console.error(`[${sportConfig.sport.toUpperCase()}] Error fetching Games/${season}:`, e)
             }
           }
           
