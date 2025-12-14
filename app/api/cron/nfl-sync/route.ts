@@ -518,6 +518,7 @@ async function processCompletedGames(): Promise<SyncResult> {
     let oddsFetched = 0
     
     // Step 2: Update game scores, odds (if missing), and derived fields
+    let gamesInserted = 0
     for (const game of gamesNeedingSync) {
       if (game.needsScoreUpdate) {
         try {
@@ -526,9 +527,44 @@ async function processCompletedGames(): Promise<SyncResult> {
             SELECT game_id, spread_close, total_close FROM nfl_games WHERE game_id = ${game.gameId}
           `)
           
-          if (gameExists.data[0]) {
-            let spread = gameExists.data[0].spread_close || 0
-            let total = gameExists.data[0].total_close || 0
+          // SELF-HEALING: If game doesn't exist, INSERT it first
+          if (!gameExists.data[0]) {
+            console.log(`[NFL Sync] Game ${game.gameId} not in database - INSERTING...`)
+            
+            // Get division/conference flags
+            const { isDivision, isConference } = getDivisionConferenceFlags(game.homeTeamId, game.awayTeamId)
+            const gameDate = new Date(game.gameDate).toISOString().split('T')[0]
+            const season = new Date(game.gameDate).getMonth() >= 8 
+              ? new Date(game.gameDate).getFullYear() + 1 
+              : new Date(game.gameDate).getFullYear()
+            
+            await clickhouseCommand(`
+              INSERT INTO nfl_games (
+                game_id, game_time, game_date, home_team_id, away_team_id,
+                home_score, away_score, is_division_game, is_conference_game,
+                season, week
+              ) VALUES (
+                ${game.gameId},
+                parseDateTimeBestEffort('${game.gameDate}'),
+                '${gameDate}',
+                ${game.homeTeamId}, ${game.awayTeamId},
+                ${game.homeScore}, ${game.awayScore},
+                ${isDivision}, ${isConference},
+                ${season}, 0
+              )
+            `)
+            gamesInserted++
+            console.log(`[NFL Sync] ✓ Inserted game ${game.gameId}`)
+          }
+          
+          // Re-fetch to get the game (either existing or just inserted)
+          const gameData = await clickhouseQuery(`
+            SELECT game_id, spread_close, total_close FROM nfl_games WHERE game_id = ${game.gameId}
+          `)
+          
+          if (gameData.data[0]) {
+            let spread = gameData.data[0].spread_close || 0
+            let total = gameData.data[0].total_close || 0
             
             // SELF-HEALING: If odds are missing, try multiple sources
             if (spread === 0 || total === 0) {
@@ -849,6 +885,7 @@ async function processCompletedGames(): Promise<SyncResult> {
       details: { 
         games_checked: events.filter((e: any) => e.status?.type?.state === 'post').length,
         games_needing_sync: gamesNeedingSync.length,
+        games_inserted: gamesInserted,
         games_updated: gamesUpdated,
         odds_fetched_from_espn: oddsFetched,
         games_fixed_missing_odds: gamesFixedOdds,
