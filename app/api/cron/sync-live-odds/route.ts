@@ -198,48 +198,65 @@ export async function GET(request: Request) {
       `)
       const seenGameIds = new Set((seenGamesQuery.data || []).map(g => g.odds_api_game_id))
       
-      // Step 3: Fetch public betting from SportsDataIO
-      // IMPORTANT: Use ScoreIDs from nfl_games table for NFL (ScoresByDate returns 401 for future dates)
+      // Step 3: Fetch public betting from SportsDataIO for ALL sports
       const publicBettingMap = new Map<string, { spreadBet: number; spreadMoney: number; mlBet: number; mlMoney: number; totalBet: number; totalMoney: number }>()
       
-      if (SPORTSDATA_API_KEY && sportConfig.sport === 'nfl') {
+      if (SPORTSDATA_API_KEY) {
         try {
-          // Get ScoreIDs from nfl_games table in ClickHouse
-          const scoreIdsQuery = `
-            SELECT 
-              sportsdata_io_score_id as score_id,
-              ht.abbreviation as home_abbr,
-              at.abbreviation as away_abbr
-            FROM nfl_games g
-            LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
-            LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
-            WHERE g.game_time >= now() - INTERVAL 1 HOUR
-              AND g.game_time <= now() + INTERVAL 7 DAY
-              AND g.sportsdata_io_score_id > 0
-            LIMIT 50
-          `
+          console.log(`[${sportConfig.sport.toUpperCase()}] Fetching public betting from SportsDataIO...`)
           
-          const scoreIdsResult = await clickhouseQuery<{
-            score_id: number
-            home_abbr: string
-            away_abbr: string
-          }>(scoreIdsQuery)
+          // Get upcoming games by date for the next 7 days
+          const today = new Date()
+          const gamesToFetch: { gameId: number; homeAbbr: string; awayAbbr: string }[] = []
           
-          const scoreIdsData = scoreIdsResult.data || []
-          console.log(`[NFL] Found ${scoreIdsData.length} games with ScoreIDs in nfl_games`)
-          
-          // Fetch betting splits for each ScoreID
-          for (const game of scoreIdsData) {
-            if (!game.score_id) continue
+          for (let i = 0; i < 7; i++) {
+            const date = new Date(today)
+            date.setDate(date.getDate() + i)
+            const dateStr = date.toISOString().split('T')[0]
             
             try {
-              const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${game.score_id}?key=${SPORTSDATA_API_KEY}`
+              // Different endpoints for different sports
+              let scheduleUrl = ''
+              if (sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb') {
+                scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/ScoresByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+              } else {
+                // NBA and NHL use GamesByDate
+                scheduleUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
+              }
+              
+              const scheduleResp = await fetch(scheduleUrl)
+              if (scheduleResp.ok) {
+                const games = await scheduleResp.json()
+                for (const game of games || []) {
+                  const gameId = game.ScoreID || game.GameID || game.GameId
+                  const homeAbbr = game.HomeTeam || ''
+                  const awayAbbr = game.AwayTeam || ''
+                  if (gameId && homeAbbr && awayAbbr) {
+                    gamesToFetch.push({ gameId, homeAbbr, awayAbbr })
+                  }
+                }
+              }
+            } catch (e) {
+              // Continue if single date fails
+            }
+          }
+          
+          console.log(`[${sportConfig.sport.toUpperCase()}] Found ${gamesToFetch.length} games from schedule`)
+          
+          // Fetch betting splits for each game
+          for (const game of gamesToFetch.slice(0, 50)) { // Limit to 50 games
+            try {
+              // Use appropriate endpoint for each sport
+              const splitsUrl = (sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb')
+                ? `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/odds/json/BettingSplitsByScoreId/${game.gameId}?key=${SPORTSDATA_API_KEY}`
+                : `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/odds/json/BettingSplitsByGameId/${game.gameId}?key=${SPORTSDATA_API_KEY}`
+              
               const splitsResponse = await fetch(splitsUrl)
               
               if (splitsResponse.ok) {
                 const splits = await splitsResponse.json()
                 if (splits?.BettingMarketSplits) {
-                  const key = `${game.home_abbr}_${game.away_abbr}`.toUpperCase()
+                  const key = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
                   
                   let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
                   
@@ -247,13 +264,18 @@ export async function GET(request: Request) {
                     const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
                     const overSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Over')
                     
-                    if (market.BettingBetType === 'Spread' && homeSplit) {
+                    // Different bet type names per sport
+                    const spreadTypes = ['Spread', 'Point Spread']
+                    const mlTypes = ['Moneyline', 'Money Line']
+                    const totalTypes = ['Total Points', 'Total', 'Over/Under']
+                    
+                    if (spreadTypes.includes(market.BettingBetType) && homeSplit) {
                       spreadBet = homeSplit.BetPercentage || 50
                       spreadMoney = homeSplit.MoneyPercentage || 50
-                    } else if (market.BettingBetType === 'Moneyline' && homeSplit) {
+                    } else if (mlTypes.includes(market.BettingBetType) && homeSplit) {
                       mlBet = homeSplit.BetPercentage || 50
                       mlMoney = homeSplit.MoneyPercentage || 50
-                    } else if (market.BettingBetType === 'Total Points' && overSplit) {
+                    } else if (totalTypes.includes(market.BettingBetType) && overSplit) {
                       totalBet = overSplit.BetPercentage || 50
                       totalMoney = overSplit.MoneyPercentage || 50
                     }
@@ -266,9 +288,9 @@ export async function GET(request: Request) {
               // Continue if single game fails
             }
           }
-          console.log(`[NFL] Loaded ${publicBettingMap.size} games with public betting from SportsDataIO`)
+          console.log(`[${sportConfig.sport.toUpperCase()}] Loaded ${publicBettingMap.size} games with public betting`)
         } catch (e: any) {
-          console.error(`[NFL] Public betting fetch error:`, e.message)
+          console.error(`[${sportConfig.sport.toUpperCase()}] Public betting fetch error:`, e.message)
         }
       }
       

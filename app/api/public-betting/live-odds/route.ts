@@ -1,55 +1,84 @@
 import { NextResponse } from 'next/server'
 import { clickhouseQuery } from '@/lib/clickhouse'
 
-// NFL team name to logo URL mapping
-const NFL_LOGOS: Record<string, string> = {
-  'Arizona Cardinals': 'https://a.espncdn.com/i/teamlogos/nfl/500/ari.png',
-  'Atlanta Falcons': 'https://a.espncdn.com/i/teamlogos/nfl/500/atl.png',
-  'Baltimore Ravens': 'https://a.espncdn.com/i/teamlogos/nfl/500/bal.png',
-  'Buffalo Bills': 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
-  'Carolina Panthers': 'https://a.espncdn.com/i/teamlogos/nfl/500/car.png',
-  'Chicago Bears': 'https://a.espncdn.com/i/teamlogos/nfl/500/chi.png',
-  'Cincinnati Bengals': 'https://a.espncdn.com/i/teamlogos/nfl/500/cin.png',
-  'Cleveland Browns': 'https://a.espncdn.com/i/teamlogos/nfl/500/cle.png',
-  'Dallas Cowboys': 'https://a.espncdn.com/i/teamlogos/nfl/500/dal.png',
-  'Denver Broncos': 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png',
-  'Detroit Lions': 'https://a.espncdn.com/i/teamlogos/nfl/500/det.png',
-  'Green Bay Packers': 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png',
-  'Houston Texans': 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png',
-  'Indianapolis Colts': 'https://a.espncdn.com/i/teamlogos/nfl/500/ind.png',
-  'Jacksonville Jaguars': 'https://a.espncdn.com/i/teamlogos/nfl/500/jax.png',
-  'Kansas City Chiefs': 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
-  'Las Vegas Raiders': 'https://a.espncdn.com/i/teamlogos/nfl/500/lv.png',
-  'Los Angeles Chargers': 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png',
-  'Los Angeles Rams': 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png',
-  'Miami Dolphins': 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png',
-  'Minnesota Vikings': 'https://a.espncdn.com/i/teamlogos/nfl/500/min.png',
-  'New England Patriots': 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png',
-  'New Orleans Saints': 'https://a.espncdn.com/i/teamlogos/nfl/500/no.png',
-  'New York Giants': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png',
-  'New York Jets': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png',
-  'Philadelphia Eagles': 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png',
-  'Pittsburgh Steelers': 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png',
-  'San Francisco 49ers': 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png',
-  'Seattle Seahawks': 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png',
-  'Tampa Bay Buccaneers': 'https://a.espncdn.com/i/teamlogos/nfl/500/tb.png',
-  'Tennessee Titans': 'https://a.espncdn.com/i/teamlogos/nfl/500/ten.png',
-  'Washington Commanders': 'https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png',
+// Cache for team data from ClickHouse
+let teamDataCache: Map<string, { logo: string; abbreviation: string }> | null = null
+let teamDataCacheTime = 0
+
+// Fetch all team data from ClickHouse teams table (cached for 1 hour)
+async function getTeamData(): Promise<Map<string, { logo: string; abbreviation: string }>> {
+  const now = Date.now()
+  if (teamDataCache && (now - teamDataCacheTime) < 60 * 60 * 1000) {
+    return teamDataCache
+  }
+  
+  try {
+    const result = await clickhouseQuery<{
+      name: string
+      display_name: string
+      abbreviation: string
+      logo_url: string
+      sport: string
+    }>(`
+      SELECT name, display_name, abbreviation, logo_url, sport 
+      FROM teams 
+      WHERE sport IN ('nfl', 'nba', 'nhl', 'cfb', 'ncaab')
+    `)
+    
+    const map = new Map<string, { logo: string; abbreviation: string }>()
+    
+    for (const team of result.data || []) {
+      // Map by various name formats to handle Odds API naming variations
+      const variants = [
+        team.name,
+        team.display_name,
+        team.name?.replace(' State ', ' St '),
+        team.display_name?.replace(' State ', ' St '),
+        // Variations for college teams
+        team.name?.replace(' Wildcats', '').replace(' Tigers', '').replace(' Bulldogs', ''),
+      ].filter(Boolean)
+      
+      for (const variant of variants) {
+        if (variant) {
+          const key = variant.toLowerCase().trim()
+          map.set(key, {
+            logo: team.logo_url || '',
+            abbreviation: team.abbreviation || ''
+          })
+        }
+      }
+    }
+    
+    teamDataCache = map
+    teamDataCacheTime = now
+    console.log(`[Team Data] Cached ${map.size} team entries`)
+    return map
+  } catch (e) {
+    console.error('[Team Data] Error fetching teams:', e)
+    return teamDataCache || new Map()
+  }
 }
 
-// NFL team abbreviations
-const NFL_ABBREVS: Record<string, string> = {
-  'Arizona Cardinals': 'ARI', 'Atlanta Falcons': 'ATL', 'Baltimore Ravens': 'BAL',
-  'Buffalo Bills': 'BUF', 'Carolina Panthers': 'CAR', 'Chicago Bears': 'CHI',
-  'Cincinnati Bengals': 'CIN', 'Cleveland Browns': 'CLE', 'Dallas Cowboys': 'DAL',
-  'Denver Broncos': 'DEN', 'Detroit Lions': 'DET', 'Green Bay Packers': 'GB',
-  'Houston Texans': 'HOU', 'Indianapolis Colts': 'IND', 'Jacksonville Jaguars': 'JAX',
-  'Kansas City Chiefs': 'KC', 'Las Vegas Raiders': 'LV', 'Los Angeles Chargers': 'LAC',
-  'Los Angeles Rams': 'LAR', 'Miami Dolphins': 'MIA', 'Minnesota Vikings': 'MIN',
-  'New England Patriots': 'NE', 'New Orleans Saints': 'NO', 'New York Giants': 'NYG',
-  'New York Jets': 'NYJ', 'Philadelphia Eagles': 'PHI', 'Pittsburgh Steelers': 'PIT',
-  'San Francisco 49ers': 'SF', 'Seattle Seahawks': 'SEA', 'Tampa Bay Buccaneers': 'TB',
-  'Tennessee Titans': 'TEN', 'Washington Commanders': 'WAS',
+// Helper to get logo for a team name
+function getTeamInfo(teamName: string, teamData: Map<string, { logo: string; abbreviation: string }>) {
+  // Try exact match first
+  let info = teamData.get(teamName.toLowerCase().trim())
+  
+  // Try removing city prefix (e.g., "Los Angeles Lakers" -> "Lakers")
+  if (!info) {
+    const words = teamName.split(' ')
+    if (words.length > 1) {
+      info = teamData.get(words[words.length - 1].toLowerCase())
+    }
+  }
+  
+  // Try last two words (e.g., "Golden State Warriors" -> "warriors")
+  if (!info && teamName.split(' ').length > 2) {
+    const words = teamName.split(' ')
+    info = teamData.get(words.slice(-2).join(' ').toLowerCase())
+  }
+  
+  return info || { logo: '', abbreviation: teamName.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK' }
 }
 
 export async function GET(request: Request) {
@@ -57,6 +86,8 @@ export async function GET(request: Request) {
   const sport = searchParams.get('sport') || 'all'
   
   try {
+    // Pre-fetch team data for logos and abbreviations
+    const teamData = await getTeamData()
     // Query that gets both opening (first) and current (latest) snapshots per game
     // ONLY upcoming games (game_time > now())
     // Use absolute latest snapshot for current lines (to match timeline graph)
@@ -213,11 +244,13 @@ export async function GET(request: Request) {
         respected = 'Lean'
       }
       
-      // Get logos and abbreviations
-      const homeLogo = NFL_LOGOS[game.home_team] || ''
-      const awayLogo = NFL_LOGOS[game.away_team] || ''
-      const homeAbbrev = NFL_ABBREVS[game.home_team] || game.home_team.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK'
-      const awayAbbrev = NFL_ABBREVS[game.away_team] || game.away_team.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK'
+      // Get logos and abbreviations from cached team data
+      const homeInfo = getTeamInfo(game.home_team, teamData)
+      const awayInfo = getTeamInfo(game.away_team, teamData)
+      const homeLogo = homeInfo.logo
+      const awayLogo = awayInfo.logo
+      const homeAbbrev = homeInfo.abbreviation
+      const awayAbbrev = awayInfo.abbreviation
       
       return {
         id: game.odds_api_game_id,
