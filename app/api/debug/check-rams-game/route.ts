@@ -18,7 +18,9 @@ export async function GET() {
         public_spread_home_bet_pct,
         public_spread_home_money_pct,
         public_ml_home_bet_pct,
-        public_ml_home_money_pct
+        public_ml_home_money_pct,
+        public_total_over_bet_pct,
+        public_total_over_money_pct
       FROM games
       WHERE sport = 'nfl'
       ORDER BY game_time
