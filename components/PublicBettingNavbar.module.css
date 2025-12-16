@@ -34,7 +34,7 @@
 .logoLink {
   display: flex;
   align-items: center;
-  height: 32px;
+  height: 40px;
 }
 
 .navItems {
@@ -43,7 +43,8 @@
   align-items: center;
   gap: 24px;
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-left: 48px;
 }
 
 .navLink {
@@ -178,51 +179,166 @@
   border-radius: 6px;
 }
 
+/* Hamburger Menu */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1002;
+}
+
+.hamburger span {
+  width: 24px;
+  height: 2px;
+  background: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+/* Mobile Menu */
+.mobileOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+}
+
+.mobileMenu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  background: #1a1a1a;
+  z-index: 1002;
+  padding: 80px 24px 24px 24px;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobileNavLink,
+.mobileNavLinkActive {
+  display: block;
+  padding: 12px 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mobileNavLink {
+  color: #8A8A8A;
+}
+
+.mobileNavLinkActive {
+  color: #FFFFFF;
+}
+
+.mobileDivider {
+  height: 1px;
+  background: #333333;
+  margin: 16px 0;
+}
+
+.mobileSectionTitle {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #535353;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .navItems {
     gap: 16px;
+    margin-left: 24px;
   }
 
   .navLink,
   .navLinkActive,
   .dropdownButton {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
 @media (max-width: 768px) {
   .navbar {
-    height: auto;
-    min-height: 68px;
-    padding: 12px;
+    height: 68px;
+    padding: 12px 16px;
   }
 
   .container {
-    flex-wrap: wrap;
     gap: 16px;
+    justify-content: space-between;
+  }
+
+  .hamburger {
+    display: flex;
+    order: 1;
   }
 
   .logoSection {
-    flex: 1 1 auto;
+    order: 2;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .logoLink {
+    height: 32px;
   }
 
   .navItems {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: none;
   }
 
   .authSection {
-    order: 2;
+    order: 3;
+    margin-left: auto;
   }
 
-  .navLink,
-  .navLinkActive,
-  .dropdownButton {
+  .authButtons {
+    gap: 8px;
+  }
+
+  .signInButton {
     font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .signUpButton {
+    font-size: 14px;
+    padding: 6px 16px;
+  }
+
+  .mobileOverlay {
+    display: block;
+  }
+
+  .mobileMenu {
+    display: block;
   }
 }
 
