@@ -14,6 +14,9 @@ export async function GET(
   }
   
   try {
+    // Extract the Odds API game ID by removing sport prefix (e.g., "nfl_abc123" -> "abc123")
+    const oddsApiGameId = gameId.includes('_') ? gameId.split('_').slice(1).join('_') : gameId
+    
     // Build time filter condition
     let timeCondition = ''
     if (timeFilter === '24hr') {
@@ -42,7 +45,7 @@ export async function GET(
           ELSE false
         END as hasRealBetting
       FROM live_odds_snapshots
-      WHERE odds_api_game_id = '${gameId}'
+      WHERE odds_api_game_id = '${oddsApiGameId}'
       ${timeCondition}
       ORDER BY snapshot_time ASC
     `
