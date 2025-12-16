@@ -484,6 +484,7 @@ export async function GET(request: Request) {
           gamesProcessed++
           
           // ALSO update the universal games table with public betting data
+          // Note: Can't update updated_at as it's the version column in ReplacingMergeTree
           try {
             const gameId = `${sportConfig.sport}_${game.id}`
             await clickhouseCommand(`
@@ -493,8 +494,7 @@ export async function GET(request: Request) {
                 public_ml_home_bet_pct = ${publicData?.mlBet || 50},
                 public_ml_home_money_pct = ${publicData?.mlMoney || 50},
                 public_total_over_bet_pct = ${publicData?.totalBet || 50},
-                public_total_over_money_pct = ${publicData?.totalMoney || 50},
-                updated_at = now()
+                public_total_over_money_pct = ${publicData?.totalMoney || 50}
               WHERE game_id = '${gameId}'
             `)
           } catch (updateError: any) {

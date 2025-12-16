@@ -13,14 +13,13 @@ export async function GET() {
       WHERE game_id = '${gameId}'
     `)
     
-    // Update
+    // Update (without updated_at - it's a key column in ReplacingMergeTree)
     await clickhouseCommand(`
       ALTER TABLE games UPDATE
         public_spread_home_bet_pct = 29,
         public_spread_home_money_pct = 71,
         public_ml_home_bet_pct = 30,
-        public_ml_home_money_pct = 70,
-        updated_at = now()
+        public_ml_home_money_pct = 70
       WHERE game_id = '${gameId}'
     `)
     
