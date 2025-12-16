@@ -53,8 +53,8 @@ export default function PublicBettingNavbar() {
             <Image
               src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
               alt="The Betting Insider"
-              width={240}
-              height={40}
+              width={280}
+              height={48}
               priority
             />
           </Link>
@@ -132,14 +132,7 @@ export default function PublicBettingNavbar() {
         {/* Auth Section */}
         <div className={styles.authSection}>
           {isSignedIn ? (
-            <UserButton 
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: styles.avatar
-                }
-              }}
-            />
+            <UserButton afterSignOutUrl="/" />
           ) : (
             <div className={styles.authButtons}>
               <Link href="/sign-in" className={styles.signInButton}>

@@ -4,7 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import { GoogleTagManager } from '@next/third-parties/google'
 import Script from 'next/script'
-import Navbar from '@/components/Navbar'
+import ConditionalNavbar from '@/components/ConditionalNavbar'
 import Footer from '@/components/Footer'
 import StructuredData from '@/components/StructuredData'
 
@@ -132,7 +132,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Script>
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          <Navbar />
+          <ConditionalNavbar />
           {children}
           <Footer />
           <GoogleTagManager gtmId="GTM-N78VK242" />

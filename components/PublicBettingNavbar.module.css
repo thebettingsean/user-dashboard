@@ -34,7 +34,7 @@
 .logoLink {
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 48px;
 }
 
 .navItems {
@@ -171,12 +171,6 @@
 
 .signUpButton:hover {
   background: #E0E0E0;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
 }
 
 /* Hamburger Menu */
