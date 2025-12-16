@@ -19,33 +19,31 @@ export const dynamic = 'force-dynamic'
 const ODDS_API_KEY = process.env.ODDS_API_KEY
 const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY
 
-// Sport configurations
+// Sport configurations - ALL use the universal 'games' table
 const SPORTS_CONFIG = [
   { 
     oddsApiKey: 'americanfootball_nfl', 
     sport: 'nfl',
-    table: 'nfl_games',
     sportsDataKey: 'nfl'
   },
   { 
     oddsApiKey: 'basketball_nba', 
     sport: 'nba',
-    table: 'nba_games',
     sportsDataKey: 'nba'
   },
   { 
     oddsApiKey: 'icehockey_nhl', 
     sport: 'nhl',
-    table: 'nhl_games',
     sportsDataKey: 'nhl'
   },
   { 
     oddsApiKey: 'americanfootball_ncaaf', 
     sport: 'cfb',
-    table: 'cfb_games',
     sportsDataKey: 'cfb'
   }
 ]
+
+const GAMES_TABLE = 'games' // Universal table for ALL sports
 
 interface TeamMapping {
   oddsApiName: string
@@ -125,67 +123,50 @@ export async function GET(request: NextRequest) {
           }
         }
         
-        // Generate a consistent game_id from Odds API game_id
-        const gameId = generateGameId(game.id, sportConfig.sport)
+        // Use Odds API game_id directly with sport prefix
+        const gameId = `${sportConfig.sport}_${game.id}`
         
         // Check if game exists
         const existing = await clickhouseQuery(`
-          SELECT game_id FROM ${sportConfig.table} WHERE game_id = ${gameId} LIMIT 1
+          SELECT game_id FROM ${GAMES_TABLE} WHERE game_id = '${gameId}' LIMIT 1
         `)
         
         if (existing.data.length === 0) {
-          // Insert new game (adjust columns based on sport)
-          const hasWeekColumn = sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb'
-          
-          if (hasWeekColumn) {
-            await clickhouseCommand(`
-              INSERT INTO ${sportConfig.table} (
-                game_id, game_time, game_date, home_team_id, away_team_id,
-                spread_open, total_open, home_ml_open, away_ml_open,
-                spread_close, total_close, home_ml_close, away_ml_close,
-                home_score, away_score, season, week, created_at, updated_at
-              ) VALUES (
-                ${gameId},
-                parseDateTimeBestEffort('${gameTime.toISOString()}'),
-                '${gameDate}',
-                ${homeTeam.teamId}, ${awayTeam.teamId},
-                ${spread}, ${total}, ${homeML}, ${awayML},
-                ${spread}, ${total}, ${homeML}, ${awayML},
-                0, 0, ${getCurrentSeason(sportConfig.sport)}, 0,
-                now(), now()
-              )
-            `)
-          } else {
-            await clickhouseCommand(`
-              INSERT INTO ${sportConfig.table} (
-                game_id, game_time, game_date, home_team_id, away_team_id,
-                spread_open, total_open, home_ml_open, away_ml_open,
-                spread_close, total_close, home_ml_close, away_ml_close,
-                home_score, away_score, season, created_at, updated_at
-              ) VALUES (
-                ${gameId},
-                parseDateTimeBestEffort('${gameTime.toISOString()}'),
-                '${gameDate}',
-                ${homeTeam.teamId}, ${awayTeam.teamId},
-                ${spread}, ${total}, ${homeML}, ${awayML},
-                ${spread}, ${total}, ${homeML}, ${awayML},
-                0, 0, ${getCurrentSeason(sportConfig.sport)},
-                now(), now()
-              )
-            `)
-          }
+          // Insert new game into universal games table
+          await clickhouseCommand(`
+            INSERT INTO ${GAMES_TABLE} (
+              game_id, sport, odds_api_game_id,
+              game_time, game_date, home_team_id, away_team_id,
+              spread_open, total_open, home_ml_open, away_ml_open,
+              spread_close, total_close, home_ml_close, away_ml_close,
+              home_score, away_score, status, season,
+              created_at, updated_at
+            ) VALUES (
+              '${gameId}',
+              '${sportConfig.sport}',
+              '${game.id}',
+              parseDateTimeBestEffort('${gameTime.toISOString()}'),
+              '${gameDate}',
+              ${homeTeam.teamId}, ${awayTeam.teamId},
+              ${spread}, ${total}, ${homeML}, ${awayML},
+              ${spread}, ${total}, ${homeML}, ${awayML},
+              0, 0, 'scheduled', ${getCurrentSeason(sportConfig.sport)},
+              now(), now()
+            )
+          `)
           gamesInserted++
           console.log(`[${sportConfig.sport}] ✅ Inserted: ${awayTeam.abbreviation} @ ${homeTeam.abbreviation} on ${gameDate}`)
         } else {
           // Update existing game with latest odds (closing lines)
           await clickhouseCommand(`
-            ALTER TABLE ${sportConfig.table} UPDATE
+            ALTER TABLE ${GAMES_TABLE} UPDATE
               spread_close = ${spread},
               total_close = ${total},
               home_ml_close = ${homeML},
               away_ml_close = ${awayML},
+              game_time = parseDateTimeBestEffort('${gameTime.toISOString()}'),
               updated_at = now()
-            WHERE game_id = ${gameId}
+            WHERE game_id = '${gameId}'
           `)
           gamesUpdated++
         }
