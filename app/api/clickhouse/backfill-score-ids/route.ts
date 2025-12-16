@@ -4,24 +4,20 @@ import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 export async function GET() {
   try {
     // For NFL: Copy ScoreIDs from nfl_games to universal games table
-    // Match by team IDs and game time
+    // Use a series of direct updates by matching team IDs and date
     const updateQuery = `
       ALTER TABLE games UPDATE
-        sportsdata_io_score_id = ng.sportsdata_io_score_id
-      FROM (
-        SELECT 
-          g.game_id,
-          ng.sportsdata_io_score_id
-        FROM games g
-        INNER JOIN nfl_games ng ON (
-          g.home_team_id = ng.home_team_id 
-          AND g.away_team_id = ng.away_team_id
-          AND toDate(g.game_time) = toDate(ng.game_time)
-          AND g.sport = 'nfl'
+        sportsdata_io_score_id = (
+          SELECT ng.sportsdata_io_score_id
+          FROM nfl_games ng
+          WHERE ng.home_team_id = games.home_team_id
+            AND ng.away_team_id = games.away_team_id
+            AND toDate(ng.game_time) = toDate(games.game_time)
+            AND ng.sportsdata_io_score_id > 0
+          LIMIT 1
         )
-        WHERE ng.sportsdata_io_score_id > 0
-      ) AS ng
-      WHERE games.game_id = ng.game_id
+      WHERE games.sport = 'nfl'
+        AND games.sportsdata_io_score_id = 0
     `
     
     await clickhouseCommand(updateQuery)
