@@ -483,6 +483,24 @@ export async function GET(request: Request) {
           await clickhouseCommand(insertSql)
           gamesProcessed++
           
+          // ALSO update the universal games table with public betting data
+          try {
+            const gameId = `${sportConfig.sport}_${game.id}`
+            await clickhouseCommand(`
+              ALTER TABLE games UPDATE
+                public_spread_home_bet_pct = ${publicData?.spreadBet || 50},
+                public_spread_home_money_pct = ${publicData?.spreadMoney || 50},
+                public_ml_home_bet_pct = ${publicData?.mlBet || 50},
+                public_ml_home_money_pct = ${publicData?.mlMoney || 50},
+                public_total_over_bet_pct = ${publicData?.totalBet || 50},
+                public_total_over_money_pct = ${publicData?.totalMoney || 50},
+                updated_at = now()
+              WHERE game_id = '${gameId}'
+            `)
+          } catch (updateError: any) {
+            console.error(`[${sportConfig.sport}] Failed to update games table for ${game.id}:`, updateError.message)
+          }
+          
         } catch (gameError: any) {
           console.error(`[${sportConfig.sport.toUpperCase()}] Error processing game ${game.id}:`, gameError.message)
         }
