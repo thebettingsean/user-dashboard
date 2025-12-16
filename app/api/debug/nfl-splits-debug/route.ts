@@ -14,28 +14,29 @@ export async function GET() {
     // Step 1: Check upcoming games in nfl_games
     const gamesQuery = `
       SELECT 
-        g.game_id,
-        ht.abbreviation as home_team,
-        at.abbreviation as away_team,
-        g.game_time,
-        g.sportsdata_io_score_id
-      FROM nfl_games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.id AND ht.sport = 'nfl'
-      LEFT JOIN teams at ON g.away_team_id = at.id AND at.sport = 'nfl'
-      WHERE g.game_time > now()
-      ORDER BY g.game_time
+        game_id,
+        home_team_id,
+        away_team_id,
+        game_time,
+        sportsdata_io_score_id
+      FROM nfl_games
+      WHERE game_time > now()
+      ORDER BY game_time
       LIMIT 10
     `
     
     const gamesResult = await clickhouseQuery<{
       game_id: string
-      home_team: string
-      away_team: string
+      home_team_id: number
+      away_team_id: number
       game_time: string
       sportsdata_io_score_id: number
     }>(gamesQuery)
     
-    results.upcomingGames = gamesResult.data || []
+    results.upcomingGames = (gamesResult.data || []).map((g: any) => ({
+      ...g,
+      hasScoreId: !!g.sportsdata_io_score_id
+    }))
     results.gamesWithScoreId = results.upcomingGames.filter((g: any) => g.sportsdata_io_score_id).length
     
     // Step 2: Test fetching splits for first game with ScoreID
@@ -47,7 +48,7 @@ export async function GET() {
       results.steps.push({
         step: 'Test BettingSplitsByScoreId',
         scoreId: gameWithScoreId.sportsdata_io_score_id,
-        game: `${gameWithScoreId.away_team} @ ${gameWithScoreId.home_team}`,
+        gameId: gameWithScoreId.game_id,
         url: splitsUrl.replace(SPORTSDATA_API_KEY, 'REDACTED')
       })
       
@@ -76,10 +77,11 @@ export async function GET() {
     // Step 3: Check games WITHOUT ScoreID
     const gamesWithoutScoreId = results.upcomingGames.filter((g: any) => !g.sportsdata_io_score_id)
     results.gamesWithoutScoreId = gamesWithoutScoreId.length
-    results.sampleGamesWithoutScoreId = gamesWithoutScoreId.slice(0, 3).map((g: any) => ({
-      game: `${g.away_team} @ ${g.home_team}`,
+    results.sampleGamesWithoutScoreId = gamesWithoutScoreId.slice(0, 5).map((g: any) => ({
+      gameId: g.game_id,
       gameTime: g.game_time,
-      gameId: g.game_id
+      homeTeamId: g.home_team_id,
+      awayTeamId: g.away_team_id
     }))
     
     return NextResponse.json(results)
