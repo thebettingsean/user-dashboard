@@ -264,6 +264,12 @@ function SportsEngineContent() {
     return 'trend'
   }
   
+  // Determine initial active section from URL path
+  const getActiveSectionFromPath = (path: string): 'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences' => {
+    if (path.includes('/mybuilds')) return 'myBuilds'
+    return 'builder'
+  }
+  
   // State
   const [queryType, setQueryType] = useState<QueryType>(() => getQueryTypeFromPath(pathname))
   const [loading, setLoading] = useState(false)
@@ -281,9 +287,7 @@ function SportsEngineContent() {
   const [expandedUpcomingGameId, setExpandedUpcomingGameId] = useState<string | null>(null)
   const [upcomingSortBy, setUpcomingSortBy] = useState<'time' | 'best_odds'>('time')
   
-  // Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>('builder')
+  const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>(() => getActiveSectionFromPath(pathname))
   
   // Saved queries state
   const { user, isSignedIn } = useUser()
@@ -1092,7 +1096,6 @@ function SportsEngineContent() {
       
       // Switch to builder section
       setActiveSection('builder')
-      setSidebarOpen(false)
       
       // Track that this query was loaded
       if (savedQuery.id) {
@@ -1140,6 +1143,14 @@ function SportsEngineContent() {
     const typeFromPath = getQueryTypeFromPath(pathname)
     if (typeFromPath !== queryType) {
       setQueryType(typeFromPath)
+    }
+  }, [pathname])
+  
+  // Sync active section with URL when path changes (for browser back/forward)
+  useEffect(() => {
+    const sectionFromPath = getActiveSectionFromPath(pathname)
+    if (sectionFromPath !== activeSection) {
+      setActiveSection(sectionFromPath)
     }
   }, [pathname])
   
@@ -3848,24 +3859,20 @@ function SportsEngineContent() {
       return (
         <div className={styles.additionalStats}>
           <div>
-            <span>{getAvgStatLabel()}:</span>
+            <span>{getAvgStatLabel()}</span>
             <strong>{result.avg_value}</strong>
           </div>
           <div>
-            <span>Avg vs Line:</span>
+            <span>Avg vs Line</span>
             <strong className={result.avg_differential > 0 ? styles.positive : styles.negative}>
               {result.avg_differential > 0 ? '+' : ''}{result.avg_differential}
             </strong>
           </div>
           <div>
-            <span>Current Streak:</span>
+            <span>Current Streak</span>
             <strong className={result.current_streak > 0 ? styles.positive : styles.negative}>
               {result.current_streak > 0 ? `${result.current_streak}W` : `${Math.abs(result.current_streak)}L`}
             </strong>
-          </div>
-          <div>
-            <span>Best Streak:</span>
-            <strong>{result.longest_hit_streak}W</strong>
           </div>
         </div>
       )
@@ -3875,20 +3882,16 @@ function SportsEngineContent() {
       return (
         <div className={styles.additionalStats}>
           <div>
-            <span>Avg Win Margin:</span>
+            <span>Avg Win Margin</span>
             <strong className={result.avg_value > 0 ? styles.positive : styles.negative}>
               {result.avg_value > 0 ? '+' : ''}{result.avg_value}
             </strong>
           </div>
           <div>
-            <span>Current Streak:</span>
+            <span>Current Streak</span>
             <strong className={result.current_streak > 0 ? styles.positive : styles.negative}>
               {result.current_streak > 0 ? `${result.current_streak}W` : `${Math.abs(result.current_streak)}L`}
             </strong>
-          </div>
-          <div>
-            <span>Best Streak:</span>
-            <strong>{result.longest_hit_streak}W</strong>
           </div>
         </div>
       )
@@ -3896,24 +3899,20 @@ function SportsEngineContent() {
       return (
         <div className={styles.additionalStats}>
           <div>
-            <span>Avg Total Points:</span>
+            <span>Avg Total Points</span>
             <strong>{result.avg_value}</strong>
           </div>
           <div>
-            <span>Avg Diff vs Total:</span>
+            <span>Avg Diff vs Total</span>
             <strong className={result.avg_differential > 0 ? styles.positive : styles.negative}>
               {result.avg_differential > 0 ? '+' : ''}{result.avg_differential}
             </strong>
           </div>
           <div>
-            <span>Current Streak:</span>
+            <span>Current Streak</span>
             <strong className={result.current_streak > 0 ? styles.positive : styles.negative}>
               {result.current_streak > 0 ? `${result.current_streak}W` : `${Math.abs(result.current_streak)}L`}
             </strong>
-          </div>
-          <div>
-            <span>Best Streak:</span>
-            <strong>{result.longest_hit_streak}W</strong>
           </div>
         </div>
       )
@@ -3922,26 +3921,22 @@ function SportsEngineContent() {
       return (
         <div className={styles.additionalStats}>
           <div>
-            <span>Avg Win Margin:</span>
+            <span>Avg Win Margin</span>
             <strong className={result.avg_value > 0 ? styles.positive : styles.negative}>
               {result.avg_value > 0 ? '+' : ''}{result.avg_value}
             </strong>
           </div>
           <div>
-            <span>Avg Cover Diff:</span>
+            <span>Avg Cover Diff</span>
             <strong className={result.avg_differential > 0 ? styles.positive : styles.negative}>
               {result.avg_differential > 0 ? '+' : ''}{result.avg_differential}
             </strong>
           </div>
           <div>
-            <span>Current Streak:</span>
+            <span>Current Streak</span>
             <strong className={result.current_streak > 0 ? styles.positive : styles.negative}>
               {result.current_streak > 0 ? `${result.current_streak}W` : `${Math.abs(result.current_streak)}L`}
             </strong>
-          </div>
-          <div>
-            <span>Best Streak:</span>
-            <strong>{result.longest_hit_streak}W</strong>
           </div>
         </div>
       )
@@ -3952,101 +3947,124 @@ function SportsEngineContent() {
     <div className={styles.container}>
       <div className={styles.headerSpacer} />
       <header className={styles.header}>
-        <h1>
-          Builder <span className={styles.versionTag}>1.0</span>
-        </h1>
-        <p className={styles.tagline}>Test historical trends with any filter combination. For premium subs only.</p>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Builder</h1>
+              <span className={styles.betaTag}>BETA</span>
+            </div>
+            <p className={styles.subtitle}>Test historical trends with any filter combination. For premium subs only.</p>
+          </div>
+        </div>
+        
+        {/* Mobile Query Type Buttons */}
+        <div className={styles.mobileQueryTypes}>
+          <button
+            className={`${styles.filterBtn} ${queryType === 'trend' ? styles.active : ''}`}
+            onClick={() => navigateToQueryType('trend')}
+          >
+            Trends
+          </button>
+          <button
+            className={`${styles.filterBtn} ${queryType === 'team' ? styles.active : ''}`}
+            onClick={() => navigateToQueryType('team')}
+          >
+            Teams
+          </button>
+          <button
+            className={`${styles.filterBtn} ${queryType === 'referee' ? styles.active : ''}`}
+            onClick={() => navigateToQueryType('referee')}
+          >
+            Refs
+          </button>
+          <button
+            className={`${styles.filterBtn} ${queryType === 'prop' ? styles.active : ''}`}
+            onClick={() => navigateToQueryType('prop')}
+          >
+            Props
+          </button>
+        </div>
+        
+        <div className={styles.filtersRow}>
+          {/* Left side: Query Type Buttons */}
+          <div className={styles.leftFilters}>
+            <div className={styles.sportFilters}>
+              <button
+                className={`${styles.filterBtn} ${queryType === 'trend' ? styles.active : ''}`}
+                onClick={() => navigateToQueryType('trend')}
+              >
+                Trends
+              </button>
+              <button
+                className={`${styles.filterBtn} ${queryType === 'team' ? styles.active : ''}`}
+                onClick={() => navigateToQueryType('team')}
+              >
+                Teams
+              </button>
+              <button
+                className={`${styles.filterBtn} ${queryType === 'referee' ? styles.active : ''}`}
+                onClick={() => navigateToQueryType('referee')}
+              >
+                Refs
+              </button>
+              <button
+                className={`${styles.filterBtn} ${queryType === 'prop' ? styles.active : ''}`}
+                onClick={() => navigateToQueryType('prop')}
+              >
+                Props
+              </button>
+            </div>
+          </div>
+          
+          {/* Right side: Build / My Builds / Buddy / Top Builds */}
+          <div className={styles.marketFilters}>
+            <button
+              className={`${styles.filterBtn} ${activeSection === 'builder' ? styles.active : ''}`}
+              onClick={() => {
+                setActiveSection('builder')
+                // Navigate to the appropriate query type path
+                const paths: Record<QueryType, string> = {
+                  trend: '/builder',
+                  team: '/builder/teams',
+                  referee: '/builder/referees',
+                  prop: '/builder/props'
+                }
+                router.push(paths[queryType], { scroll: false })
+              }}
+            >
+              Build
+            </button>
+            <button
+              className={`${styles.filterBtn} ${activeSection === 'myBuilds' ? styles.active : ''}`}
+              onClick={() => {
+                setActiveSection('myBuilds')
+                router.push('/builder/mybuilds', { scroll: false })
+              }}
+            >
+              My Builds
+            </button>
+            <button
+              className={`${styles.filterBtn} ${activeSection === 'buddy' ? styles.active : ''} ${styles.filterBtnDisabled}`}
+              onClick={() => {}}
+              disabled
+            >
+              Buddy
+            </button>
+            <button
+              className={`${styles.filterBtn} ${activeSection === 'topBuilds' ? styles.active : ''} ${styles.filterBtnDisabled}`}
+              onClick={() => {}}
+              disabled
+            >
+              Top Builds
+            </button>
+          </div>
+        </div>
       </header>
 
       <div className={styles.mainWrapper}>
-        {/* Sidebar */}
-        <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-          <div className={styles.sidebarHeader}>
-            <span className={styles.sidebarTitle}>MENU</span>
-            <div className={styles.sportBadge}>
-              <img 
-                src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" 
-                alt="NFL" 
-                className={styles.sportLogo}
-              />
-            </div>
-            <button 
-              className={styles.sidebarClose}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <FiChevronLeft />
-            </button>
-          </div>
-          
-          <nav className={styles.sidebarNav}>
-            <button 
-              className={`${styles.sidebarItem} ${activeSection === 'builder' ? styles.sidebarItemActive : ''}`}
-              onClick={() => { setActiveSection('builder'); setSidebarOpen(false); }}
-            >
-              <FaHammer className={styles.sidebarIcon} />
-              <span>Builder</span>
-            </button>
-            
-            <button 
-              className={styles.sidebarItem}
-              onClick={() => router.push('/builder/my-builds')}
-            >
-              <FaToolbox className={styles.sidebarIcon} />
-              <span>My Builds</span>
-              {savedQueries.length > 0 && <span className={styles.badge}>{savedQueries.length}</span>}
-            </button>
-            
-            <button 
-              className={`${styles.sidebarItem} ${activeSection === 'buddy' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
-              onClick={() => {}}
-            >
-              <LuBot className={styles.sidebarIcon} />
-              <span>Buddy</span>
-              <span className={styles.soonTag}>soon</span>
-            </button>
-            
-            <button 
-              className={`${styles.sidebarItem} ${activeSection === 'topBuilds' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
-              onClick={() => {}}
-            >
-              <HiBuildingOffice2 className={styles.sidebarIcon} />
-              <span>Top Builds</span>
-              <span className={styles.soonTag}>soon</span>
-            </button>
-          </nav>
-          
-          <div className={styles.sidebarFooter}>
-            <button 
-              className={`${styles.sidebarItem} ${activeSection === 'preferences' ? styles.sidebarItemActive : ''} ${styles.sidebarItemDisabled}`}
-              onClick={() => {}}
-            >
-              <MdRoomPreferences className={styles.sidebarIcon} />
-              <span>Preferences</span>
-              <span className={styles.soonTag}>soon</span>
-            </button>
-          </div>
-        </aside>
-        
-        {/* Sidebar Toggle (when closed) */}
-        {!sidebarOpen && (
-          <button 
-            className={styles.sidebarToggle}
-            onClick={() => setSidebarOpen(true)}
-          >
-            <FiMenu />
-          </button>
-        )}
-        
-        {/* Sidebar Overlay (mobile) */}
-        {sidebarOpen && (
-          <div 
-            className={styles.sidebarOverlay}
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
 
         {activeSection === 'builder' && (
-        <div className={styles.layout}>
+        <div className={styles.layout} suppressHydrationWarning>
           {/* Builder Panel */}
           <div className={styles.panel}>
             <div className={styles.panelHeader}>
@@ -4059,41 +4077,6 @@ function SportsEngineContent() {
                 className={styles.sportLogo}
                 title="NFL"
               />
-            </div>
-          </div>
-
-          {/* Query Type */}
-          <div className={styles.section}>
-            <label>Query Type</label>
-            <div className={styles.buttonGroup}>
-              <button
-                className={`${styles.typeBtn} ${queryType === 'trend' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('trend')}
-              >
-                <IoMdTrendingUp className={styles.btnIcon} />
-                <span>Trends</span>
-              </button>
-              <button
-                className={`${styles.typeBtn} ${queryType === 'team' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('team')}
-              >
-                <PiFootballHelmetDuotone className={styles.btnIcon} />
-                <span>Teams</span>
-              </button>
-              <button
-                className={`${styles.typeBtn} ${queryType === 'referee' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('referee')}
-              >
-                <GiWhistle className={styles.btnIcon} />
-                <span>Refs</span>
-              </button>
-              <button
-                className={`${styles.typeBtn} ${queryType === 'prop' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('prop')}
-              >
-                <MdOutlineTipsAndUpdates className={styles.btnIcon} />
-                <span>Props</span>
-              </button>
             </div>
           </div>
 
@@ -5377,41 +5360,45 @@ function SportsEngineContent() {
         {/* Results Panel */}
         <div className={styles.resultsPanel}>
           <div className={styles.resultsPanelHeader}>
-            <h2>Results</h2>
-            <div className={styles.headerActions}>
-              {result && (
-                <div className={styles.upcomingToggle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <h2>Results</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {result && (
+                  <div className={styles.upcomingToggle}>
+                    <button
+                      className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
+                      onClick={() => setShowUpcoming(false)}
+                    >
+                      Historical
+                    </button>
+                    <button
+                      className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''} ${queryType === 'referee' ? styles.disabled : ''}`}
+                      onClick={() => queryType !== 'referee' && setShowUpcoming(true)}
+                      disabled={queryType === 'referee'}
+                      title={queryType === 'referee' ? 'Referee data not available for upcoming games' : ''}
+                    >
+                      <BsCalendarEvent /> Upcoming
+                    </button>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button
-                    className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
-                    onClick={() => setShowUpcoming(false)}
+                    className={styles.iconBtn}
+                    onClick={() => setShowSaveModal(true)}
+                    disabled={!isSignedIn}
+                    title={!isSignedIn ? 'Sign in to save' : 'Save this build'}
                   >
-                    Historical
+                    <HiOutlineSave />
                   </button>
                   <button
-                    className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''} ${queryType === 'referee' ? styles.disabled : ''}`}
-                    onClick={() => queryType !== 'referee' && setShowUpcoming(true)}
-                    disabled={queryType === 'referee'}
-                    title={queryType === 'referee' ? 'Referee data not available for upcoming games' : ''}
+                    className={styles.iconBtn}
+                    onClick={handleShare}
+                    title="Share this build"
                   >
-                    <BsCalendarEvent /> Upcoming
+                    {showCopiedToast ? <FiCheck /> : <FaShare />}
                   </button>
                 </div>
-              )}
-              <button
-                className={styles.iconBtn}
-                onClick={() => setShowSaveModal(true)}
-                disabled={!isSignedIn}
-                title={!isSignedIn ? 'Sign in to save' : 'Save this build'}
-              >
-                <HiOutlineSave />
-              </button>
-              <button
-                className={styles.iconBtn}
-                onClick={handleShare}
-                title="Share this build"
-              >
-                {showCopiedToast ? <FiCheck /> : <FaShare />}
-              </button>
+              </div>
             </div>
           </div>
 
@@ -5505,6 +5492,26 @@ function SportsEngineContent() {
                 {getAppliedFiltersDisplay().map((f, i) => (
                   <span key={i} className={styles.filterTag}>{f}</span>
                 ))}
+              </div>
+
+              {/* Historical | Upcoming Toggle - Mobile only below filters */}
+              <div className={styles.mobileUpcomingToggle}>
+                <div className={styles.upcomingToggle}>
+                  <button
+                    className={`${styles.toggleBtn} ${!showUpcoming ? styles.active : ''}`}
+                    onClick={() => setShowUpcoming(false)}
+                  >
+                    Historical
+                  </button>
+                  <button
+                    className={`${styles.toggleBtn} ${showUpcoming ? styles.active : ''} ${queryType === 'referee' ? styles.disabled : ''}`}
+                    onClick={() => queryType !== 'referee' && setShowUpcoming(true)}
+                    disabled={queryType === 'referee'}
+                    title={queryType === 'referee' ? 'Referee data not available for upcoming games' : ''}
+                  >
+                    Upcoming
+                  </button>
+                </div>
               </div>
 
               {/* Recent Games - only show when not in upcoming mode */}
@@ -5896,6 +5903,21 @@ function SportsEngineContent() {
       </div>
         )}
 
+        {activeSection === 'myBuilds' && (
+          <div className={styles.myBuildsContainer}>
+            <div className={styles.myBuildsSection}>
+              <div className={styles.myBuildsHeader}>
+                <h2 className={styles.myBuildsTitle}>My Builds</h2>
+                <button className={styles.filterBtn}>
+                  Filter
+                </button>
+              </div>
+              <div className={styles.myBuildsContent}>
+              </div>
+            </div>
+          </div>
+        )}
+
       {/* Save Query Modal */}
       {showSaveModal && (
         <div className={styles.modalOverlay} onClick={() => setShowSaveModal(false)}>
@@ -5967,7 +5989,6 @@ function SportsEngineContent() {
                 onClick={() => {
                   setShowSaveSuccessModal(false)
                   setActiveSection('myBuilds')
-                  setSidebarOpen(true)
                 }}
               >
                 View Builds

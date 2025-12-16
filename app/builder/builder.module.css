@@ -1,7 +1,11 @@
+/* Design System - Dark Theme (matching public-betting) */
 .container {
   min-height: 100vh;
-  color: #e6e6e6;
-  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
 }
 
 /* Main Wrapper - contains sidebar + content */
@@ -17,8 +21,8 @@
   top: 0;
   height: 100vh;
   width: 200px;
-  background: rgba(12, 12, 20, 0.98);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: #161920;
+  border-right: 1px solid rgba(50, 51, 53, 0.5);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -36,14 +40,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
   gap: 0.5rem;
 }
 
 .sidebarTitle {
   font-size: 0.65rem;
   font-weight: 600;
-  color: #555;
+  color: #696969;
   letter-spacing: 0.1em;
 }
 
@@ -97,7 +101,7 @@
   padding: 0.75rem 1rem;
   background: transparent;
   border: none;
-  color: #888;
+  color: #696969;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -108,14 +112,14 @@
 }
 
 .sidebarItem:hover:not(.sidebarItemDisabled) {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(41, 47, 63, 0.3);
+  color: #FFFFFF;
 }
 
 .sidebarItemActive {
-  background: rgba(139, 92, 246, 0.15);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
+  border: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .sidebarItemDisabled {
@@ -188,47 +192,157 @@
 }
 
 .header {
-  padding: 1rem 2rem;
-  text-align: center;
-  background: transparent;
+  margin-bottom: 24px;
 }
 
-.header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem;
-  color: #fff;
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
-.titleIcon {
-  font-size: 2.2rem;
-  color: #8b5cf6;
-  -webkit-text-fill-color: initial;
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
 }
 
-.header p {
-  color: #888;
+.betaTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #696969;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
   margin: 0;
-  font-size: 0.85rem;
+}
+
+/* Mobile Query Type Buttons - hidden on desktop */
+.mobileQueryTypes {
+  display: none;
+}
+
+/* Filters Row - Query Types left, Build options right */
+.filtersRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.leftFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sportFilters,
+.marketFilters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 4px;
+  height: 32px;
+}
+
+.filterBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.filterBtn:hover:not(:disabled) {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
+}
+
+.filterBtn.active {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
+}
+
+.filterBtn:disabled,
+.filterBtnDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* My Builds Container - Match layout styling */
+.myBuildsContainer {
+  max-width: 1800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* My Builds Section - Match resultsPanel styling exactly */
+.myBuildsSection {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background-size: 400% 400%;
+  background-position: center center;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+}
+
+.myBuildsHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.myBuildsTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.myBuildsContent {
+  flex: 1;
 }
 
 /* Beta Tag */
-.betaTag {
-  font-size: 0.6rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-  color: #fff;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  margin-left: 0.75rem;
-  vertical-align: middle;
-  letter-spacing: 0.05em;
-  -webkit-text-fill-color: #fff;
-}
 
 /* Version Tag - Silver Gradient */
 .versionTag {
@@ -257,7 +371,7 @@
   display: grid;
   grid-template-columns: 420px 1fr;
   gap: 1.5rem;
-  padding: 1rem 2rem;
+  padding: 0;
   max-width: 1800px;
   margin: 0 auto;
   width: 100%;
@@ -266,7 +380,7 @@
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 380px 1fr;
-    padding: 1rem;
+    padding: 0;
   }
 }
 
@@ -278,8 +392,10 @@
 
 /* Query Builder Panel */
 .panel {
-  background: rgba(20, 20, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background-size: 400% 400%;
+  background-position: center center;
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   padding: 1rem;
   backdrop-filter: blur(10px);
@@ -339,24 +455,33 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 1rem;
-  color: #fff;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  letter-spacing: -0.02em;
 }
 
 .section {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.section:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 
 .section label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .section select,
@@ -374,13 +499,21 @@
 .marginSection input {
   width: 100%;
   padding: 0.5rem;
-  background: rgba(15, 15, 25, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: #e6e6e6;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
   font-size: 0.75rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+}
+
+.section select:focus,
+.section input:focus,
+.filterBlock select:focus,
+.filterBlock input:focus {
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Custom select dropdown styling - remove browser defaults */
@@ -408,8 +541,8 @@
 .rangeGrid select:hover,
 .teamRow select:hover,
 .propRow select:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(25, 25, 40, 0.95);
+  border-color: rgba(50, 51, 53, 0.5);
+  background-color: #1D2530;
 }
 
 /* Style select options */
@@ -460,13 +593,14 @@
   justify-content: center;
   gap: 0.25rem;
   padding: 0.5rem 0.4rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: #888;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #696969;
   font-size: 0.65rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   font-family: inherit;
   min-height: 50px;
 }
@@ -476,14 +610,13 @@
 }
 
 .typeBtn:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
 }
 
 .typeBtn.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
-  border-color: #3b82f6;
-  color: #fff;
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 /* Filter Grid */
@@ -498,6 +631,10 @@
   margin-bottom: 0;
 }
 
+.filterGrid:last-child {
+  margin-bottom: 0;
+}
+
 .filterGrid > div {
   display: flex;
   flex-direction: column;
@@ -506,9 +643,10 @@
 
 .filterGrid span {
   font-size: 0.6rem;
-  color: #666;
+  color: #696969;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .filterGrid select,
@@ -526,7 +664,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .rangeInputs input {
@@ -535,8 +673,9 @@
 }
 
 .rangeInputs span {
-  color: #666;
+  color: #696969;
   font-size: 0.8rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Movement Labels */
@@ -549,10 +688,11 @@
 
 .hint {
   font-size: 0.6rem;
-  color: #555;
+  color: #696969;
   margin-top: 0.2rem;
   margin-bottom: 0.4rem;
   font-style: italic;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Team Stats Section */
@@ -595,19 +735,20 @@
   margin-top: 0.75rem;
 }
 
-/* Run Button - matches Load More Button */
+/* Run Button - matches public-betting style */
 .runBtn {
   flex: 1;
-  padding: 0.6rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 6px 12px;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
-  color: #93c5fd;
-  font-size: 0.8rem;
+  color: #FFFFFF;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -615,12 +756,12 @@
 }
 
 .runBtn svg {
-  font-size: 1rem;
+  font-size: 14px;
 }
 
 .runBtn:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .runBtn:disabled {
@@ -628,23 +769,24 @@
   cursor: not-allowed;
 }
 
-/* Clear Button - Red accent */
+/* Back Button - matches public-betting style */
 .backBtn {
-  padding: 0.6rem 0.85rem;
-  background: rgba(100, 100, 120, 0.1);
-  border: 1px solid rgba(100, 100, 120, 0.3);
+  padding: 6px 12px;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
-  color: #a0a0b0;
-  font-size: 0.75rem;
+  color: #696969;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .backBtn:hover:not(:disabled) {
-  background: rgba(100, 100, 120, 0.2);
-  border-color: rgba(100, 100, 120, 0.5);
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.7);
 }
 
 .backBtn:disabled {
@@ -653,36 +795,39 @@
 }
 
 .clearBtn {
-  padding: 0.6rem 0.85rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 6px 12px;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
-  color: #fca5a5;
-  font-size: 0.75rem;
+  color: #EF4444;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .clearBtn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .filtersAppliedCount {
   display: block;
-  font-size: 0.7rem;
-  color: #666;
+  font-size: 12px;
+  color: #696969;
   margin-top: 0.5rem;
   text-align: center;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Results Panel */
 .resultsPanel {
-  background: rgba(20, 20, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background-size: 400% 400%;
+  background-position: center center;
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   padding: 1rem;
   backdrop-filter: blur(10px);
@@ -692,7 +837,8 @@
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 1rem;
-  color: #fff;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
 }
 
 /* Stats Grid */
@@ -710,8 +856,8 @@
 }
 
 .statCard {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 10px;
   padding: 0.85rem;
   text-align: center;
@@ -753,7 +899,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
 }
 
 /* Additional Stats */
@@ -762,7 +908,8 @@
   flex-wrap: wrap;
   gap: 1rem;
   padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -776,12 +923,19 @@
 .additionalStats span {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: #666;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Add colons on desktop only */
+.additionalStats span::after {
+  content: ':';
 }
 
 .additionalStats strong {
   font-size: 1.1rem;
-  color: #fff;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .positive {
@@ -799,25 +953,27 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.75rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
 
 .filtersApplied strong {
-  color: #888;
+  color: #696969;
   font-size: 0.8rem;
   text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .filterTag {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
-  color: #93c5fd;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Games Section */
@@ -829,7 +985,8 @@
   font-size: 0.9rem;
   font-weight: 600;
   margin: 0 0 0.75rem;
-  color: #888;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .gamesList {
@@ -848,11 +1005,13 @@
   gap: 0.6rem;
   align-items: center;
   padding: 0.6rem 0.75rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
   border-left: 3px solid transparent;
   font-size: 0.8rem;
   transition: background 0.15s;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .gameRow.clickable {
@@ -860,7 +1019,7 @@
 }
 
 .gameRow.clickable:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(41, 47, 63, 0.25);
 }
 
 .gameRow.hit {
@@ -888,11 +1047,14 @@
 
 /* Game Details Expanded */
 .gameDetailsExpanded {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(29, 37, 48, 0.5);
   border-radius: 0 0 8px 8px;
   padding: 0.75rem 1rem;
-  margin-top: -4px;
-  border-left: 3px solid rgba(59, 130, 246, 0.3);
+  margin-top: -1px;
+  border-left: 3px solid rgba(50, 51, 53, 0.5);
+  border-top: none;
+  border-right: 1px solid rgba(50, 51, 53, 0.5);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
   animation: slideDown 0.2s ease-out;
 }
 
@@ -912,7 +1074,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.3rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .detailRow:last-child {
@@ -920,25 +1082,30 @@
 }
 
 .detailLabel {
-  color: #888;
+  color: #696969;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .detailValue {
-  color: #e0e0e0;
+  color: #FFFFFF;
   font-size: 0.8rem;
   font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Prop Box Score - Enhanced Full Stats Display */
 .propDetailsExpanded {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(29, 37, 48, 0.5);
   border-radius: 0 0 8px 8px;
   padding: 0.75rem 1rem;
-  margin-top: -4px;
-  border-left: 3px solid rgba(59, 130, 246, 0.3);
+  margin-top: -1px;
+  border-left: 3px solid rgba(50, 51, 53, 0.5);
+  border-top: none;
+  border-right: 1px solid rgba(50, 51, 53, 0.5);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
   animation: slideDown 0.2s ease-out;
 }
 
@@ -948,7 +1115,7 @@
   justify-content: space-between;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .propPlayerInfo {
@@ -958,14 +1125,16 @@
 }
 
 .propPlayerName {
-  color: #fff;
+  color: #FFFFFF;
   font-size: 0.95rem;
   font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .propGameInfo {
-  color: #888;
+  color: #696969;
   font-size: 0.75rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .boxScoreSection {
@@ -977,12 +1146,13 @@
 }
 
 .boxScoreSectionTitle {
-  color: #666;
+  color: #696969;
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .boxScoreGrid {
@@ -997,38 +1167,42 @@
   align-items: center;
   gap: 0.1rem;
   padding: 0.4rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(29, 37, 48, 0.5);
   border-radius: 6px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .boxScoreStat.highlighted {
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(41, 47, 63, 0.7);
+  border: 1px solid rgba(50, 51, 53, 0.8);
 }
 
 .boxScoreStat.highlighted .boxScoreValue {
-  color: #93c5fd;
+  color: #FFFFFF;
 }
 
 .boxScoreLabel {
-  color: #666;
+  color: #696969;
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   text-align: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .boxScoreValue {
-  color: #e0e0e0;
+  color: #FFFFFF;
   font-size: 1.1rem;
   font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .gameDate {
-  color: #666;
+  color: #696969;
   font-size: 0.75rem;
   white-space: nowrap;
   min-width: 85px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .gameTeam {
@@ -1058,13 +1232,15 @@
 .teamAbbr {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .atSymbol {
-  color: #666;
+  color: #696969;
   font-size: 0.75rem;
   margin: 0 0.15rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .teamLogo {
@@ -1143,21 +1319,23 @@
 /* Load More Button */
 .loadMoreBtn {
   width: 100%;
-  padding: 0.6rem;
+  padding: 6px 12px;
+  height: 32px;
   margin-top: 0.75rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
-  color: #93c5fd;
-  font-size: 0.8rem;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .loadMoreBtn:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 /* Section Icons */
@@ -1189,8 +1367,9 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  color: #fca5a5;
+  color: #EF4444;
   margin-bottom: 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Placeholder */
@@ -1199,8 +1378,9 @@
   align-items: center;
   justify-content: center;
   min-height: 300px;
-  color: #666;
+  color: #696969;
   font-size: 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================ */
@@ -1209,8 +1389,13 @@
 
 .filterBlock {
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 0.5rem;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.filterBlock:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 
 .filterBlockHeader {
@@ -1221,13 +1406,14 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .filterBlockHeader svg {
   font-size: 0.9rem;
-  color: #60a5fa;
+  color: #696969;
 }
 
 /* Collapsible Filter Block Header */
@@ -1240,17 +1426,18 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
   margin-bottom: 0.5rem;
   cursor: pointer;
   padding: 0.4rem 0.5rem;
   margin: -0.4rem -0.5rem 0.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background-color 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .filterBlockHeaderCollapsible:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(41, 47, 63, 0.5);
 }
 
 .filterHeaderLeft {
@@ -1261,12 +1448,12 @@
 
 .filterHeaderLeft svg {
   font-size: 0.9rem;
-  color: #60a5fa;
+  color: #696969;
 }
 
 .chevron {
   font-size: 1.2rem;
-  color: #666;
+  color: #696969;
   transition: transform 0.2s ease;
 }
 
@@ -1277,23 +1464,25 @@
   gap: 0.35rem;
   font-size: 0.6rem;
   font-weight: 600;
-  color: #666;
+  color: #696969;
   text-transform: uppercase;
   margin-top: 0.6rem;
   margin-bottom: 0.4rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .subHeader svg {
   font-size: 0.85rem;
-  color: #60a5fa;
+  color: #696969;
 }
 
 .filterHint {
   font-size: 0.5rem;
   font-weight: 400;
-  color: #888;
+  color: #696969;
   margin-left: 0.25rem;
   text-transform: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bettingLabel {
@@ -1333,9 +1522,10 @@
 
 .filterGrid3 span {
   font-size: 0.6rem;
-  color: #666;
+  color: #696969;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Range Grid (3 columns) */
@@ -1430,34 +1620,63 @@
 .propsSection {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  margin-bottom: 0.75rem;
 }
 
 .propRow {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  margin-bottom: 0.75rem;
+  margin-top: 0;
+}
+
+.propRow:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.propRow:nth-child(2) {
+  border-top: none;
+  padding-top: 0;
+}
+
+.propRow:nth-child(3) {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.propRow:last-child {
+  margin-bottom: 0;
 }
 
 .propRow label {
+  display: block;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #888;
+  letter-spacing: 0.05em;
+  color: #696969;
+  margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .propRow select,
 .propRow input {
   width: 100%;
   padding: 0.5rem;
-  background: rgba(15, 15, 25, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: #e6e6e6;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
   font-size: 0.75rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
 }
 
 .propRow select {
@@ -1473,15 +1692,15 @@
 
 .propRow select:hover,
 .propRow input:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(25, 25, 40, 0.95);
+  border-color: rgba(50, 51, 53, 0.5);
+  background-color: #1D2530;
 }
 
 .propRow select:focus,
 .propRow input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: rgba(50, 51, 53, 0.8);
+  background: #1D2530;
 }
 
 .lineInput {
@@ -1495,6 +1714,26 @@
 
 .playerSearchInput {
   width: 100%;
+  padding: 0.5rem;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+}
+
+.playerSearchInput:focus {
+  outline: none;
+  border-color: rgba(50, 51, 53, 0.8);
+  background: #1D2530;
+}
+
+.playerSearchInput::placeholder {
+  color: #4B5563;
 }
 
 .playerSearchDropdown {
@@ -1502,9 +1741,9 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(20, 20, 30, 0.98);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 6px;
+  background: rgba(29, 37, 48, 0.98);
+  border: 1px solid rgba(50, 51, 53, 0.8);
+  border-radius: 8px;
   max-height: 200px;
   overflow-y: auto;
   z-index: 100;
@@ -1515,16 +1754,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.65rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   cursor: pointer;
-  font-size: 0.8rem;
-  color: #ccc;
+  font-size: 0.75rem;
+  color: #FFFFFF;
   transition: background 0.15s;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .playerSearchOption:hover {
-  background: rgba(59, 130, 246, 0.2);
-  color: #fff;
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .playerOptionThumb {
@@ -1566,8 +1806,9 @@
 .resultPlayerName {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: #FFFFFF;
   margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
 }
 
 /* ============================================ */
@@ -1579,8 +1820,8 @@
   align-items: center;
   gap: 1rem;
   padding: 0.85rem;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   margin-bottom: 0.75rem;
 }
@@ -1613,42 +1854,44 @@
 .resultRecord {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
-  font-family: system-ui, -apple-system, sans-serif;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .resultHitRate {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #93c5fd;
+  color: #3B82F6;
   padding: 0.3rem 0.6rem;
   background: rgba(59, 130, 246, 0.15);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .resultHitRate[data-hot="true"] {
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.15);
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.15);
 }
 
 .resultHitRate[data-cold="true"] {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.15);
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .resultGames {
   font-size: 0.9rem;
-  color: #888;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Query Time Footer */
 .queryTimeFooter {
   text-align: right;
   font-size: 0.65rem;
-  color: #555;
+  color: #696969;
   padding-top: 0.5rem;
   margin-top: 0.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================ */
@@ -1661,9 +1904,11 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.65rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
   border-left: 3px solid transparent;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .propGameRow.clickable {
@@ -1671,7 +1916,7 @@
 }
 
 .propGameRow.clickable:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(41, 47, 63, 0.25);
 }
 
 .propGameRow.hit {
@@ -1684,8 +1929,8 @@
 
 .propGameDate {
   font-size: 0.7rem;
-  color: #666;
-  font-family: system-ui, -apple-system, sans-serif;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   white-space: nowrap;
   min-width: 85px;
 }
@@ -1732,19 +1977,22 @@
 .statHit {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #4ade80;
+  color: #22C55E;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .statMiss {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f87171;
+  color: #EF4444;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .statType {
   font-size: 0.6rem;
-  color: #666;
+  color: #696969;
   text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .propResult {
@@ -1772,16 +2020,24 @@
 
 .teamSearchRow {
   margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.teamSection > .teamSearchRow:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 
 .teamSearchRow label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .teamSearchWrapper {
@@ -1791,24 +2047,26 @@
 
 .teamSearchInput {
   width: 100%;
-  padding: 0.65rem;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 0.8rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  padding: 0.5rem;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
 }
 
 .teamSearchInput:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: rgba(50, 51, 53, 0.8);
+  background: #1D2530;
 }
 
 .teamSearchInput::placeholder {
-  color: #666;
+  color: #4B5563;
 }
 
 .teamSearchDropdown {
@@ -1867,29 +2125,30 @@
 
 .locationBtn {
   flex: 1;
-  padding: 0.65rem;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  color: #888;
-  font-size: 0.8rem;
-  font-family: system-ui, -apple-system, sans-serif;
+  padding: 0.5rem;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #696969;
+  font-size: 13px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .locationBtn:hover {
-  background: rgba(0, 0, 0, 0.8);
-  color: #aaa;
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .locationBtn.activeLocation {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: #3b82f6;
-  color: #93c5fd;
+  background: rgba(41, 47, 63, 0.6);
+  border-color: rgba(50, 51, 53, 0.8);
+  color: #FFFFFF;
 }
 
 /* Versus Section */
@@ -1899,12 +2158,13 @@
 
 .versusLabel {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: #696969;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Referee Game Count */
@@ -1945,46 +2205,48 @@
 .lineTypeToggle {
   display: flex;
   gap: 0.25rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  padding: 3px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  padding: 2px;
 }
 
 .lineTypeBtn {
   flex: 1;
-  padding: 0.4rem 0.6rem;
+  padding: 6px 12px;
+  height: 28px;
   background: transparent;
   border: none;
-  border-radius: 4px;
-  color: #666;
-  font-size: 0.7rem;
+  border-radius: 6px;
+  color: #696969;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
-  font-family: inherit;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .lineTypeBtn:hover {
-  color: #888;
-  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
 }
 
 .lineTypeBtn.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
-  color: #fff;
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 .lineTypeBtn.andBtn {
   flex: 0;
   min-width: 32px;
-  padding: 0.4rem 0.5rem;
+  padding: 6px 8px;
   font-weight: 600;
-  color: #888;
+  color: #696969;
 }
 
 .lineTypeBtn.andBtn.active {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.5) 0%, rgba(251, 191, 36, 0.5) 100%);
-  color: #fef3c7;
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 /* Range Inputs for Book Line */
@@ -1997,30 +2259,41 @@
 .rangeInput {
   flex: 1;
   padding: 0.5rem;
-  background: rgba(15, 15, 25, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: #e6e6e6;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
   font-size: 0.75rem;
   text-align: center;
   max-width: 80px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
+}
+
+.rangeInput:focus {
+  outline: none;
+  border-color: rgba(50, 51, 53, 0.8);
+  background: #1D2530;
 }
 
 .rangeInput::placeholder {
-  color: #555;
+  color: #4B5563;
 }
 
 .rangeSeparator {
-  color: #555;
+  color: #696969;
   font-size: 0.65rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .lineNote {
   display: block;
   font-size: 0.6rem;
-  color: #555;
+  color: #696969;
   margin-top: 0.3rem;
   font-style: italic;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Book Line Value in Results */
@@ -2047,35 +2320,37 @@
 
 .upcomingToggle {
   display: flex;
-  gap: 0.25rem;
-  background: #1a1a2e;
-  border-radius: 8px;
-  padding: 0.25rem;
+  gap: 0;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 6px;
+  padding: 1px;
 }
 
 .toggleBtn {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
+  gap: 0.25rem;
+  padding: 4px 8px;
+  height: 24px;
   border: none;
   background: transparent;
-  color: #888;
-  font-size: 0.75rem;
+  color: #696969;
+  font-size: 12px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .toggleBtn:hover {
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
 }
 
 .toggleBtn.active {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  color: #fff;
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 .toggleBtn.disabled,
@@ -2120,21 +2395,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  color: #888;
-  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  background: rgba(41, 47, 63, 0.5);
+  color: #696969;
+  font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .iconBtn:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .iconBtn:disabled {
@@ -2144,15 +2418,17 @@
 
 .shareMessage {
   font-size: 1.1rem;
-  color: #fff;
+  color: #FFFFFF;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .shareSubtext {
   font-size: 0.85rem;
-  color: #888;
+  color: #696969;
   line-height: 1.5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingSection {
@@ -2168,49 +2444,62 @@
 
 .upcomingHeader h3 {
   font-size: 0.9rem;
-  color: #e6e6e6;
+  color: #FFFFFF;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
 }
 
 .upcomingSortSelect {
-  padding: 0.35rem 0.6rem;
-  background: #1a1a2e;
-  border: 1px solid #2d2d44;
-  border-radius: 6px;
-  color: #aaa;
-  font-size: 0.7rem;
+  padding: 6px 12px;
+  height: 28px;
+  background: #161920;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
   cursor: pointer;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.upcomingSortSelect:focus {
+  border-color: rgba(59, 130, 246, 0.5);
+  outline: none;
 }
 
 .upcomingLoading {
   text-align: center;
   padding: 2rem;
-  color: #888;
+  color: #696969;
   font-size: 0.85rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .noUpcoming {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: #696969;
   font-size: 0.85rem;
   font-style: italic;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingGame {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 10px;
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
   margin-bottom: 0.5rem;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .upcomingGame:hover {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(50, 51, 53, 0.7);
+  background: rgba(29, 37, 48, 0.7);
 }
 
 .upcomingGameHeader {
@@ -2223,8 +2512,9 @@
 
 .upcomingGameTime {
   font-size: 0.7rem;
-  color: #888;
+  color: #696969;
   min-width: 90px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* NEW: Bet Display (the main focus) */
@@ -2250,25 +2540,29 @@
 .upcomingBetTeam {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingBetLine {
   font-size: 1rem;
   font-weight: 800;
-  color: #3b82f6;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingBetOdds {
   font-size: 0.75rem;
-  color: #888;
+  color: #696969;
   font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingPlayerName {
   font-weight: 600;
-  color: #fff;
+  color: #FFFFFF;
   font-size: 0.9rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .upcomingPlayerHeadshot {
@@ -2285,8 +2579,8 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
+  background: rgba(29, 37, 48, 0.5);
+  border-radius: 8px;
   margin-bottom: 0.5rem;
 }
 
@@ -2301,7 +2595,8 @@
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
-  color: #888;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Matchup logos for totals */
@@ -2326,15 +2621,17 @@
 
 .bookCount {
   font-size: 0.65rem;
-  color: #888;
-  background: rgba(255, 255, 255, 0.05);
+  color: #696969;
+  background: rgba(29, 37, 48, 0.5);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bookSource {
   font-size: 0.6rem;
-  color: #555;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Legacy - keep for backwards compat */
@@ -2380,12 +2677,13 @@
 .bestSpread, .bestTotal, .bestML {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .expandIcon {
   font-size: 1.25rem;
-  color: #555;
+  color: #696969;
   transition: transform 0.2s ease;
 }
 
@@ -2396,8 +2694,8 @@
 /* Expanded Details */
 .upcomingDetails {
   padding: 0.75rem 1rem 1rem;
-  border-top: 1px solid rgba(59, 130, 246, 0.15);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  background: rgba(29, 37, 48, 0.5);
 }
 
 /* Sportsbook-style odds display */
@@ -2405,7 +2703,7 @@
   margin-bottom: 1rem;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .teamOddsRow {
@@ -2413,8 +2711,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(29, 37, 48, 0.5);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .teamOddsRow:last-child {
@@ -2422,8 +2720,8 @@
 }
 
 .teamOddsRow.subjectTeam {
-  background: rgba(59, 130, 246, 0.1);
-  border-left: 3px solid #3b82f6;
+  background: rgba(41, 47, 63, 0.7);
+  border-left: 3px solid rgba(50, 51, 53, 0.8);
 }
 
 .teamOddsInfo {
@@ -2442,7 +2740,8 @@
 .teamOddsName {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #e6e6e6;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .teamOddsValues {
@@ -2456,37 +2755,39 @@
   align-items: center;
   min-width: 80px;
   padding: 0.4rem 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(29, 37, 48, 0.5);
   border-radius: 6px;
   transition: all 0.15s ease;
 }
 
 .oddsCell.highlighted {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(41, 47, 63, 0.7);
+  border: 1px solid rgba(50, 51, 53, 0.8);
 }
 
 .oddsLabel {
   font-size: 0.55rem;
-  color: #666;
+  color: #696969;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   margin-bottom: 0.1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .oddsValue {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #fff;
+  color: #FFFFFF;
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .oddsValue small {
   font-size: 0.6rem;
   font-weight: 400;
-  color: #888;
+  color: #696969;
 }
 
 /* Why This Matches */
@@ -2535,18 +2836,19 @@
 .allBooksSection {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
 }
 
 .allBooksTitle {
   font-size: 0.7rem;
   font-weight: 600;
-  color: #60a5fa;
+  color: #FFFFFF;
   text-transform: uppercase;
   margin-bottom: 0.5rem;
   letter-spacing: 0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .allBooksList {
@@ -2560,36 +2862,42 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.35rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 0.75rem;
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bookLineRow.inRange {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(41, 47, 63, 0.7);
+  border: 1px solid rgba(50, 51, 53, 0.8);
 }
 
 .bookLineRow.outOfRange {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(50, 51, 53, 0.3);
   opacity: 0.7;
 }
 
 .bookName {
   min-width: 80px;
-  color: #888;
+  color: #FFFFFF;
   text-transform: capitalize;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bookLine {
-  color: #60a5fa;
+  color: #FFFFFF;
   font-weight: 600;
   min-width: 50px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .bookOdds {
-  color: #666;
+  color: #696969;
   font-size: 0.7rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .matchesBadge {
@@ -2788,33 +3096,77 @@
    MOBILE OPTIMIZATIONS
    ================================ */
 
+/* Hide mobile toggle on desktop */
+@media (min-width: 769px) {
+  .mobileUpcomingToggle {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   /* Header - smaller title, left-center alignment */
   .header {
-    padding: 0.75rem 1rem;
+    padding: 0;
     text-align: left;
   }
   
-  .header h1 {
-    font-size: 1.25rem;
-    justify-content: flex-start;
-    gap: 0.35rem;
+  .title {
+    font-size: 20px;
   }
   
-  .titleIcon {
-    font-size: 1.5rem;
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 12px;
   }
   
-  .betaTag {
-    font-size: 0.5rem;
-    padding: 0.15rem 0.4rem;
-    margin-left: 0.5rem;
+  /* Show mobile query type buttons */
+  .mobileQueryTypes {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    width: 100%;
   }
   
-  .tagline {
-    font-size: 0.7rem !important;
-    margin-top: 0.5rem !important;
-    text-align: left;
+  .mobileQueryTypes .filterBtn {
+    flex: 1;
+    padding: 6px 8px;
+    height: 32px;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  .filtersRow {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .leftFilters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+  
+  /* Hide desktop query type buttons on mobile - use sidebar instead */
+  .sportFilters {
+    display: none;
+  }
+  
+  /* Market filters on full width row */
+  .marketFilters {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filterBtn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 11px;
   }
   
   /* Results section - keep centered, smaller text */
@@ -2847,17 +3199,173 @@
     font-size: 0.65rem;
   }
   
-  .additionalStats {
-    padding: 0.5rem;
+  /* Hide dates on mobile - still visible in expanded view */
+  .gameDate,
+  .propGameDate {
+    display: none;
+  }
+  
+  /* Update grid layouts to remove date column on mobile */
+  .gameRow {
+    grid-template-columns: 1fr auto 36px;
+  }
+  
+  .propGameRow {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  /* 1. Make all selecting boxes in build box smaller but ensure text fits */
+  .panel select,
+  .panel input,
+  .filterBlock select,
+  .filterBlock input,
+  .filterGrid select,
+  .filterGrid input,
+  .filterGrid3 select,
+  .filterGrid3 input,
+  .rangeGrid select,
+  .rangeGrid input,
+  .teamRow select,
+  .teamRow input,
+  .propRow select,
+  .propRow input,
+  .marginSection input,
+  .teamSearchInput,
+  .playerSearchInput {
+    padding: 0 0.5rem;
+    font-size: 0.65rem;
+    height: 36px;
+    line-height: 36px;
+    text-align: left;
+    box-sizing: border-box;
+  }
+
+  .panel select::placeholder,
+  .panel input::placeholder,
+  .filterBlock select::placeholder,
+  .filterBlock input::placeholder,
+  .filterGrid select::placeholder,
+  .filterGrid input::placeholder,
+  .rangeGrid select::placeholder,
+  .rangeGrid input::placeholder,
+  .teamSearchInput::placeholder,
+  .playerSearchInput::placeholder {
+    font-size: 0.65rem;
+  }
+
+  /* 2. Results header - move save/share to top right */
+  .resultsPanelHeader {
+    flex-direction: column;
     gap: 0.5rem;
+    align-items: flex-start;
   }
-  
-  .additionalStats span {
-    font-size: 0.6rem;
-  }
-  
-  .additionalStats strong {
+
+  .resultsPanelHeader h2 {
     font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .headerActions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .headerActions .iconBtn {
+    order: 1;
+  }
+
+  /* Hide desktop toggle in results header on mobile */
+  .resultsPanelHeader .upcomingToggle {
+    display: none;
+  }
+
+  /* Mobile toggle below filters - centered, no background */
+  .mobileUpcomingToggle {
+    display: block;
+    width: 100%;
+    margin: 1rem 0;
+    text-align: center;
+  }
+
+  .mobileUpcomingToggle .upcomingToggle {
+    display: inline-flex;
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .mobileUpcomingToggle .toggleBtn {
+    background: rgba(41, 47, 63, 0.5);
+    border: 1px solid rgba(50, 51, 53, 0.5);
+    border-radius: 6px;
+    padding: 6px 12px;
+    height: auto;
+  }
+
+  .mobileUpcomingToggle .toggleBtn.active {
+    background: rgba(41, 47, 63, 0.8);
+    border-color: rgba(50, 51, 53, 0.8);
+  }
+
+  .mobileUpcomingToggle .toggleBtn svg {
+    display: none; /* Remove calendar icon */
+  }
+
+  /* 3. Stats section - center text, 3 boxes in a row, values above labels, remove colons */
+  .additionalStats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    text-align: center;
+    background: transparent;
+    border: none;
+  }
+
+  .additionalStats > div {
+    background: rgba(29, 37, 48, 0.5);
+    border: 1px solid rgba(50, 51, 53, 0.5);
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .additionalStats > div strong {
+    font-size: 0.9rem;
+    order: 1;
+    margin-bottom: 0;
+  }
+
+  .additionalStats > div span {
+    font-size: 0.6rem;
+    order: 2;
+    text-transform: uppercase;
+  }
+
+  /* Remove colons from labels on mobile */
+  .additionalStats > div span::after {
+    content: '';
+  }
+
+  /* 4. Expanded game details - smaller text */
+  .gameDetailsExpanded {
+    font-size: 0.7rem;
+  }
+
+  .gameDetailsExpanded .detailLabel {
+    font-size: 0.65rem;
+  }
+
+  .gameDetailsExpanded .detailValue {
+    font-size: 0.7rem;
   }
   
   /* Filters applied - wrap properly */
@@ -3109,11 +3617,15 @@
 
 /* Save Button */
 .saveBtn {
-  background: #2a2a3a;
-  border: 1px solid #3a3a4a;
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
+  padding: 6px 12px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3123,8 +3635,8 @@
 }
 
 .saveBtn:hover:not(:disabled) {
-  background: #3a3a4a;
-  border-color: #4a4a5a;
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .saveBtn:disabled {
@@ -3147,8 +3659,10 @@
 }
 
 .modal {
-  background: #1a1a24;
-  border: 1px solid #2a2a3a;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background-size: 400% 400%;
+  background-position: center center;
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   width: 90%;
   max-width: 440px;
@@ -3161,21 +3675,23 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .modalHeader h3 {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: #FFFFFF;
   text-align: left;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .modalClose {
   background: none;
   border: none;
-  color: #888;
+  color: #696969;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
@@ -3184,12 +3700,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
 }
 
 .modalClose:hover {
-  background: #2a2a3a;
-  color: #fff;
+  background: rgba(41, 47, 63, 0.5);
+  color: #FFFFFF;
 }
 
 .modalBody {
@@ -3208,36 +3725,39 @@
 .modalField label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #aaa;
+  color: #696969;
   font-size: 0.8rem;
   font-weight: 500;
   text-align: left;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .modalField input,
 .modalField textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: #12121a;
-  border: 1px solid #2a2a3a;
+  background: #161920;
+  border: 1px solid transparent;
   border-radius: 8px;
-  color: #fff;
+  color: #FFFFFF;
   font-size: 0.9rem;
-  font-family: inherit;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   box-sizing: border-box;
   text-align: left;
+  transition: border-color 0.2s ease;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1);
 }
 
 .modalField input::placeholder,
 .modalField textarea::placeholder {
-  color: #555;
+  color: #4B5563;
 }
 
 .modalField input:focus,
 .modalField textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  background: #15151f;
+  border-color: rgba(50, 51, 53, 0.8);
+  background: #1D2530;
 }
 
 .modalField textarea {
@@ -3250,39 +3770,40 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .modalCancel,
 .modalSave {
-  padding: 0.625rem 1.25rem;
+  padding: 6px 12px;
+  height: 32px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .modalCancel {
-  background: transparent;
-  color: #888;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(41, 47, 63, 0.5);
+  color: #696969;
+  border: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .modalCancel:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(41, 47, 63, 0.7);
+  color: #FFFFFF;
 }
 
 .modalSave {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: #fff;
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 .modalSave:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: rgba(41, 47, 63, 0.8);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
@@ -3352,26 +3873,7 @@
   background: #5aaeff;
 }
 
-/* My Builds Section */
-.myBuildsSection {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 100vh;
-}
-
-.myBuildsHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.myBuildsHeader h2 {
-  margin: 0;
-  color: #fff;
-  font-size: 1.5rem;
-}
+/* Duplicate styles removed - using the ones defined earlier */
 
 .closeMyBuilds {
   background: #2a2a3a;

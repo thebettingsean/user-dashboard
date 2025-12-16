@@ -1,5 +1,3 @@
-import PublicBettingNavbar from '@/components/PublicBettingNavbar'
-
 export default function PublicBettingLayout({
   children,
 }: {
@@ -12,10 +10,7 @@ export default function PublicBettingLayout({
       margin: 0,
       padding: 0
     }}>
-      <PublicBettingNavbar />
-      <div style={{ paddingTop: '68px' }}>
-        {children}
-      </div>
+      {children}
     </div>
   )
 }

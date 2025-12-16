@@ -3,9 +3,26 @@
  * Uses REST API with API keys for authentication
  */
 
-const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST!
-const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID!
-const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET!
+const CLICKHOUSE_HOST = process.env.CLICKHOUSE_HOST
+const CLICKHOUSE_KEY_ID = process.env.CLICKHOUSE_KEY_ID
+const CLICKHOUSE_KEY_SECRET = process.env.CLICKHOUSE_KEY_SECRET
+
+// Validate environment variables
+if (!CLICKHOUSE_HOST || !CLICKHOUSE_KEY_ID || !CLICKHOUSE_KEY_SECRET) {
+  const missing = []
+  if (!CLICKHOUSE_HOST) missing.push('CLICKHOUSE_HOST')
+  if (!CLICKHOUSE_KEY_ID) missing.push('CLICKHOUSE_KEY_ID')
+  if (!CLICKHOUSE_KEY_SECRET) missing.push('CLICKHOUSE_KEY_SECRET')
+  
+  throw new Error(
+    `Missing ClickHouse environment variables: ${missing.join(', ')}\n` +
+    `Please add these to your .env.local file:\n` +
+    `CLICKHOUSE_HOST=your_clickhouse_host_url\n` +
+    `CLICKHOUSE_KEY_ID=your_clickhouse_key_id\n` +
+    `CLICKHOUSE_KEY_SECRET=your_clickhouse_key_secret\n` +
+    `\nGet these values from your partner or Vercel environment variables.`
+  )
+}
 
 export interface ClickHouseQueryResult<T = any> {
   data: T[]
