@@ -200,15 +200,15 @@ export async function GET(request: NextRequest) {
 // Helper: Get team mappings from our teams table
 async function getTeamMappings(sport: string): Promise<TeamMapping[]> {
   const query = `
-    SELECT id, name, abbreviation 
+    SELECT team_id, espn_team_id, name, abbreviation 
     FROM teams 
     WHERE sport = '${sport}'
   `
-  const result = await clickhouseQuery<{ id: number; name: string; abbreviation: string }>(query)
+  const result = await clickhouseQuery<{ team_id: number; espn_team_id: number; name: string; abbreviation: string }>(query)
   
   return (result.data || []).map(team => ({
     oddsApiName: team.name,
-    teamId: team.id,
+    teamId: team.espn_team_id, // Use ESPN ID for game tables
     abbreviation: team.abbreviation
   }))
 }
