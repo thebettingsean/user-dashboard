@@ -1,0 +1,228 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 68px;
+  background: linear-gradient(90deg, #171717 5.46%, #222222 35.83%, #171717 70.9%);
+  padding: 16px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  gap: 32px;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  height: 32px;
+}
+
+.navItems {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.navLink {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 24px;
+  color: #535353;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: #FFFFFF;
+}
+
+.navLinkActive {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 24px;
+  color: #FFFFFF;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownButton {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 24px;
+  color: #535353;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdownButton:hover {
+  color: #FFFFFF;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #252525;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 8px 0;
+  min-width: 200px;
+  z-index: 1001;
+}
+
+.dropdownItem {
+  display: block;
+  padding: 12px 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdownItem:hover {
+  background-color: #333333;
+}
+
+.authSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.authButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.signInButton {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  text-decoration: none;
+  padding: 6px 16px;
+  transition: color 0.2s ease;
+}
+
+.signInButton:hover {
+  color: #E0E0E0;
+}
+
+.signUpButton {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #171717;
+  background: #FFFFFF;
+  text-decoration: none;
+  padding: 6px 20px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.signUpButton:hover {
+  background: #E0E0E0;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .navItems {
+    gap: 16px;
+  }
+
+  .navLink,
+  .navLinkActive,
+  .dropdownButton {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    height: auto;
+    min-height: 68px;
+    padding: 12px;
+  }
+
+  .container {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logoSection {
+    flex: 1 1 auto;
+  }
+
+  .navItems {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .authSection {
+    order: 2;
+  }
+
+  .navLink,
+  .navLinkActive,
+  .dropdownButton {
+    font-size: 14px;
+  }
+}
+
