@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const query = `
       SELECT 
         g.game_id,
-        g.sport,
+        g.sport as sport,
         g.game_time,
         
         ht.name as home_team,
