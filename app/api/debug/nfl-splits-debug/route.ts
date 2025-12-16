@@ -14,14 +14,16 @@ export async function GET() {
     // Step 1: Check upcoming games in nfl_games
     const gamesQuery = `
       SELECT 
-        game_id,
-        home_team,
-        away_team,
-        game_time,
-        sportsdata_io_score_id
-      FROM nfl_games
-      WHERE game_time > now()
-      ORDER BY game_time
+        g.game_id,
+        ht.abbreviation as home_team,
+        at.abbreviation as away_team,
+        g.game_time,
+        g.sportsdata_io_score_id
+      FROM nfl_games g
+      LEFT JOIN teams ht ON g.home_team_id = ht.id AND ht.sport = 'nfl'
+      LEFT JOIN teams at ON g.away_team_id = at.id AND at.sport = 'nfl'
+      WHERE g.game_time > now()
+      ORDER BY g.game_time
       LIMIT 10
     `
     
