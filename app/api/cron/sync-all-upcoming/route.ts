@@ -134,24 +134,46 @@ export async function GET(request: NextRequest) {
         `)
         
         if (existing.data.length === 0) {
-          // Insert new game
-          await clickhouseCommand(`
-            INSERT INTO ${sportConfig.table} (
-              game_id, game_time, game_date, home_team_id, away_team_id,
-              spread_open, total_open, home_ml_open, away_ml_open,
-              spread_close, total_close, home_ml_close, away_ml_close,
-              home_score, away_score, season, week, created_at, updated_at
-            ) VALUES (
-              ${gameId},
-              parseDateTimeBestEffort('${gameTime.toISOString()}'),
-              '${gameDate}',
-              ${homeTeam.teamId}, ${awayTeam.teamId},
-              ${spread}, ${total}, ${homeML}, ${awayML},
-              ${spread}, ${total}, ${homeML}, ${awayML},
-              0, 0, ${getCurrentSeason(sportConfig.sport)}, 0,
-              now(), now()
-            )
-          `)
+          // Insert new game (adjust columns based on sport)
+          const hasWeekColumn = sportConfig.sport === 'nfl' || sportConfig.sport === 'cfb'
+          
+          if (hasWeekColumn) {
+            await clickhouseCommand(`
+              INSERT INTO ${sportConfig.table} (
+                game_id, game_time, game_date, home_team_id, away_team_id,
+                spread_open, total_open, home_ml_open, away_ml_open,
+                spread_close, total_close, home_ml_close, away_ml_close,
+                home_score, away_score, season, week, created_at, updated_at
+              ) VALUES (
+                ${gameId},
+                parseDateTimeBestEffort('${gameTime.toISOString()}'),
+                '${gameDate}',
+                ${homeTeam.teamId}, ${awayTeam.teamId},
+                ${spread}, ${total}, ${homeML}, ${awayML},
+                ${spread}, ${total}, ${homeML}, ${awayML},
+                0, 0, ${getCurrentSeason(sportConfig.sport)}, 0,
+                now(), now()
+              )
+            `)
+          } else {
+            await clickhouseCommand(`
+              INSERT INTO ${sportConfig.table} (
+                game_id, game_time, game_date, home_team_id, away_team_id,
+                spread_open, total_open, home_ml_open, away_ml_open,
+                spread_close, total_close, home_ml_close, away_ml_close,
+                home_score, away_score, season, created_at, updated_at
+              ) VALUES (
+                ${gameId},
+                parseDateTimeBestEffort('${gameTime.toISOString()}'),
+                '${gameDate}',
+                ${homeTeam.teamId}, ${awayTeam.teamId},
+                ${spread}, ${total}, ${homeML}, ${awayML},
+                ${spread}, ${total}, ${homeML}, ${awayML},
+                0, 0, ${getCurrentSeason(sportConfig.sport)},
+                now(), now()
+              )
+            `)
+          }
           gamesInserted++
           console.log(`[${sportConfig.sport}] ✅ Inserted: ${awayTeam.abbreviation} @ ${homeTeam.abbreviation} on ${gameDate}`)
         } else {
