@@ -3,65 +3,66 @@ import { clickhouseQuery } from '@/lib/clickhouse'
 
 export async function GET() {
   try {
-    // Check upcoming games with ScoreIDs
+    // Check total games
+    const totalQuery = `SELECT count() as total FROM nfl_games`
+    const totalResult = await clickhouseQuery<{ total: number }>(totalQuery)
+    
+    // Check upcoming games
     const upcomingQuery = `
-      SELECT 
-        game_id,
-        season,
-        week,
-        toString(game_date) as game_date,
-        toString(game_time) as game_time_str,
-        game_time,
-        sportsdata_io_score_id,
-        home_team_id,
-        away_team_id
-      FROM nfl_games
-      WHERE game_time >= now() - INTERVAL 2 DAY
-      ORDER BY game_time ASC
-      LIMIT 20
+      SELECT count() as total 
+      FROM nfl_games 
+      WHERE game_time > now()
     `
+    const upcomingResult = await clickhouseQuery<{ total: number }>(upcomingQuery)
     
-    const upcoming = await clickhouseQuery(upcomingQuery)
-    
-    // Check latest games in general
-    const latestQuery = `
+    // Check recent games
+    const recentQuery = `
       SELECT 
-        game_id,
-        season,
-        week,
-        toString(game_date) as game_date,
-        toString(game_time) as game_time,
-        sportsdata_io_score_id,
+        game_id, 
+        game_time, 
         home_team_id,
-        away_team_id
-      FROM nfl_games
-      ORDER BY game_time DESC
+        away_team_id,
+        sportsdata_io_score_id
+      FROM nfl_games 
+      ORDER BY game_time DESC 
       LIMIT 10
     `
+    const recentResult = await clickhouseQuery<{
+      game_id: string
+      game_time: string
+      home_team_id: number
+      away_team_id: number
+      sportsdata_io_score_id: number
+    }>(recentQuery)
     
-    const latest = await clickhouseQuery(latestQuery)
-    
-    // Count games with ScoreIDs
-    const countQuery = `
+    // Check future games (explicitly by date)
+    const futureQuery = `
       SELECT 
-        countIf(sportsdata_io_score_id > 0) as with_score_id,
-        count() as total
+        game_id,
+        game_time,
+        home_team_id,
+        away_team_id,
+        sportsdata_io_score_id
       FROM nfl_games
-      WHERE game_time >= now() - INTERVAL 7 DAY
+      WHERE game_time > '2025-12-16'
+      ORDER BY game_time
+      LIMIT 20
     `
-    
-    const counts = await clickhouseQuery(countQuery)
+    const futureResult = await clickhouseQuery<{
+      game_id: string
+      game_time: string
+      home_team_id: number
+      away_team_id: number
+      sportsdata_io_score_id: number
+    }>(futureQuery)
     
     return NextResponse.json({
-      success: true,
-      currentTime: new Date().toISOString(),
-      upcoming: upcoming.data,
-      latest: latest.data,
-      counts: counts.data
+      totalGames: totalResult.data?.[0]?.total || 0,
+      upcomingGames: upcomingResult.data?.[0]?.total || 0,
+      recentGames: recentResult.data || [],
+      futureGames: futureResult.data || []
     })
-    
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
-
