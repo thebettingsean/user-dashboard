@@ -48,14 +48,16 @@ export async function GET(request: Request) {
         g.public_ml_home_bet_pct,
         g.public_ml_home_money_pct,
         g.public_total_over_bet_pct,
-        g.public_total_over_money_pct
+        g.public_total_over_money_pct,
         
-      FROM games FINAL g
+        g.updated_at
+        
+      FROM games g
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
       LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
       WHERE g.game_time > now()
         ${sportFilter}
-      ORDER BY g.game_time
+      ORDER BY g.game_time, g.updated_at DESC
     `
     
     const result = await clickhouseQuery<{
@@ -86,8 +88,18 @@ export async function GET(request: Request) {
       public_total_over_money_pct: number
     }>(query)
     
+    // Deduplicate: Keep only the latest version of each game_id
+    const seenGameIds = new Set<string>()
+    const deduplicatedData = (result.data || []).filter(game => {
+      if (seenGameIds.has(game.game_id)) {
+        return false
+      }
+      seenGameIds.add(game.game_id)
+      return true
+    })
+    
     // Calculate ML movement correctly (in cents from even)
-    const games = (result.data || []).map(game => {
+    const games = deduplicatedData.map(game => {
       const ml_home_movement = mlToCents(game.current_ml_home) - mlToCents(game.opening_ml_home)
       const ml_away_movement = mlToCents(game.current_ml_away) - mlToCents(game.opening_ml_away)
       
