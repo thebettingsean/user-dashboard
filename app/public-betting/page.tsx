@@ -570,17 +570,6 @@ export default function PublicBettingPage() {
 
   const formatGameDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    
-    const dateOnly = date.toDateString()
-    const todayOnly = today.toDateString()
-    const tomorrowOnly = tomorrow.toDateString()
-    
-    if (dateOnly === todayOnly) return 'Today'
-    if (dateOnly === tomorrowOnly) return 'Tomorrow'
-    
     // Format as "Mon, Dec 18"
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
