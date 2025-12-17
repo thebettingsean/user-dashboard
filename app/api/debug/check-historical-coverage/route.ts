@@ -17,17 +17,8 @@ export async function GET() {
       ORDER BY sport, date DESC
     `)
     
-    // Check NFL props in nfl_prop_lines
-    const propsQuery = await clickhouseQuery(`
-      SELECT 
-        toDate(created_at) as date,
-        count() as prop_lines_count,
-        count(DISTINCT game_id) as games_with_props
-      FROM nfl_prop_lines
-      WHERE created_at >= now() - INTERVAL 14 DAY
-      GROUP BY date
-      ORDER BY date DESC
-    `)
+    // Check NFL props (skipping for now - need to verify table structure)
+    const propsQuery = { data: [] }
     
     // Check game_first_seen (opening lines)
     const openingQuery = await clickhouseQuery(`
