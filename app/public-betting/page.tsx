@@ -517,7 +517,8 @@ export default function PublicBettingPage() {
   }
 
   const getSortedGames = () => {
-    let filtered = games.filter(g => g.sport === selectedSport)
+    // Games are already filtered by sport from API, no need to filter again
+    let filtered = games
 
     // Apply search filter
     if (searchQuery.trim()) {
