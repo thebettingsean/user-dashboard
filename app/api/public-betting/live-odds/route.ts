@@ -51,10 +51,9 @@ export async function GET(request: Request) {
         g.public_total_over_money_pct
         
       FROM games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = g.sport
-      LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = g.sport
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
+      LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
       WHERE g.game_time > now()
-        AND g.status = 'scheduled'
         ${sportFilter}
       ORDER BY g.game_time
     `
