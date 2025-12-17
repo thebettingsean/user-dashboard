@@ -14,8 +14,7 @@ import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
 
-const SPORTSDATA_SCHEDULE_KEY = process.env.SPORTSDATA_IO_KEY || 'ad4d37f5374f45ffb40e571e38551af1'
-const SPORTSDATA_SPLITS_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY || '68b4610b673548e186c0267946db7c27'
+const SPORTSDATA_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY || '68b4610b673548e186c0267946db7c27'
 const ODDS_API_KEY = process.env.ODDS_API_KEY
 
 interface SportsDataGame {
@@ -45,9 +44,9 @@ export async function GET() {
     
     console.log(`Current season: ${currentSeason} (month: ${currentMonth})`)
     
-    const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${currentSeason}?key=${SPORTSDATA_SCHEDULE_KEY}`
+    const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${currentSeason}?key=${SPORTSDATA_KEY}`
     
-    console.log('Fetching from:', scheduleUrl.replace(SPORTSDATA_SCHEDULE_KEY, 'KEY'))
+    console.log('Fetching from:', scheduleUrl.replace(SPORTSDATA_KEY, 'KEY'))
     
     const scheduleResponse = await fetch(scheduleUrl)
     
@@ -193,7 +192,7 @@ export async function GET() {
     
     for (const game of upcomingGames) {
       try {
-        const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${game.ScoreID}?key=${SPORTSDATA_SPLITS_KEY}`
+        const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${game.ScoreID}?key=${SPORTSDATA_KEY}`
         const splitsResponse = await fetch(splitsUrl)
         
         if (splitsResponse.ok) {
