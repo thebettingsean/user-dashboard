@@ -40,6 +40,9 @@ export async function GET(
         public_ml_home_money_pct as mlHomeMoneyPct,
         public_total_over_bet_pct as totalOverBetPct,
         public_total_over_money_pct as totalOverMoneyPct,
+        all_books_spreads,
+        all_books_totals,
+        all_books_ml,
         CASE 
           WHEN public_spread_home_bet_pct > 0 AND public_spread_home_bet_pct != 50 THEN true
           ELSE false
@@ -130,6 +133,20 @@ export async function GET(
       ]
     }
     
+    // Get sportsbook odds from the latest snapshot
+    const latestSnapshot = snapshots[snapshots.length - 1]
+    let sportsbookOdds = null
+    
+    try {
+      sportsbookOdds = {
+        spreads: latestSnapshot.all_books_spreads ? JSON.parse(latestSnapshot.all_books_spreads) : {},
+        totals: latestSnapshot.all_books_totals ? JSON.parse(latestSnapshot.all_books_totals) : {},
+        moneylines: latestSnapshot.all_books_ml ? JSON.parse(latestSnapshot.all_books_ml) : {}
+      }
+    } catch (e) {
+      console.error('Error parsing sportsbook data:', e)
+    }
+    
     return NextResponse.json({
       success: true,
       gameId,
@@ -137,6 +154,7 @@ export async function GET(
       snapshotsWithRealBetting: snapshotsWithBetting.length,
       timeline: timelineForGraph,
       fullTimeline: formattedTimeline,
+      sportsbookOdds,
       latestBetting: latestWithBetting ? {
         spreadHomeBet: latestWithBetting.homeBetPct,
         spreadHomeMoney: latestWithBetting.homeMoneyPct,

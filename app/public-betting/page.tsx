@@ -191,7 +191,9 @@ const MobileExpandedView = ({
   formatSpread,
   getTeamName,
   timelineData,
-  timelineLoading
+  timelineLoading,
+  sportsbookOdds,
+  getSportsbookOddsForMarket
 }: {
   game: GameOdds
   graphTimeFilter: TimeFilter
@@ -202,9 +204,12 @@ const MobileExpandedView = ({
   getTeamName: (name: string) => string
   timelineData: LineMovementPoint[]
   timelineLoading: boolean
+  sportsbookOdds: any
+  getSportsbookOddsForMarket: (marketType: MarketType) => any[]
 }) => {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyTeam, setHistoryTeam] = useState<'home' | 'away'>('home')
+  const [sportsbooksOpen, setSportsbooksOpen] = useState(false)
   const [marketDropdownOpen, setMarketDropdownOpen] = useState(false)
   
   // Use real timeline data, or fallback to simple 2-point view if not available
@@ -345,27 +350,89 @@ const MobileExpandedView = ({
                 <tr>
                   <th>Time</th>
                   <th>Odds</th>
-                  <th>Bet%</th>
-                  <th>$$$%</th>
                 </tr>
               </thead>
               <tbody>
                 {timelineData.length === 0 ? (
-                  <tr><td colSpan={4}>No history</td></tr>
+                  <tr><td colSpan={2}>No history</td></tr>
                 ) : (
-                  timelineData.map((point, idx) => (
-                    <tr key={idx}>
-                      <td>{point.time}</td>
-                      <td>
-                        {historyTeam === 'home' 
-                          ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine)
-                          : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine)
-                        }
-                      </td>
-                      <td>{historyTeam === 'home' ? point.homeBetPct : point.awayBetPct}%</td>
-                      <td>{historyTeam === 'home' ? point.homeMoneyPct : point.awayMoneyPct}%</td>
-                    </tr>
-                  ))
+                  timelineData.map((point, idx) => {
+                    let oddVal: string
+                    if (graphMarketType === 'spread') {
+                      oddVal = historyTeam === 'home' 
+                        ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
+                        : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
+                    } else if (graphMarketType === 'ml') {
+                      oddVal = historyTeam === 'home'
+                        ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
+                        : (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
+                    } else {
+                      oddVal = historyTeam === 'home' ? `U ${point.total}` : `O ${point.total}`
+                    }
+                    
+                    return (
+                      <tr key={idx}>
+                        <td>{point.time}</td>
+                        <td>{oddVal}</td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      
+      {/* Sportsbooks Section */}
+      <div className={styles.mobileHistorySection}>
+        <button 
+          className={styles.mobileHistoryToggle}
+          onClick={() => setSportsbooksOpen(!sportsbooksOpen)}
+        >
+          <span>Sportsbooks</span>
+          <FiChevronDown className={sportsbooksOpen ? styles.rotated : ''} />
+        </button>
+        
+        {sportsbooksOpen && (
+          <div className={styles.mobileHistoryContent}>
+            <table className={styles.mobileHistoryTable}>
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
+                  <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {!sportsbookOdds ? (
+                  <tr><td colSpan={3}>Loading...</td></tr>
+                ) : (
+                  getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
+                    let awayVal: string, homeVal: string
+                    
+                    if (graphMarketType === 'ml') {
+                      const ml = bookOdds.value as { home: number, away: number }
+                      awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
+                      homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
+                    } else if (graphMarketType === 'spread') {
+                      const spread = bookOdds.value as number
+                      awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
+                      homeVal = spread > 0 ? `+${spread}` : spread.toString()
+                    } else {
+                      const total = bookOdds.value as number
+                      awayVal = `O ${total}`
+                      homeVal = `U ${total}`
+                    }
+                    
+                    return (
+                      <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
+                        <td className={styles.bookName}>{bookOdds.book}</td>
+                        <td>{awayVal}</td>
+                        <td>{homeVal}</td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
@@ -390,6 +457,7 @@ export default function PublicBettingPage() {
   const [graphMarketType, setGraphMarketType] = useState<MarketType>('spread')
   const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
   const [timelineLoading, setTimelineLoading] = useState(false)
+  const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
 
   useEffect(() => {
     fetchGames()
@@ -413,14 +481,17 @@ export default function PublicBettingPage() {
       
       if (data.success && data.timeline) {
         setTimelineData(data.timeline)
+        setSportsbookOdds(data.sportsbookOdds || null)
         console.log(`[Timeline] Loaded ${data.snapshotCount} snapshots for game ${gameId}`)
       } else {
         setTimelineData([])
+        setSportsbookOdds(null)
         console.log('[Timeline] No data:', data.message)
       }
     } catch (error) {
       console.error('Error fetching timeline:', error)
       setTimelineData([])
+      setSportsbookOdds(null)
     } finally {
       setTimelineLoading(false)
     }
@@ -587,6 +658,50 @@ export default function PublicBettingPage() {
     })
     
     return grouped
+  }
+
+  const getSportsbookOddsForMarket = (marketType: MarketType) => {
+    if (!sportsbookOdds) return []
+    
+    let oddsData: { [key: string]: number } = {}
+    let consensusValue = 0
+    
+    if (marketType === 'spread') {
+      oddsData = sportsbookOdds.spreads || {}
+      consensusValue = games.find(g => g.id === expandedGame)?.current_spread || 0
+    } else if (marketType === 'total') {
+      oddsData = sportsbookOdds.totals || {}
+      consensusValue = games.find(g => g.id === expandedGame)?.current_total || 0
+    } else {
+      oddsData = sportsbookOdds.moneylines || {}
+    }
+    
+    // Convert to array and sort by value
+    const oddsArray = Object.entries(oddsData).map(([book, value]) => ({
+      book,
+      value: typeof value === 'object' ? value : value,
+      isConsensus: false
+    }))
+    
+    // Add consensus
+    if (marketType === 'ml') {
+      const currentGame = games.find(g => g.id === expandedGame)
+      if (currentGame) {
+        oddsArray.unshift({
+          book: 'Consensus',
+          value: { home: currentGame.current_ml_home, away: currentGame.current_ml_away },
+          isConsensus: true
+        })
+      }
+    } else {
+      oddsArray.unshift({
+        book: 'Consensus',
+        value: consensusValue,
+        isConsensus: true
+      })
+    }
+    
+    return oddsArray
   }
 
   const formatDiff = (betPct: number, moneyPct: number) => {
@@ -1050,92 +1165,103 @@ export default function PublicBettingPage() {
                               </div>
                             </div>
                             
-                            {/* Odds History Table */}
-                            <div className={styles.oddsHistorySection}>
-                              <h4 className={styles.historyTitle}>
-                                {graphMarketType === 'spread' ? 'Spread' : graphMarketType === 'ml' ? 'Moneyline' : 'Total'} History
-                              </h4>
-                              <div className={styles.historyTableWrapper}>
-                                <table className={styles.historyTable}>
-                                  <thead>
-                                    <tr>
-                                      <th>Time</th>
-                                      <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
-                                      <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
-                                      <th>Bet %</th>
-                                      <th>Money %</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {timelineData.length === 0 ? (
-                                      <tr><td colSpan={5} className={styles.emptyCell}>No history available</td></tr>
-                                    ) : (
-                                      timelineData.map((point: any, idx) => {
-                                        // Get values based on market type
-                                        let awayVal: string, homeVal: string
-                                        let awayBet: number, homeBet: number
-                                        let awayMoney: number, homeMoney: number
-                                        
-                                        if (graphMarketType === 'spread') {
-                                          awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
-                                          homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
-                                          awayBet = point.awayBetPct
-                                          homeBet = point.homeBetPct
-                                          awayMoney = point.awayMoneyPct
-                                          homeMoney = point.homeMoneyPct
-                                        } else if (graphMarketType === 'ml') {
-                                          awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
-                                          homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
-                                          awayBet = 100 - (point.mlHomeBetPct || 50)
-                                          homeBet = point.mlHomeBetPct || 50
-                                          awayMoney = 100 - (point.mlHomeMoneyPct || 50)
-                                          homeMoney = point.mlHomeMoneyPct || 50
-                                        } else {
-                                          // Total
-                                          awayVal = `O ${point.total}`
-                                          homeVal = `U ${point.total}`
-                                          awayBet = point.totalOverBetPct || 50
-                                          homeBet = 100 - (point.totalOverBetPct || 50)
-                                          awayMoney = point.totalOverMoneyPct || 50
-                                          homeMoney = 100 - (point.totalOverMoneyPct || 50)
-                                        }
-                                        
-                                        const isCurrent = idx === timelineData.length - 1
-                                        const hasRealData = point.hasRealBetting
-                                        
-                                        return (
-                                          <tr key={idx} className={`${isCurrent ? styles.currentRow : ''} ${!hasRealData ? styles.noDataRow : ''}`}>
-                                            <td>{point.time}</td>
-                                            <td>{awayVal}</td>
-                                            <td>{homeVal}</td>
-                                            <td>
-                                              {hasRealData ? (
-                                                <>
-                                                  <span className={styles.historyPctAway}>{Math.round(awayBet)}%</span>
-                                                  <span className={styles.historyPctDivider}>/</span>
-                                                  <span className={styles.historyPctHome}>{Math.round(homeBet)}%</span>
-                                                </>
-                                              ) : (
-                                                <span className={styles.noDataLabel}>-</span>
-                                              )}
-                                            </td>
-                                            <td>
-                                              {hasRealData ? (
-                                                <>
-                                                  <span className={styles.historyPctAway}>{Math.round(awayMoney)}%</span>
-                                                  <span className={styles.historyPctDivider}>/</span>
-                                                  <span className={styles.historyPctHome}>{Math.round(homeMoney)}%</span>
-                                                </>
-                                              ) : (
-                                                <span className={styles.noDataLabel}>-</span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        )
-                                      })
-                                    )}
-                                  </tbody>
-                                </table>
+                            {/* Bottom Section: History + Sportsbooks */}
+                            <div className={styles.bottomSection}>
+                              {/* Odds History Table */}
+                              <div className={styles.oddsHistorySection}>
+                                <h4 className={styles.historyTitle}>
+                                  {graphMarketType === 'spread' ? 'Spread' : graphMarketType === 'ml' ? 'Moneyline' : 'Total'} History
+                                </h4>
+                                <div className={styles.historyTableWrapper}>
+                                  <table className={styles.historyTable}>
+                                    <thead>
+                                      <tr>
+                                        <th>Time</th>
+                                        <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
+                                        <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {timelineData.length === 0 ? (
+                                        <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
+                                      ) : (
+                                        timelineData.map((point: any, idx) => {
+                                          // Get values based on market type
+                                          let awayVal: string, homeVal: string
+                                          
+                                          if (graphMarketType === 'spread') {
+                                            awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
+                                            homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
+                                          } else if (graphMarketType === 'ml') {
+                                            awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
+                                            homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
+                                          } else {
+                                            // Total
+                                            awayVal = `O ${point.total}`
+                                            homeVal = `U ${point.total}`
+                                          }
+                                          
+                                          const isCurrent = idx === timelineData.length - 1
+                                          
+                                          return (
+                                            <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
+                                              <td>{point.time}</td>
+                                              <td>{awayVal}</td>
+                                              <td>{homeVal}</td>
+                                            </tr>
+                                          )
+                                        })
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              {/* Sportsbooks Comparison */}
+                              <div className={styles.sportsbooksSection}>
+                                <h4 className={styles.historyTitle}>Sportsbooks</h4>
+                                <div className={styles.sportsbooksWrapper}>
+                                  {!sportsbookOdds ? (
+                                    <div className={styles.emptyCell}>Loading...</div>
+                                  ) : (
+                                    <table className={styles.sportsbooksTable}>
+                                      <thead>
+                                        <tr>
+                                          <th>Book</th>
+                                          <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
+                                          <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
+                                          let awayVal: string, homeVal: string
+                                          
+                                          if (graphMarketType === 'ml') {
+                                            const ml = bookOdds.value as { home: number, away: number }
+                                            awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
+                                            homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
+                                          } else if (graphMarketType === 'spread') {
+                                            const spread = bookOdds.value as number
+                                            awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
+                                            homeVal = spread > 0 ? `+${spread}` : spread.toString()
+                                          } else {
+                                            const total = bookOdds.value as number
+                                            awayVal = `O ${total}`
+                                            homeVal = `U ${total}`
+                                          }
+                                          
+                                          return (
+                                            <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
+                                              <td className={styles.bookName}>{bookOdds.book}</td>
+                                              <td>{awayVal}</td>
+                                              <td>{homeVal}</td>
+                                            </tr>
+                                          )
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1250,6 +1376,8 @@ export default function PublicBettingPage() {
                       getTeamName={getTeamName}
                       timelineData={timelineData}
                       timelineLoading={timelineLoading}
+                      sportsbookOdds={sportsbookOdds}
+                      getSportsbookOddsForMarket={getSportsbookOddsForMarket}
                     />
                   )}
                 </div>
