@@ -130,8 +130,7 @@ export async function GET() {
         // Update existing game with ScoreID
         await clickhouseCommand(`
           ALTER TABLE nfl_games UPDATE
-            sportsdata_io_score_id = ${game.ScoreID},
-            updated_at = now()
+            sportsdata_io_score_id = ${game.ScoreID}
           WHERE game_id = ${existingGame.data[0].game_id}
         `)
         gamesUpdated++
@@ -144,7 +143,7 @@ export async function GET() {
             game_id, season, week, game_time,
             home_team_id, away_team_id,
             sportsdata_io_score_id,
-            created_at, updated_at
+            created_at
           ) VALUES (
             ${Math.floor(Math.random() * 2147483647)},
             ${game.Season},
@@ -153,7 +152,6 @@ export async function GET() {
             ${homeTeamId},
             ${awayTeamId},
             ${game.ScoreID},
-            now(),
             now()
           )
         `)
