@@ -18,44 +18,73 @@ export async function GET(request: Request) {
     
     const query = `
       SELECT 
-        g.game_id,
-        g.sport as sport,
-        g.game_time,
-        
-        ht.name as home_team,
-        ht.abbreviation as home_abbrev,
-        ht.logo_url as home_logo,
-        
-        at.name as away_team,
-        at.abbreviation as away_abbrev,
-        at.logo_url as away_logo,
-        
-        g.spread_open as opening_spread,
-        g.spread_close as current_spread,
-        g.spread_close - g.spread_open as spread_movement,
-        
-        g.total_open as opening_total,
-        g.total_close as current_total,
-        g.total_close - g.total_open as total_movement,
-        
-        g.home_ml_open as opening_ml_home,
-        g.away_ml_open as opening_ml_away,
-        g.home_ml_close as current_ml_home,
-        g.away_ml_close as current_ml_away,
-        
-        g.public_spread_home_bet_pct,
-        g.public_spread_home_money_pct,
-        g.public_ml_home_bet_pct,
-        g.public_ml_home_money_pct,
-        g.public_total_over_bet_pct,
-        g.public_total_over_money_pct
-        
-      FROM games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
-      LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
-      WHERE g.game_time > now()
-        ${sportFilter}
-      ORDER BY g.game_time
+        game_id,
+        sport,
+        game_time,
+        home_team,
+        home_abbrev,
+        home_logo,
+        away_team,
+        away_abbrev,
+        away_logo,
+        opening_spread,
+        current_spread,
+        spread_movement,
+        opening_total,
+        current_total,
+        total_movement,
+        opening_ml_home,
+        opening_ml_away,
+        current_ml_home,
+        current_ml_away,
+        public_spread_home_bet_pct,
+        public_spread_home_money_pct,
+        public_ml_home_bet_pct,
+        public_ml_home_money_pct,
+        public_total_over_bet_pct,
+        public_total_over_money_pct
+      FROM (
+        SELECT 
+          g.game_id,
+          g.sport as sport,
+          g.game_time,
+          
+          any(ht.name) as home_team,
+          any(ht.abbreviation) as home_abbrev,
+          any(ht.logo_url) as home_logo,
+          
+          any(at.name) as away_team,
+          any(at.abbreviation) as away_abbrev,
+          any(at.logo_url) as away_logo,
+          
+          argMax(g.spread_open, g.updated_at) as opening_spread,
+          argMax(g.spread_close, g.updated_at) as current_spread,
+          argMax(g.spread_close, g.updated_at) - argMax(g.spread_open, g.updated_at) as spread_movement,
+          
+          argMax(g.total_open, g.updated_at) as opening_total,
+          argMax(g.total_close, g.updated_at) as current_total,
+          argMax(g.total_close, g.updated_at) - argMax(g.total_open, g.updated_at) as total_movement,
+          
+          argMax(g.home_ml_open, g.updated_at) as opening_ml_home,
+          argMax(g.away_ml_open, g.updated_at) as opening_ml_away,
+          argMax(g.home_ml_close, g.updated_at) as current_ml_home,
+          argMax(g.away_ml_close, g.updated_at) as current_ml_away,
+          
+          argMax(g.public_spread_home_bet_pct, g.updated_at) as public_spread_home_bet_pct,
+          argMax(g.public_spread_home_money_pct, g.updated_at) as public_spread_home_money_pct,
+          argMax(g.public_ml_home_bet_pct, g.updated_at) as public_ml_home_bet_pct,
+          argMax(g.public_ml_home_money_pct, g.updated_at) as public_ml_home_money_pct,
+          argMax(g.public_total_over_bet_pct, g.updated_at) as public_total_over_bet_pct,
+          argMax(g.public_total_over_money_pct, g.updated_at) as public_total_over_money_pct
+          
+        FROM games g
+        LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
+        LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
+        WHERE g.game_time > now()
+          ${sportFilter}
+        GROUP BY g.game_id, g.sport, g.game_time
+      )
+      ORDER BY game_time
     `
     
     const result = await clickhouseQuery<{
