@@ -4,7 +4,11 @@ export async function GET() {
   const SPORTSDATA_KEY = process.env.SPORTSDATA_IO_KEY || 'ad4d37f5374f45ffb40e571e38551af1'
   
   try {
-    const url = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/2024?key=${SPORTSDATA_KEY}`
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    const currentSeason = currentMonth >= 9 ? currentYear : currentYear - 1
+    
+    const url = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${currentSeason}?key=${SPORTSDATA_KEY}`
     
     console.log('Fetching from:', url.replace(SPORTSDATA_KEY, 'REDACTED'))
     
