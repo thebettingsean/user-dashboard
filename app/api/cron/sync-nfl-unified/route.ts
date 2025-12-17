@@ -160,9 +160,12 @@ export async function GET() {
       step: 'sync_games_from_sportsdata',
       success: true,
       details: {
-        total_games: upcomingGames.length,
+        total_api_games: allGames.length,
+        upcoming_games_found: upcomingGames.length,
         games_inserted: gamesInserted,
-        games_updated: gamesUpdated
+        games_updated: gamesUpdated,
+        date_range: `${now.toISOString()} to ${twoWeeksFromNow.toISOString()}`,
+        sample_games: allGames.slice(0, 3).map(g => ({ team: `${g.AwayTeam}@${g.HomeTeam}`, date: g.Date, scoreId: g.ScoreID }))
       }
     })
     
