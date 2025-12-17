@@ -688,7 +688,7 @@ export default function PublicBettingPage() {
           <div className={styles.leftFilters}>
             {/* Desktop Sport Filters */}
             <div className={styles.sportFilters}>
-              {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+              {['nfl', 'nba', 'nhl', 'cfb', 'cbb'].map(sport => (
                 <button
                   key={sport}
                   className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
@@ -710,7 +710,7 @@ export default function PublicBettingPage() {
               </button>
               {sportDropdownOpen && (
                 <div className={styles.sportDropdownMenu}>
-                  {['nfl', 'nba', 'nhl', 'cfb'].map(sport => (
+                  {['nfl', 'nba', 'nhl', 'cfb', 'cbb'].map(sport => (
                     <button
                       key={sport}
                       className={`${styles.sportDropdownItem} ${selectedSport === sport ? styles.active : ''}`}

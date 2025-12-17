@@ -497,19 +497,39 @@ export async function GET(request: Request) {
           gamesProcessed++
           
           // ALSO update the universal games table with public betting data
-          // Note: Can't update updated_at as it's the version column in ReplacingMergeTree
+          // ReplacingMergeTree: Must INSERT new row to update (can't ALTER UPDATE key columns)
           try {
             const gameId = `${sportConfig.sport}_${game.id}`
-            await clickhouseCommand(`
-              ALTER TABLE games UPDATE
-                public_spread_home_bet_pct = ${publicData?.spreadBet || 50},
-                public_spread_home_money_pct = ${publicData?.spreadMoney || 50},
-                public_ml_home_bet_pct = ${publicData?.mlBet || 50},
-                public_ml_home_money_pct = ${publicData?.mlMoney || 50},
-                public_total_over_bet_pct = ${publicData?.totalBet || 50},
-                public_total_over_money_pct = ${publicData?.totalMoney || 50}
-              WHERE game_id = '${gameId}'
+            
+            // First, get existing game data
+            const existingGame = await clickhouseQuery<any>(`
+              SELECT * FROM games WHERE game_id = '${gameId}' LIMIT 1
             `)
+            
+            if (existingGame.data && existingGame.data.length > 0) {
+              const g = existingGame.data[0]
+              
+              // Re-insert with updated public betting data (ClickHouse will use latest version)
+              await clickhouseCommand(`
+                INSERT INTO games (
+                  game_id, sport, game_time, home_team_id, away_team_id,
+                  spread_open, spread_close, total_open, total_close,
+                  home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+                  public_spread_home_bet_pct, public_spread_home_money_pct,
+                  public_ml_home_bet_pct, public_ml_home_money_pct,
+                  public_total_over_bet_pct, public_total_over_money_pct,
+                  status, sportsdata_io_score_id, updated_at
+                ) VALUES (
+                  '${g.game_id}', '${g.sport}', '${g.game_time}', ${g.home_team_id}, ${g.away_team_id},
+                  ${g.spread_open}, ${consensus.spread}, ${g.total_open}, ${consensus.total},
+                  ${g.home_ml_open}, ${g.away_ml_open}, ${consensus.mlHome}, ${consensus.mlAway},
+                  ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
+                  ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
+                  ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
+                  '${g.status}', ${g.sportsdata_io_score_id || 0}, now()
+                )
+              `)
+            }
           } catch (updateError: any) {
             console.error(`[${sportConfig.sport}] Failed to update games table for ${game.id}:`, updateError.message)
           }
