@@ -513,20 +513,41 @@ export async function GET(request: Request) {
           await clickhouseCommand(insertSql)
           gamesProcessed++
           
-          // ALSO update the universal games table with public betting data
-          // ReplacingMergeTree: Must INSERT new row to update (can't ALTER UPDATE key columns)
+          // ALSO update the universal games table (for frontend display)
+          // ReplacingMergeTree: Must INSERT new row to update
           try {
             const gameId = `${sportConfig.sport}_${game.id}`
             
-            // First, get existing game data
-            const existingGame = await clickhouseQuery<any>(`
-              SELECT * FROM games WHERE game_id = '${gameId}' LIMIT 1
+            // Get team IDs
+            const homeTeamQuery = await clickhouseQuery<{team_id: number}>(`
+              SELECT team_id FROM teams 
+              WHERE sport = '${sportConfig.sport}' 
+                AND name = '${game.home_team.replace(/'/g, "''")}'
+              LIMIT 1
             `)
             
-            if (existingGame.data && existingGame.data.length > 0) {
-              const g = existingGame.data[0]
+            const awayTeamQuery = await clickhouseQuery<{team_id: number}>(`
+              SELECT team_id FROM teams 
+              WHERE sport = '${sportConfig.sport}' 
+                AND name = '${game.away_team.replace(/'/g, "''")}'
+              LIMIT 1
+            `)
+            
+            if (homeTeamQuery.data?.[0] && awayTeamQuery.data?.[0]) {
+              const homeTeamId = homeTeamQuery.data[0].team_id
+              const awayTeamId = awayTeamQuery.data[0].team_id
               
-              // Re-insert with updated public betting data (ClickHouse will use latest version)
+              // Check if game exists to preserve opening lines
+              const existingGame = await clickhouseQuery<any>(`
+                SELECT * FROM games WHERE game_id = '${gameId}' ORDER BY updated_at DESC LIMIT 1
+              `)
+              
+              const spreadOpen = isOpening ? consensus.spread : (existingGame.data?.[0]?.spread_open || consensus.spread)
+              const totalOpen = isOpening ? consensus.total : (existingGame.data?.[0]?.total_open || consensus.total)
+              const mlHomeOpen = isOpening ? consensus.mlHome : (existingGame.data?.[0]?.home_ml_open || consensus.mlHome)
+              const mlAwayOpen = isOpening ? consensus.mlAway : (existingGame.data?.[0]?.away_ml_open || consensus.mlAway)
+              
+              // Insert (will create or update due to ReplacingMergeTree)
               await clickhouseCommand(`
                 INSERT INTO games (
                   game_id, sport, game_time, home_team_id, away_team_id,
@@ -537,15 +558,17 @@ export async function GET(request: Request) {
                   public_total_over_bet_pct, public_total_over_money_pct,
                   status, sportsdata_io_score_id, updated_at
                 ) VALUES (
-                  '${g.game_id}', '${g.sport}', '${g.game_time}', ${g.home_team_id}, ${g.away_team_id},
-                  ${g.spread_open}, ${consensus.spread}, ${g.total_open}, ${consensus.total},
-                  ${g.home_ml_open}, ${g.away_ml_open}, ${consensus.mlHome}, ${consensus.mlAway},
+                  '${gameId}', '${sportConfig.sport}', '${gameTime}', ${homeTeamId}, ${awayTeamId},
+                  ${spreadOpen}, ${consensus.spread}, ${totalOpen}, ${consensus.total},
+                  ${mlHomeOpen}, ${mlAwayOpen}, ${consensus.mlHome}, ${consensus.mlAway},
                   ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
                   ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
                   ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
-                  '${g.status}', ${g.sportsdata_io_score_id || 0}, now()
+                  'upcoming', ${existingGame.data?.[0]?.sportsdata_io_score_id || 0}, now()
                 )
               `)
+            } else {
+              console.log(`[${sportConfig.sport}] Skipping games table update for ${game.away_team} @ ${game.home_team} - teams not found`)
             }
           } catch (updateError: any) {
             console.error(`[${sportConfig.sport}] Failed to update games table for ${game.id}:`, updateError.message)
