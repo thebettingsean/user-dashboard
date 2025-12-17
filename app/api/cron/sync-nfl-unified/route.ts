@@ -13,6 +13,7 @@ import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
+export const revalidate = 0 // Force no caching
 
 const SPORTSDATA_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY || '68b4610b673548e186c0267946db7c27'
 const ODDS_API_KEY = process.env.ODDS_API_KEY
