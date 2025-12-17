@@ -79,6 +79,10 @@
     {
       "path": "/api/cron/sync-live-odds",
       "schedule": "5,35 * * * *"
+    },
+    {
+      "path": "/api/backfill/populate-games-from-snapshots",
+      "schedule": "10,40 * * * *"
     }
   ]
 }
