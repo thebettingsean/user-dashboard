@@ -7,6 +7,7 @@ const SPORTS_CONFIG = [
   { key: 'basketball_nba', sport: 'nba', sportsdataPath: 'nba', season: 2025, active: true },
   { key: 'icehockey_nhl', sport: 'nhl', sportsdataPath: 'nhl', season: 2025, active: true },
   { key: 'americanfootball_ncaaf', sport: 'cfb', sportsdataPath: 'cfb', season: 2025, active: true },
+  { key: 'basketball_ncaab', sport: 'cbb', sportsdataPath: 'cbb', season: 2026, active: true },
 ]
 
 // Team abbreviation mapping
@@ -243,6 +244,12 @@ export async function GET(request: Request) {
                   
                   let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
                   
+                  // Debug first game to see what bet types are returned
+                  if (nflGamesToFetch.indexOf(game) === 0) {
+                    const betTypes = splits.BettingMarketSplits.map((m: any) => m.BettingBetType).join(', ')
+                    console.log(`[NFL] Sample bet types for ${game.away_abbr}@${game.home_abbr}: ${betTypes}`)
+                  }
+                  
                   for (const market of splits.BettingMarketSplits) {
                     const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
                     const overSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Over')
@@ -367,6 +374,12 @@ export async function GET(request: Request) {
                 const key = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
                 
                 let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
+                
+                // Debug first game to see what bet types are returned
+                if (gamesToFetch.indexOf(game) === 0) {
+                  const betTypes = splits.BettingMarketSplits.map((m: any) => m.BettingBetType).join(', ')
+                  console.log(`[${sportConfig.sport.toUpperCase()}] Sample bet types for ${game.awayAbbr}@${game.homeAbbr}: ${betTypes}`)
+                }
                 
                 for (const market of splits.BettingMarketSplits) {
                   const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
