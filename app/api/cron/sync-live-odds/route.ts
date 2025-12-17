@@ -212,12 +212,11 @@ export async function GET(request: Request) {
               ht.abbreviation as home_abbr,
               at.abbreviation as away_abbr
             FROM nfl_games g
-            LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
-            LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
+            LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = 'nfl'
+            LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = 'nfl'
             WHERE g.game_time >= now() - INTERVAL 1 HOUR
               AND g.game_time <= now() + INTERVAL 7 DAY
               AND g.sportsdata_io_score_id > 0
-            LIMIT 50
           `
           
           const scoreIdsResult = await clickhouseQuery<{
@@ -237,18 +236,26 @@ export async function GET(request: Request) {
               const splitsUrl = `https://api.sportsdata.io/v3/nfl/odds/json/BettingSplitsByScoreId/${game.score_id}?key=${SPORTSDATA_API_KEY}`
               const splitsResponse = await fetch(splitsUrl)
               
-              if (splitsResponse.ok) {
-                const splits = await splitsResponse.json()
-                if (splits?.BettingMarketSplits) {
-                  const key = `${game.home_abbr}_${game.away_abbr}`.toUpperCase()
-                  
-                  let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
+              if (!splitsResponse.ok) {
+                if (scoreIdsData.indexOf(game) < 3) {
+                  console.log(`[NFL] SportsDataIO error for ScoreID ${game.score_id}: ${splitsResponse.status}`)
+                }
+                continue
+              }
+              
+              const splits = await splitsResponse.json()
+              if (splits?.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
+                const key = `${game.home_abbr}_${game.away_abbr}`.toUpperCase()
+                
+                let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
                   
                   // Debug first game to see what bet types are returned
-                  if (nflGamesToFetch.indexOf(game) === 0) {
+                  if (scoreIdsData.indexOf(game) === 0) {
                     const betTypes = splits.BettingMarketSplits.map((m: any) => m.BettingBetType).join(', ')
                     console.log(`[NFL] Sample bet types for ${game.away_abbr}@${game.home_abbr}: ${betTypes}`)
                   }
+                  
+                  let foundSpread = false, foundML = false, foundTotal = false
                   
                   for (const market of splits.BettingMarketSplits) {
                     const homeSplit = market.BettingSplits?.find((s: any) => s.BettingOutcomeType === 'Home')
@@ -257,17 +264,27 @@ export async function GET(request: Request) {
                     if (market.BettingBetType === 'Spread' && homeSplit) {
                       spreadBet = homeSplit.BetPercentage || 50
                       spreadMoney = homeSplit.MoneyPercentage || 50
+                      foundSpread = true
                     } else if (market.BettingBetType === 'Moneyline' && homeSplit) {
                       mlBet = homeSplit.BetPercentage || 50
                       mlMoney = homeSplit.MoneyPercentage || 50
+                      foundML = true
                     } else if (market.BettingBetType === 'Total Points' && overSplit) {
                       totalBet = overSplit.BetPercentage || 50
                       totalMoney = overSplit.MoneyPercentage || 50
+                      foundTotal = true
                     }
                   }
                   
-                  publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
-                }
+                  // Log if missing data
+                  if (!foundTotal && scoreIdsData.indexOf(game) < 5) {
+                    console.log(`[NFL] ScoreID ${game.score_id} (${game.away_abbr}@${game.home_abbr}): Missing Total Points data`)
+                  }
+                  
+                publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+                gamesWithSplits++
+              } else if (scoreIdsData.indexOf(game) < 3) {
+                console.log(`[NFL] ScoreID ${game.score_id} returned no BettingMarketSplits`)
               }
             } catch (e) {
               // Continue if single game fails
