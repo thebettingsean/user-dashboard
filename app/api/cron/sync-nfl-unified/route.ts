@@ -37,7 +37,14 @@ export async function GET() {
     // STEP 1: Fetch schedule from SportsDataIO (SOURCE OF TRUTH)
     console.log('📅 Step 1: Fetching schedule from SportsDataIO...')
     
-    const currentSeason = 2024
+    // Determine current NFL season (starts in September)
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1 // 1-12
+    const currentSeason = currentMonth >= 9 ? currentYear : currentYear - 1
+    
+    console.log(`Current season: ${currentSeason} (month: ${currentMonth})`)
+    
     const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${currentSeason}?key=${SPORTSDATA_SCHEDULE_KEY}`
     
     const scheduleResponse = await fetch(scheduleUrl)
