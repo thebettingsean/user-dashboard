@@ -1184,3 +1184,34 @@
   color: #696969;
   font-size: 14px;
 }
+
+/* Date Separators */
+.dateSeparator {
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dateSeparator td {
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #696969;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.mobileDateSeparator {
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #696969;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 12px 0 8px 0;
+}

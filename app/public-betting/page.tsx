@@ -448,10 +448,10 @@ export default function PublicBettingPage() {
           public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
           
           // Totals percentages - over/under
-          public_total_over_bet_pct: game.public_total_bet_pct || 50,
-          public_total_over_money_pct: game.public_total_money_pct || 50,
-          public_total_under_bet_pct: 100 - (game.public_total_bet_pct || 50),
-          public_total_under_money_pct: 100 - (game.public_total_money_pct || 50),
+          public_total_over_bet_pct: game.public_total_over_bet_pct || 50,
+          public_total_over_money_pct: game.public_total_over_money_pct || 50,
+          public_total_under_bet_pct: 100 - (game.public_total_over_bet_pct || 50),
+          public_total_under_money_pct: 100 - (game.public_total_over_money_pct || 50),
           
           // Moneyline percentages - home/away
           public_ml_home_bet_pct: game.public_ml_bet_pct || 50,
@@ -566,6 +566,38 @@ export default function PublicBettingPage() {
   const formatSpread = (spread: number, isHome: boolean) => {
     const val = isHome ? spread : -spread
     return val > 0 ? `+${val}` : val.toString()
+  }
+
+  const formatGameDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    
+    const dateOnly = date.toDateString()
+    const todayOnly = today.toDateString()
+    const tomorrowOnly = tomorrow.toDateString()
+    
+    if (dateOnly === todayOnly) return 'Today'
+    if (dateOnly === tomorrowOnly) return 'Tomorrow'
+    
+    // Format as "Mon, Dec 18"
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  }
+
+  const getGamesByDate = () => {
+    const sorted = getSortedGames()
+    const grouped: { [date: string]: typeof sorted } = {}
+    
+    sorted.forEach(game => {
+      const dateKey = new Date(game.game_time).toDateString()
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = []
+      }
+      grouped[dateKey].push(game)
+    })
+    
+    return grouped
   }
 
   const formatDiff = (betPct: number, moneyPct: number) => {
@@ -803,7 +835,13 @@ export default function PublicBettingPage() {
             ) : sortedGames.length === 0 ? (
               <tr><td colSpan={8} className={styles.emptyCell}>No games found</td></tr>
             ) : (
-              sortedGames.map(game => {
+              Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
+                // Date separator row
+                <tr key={`date-${dateKey}`} className={styles.dateSeparator}>
+                  <td colSpan={8}>{formatGameDate(gamesOnDate[0].game_time)}</td>
+                </tr>,
+                // Games for this date
+                ...gamesOnDate.flatMap(game => {
                 const awayPcts = getMarketPcts(game, false)
                 const homePcts = getMarketPcts(game, true)
                 const awayMove = getMarketMove(game, false)
@@ -1117,7 +1155,8 @@ export default function PublicBettingPage() {
                     )}
                   </>
                 )
-              })
+                })
+              ])
             )}
           </tbody>
         </table>
@@ -1153,7 +1192,13 @@ export default function PublicBettingPage() {
           ) : sortedGames.length === 0 ? (
             <div className={styles.emptyCell}>No games found</div>
           ) : (
-            sortedGames.map(game => {
+            Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
+              // Date separator
+              <div key={`mobile-date-${dateKey}`} className={styles.mobileDateSeparator}>
+                {formatGameDate(gamesOnDate[0].game_time)}
+              </div>,
+              // Games for this date
+              ...gamesOnDate.map(game => {
               const awayPcts = getMarketPcts(game, false)
               const homePcts = getMarketPcts(game, true)
               const isExpanded = expandedGame === game.id
@@ -1220,7 +1265,8 @@ export default function PublicBettingPage() {
                   )}
                 </div>
               )
-            })
+              })
+            ])
           )}
         </div>
       </div>
