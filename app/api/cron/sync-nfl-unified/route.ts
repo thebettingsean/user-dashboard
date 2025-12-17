@@ -59,9 +59,20 @@ export async function GET() {
     const now = new Date()
     const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
     
+    console.log(`Total games from API: ${allGames.length}`)
+    console.log(`Date range: ${now.toISOString()} to ${twoWeeksFromNow.toISOString()}`)
+    
     const upcomingGames = allGames.filter(g => {
       const gameDate = new Date(g.Date)
-      return gameDate > now && gameDate < twoWeeksFromNow && g.ScoreID > 0
+      const hasScoreId = g.ScoreID > 0
+      const isAfterNow = gameDate > now
+      const isBeforeTwoWeeks = gameDate < twoWeeksFromNow
+      
+      if (g.HomeTeam === 'SEA' || g.HomeTeam === 'CHI') {
+        console.log(`Game ${g.AwayTeam} @ ${g.HomeTeam}: Date=${g.Date}, ScoreID=${g.ScoreID}, After=${isAfterNow}, Before=${isBeforeTwoWeeks}`)
+      }
+      
+      return isAfterNow && isBeforeTwoWeeks && hasScoreId
     })
     
     console.log(`Found ${upcomingGames.length} upcoming games with ScoreIDs`)
