@@ -71,27 +71,15 @@ export async function GET() {
       }, { status: 500 })
     }
     
-    // Filter to upcoming games only (within next 14 days)
-    const now = new Date()
-    const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+    // Filter to games with ScoreIDs and Status "Scheduled"
+    const upcomingGames = allGames.filter(g => 
+      g.ScoreID > 0 && 
+      g.Status === 'Scheduled' &&
+      g.Week >= 16 && 
+      g.Week <= 18
+    )
     
-    console.log(`Total games from API: ${allGames.length}`)
-    console.log(`Date range: ${now.toISOString()} to ${twoWeeksFromNow.toISOString()}`)
-    
-    const upcomingGames = allGames.filter(g => {
-      const gameDate = new Date(g.Date)
-      const hasScoreId = g.ScoreID > 0
-      const isAfterNow = gameDate > now
-      const isBeforeTwoWeeks = gameDate < twoWeeksFromNow
-      
-      if (g.HomeTeam === 'SEA' || g.HomeTeam === 'CHI') {
-        console.log(`Game ${g.AwayTeam} @ ${g.HomeTeam}: Date=${g.Date}, ScoreID=${g.ScoreID}, After=${isAfterNow}, Before=${isBeforeTwoWeeks}`)
-      }
-      
-      return isAfterNow && isBeforeTwoWeeks && hasScoreId
-    })
-    
-    console.log(`Found ${upcomingGames.length} upcoming games with ScoreIDs`)
+    console.log(`Found ${upcomingGames.length} Week 16-18 scheduled games with ScoreIDs`)
     
     // STEP 2: Get team mappings from our database
     const teamsQuery = await clickhouseQuery<{
@@ -180,8 +168,12 @@ export async function GET() {
         upcoming_games_found: upcomingGames.length,
         games_inserted: gamesInserted,
         games_updated: gamesUpdated,
-        date_range: `${now.toISOString()} to ${twoWeeksFromNow.toISOString()}`,
-        sample_games: allGames.slice(0, 3).map(g => ({ team: `${g.AwayTeam}@${g.HomeTeam}`, date: g.Date, scoreId: g.ScoreID }))
+        sample_upcoming: upcomingGames.slice(0, 5).map(g => ({ 
+          team: `${g.AwayTeam}@${g.HomeTeam}`, 
+          week: g.Week,
+          scoreId: g.ScoreID,
+          status: g.Status
+        }))
       }
     })
     
