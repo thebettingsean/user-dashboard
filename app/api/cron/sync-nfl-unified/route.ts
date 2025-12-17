@@ -47,13 +47,30 @@ export async function GET() {
     
     const scheduleUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/${currentSeason}?key=${SPORTSDATA_SCHEDULE_KEY}`
     
+    console.log('Fetching from:', scheduleUrl.replace(SPORTSDATA_SCHEDULE_KEY, 'KEY'))
+    
     const scheduleResponse = await fetch(scheduleUrl)
     
     if (!scheduleResponse.ok) {
-      throw new Error(`SportsDataIO schedule returned ${scheduleResponse.status}`)
+      const errorText = await scheduleResponse.text()
+      return NextResponse.json({
+        success: false,
+        error: `SportsDataIO schedule returned ${scheduleResponse.status}`,
+        errorText: errorText.substring(0, 500),
+        elapsed_ms: Date.now() - startTime
+      }, { status: 500 })
     }
     
     const allGames: SportsDataGame[] = await scheduleResponse.json()
+    
+    if (!allGames || !Array.isArray(allGames)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid response from SportsDataIO',
+        responseType: typeof allGames,
+        elapsed_ms: Date.now() - startTime
+      }, { status: 500 })
+    }
     
     // Filter to upcoming games only (within next 14 days)
     const now = new Date()
