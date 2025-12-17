@@ -17,37 +17,10 @@ export async function GET(request: Request) {
     const sportFilter = sport === 'all' ? '' : `AND g.sport = '${sport}'`
     
     const query = `
-      WITH latest_games AS (
-        SELECT 
-          game_id,
-          argMax(sport, updated_at) as sport,
-          argMax(game_time, updated_at) as game_time,
-          argMax(home_team_id, updated_at) as home_team_id,
-          argMax(away_team_id, updated_at) as away_team_id,
-          argMax(spread_open, updated_at) as opening_spread,
-          argMax(spread_close, updated_at) as current_spread,
-          argMax(total_open, updated_at) as opening_total,
-          argMax(total_close, updated_at) as current_total,
-          argMax(home_ml_open, updated_at) as opening_ml_home,
-          argMax(away_ml_open, updated_at) as opening_ml_away,
-          argMax(home_ml_close, updated_at) as current_ml_home,
-          argMax(away_ml_close, updated_at) as current_ml_away,
-          argMax(public_spread_home_bet_pct, updated_at) as public_spread_home_bet_pct,
-          argMax(public_spread_home_money_pct, updated_at) as public_spread_home_money_pct,
-          argMax(public_ml_home_bet_pct, updated_at) as public_ml_home_bet_pct,
-          argMax(public_ml_home_money_pct, updated_at) as public_ml_home_money_pct,
-          argMax(public_total_over_bet_pct, updated_at) as public_total_over_bet_pct,
-          argMax(public_total_over_money_pct, updated_at) as public_total_over_money_pct,
-          max(updated_at) as updated_at
-        FROM games
-        WHERE game_time > now()
-          ${sportFilter}
-        GROUP BY game_id
-      )
       SELECT 
-        lg.game_id,
-        lg.sport,
-        lg.game_time,
+        g.game_id,
+        g.sport,
+        g.game_time,
         
         ht.name as home_team,
         ht.abbreviation as home_abbrev,
@@ -57,30 +30,32 @@ export async function GET(request: Request) {
         at.abbreviation as away_abbrev,
         at.logo_url as away_logo,
         
-        lg.opening_spread,
-        lg.current_spread,
-        lg.current_spread - lg.opening_spread as spread_movement,
+        g.spread_open as opening_spread,
+        g.spread_close as current_spread,
+        g.spread_close - g.spread_open as spread_movement,
         
-        lg.opening_total,
-        lg.current_total,
-        lg.current_total - lg.opening_total as total_movement,
+        g.total_open as opening_total,
+        g.total_close as current_total,
+        g.total_close - g.total_open as total_movement,
         
-        lg.opening_ml_home,
-        lg.opening_ml_away,
-        lg.current_ml_home,
-        lg.current_ml_away,
+        g.home_ml_open as opening_ml_home,
+        g.away_ml_open as opening_ml_away,
+        g.home_ml_close as current_ml_home,
+        g.away_ml_close as current_ml_away,
         
-        lg.public_spread_home_bet_pct,
-        lg.public_spread_home_money_pct,
-        lg.public_ml_home_bet_pct,
-        lg.public_ml_home_money_pct,
-        lg.public_total_over_bet_pct,
-        lg.public_total_over_money_pct
+        g.public_spread_home_bet_pct,
+        g.public_spread_home_money_pct,
+        g.public_ml_home_bet_pct,
+        g.public_ml_home_money_pct,
+        g.public_total_over_bet_pct,
+        g.public_total_over_money_pct
         
-      FROM latest_games lg
-      LEFT JOIN teams ht ON lg.home_team_id = ht.team_id AND ht.sport = lg.sport
-      LEFT JOIN teams at ON lg.away_team_id = at.team_id AND at.sport = lg.sport
-      ORDER BY lg.game_time
+      FROM games FINAL g
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
+      LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
+      WHERE g.game_time > now()
+        ${sportFilter}
+      ORDER BY g.game_time
     `
     
     const result = await clickhouseQuery<{
