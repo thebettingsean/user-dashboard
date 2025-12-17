@@ -66,61 +66,16 @@ export async function GET(request: Request) {
       let propsInserted = 0
       
       try {
-        // Get historical odds from Odds API (if game is in the past)
-        const isCompleted = gameTime < new Date()
+        // NOTE: Odds API historical endpoint requires specific date/time format
+        // and may have limited data availability. For now, we rely on:
+        // 1. Public betting splits from SportsDataIO (done below) ✅
+        // 2. Current odds snapshots going forward (from sync-live-odds cron) ✅
+        // 3. Props will be backfilled separately using a different approach
         
-        if (isCompleted) {
-          // Use historical endpoint for completed games
-          const historicalUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=spreads,totals,h2h&oddsFormat=american&date=${gameDate}T12:00:00Z`
-          
-          const historicalResp = await fetch(historicalUrl)
-          if (historicalResp.ok) {
-            const historicalData = await historicalResp.json()
-            const matchingGame = historicalData.data?.find((g: any) => 
-              (g.home_team === game.home_team && g.away_team === game.away_team) ||
-              (g.home_team.includes(game.home_team.split(' ').pop()) && g.away_team.includes(game.away_team.split(' ').pop()))
-            )
-            
-            if (matchingGame?.bookmakers) {
-              // Insert snapshots for each bookmaker
-              for (const bookmaker of matchingGame.bookmakers.slice(0, 10)) {
-                const spread = bookmaker.markets.find((m: any) => m.key === 'spreads')?.outcomes.find((o: any) => o.name === game.home_team)?.point || 0
-                const total = bookmaker.markets.find((m: any) => m.key === 'totals')?.outcomes.find((o: any) => o.name === 'Over')?.point || 0
-                const mlHome = bookmaker.markets.find((m: any) => m.key === 'h2h')?.outcomes.find((o: any) => o.name === game.home_team)?.price || 0
-                const mlAway = bookmaker.markets.find((m: any) => m.key === 'h2h')?.outcomes.find((o: any) => o.name === game.away_team)?.price || 0
-                
-                const snapshotTime = matchingGame.last_update || new Date().toISOString()
-                
-                await clickhouseCommand(`
-                  INSERT INTO live_odds_snapshots (
-                    odds_api_game_id, sportsdata_score_id, sport, snapshot_time,
-                    home_team, away_team, game_time,
-                    spread, total, ml_home, ml_away,
-                    sportsbook, is_opening, bookmaker_count
-                  ) VALUES (
-                    '${matchingGame.id}', ${game.sportsdata_io_score_id}, 'nfl', '${snapshotTime}',
-                    '${game.home_team.replace(/'/g, "''")}', '${game.away_team.replace(/'/g, "''")}', '${game.game_time}',
-                    ${spread}, ${total}, ${mlHome}, ${mlAway},
-                    '${bookmaker.key}', 0, ${matchingGame.bookmakers.length}
-                  )
-                `)
-                snapshotsInserted++
-              }
-            }
-          }
-          
-          // Get historical props
-          const propsUrl = `https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl/events/${matchingGame?.id}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=player_pass_tds,player_pass_yds,player_rush_yds,player_receptions&oddsFormat=american&date=${gameDate}T12:00:00Z`
-          
-          const propsResp = await fetch(propsUrl)
-          if (propsResp.ok) {
-            const propsData = await propsResp.json()
-            // Process and insert props (simplified for now)
-            if (propsData.data?.bookmakers) {
-              propsInserted = propsData.data.bookmakers.length
-            }
-          }
-        }
+        // TODO: Implement proper Odds API historical backfill with correct format:
+        // Format: https://api.the-odds-api.com/v4/historical/sports/{sport}/odds
+        // Requires: date parameter in ISO format, may need multiple calls per day
+        // for line movement tracking
         
         // Get public betting splits from SportsDataIO (works for past and future)
         if (SPORTSDATA_KEY && game.sportsdata_io_score_id) {
