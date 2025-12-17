@@ -952,8 +952,7 @@ export default function PublicBettingPage() {
                 const homeMove = getMarketMove(game, true)
                 const isExpanded = expandedGame === game.id
 
-                return (
-                  <>
+                return [
                     <tr 
                       key={`${game.id}-away`} 
                       className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''}`}
@@ -1267,9 +1266,8 @@ export default function PublicBettingPage() {
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </>
-                )
+                    )
+                ].filter(Boolean)
                 })
               ])
             )}
