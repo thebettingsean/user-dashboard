@@ -393,7 +393,8 @@ export default function PublicBettingPage() {
 
   useEffect(() => {
     fetchGames()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSport])
 
   // Fetch timeline data when a game is expanded
   useEffect(() => {
@@ -428,7 +429,7 @@ export default function PublicBettingPage() {
   const fetchGames = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/public-betting/live-odds')
+      const response = await fetch(`/api/public-betting/live-odds?sport=${selectedSport}`)
       const data = await response.json()
       
       if (data.success && data.games) {
