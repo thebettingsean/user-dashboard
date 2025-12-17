@@ -31,16 +31,18 @@ export async function GET(request: Request) {
     
     const gamesQuery = await clickhouseQuery(`
       SELECT 
-        game_id,
-        home_team,
-        away_team,
-        game_time,
-        sportsdata_io_score_id,
-        toDate(game_time) as game_date
-      FROM nfl_games
-      WHERE game_time >= '${cutoffStr}'
-        AND sportsdata_io_score_id > 0
-      ORDER BY game_time ASC
+        g.game_id,
+        ht.name as home_team,
+        at.name as away_team,
+        g.game_time,
+        g.sportsdata_io_score_id,
+        toDate(g.game_time) as game_date
+      FROM nfl_games g
+      LEFT JOIN teams ht ON ht.team_id = g.home_team_id AND ht.sport = 'nfl'
+      LEFT JOIN teams at ON at.team_id = g.away_team_id AND at.sport = 'nfl'
+      WHERE g.game_time >= '${cutoffStr}'
+        AND g.sportsdata_io_score_id > 0
+      ORDER BY g.game_time ASC
     `)
     
     const games = gamesQuery.data || []
