@@ -4,7 +4,7 @@ import { clickhouseQuery } from '@/lib/clickhouse'
 export async function GET() {
   try {
     // Check latest dates for all critical data
-    const [games, boxScores, props] = await Promise.all([
+    const [games, boxScores, props, propsSimple] = await Promise.all([
       clickhouseQuery<any>(`
         SELECT 
           MAX(game_date) as latest_game,
@@ -22,11 +22,13 @@ export async function GET() {
       `),
       clickhouseQuery<any>(`
         SELECT 
-          MAX(g.game_date) as latest_props,
-          COUNT(DISTINCT p.game_id) as games_with_props,
-          SUM(CASE WHEN g.game_date >= '2025-12-01' THEN 1 ELSE 0 END) as december_props
-        FROM nfl_prop_lines p
-        JOIN nfl_games g ON p.game_id = g.game_id
+          MAX(toString(game_time)) as latest_prop_time,
+          COUNT(DISTINCT game_id) as total_props
+        FROM nfl_prop_lines
+      `),
+      clickhouseQuery<any>(`
+        SELECT COUNT(*) as total_prop_count
+        FROM nfl_prop_lines
       `)
     ])
     
@@ -34,7 +36,10 @@ export async function GET() {
       success: true,
       games: games.data?.[0],
       boxScores: boxScores.data?.[0],
-      props: props.data?.[0],
+      props: {
+        ...props.data?.[0],
+        total_prop_count: propsSimple.data?.[0]?.total_prop_count
+      },
       gap: {
         message: 'If latest_box_score < latest_game, we have missing data',
         hasGap: boxScores.data?.[0]?.latest_box_score < games.data?.[0]?.latest_game
