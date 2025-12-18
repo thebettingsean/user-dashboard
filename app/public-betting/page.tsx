@@ -991,7 +991,7 @@ export default function PublicBettingPage() {
                           {game.rlm}
                         </span>
                       </td>
-                    </tr>
+                    </tr>,
                     <tr 
                       key={`${game.id}-home`} 
                       className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''}`}
@@ -1026,8 +1026,8 @@ export default function PublicBettingPage() {
                         {formatDiff(homePcts.betPct, homePcts.moneyPct)}
                       </td>
                       <td></td>
-                    </tr>
-                    {isExpanded && (
+                    </tr>,
+                    isExpanded && (
                       <tr key={`${game.id}-details`} className={styles.detailsRow}>
                         <td colSpan={8}>
                           <div className={styles.expandedPanel}>
