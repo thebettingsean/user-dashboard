@@ -109,8 +109,7 @@ export async function GET() {
     // 1.4 Team Rankings
     const rankingsCheck = await clickhouseQuery<any>(`
       SELECT 
-        COUNT(DISTINCT team_id) as teams_with_rankings,
-        MAX(last_updated) as rankings_last_updated
+        COUNT(DISTINCT team_id) as teams_with_rankings
       FROM nfl_team_rankings
       WHERE season = 2024
     `)
