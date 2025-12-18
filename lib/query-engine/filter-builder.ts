@@ -26,7 +26,10 @@ export function getTimePeriodSQL(period: TimePeriod, tableAlias: string = 'g'): 
   const now = new Date()
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() + 1
-  // NFL season typically starts in September
+  // NFL season runs Sept (year X) - Feb (year X+1), all stored as "season X"
+  // So: Sept-Dec 2025 and Jan-Feb 2026 = season 2025
+  //     Sept-Dec 2024 and Jan-Feb 2025 = season 2024
+  // Cutoff: Use March-August = still in previous season's window, Sept+ = new season
   const currentSeason = currentMonth >= 9 ? currentYear : currentYear - 1
   
   switch (period) {
