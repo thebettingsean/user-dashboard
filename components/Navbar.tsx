@@ -127,7 +127,7 @@ export default function Navbar() {
                         <span style={styles.newTag}>NEW</span>
                       </>
                     )}
-                  </Link>
+              </Link>
                 )
               })}
 
@@ -477,7 +477,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 auto',
     padding: '0 32px',
     height: '64px',
+    minHeight: '64px',
+    maxHeight: '64px',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    overflow: 'hidden',
   },
   
   leftSection: {
@@ -493,8 +496,10 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   
   logo: {
-    height: '70px',
+    height: '50px',
     width: 'auto',
+    maxHeight: '100%',
+    objectFit: 'contain',
   },
   
   navItems: {
@@ -644,17 +649,22 @@ const styles: { [key: string]: React.CSSProperties } = {
   authLoading: {
     color: 'rgba(255, 255, 255, 0.5)',
     fontSize: '0.875rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
   },
 
   // MOBILE STYLES
   mobileNavContainer: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: '1fr auto 1fr',
     alignItems: 'center',
-    justifyContent: 'space-between',
     width: '100%',
     padding: '0 16px',
     height: '56px',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    position: 'relative',
   },
   
   hamburger: {
@@ -666,6 +676,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     gap: '5px',
     zIndex: 1002,
+    justifySelf: 'flex-start',
   },
   
   hamburgerLine: {
@@ -679,11 +690,17 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileLogo: {
     height: '60px',
     width: 'auto',
+    justifySelf: 'center',
+    gridColumn: '2',
   },
   
   mobileAuth: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    justifySelf: 'flex-end',
+    gridColumn: '3',
+    height: '100%',
   },
   
   mobileSignUpBtn: {
@@ -697,6 +714,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '500',
     cursor: 'pointer',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: '1',
+    margin: 0,
   },
   
   mobileMenu: {

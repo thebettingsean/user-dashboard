@@ -32,9 +32,16 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  padding-top: 64px !important;
   font-family: system-ui, -apple-system, sans-serif;
   position: relative;
   overflow-x: hidden;
+}
+
+@media (max-width: 767px) {
+  body {
+    padding-top: 56px !important;
+  }
 }
 
 /* Mobile/Desktop view toggles */
@@ -55,27 +62,39 @@ body {
 
 /* Navbar mobile/desktop toggles - UNIVERSAL STYLING */
 .desktop-nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
   display: flex;
   width: 100%;
   background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(50, 51, 53, 0.5);
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .mobile-nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
   width: 100%;
   display: block;
   background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(50, 51, 53, 0.5);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .mobile-nav > div:first-child {

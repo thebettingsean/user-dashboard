@@ -93,11 +93,11 @@ export async function POST(request: NextRequest) {
       console.log('🤖 Cron job request - bypassing auth')
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OPENAI_API_KEY not configured')
+    // Check if Anthropic API key is configured
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('❌ ANTHROPIC_API_KEY not configured')
       return NextResponse.json(
-        { error: 'AI service not configured. Please add OPENAI_API_KEY to environment variables.' },
+        { error: 'AI service not configured. Please add ANTHROPIC_API_KEY to environment variables.' },
         { status: 500 }
       )
     }

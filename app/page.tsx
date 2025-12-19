@@ -916,65 +916,11 @@ export default function HeroNewPage() {
     document.documentElement.style.setProperty('background', '#0a0f1a', 'important')
     document.documentElement.style.setProperty('background-image', 'none', 'important')
     
-    // Inject style tag to override navbar styles with !important
+    // Remove any existing navbar override styles
     const styleId = 'hero-new-navbar-override'
-    let styleTag = document.getElementById(styleId) as HTMLStyleElement
-    if (!styleTag) {
-      styleTag = document.createElement('style')
-      styleTag.id = styleId
-      styleTag.textContent = `
-        body.hero-new-page {
-          position: relative !important;
-        }
-        body.hero-new-page > nav.mobile-nav {
-          position: relative !important;
-          left: 50% !important;
-          transform: translateX(-50%) !important;
-          margin-left: 0 !important;
-          margin-right: 0 !important;
-        }
-        body.hero-new-page .desktop-nav {
-          margin: 20px auto 0 !important;
-          padding: 0 !important;
-          display: flex !important;
-          justify-content: center !important;
-          width: 100% !important;
-        }
-        body.hero-new-page .mobile-nav {
-          margin: 20px 0 0 0 !important;
-          padding: 0 !important;
-          display: block !important;
-          width: calc(100% - 40px) !important;
-          max-width: 500px !important;
-        }
-        body.hero-new-page .mobile-nav > div:first-child {
-          display: flex !important;
-          flex-direction: row !important;
-        }
-        @media (max-width: 767px) {
-          body.hero-new-page .desktop-nav {
-            display: none !important;
-          }
-          body.hero-new-page .mobile-nav {
-            display: block !important;
-          }
-        }
-        @media (min-width: 768px) {
-          body.hero-new-page .desktop-nav {
-            display: flex !important;
-          }
-          body.hero-new-page .mobile-nav {
-            display: none !important;
-          }
-        }
-        body.hero-new-page .desktop-nav > div:first-child,
-        body.hero-new-page .mobile-nav > div:first-child {
-          background: rgba(10, 15, 26, 0.98) !important;
-          backdrop-filter: blur(30px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-        }
-      `
-      document.head.appendChild(styleTag)
+    const existingStyle = document.getElementById(styleId)
+    if (existingStyle) {
+      existingStyle.remove()
     }
     
     const handleScroll = () => {

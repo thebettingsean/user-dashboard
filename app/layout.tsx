@@ -85,6 +85,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // In development, Clerk will show warnings but the app should still work
+  // The components already handle development mode by bypassing Clerk
   return (
     <ClerkProvider 
       afterSignUpUrl="/pricing"
