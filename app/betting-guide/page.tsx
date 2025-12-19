@@ -631,7 +631,7 @@ export default function BettingGuidePage() {
       <section className={styles.heroSection}>
         <div className={styles.heroContainer}>
           <div className={styles.heroHeader}>
-            <span className={styles.heroLabel}>Complete Betting Guide</span>
+            <span className={styles.heroLabel}>the betting insiders</span>
             <h1 className={styles.heroTitle}>
               The Complete Betting Guide
             </h1>

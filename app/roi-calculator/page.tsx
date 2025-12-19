@@ -65,7 +65,7 @@ export default function ROICalculatorPage() {
         ></div>
         <div className={styles.heroContainer}>
           <div className={styles.heroHeader}>
-            <span className={styles.heroLabel}>Free Sports Betting Calculator</span>
+            <span className={styles.heroLabel}>the betting insiders</span>
             <h1 className={styles.heroTitle}>
               <span className={styles.heroTitleHighlight}>ROI Calculator</span>
             </h1>

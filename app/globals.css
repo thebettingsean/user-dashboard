@@ -60,10 +60,10 @@ body {
   z-index: 1000;
   display: flex;
   width: 100%;
-  background: rgba(8, 12, 20, 0.98);
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .mobile-nav {
@@ -72,10 +72,10 @@ body {
   z-index: 1000;
   width: 100%;
   display: block;
-  background: rgba(8, 12, 20, 0.98);
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
 }
 
 .mobile-nav > div:first-child {
@@ -93,6 +93,59 @@ body {
   .mobile-nav {
     display: none !important;
   }
+}
+
+/* Navbar hover effects */
+.desktop-nav a[style*="navLink"]:hover,
+.desktop-nav a[style*="navLink"]:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.desktop-nav span[style*="navLink"]:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.desktop-nav button[style*="signInBtn"]:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.desktop-nav button[style*="signUpBtn"]:hover {
+  background: rgba(41, 47, 63, 0.7) !important;
+  border-color: rgba(50, 51, 53, 0.8) !important;
+}
+
+.mobile-nav a[style*="mobileLink"]:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Navbar gradient effects for adjacent links */
+.desktop-nav a[data-adjacent-left="true"] {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.85) 20%,
+    rgba(255, 255, 255, 0.9) 40%,
+    rgba(255, 255, 255, 0.95) 60%,
+    rgba(255, 255, 255, 1.0) 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.desktop-nav a[data-adjacent-right="true"] {
+  background: linear-gradient(270deg, 
+    rgba(255, 255, 255, 0.8) 0%, 
+    rgba(255, 255, 255, 0.85) 20%,
+    rgba(255, 255, 255, 0.9) 40%,
+    rgba(255, 255, 255, 0.95) 60%,
+    rgba(255, 255, 255, 1.0) 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
 }
 
 /* Hide Pushlap's default floating widget */

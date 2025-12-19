@@ -327,8 +327,8 @@ export default function BankrollBuilderPage() {
     svg.innerHTML = `
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:0" />
+          <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:0.3" />
+          <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:0" />
         </linearGradient>
       </defs>
     `
@@ -364,9 +364,9 @@ export default function BankrollBuilderPage() {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'path')
     line.setAttribute('d', lineData)
     line.setAttribute('fill', 'none')
-    line.setAttribute('stroke', '#60a5fa')
+    line.setAttribute('stroke', '#3B82F6')
     line.setAttribute('stroke-width', '3')
-    line.setAttribute('filter', 'drop-shadow(0 0 10px rgba(96, 165, 250, 0.3))')
+    line.setAttribute('filter', 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.3))')
     line.setAttribute('transform', `translate(${padding.left}, ${padding.top})`)
 
     const xLabelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g')
@@ -549,7 +549,7 @@ export default function BankrollBuilderPage() {
         ></div>
         <div className={styles.heroContainer}>
           <div className={styles.heroHeader}>
-            <span className={styles.heroLabel}>Free Sports Betting Builder</span>
+            <span className={styles.heroLabel}>the betting insiders</span>
             <h1 className={styles.heroTitle}>
               <span className={styles.heroTitleHighlight}>Bankroll Builder</span>
             </h1>
@@ -903,27 +903,8 @@ export default function BankrollBuilderPage() {
       {/* SEO Content Section */}
       <section className={styles.seoSection}>
         <div className={styles.seoContent}>
-          <h2>Master Your Sports Betting Bankroll Management</h2>
           <p>
-            Smart <strong>bankroll management</strong> is what separates successful sports bettors from those who lose money. Our <strong>bankroll builder</strong> uses proven mathematical models to help you:
-          </p>
-
-          <h3>Essential Bankroll Management Principles:</h3>
-          <ul>
-            <li><strong>Unit bet consistency</strong> - Never bet more than your calculated unit size</li>
-            <li><strong>Bankroll preservation</strong> - Protect your capital during losing streaks</li>
-            <li><strong>Growth optimization</strong> - Scale your bets as your bankroll grows</li>
-            <li><strong>Risk management</strong> - Match your bet sizes to your risk tolerance</li>
-            <li><strong>Long-term perspective</strong> - Focus on sustainable profits over quick wins</li>
-          </ul>
-
-          <h3>How Our Bankroll Builder Works</h3>
-          <p>
-            Our advanced <strong>unit bet builder</strong> analyzes multiple factors including your experience level, betting frequency, risk tolerance, and financial situation to recommend optimal bankroll and unit sizes. The builder uses Kelly Criterion principles combined with conservative adjustment factors to ensure long-term sustainability.
-          </p>
-
-          <p>
-            Whether you're new to sports betting or a seasoned bettor looking to optimize your strategy, our free <strong>bankroll management sports betting</strong> builder provides the foundation for profitable betting.
+            Smart <strong>bankroll management</strong> is what separates successful sports bettors from those who lose money. Our <strong>bankroll builder</strong> uses proven mathematical models to help you achieve unit bet consistency, bankroll preservation, growth optimization, risk management, and a long-term perspective. Our advanced <strong>unit bet builder</strong> analyzes multiple factors including your experience level, betting frequency, risk tolerance, and financial situation to recommend optimal bankroll and unit sizes. The builder uses Kelly Criterion principles combined with conservative adjustment factors to ensure long-term sustainability. Whether you're new to sports betting or a seasoned bettor looking to optimize your strategy, our free <strong>bankroll management sports betting</strong> builder provides the foundation for profitable betting.
           </p>
         </div>
       </section>

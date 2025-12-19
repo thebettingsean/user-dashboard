@@ -2,28 +2,57 @@
 
 import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 
 export default function Navbar() {
+  const pathname = usePathname()
   const isDevelopment = process.env.NODE_ENV === 'development'
   
-  // In development, bypass Clerk to avoid CORS errors
-  let isSignedIn = false
-  let isLoaded = true
+  // Always call the hook, but conditionally use it
+  const clerkUser = useUser()
   
-  if (!isDevelopment) {
-    const clerkUser = useUser()
-    isSignedIn = clerkUser.isSignedIn || false
-    isLoaded = clerkUser.isLoaded
-  } else {
-    // Simulate signed-out state in development to test the nav
-    isSignedIn = false
-    isLoaded = true
-  }
+  // In development, bypass Clerk to avoid CORS errors
+  const isSignedIn = isDevelopment ? false : (clerkUser.isSignedIn || false)
+  const isLoaded = isDevelopment ? true : clerkUser.isLoaded
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null)
+
+  // Define nav items in order
+  const navItems = [
+    { href: '/sports/picks', label: "Today's Picks" },
+    { href: '/sports/public-betting', label: 'Public Betting' },
+    { href: '/sports/ai-scripts', label: 'Game Scripts' },
+    { href: '/builder', label: 'Builder' },
+  ]
+
+  // Find active index
+  const activeIndex = navItems.findIndex(item => pathname?.startsWith(item.href))
+  
+  // Get link style based on position relative to active
+  const getLinkStyle = (index: number) => {
+    if (activeIndex === -1) {
+      return styles.navLink
+    }
+    
+    if (index === activeIndex) {
+      return { ...styles.navLink, ...styles.navLinkActive }
+    }
+    
+    if (index === activeIndex - 1) {
+      // Left adjacent - gradient from left (white) to right (faded)
+      return { ...styles.navLink, ...styles.navLinkAdjacent, ...styles.navLinkAdjacentLeft }
+    }
+    
+    if (index === activeIndex + 1) {
+      // Right adjacent - gradient from right (white) to left (faded)
+      return { ...styles.navLink, ...styles.navLinkAdjacent, ...styles.navLinkAdjacentRight }
+    }
+    
+    return styles.navLink
+  }
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -42,8 +71,16 @@ export default function Navbar() {
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
       setOpenDropdown(null)
-    }, 150)
+    }, 300)
     setCloseTimeout(timeout)
+  }
+  
+  const handleDropdownMouseEnter = (itemId: string) => {
+    if (closeTimeout) {
+      clearTimeout(closeTimeout)
+      setCloseTimeout(null)
+    }
+    setOpenDropdown(itemId)
   }
 
   const closeMobileMenu = () => {
@@ -68,21 +105,31 @@ export default function Navbar() {
 
             {/* Nav Items */}
             <div style={styles.navItems}>
-              <Link href="/sports/picks" style={styles.navLink}>
-                Today's Picks
-              </Link>
-              
-              <Link href="/sports/public-betting" style={styles.navLink}>
-                Public Betting
-              </Link>
-              
-              <Link href="/sports/ai-scripts" style={styles.navLink}>
-                Game Scripts
-              </Link>
-              
-              <Link href="/builder" style={styles.navLinkHighlight}>
-                Builder 1.0
-              </Link>
+              {navItems.map((item, index) => {
+                const linkStyle = getLinkStyle(index)
+                const isActive = index === activeIndex
+                const isLeftAdjacent = index === activeIndex - 1
+                const isRightAdjacent = index === activeIndex + 1
+                
+                return (
+                  <Link 
+                    key={item.href} 
+                    href={item.href} 
+                    style={linkStyle}
+                    data-active={isActive ? 'true' : 'false'}
+                    data-adjacent-left={isLeftAdjacent ? 'true' : 'false'}
+                    data-adjacent-right={isRightAdjacent ? 'true' : 'false'}
+                  >
+                    {item.label}
+                    {item.href === '/builder' && (
+                      <>
+                        {' '}
+                        <span style={styles.newTag}>NEW</span>
+                      </>
+                    )}
+                  </Link>
+                )
+              })}
 
               {/* Sports Dropdown */}
               <div
@@ -100,7 +147,7 @@ export default function Navbar() {
                 {openDropdown === 'sports' && (
                   <div 
                     style={styles.dropdown}
-                    onMouseEnter={() => handleMouseEnter('sports')}
+                    onMouseEnter={() => handleDropdownMouseEnter('sports')}
                     onMouseLeave={handleMouseLeave}
                   >
                     <Link href="/sports/nfl/games" style={styles.dropdownLink}>
@@ -163,7 +210,7 @@ export default function Navbar() {
                 {openDropdown === 'tools' && (
                   <div 
                     style={styles.dropdown}
-                    onMouseEnter={() => handleMouseEnter('tools')}
+                    onMouseEnter={() => handleDropdownMouseEnter('tools')}
                     onMouseLeave={handleMouseLeave}
                   >
                     <Link href="/fantasy" style={styles.dropdownLink}>
@@ -337,8 +384,9 @@ export default function Navbar() {
               Game Scripts
             </Link>
             
-            <Link href="/builder" style={styles.mobileLinkHighlight} onClick={closeMobileMenu}>
-              Builder 1.0
+            <Link href="/builder" style={styles.mobileLink} onClick={closeMobileMenu}>
+              Builder{' '}
+              <span style={styles.newTag}>NEW</span>
             </Link>
 
             {/* Sports */}
@@ -429,7 +477,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 auto',
     padding: '0 32px',
     height: '64px',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   leftSection: {
@@ -458,29 +506,47 @@ const styles: { [key: string]: React.CSSProperties } = {
   navLink: {
     display: 'flex',
     alignItems: 'center',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: '0.875rem',
     fontWeight: '500',
     textDecoration: 'none',
     padding: '8px 14px',
     borderRadius: '8px',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
     cursor: 'pointer',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    position: 'relative',
+  },
+  
+  navLinkActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  
+  navLinkAdjacent: {
+    position: 'relative',
+  },
+  
+  navLinkAdjacentLeft: {
+    // Gradient from left (white) fading to right
+  },
+  
+  navLinkAdjacentRight: {
+    // Gradient from right (white) fading to left
   },
   
   navLinkHighlight: {
     display: 'flex',
     alignItems: 'center',
-    color: '#fbbf24',
+    color: '#FFFFFF',
     fontSize: '0.875rem',
-    fontWeight: '600',
+    fontWeight: '500',
     textDecoration: 'none',
     padding: '8px 14px',
     borderRadius: '8px',
-    background: 'rgba(251, 191, 36, 0.1)',
-    border: '1px solid rgba(251, 191, 36, 0.3)',
-    transition: 'all 0.2s ease',
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(50, 51, 53, 0.5)',
+    transition: 'all 0.15s ease',
   },
   
   navDropdown: {
@@ -490,17 +556,18 @@ const styles: { [key: string]: React.CSSProperties } = {
   
   dropdown: {
     position: 'absolute',
-    top: 'calc(100% + 8px)',
+    top: 'calc(100% + 2px)',
     left: '50%',
     transform: 'translateX(-50%)',
-    background: 'rgba(15, 20, 30, 0.98)',
+    background: 'linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%)',
     backdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(50, 51, 53, 0.5)',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
     borderRadius: '12px',
     padding: '8px',
     minWidth: '180px',
     zIndex: 1001,
+    pointerEvents: 'auto',
   },
   
   dropdownLink: {
@@ -508,13 +575,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '10px',
     padding: '10px 12px',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: '0.875rem',
     fontWeight: '500',
     textDecoration: 'none',
     borderRadius: '8px',
     transition: 'all 0.15s ease',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   sportLogo: {
@@ -538,25 +605,27 @@ const styles: { [key: string]: React.CSSProperties } = {
   signInBtn: {
     background: 'transparent',
     border: 'none',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     padding: '8px 16px',
     fontSize: '0.875rem',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    transition: 'all 0.15s ease',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   signUpBtn: {
-    background: 'rgba(59, 130, 246, 0.15)',
-    border: '1px solid rgba(59, 130, 246, 0.4)',
-    color: '#60a5fa',
-    padding: '10px 20px',
+    background: 'rgba(41, 47, 63, 0.6)',
+    border: '1px solid rgba(50, 51, 53, 0.5)',
+    color: '#FFFFFF',
+    padding: '6px 12px',
+    height: '32px',
     borderRadius: '8px',
-    fontSize: '0.875rem',
-    fontWeight: '600',
+    fontSize: '13px',
+    fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   devAvatar: {
@@ -585,7 +654,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '100%',
     padding: '0 16px',
     height: '56px',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   hamburger: {
@@ -618,14 +687,16 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   
   mobileSignUpBtn: {
-    background: 'rgba(59, 130, 246, 0.15)',
-    border: '1px solid rgba(59, 130, 246, 0.4)',
-    color: '#60a5fa',
-    padding: '8px 16px',
+    background: 'rgba(41, 47, 63, 0.6)',
+    border: '1px solid rgba(50, 51, 53, 0.5)',
+    color: '#FFFFFF',
+    padding: '6px 12px',
+    height: '32px',
     borderRadius: '8px',
-    fontSize: '0.8125rem',
-    fontWeight: '600',
+    fontSize: '13px',
+    fontWeight: '500',
     cursor: 'pointer',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   mobileMenu: {
@@ -633,9 +704,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     top: '100%',
     left: '0',
     right: '0',
-    background: 'rgba(10, 15, 25, 0.98)',
+    background: 'linear-gradient(180deg, #0C0E12 0%, #12151B 100%)',
     backdropFilter: 'blur(20px)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+    borderTop: '1px solid rgba(50, 51, 53, 0.5)',
     padding: '16px 0',
     display: 'flex',
     flexDirection: 'column',
@@ -648,25 +719,25 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileLink: {
     display: 'block',
     width: '100%',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: '1rem',
     fontWeight: '500',
     textDecoration: 'none',
     padding: '16px 24px',
-    transition: 'all 0.2s ease',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    transition: 'all 0.15s ease',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   mobileLinkHighlight: {
     display: 'block',
     width: '100%',
-    color: '#fbbf24',
+    color: '#FFFFFF',
     fontSize: '1rem',
-    fontWeight: '600',
+    fontWeight: '500',
     textDecoration: 'none',
     padding: '16px 24px',
-    background: 'rgba(251, 191, 36, 0.08)',
-    borderLeft: '3px solid #fbbf24',
+    background: 'rgba(255, 255, 255, 0.03)',
+    borderLeft: '3px solid rgba(50, 51, 53, 0.5)',
   },
   
   mobileDropdownItem: {
@@ -680,12 +751,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: '1rem',
     fontWeight: '500',
     padding: '16px 24px',
     cursor: 'pointer',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   mobileArrow: {
@@ -697,9 +768,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
-    background: 'rgba(0, 0, 0, 0.2)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+    background: 'rgba(29, 37, 48, 0.3)',
+    borderTop: '1px solid rgba(50, 51, 53, 0.5)',
+    borderBottom: '1px solid rgba(50, 51, 53, 0.5)',
   },
   
   mobileSubLink: {
@@ -707,12 +778,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '12px',
     width: '100%',
-    color: '#ffffff',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: '0.9375rem',
     fontWeight: '500',
     textDecoration: 'none',
     padding: '14px 36px',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
   },
   
   mobileSignInSection: {
@@ -724,11 +795,27 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileSignInLink: {
     background: 'transparent',
     border: 'none',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#696969',
     fontSize: '0.875rem',
     fontWeight: '500',
     cursor: 'pointer',
     padding: 0,
-    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+  },
+  
+  newTag: {
+    display: 'inline-block',
+    marginLeft: '2px',
+    padding: '1px 2px',
+    fontSize: '0.4rem',
+    fontWeight: '600',
+    color: '#696969',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    lineHeight: '1',
+    verticalAlign: 'top',
+    transform: 'translateY(-2px)',
+    pointerEvents: 'none',
   },
 }
