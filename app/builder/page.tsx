@@ -13,11 +13,13 @@ import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy, PiUsersThree } from "react-icons/pi"
-import { GiWhistle } from "react-icons/gi"
+import { GiWhistle, GiShieldOpposition } from "react-icons/gi"
 import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
 import { FiCopy, FiCheck, FiMenu, FiChevronLeft } from "react-icons/fi"
 import { LuGitPullRequestArrow, LuBot } from "react-icons/lu"
+import { VscGraph } from "react-icons/vsc"
+import { RiTeamFill } from "react-icons/ri"
 import { useUser } from "@clerk/nextjs"
 import { serializeQueryState, deserializeQueryConfig } from "@/lib/saved-queries"
 
@@ -645,6 +647,13 @@ function SportsEngineContent() {
   const [minCarries, setMinCarries] = useState<string>('')
   const [minPassAttempts, setMinPassAttempts] = useState<string>('')
   
+  // Sport selector
+  const [selectedSport, setSelectedSport] = useState<string>('nfl')
+  
+  // Referee search (for Matchup Filters - already have selectedReferee state declared above)
+  const [matchupRefereeSearch, setMatchupRefereeSearch] = useState<string>('')
+  const [matchupRefereeResults, setMatchupRefereeResults] = useState<any[]>([])
+  
   // Get available stats based on position (use selected player's position if available)
   const effectivePosition = selectedPlayer?.position || propPosition
   const availablePropStats = PROP_STATS_BY_POSITION[effectivePosition] || PROP_STATS_BY_POSITION['any']
@@ -1223,6 +1232,40 @@ function SportsEngineContent() {
   const handlePropVersusTeamSearch = (query: string) => {
     setPropVersusTeamSearch(query)
     setPropVersusTeamResults(searchTeams(query))
+  }
+  
+  // Handle matchup referee search input
+  const handleMatchupRefereeSearch = (query: string) => {
+    setMatchupRefereeSearch(query)
+    if (query.trim()) {
+      const filtered = refereeList.filter(ref => 
+        ref.name.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 10)
+      setMatchupRefereeResults(filtered)
+    } else {
+      setMatchupRefereeResults([])
+    }
+  }
+  
+  // Fetch referees for matchup filter
+  const fetchReferees = async (query: string = '') => {
+    try {
+      const response = await fetch('/api/clickhouse/referees')
+      if (!response.ok) return
+      const data = await response.json()
+      if (data.success && data.referees) {
+        const refs = data.referees as RefereeResult[]
+        if (query) {
+          setMatchupRefereeResults(refs.filter(ref => 
+            ref.name.toLowerCase().includes(query.toLowerCase())
+          ).slice(0, 10))
+        } else {
+          setMatchupRefereeResults(refs.slice(0, 10))
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch referees:', err)
+    }
   }
   
   // Helper to check if current bet type is O/U
@@ -3957,61 +4000,85 @@ function SportsEngineContent() {
           </div>
         </div>
         
-        {/* Mobile Query Type Buttons */}
+        {/* Mobile Sport Selector */}
         <div className={styles.mobileQueryTypes}>
           <button
-            className={`${styles.filterBtn} ${queryType === 'trend' ? styles.active : ''}`}
-            onClick={() => navigateToQueryType('trend')}
+            className={`${styles.filterBtn} ${selectedSport === 'nfl' ? styles.active : ''}`}
+            onClick={() => setSelectedSport('nfl')}
           >
-            Trends
+            NFL
           </button>
           <button
-            className={`${styles.filterBtn} ${queryType === 'team' ? styles.active : ''}`}
-            onClick={() => navigateToQueryType('team')}
+            className={`${styles.filterBtn} ${styles.disabled}`}
+            disabled
           >
-            Teams
+            NBA
           </button>
           <button
-            className={`${styles.filterBtn} ${queryType === 'referee' ? styles.active : ''}`}
-            onClick={() => navigateToQueryType('referee')}
+            className={`${styles.filterBtn} ${styles.disabled}`}
+            disabled
           >
-            Refs
+            NHL
           </button>
           <button
-            className={`${styles.filterBtn} ${queryType === 'prop' ? styles.active : ''}`}
-            onClick={() => navigateToQueryType('prop')}
+            className={`${styles.filterBtn} ${styles.disabled}`}
+            disabled
           >
-            Props
+            MLB
+          </button>
+          <button
+            className={`${styles.filterBtn} ${styles.disabled}`}
+            disabled
+          >
+            CFB
+          </button>
+          <button
+            className={`${styles.filterBtn} ${styles.disabled}`}
+            disabled
+          >
+            CBB
           </button>
         </div>
         
         <div className={styles.filtersRow}>
-          {/* Left side: Query Type Buttons */}
+          {/* Left side: Sport Selector */}
           <div className={styles.leftFilters}>
             <div className={styles.sportFilters}>
               <button
-                className={`${styles.filterBtn} ${queryType === 'trend' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('trend')}
+                className={`${styles.filterBtn} ${selectedSport === 'nfl' ? styles.active : ''}`}
+                onClick={() => setSelectedSport('nfl')}
               >
-                Trends
+                NFL
               </button>
               <button
-                className={`${styles.filterBtn} ${queryType === 'team' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('team')}
+                className={`${styles.filterBtn} ${styles.disabled}`}
+                disabled
               >
-                Teams
+                NBA
               </button>
               <button
-                className={`${styles.filterBtn} ${queryType === 'referee' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('referee')}
+                className={`${styles.filterBtn} ${styles.disabled}`}
+                disabled
               >
-                Refs
+                NHL
               </button>
               <button
-                className={`${styles.filterBtn} ${queryType === 'prop' ? styles.active : ''}`}
-                onClick={() => navigateToQueryType('prop')}
+                className={`${styles.filterBtn} ${styles.disabled}`}
+                disabled
               >
-                Props
+                MLB
+              </button>
+              <button
+                className={`${styles.filterBtn} ${styles.disabled}`}
+                disabled
+              >
+                CFB
+              </button>
+              <button
+                className={`${styles.filterBtn} ${styles.disabled}`}
+                disabled
+              >
+                CBB
               </button>
             </div>
           </div>
@@ -4078,6 +4145,31 @@ function SportsEngineContent() {
                 title="NFL"
               />
             </div>
+          </div>
+
+          {/* Query Type Selector - Trends, Teams, Props */}
+          <div className={styles.queryTypeSelector}>
+            <button
+              className={`${styles.queryTypeCard} ${queryType === 'trend' ? styles.queryTypeActive : ''}`}
+              onClick={() => navigateToQueryType('trend')}
+            >
+              <VscGraph className={styles.queryTypeIcon} />
+              <span>Trends</span>
+            </button>
+            <button
+              className={`${styles.queryTypeCard} ${queryType === 'team' ? styles.queryTypeActive : ''}`}
+              onClick={() => navigateToQueryType('team')}
+            >
+              <GiShieldOpposition className={styles.queryTypeIcon} />
+              <span>Teams</span>
+            </button>
+            <button
+              className={`${styles.queryTypeCard} ${queryType === 'prop' ? styles.queryTypeActive : ''}`}
+              onClick={() => navigateToQueryType('prop')}
+            >
+              <RiTeamFill className={styles.queryTypeIcon} />
+              <span>Props</span>
+            </button>
           </div>
 
           {/* Bet Type - for trends, teams, refs */}
@@ -4744,6 +4836,56 @@ function SportsEngineContent() {
                     </div>
                   </div>
                 )}
+                
+                {/* With Head Official - for all query types */}
+                {queryType !== 'referee' && (
+                  <div>
+                    <span>With Head Official</span>
+                    <div className={styles.teamSearchWrapper}>
+                      <input
+                        type="text"
+                        placeholder={selectedReferee ? selectedReferee.name : "Any referee"}
+                        value={matchupRefereeSearch}
+                        onChange={(e) => handleMatchupRefereeSearch(e.target.value)}
+                        onFocus={() => {
+                          if (!matchupRefereeSearch && matchupRefereeResults.length === 0) {
+                            // Fetch initial list of referees
+                            fetchReferees('')
+                          }
+                        }}
+                        onBlur={() => setTimeout(() => setMatchupRefereeResults([]), 200)}
+                        className={styles.teamSearchInput}
+                      />
+                      {matchupRefereeResults.length > 0 && (
+                        <div className={styles.teamSearchDropdown}>
+                          {matchupRefereeResults.map((ref: any) => (
+                            <div
+                              key={ref.id}
+                              className={styles.teamSearchOption}
+                              onClick={() => {
+                                setSelectedReferee(ref)
+                                setMatchupRefereeSearch('')
+                                setMatchupRefereeResults([])
+                              }}
+                            >
+                              <GiWhistle className={styles.refereeIcon} />
+                              <span className={styles.teamOptionName}>{ref.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {selectedReferee && (
+                        <button 
+                          className={styles.clearVersusBtn}
+                          onClick={() => setSelectedReferee(null)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
                 <div>
                   <span>Division</span>
                   <select value={division} onChange={(e) => setDivisionWithHistory(e.target.value)}>
