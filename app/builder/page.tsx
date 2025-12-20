@@ -13,12 +13,12 @@ import { IoMdTrendingUp } from "react-icons/io"
 import { IoRocketOutline } from "react-icons/io5"
 import { TbTargetArrow } from "react-icons/tb"
 import { PiFootballHelmetDuotone, PiChartBarLight, PiMoneyWavy, PiUsersThree } from "react-icons/pi"
-import { GiWhistle, GiShieldOpposition } from "react-icons/gi"
-import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences } from "react-icons/md"
+import { GiWhistle } from "react-icons/gi"
+import { MdOutlineTipsAndUpdates, MdOutlineAutoGraph, MdOutlineStadium, MdExpandMore, MdExpandLess, MdOutlineUpcoming, MdRoomPreferences, MdAutoGraph } from "react-icons/md"
 import { BsCalendarEvent, BsShare } from "react-icons/bs"
 import { FiCopy, FiCheck, FiMenu, FiChevronLeft } from "react-icons/fi"
 import { LuGitPullRequestArrow, LuBot } from "react-icons/lu"
-import { VscGraph } from "react-icons/vsc"
+import { HiShieldCheck } from "react-icons/hi"
 import { RiTeamFill } from "react-icons/ri"
 import { useUser } from "@clerk/nextjs"
 import { serializeQueryState, deserializeQueryConfig } from "@/lib/saved-queries"
@@ -1239,32 +1239,12 @@ function SportsEngineContent() {
     setMatchupRefereeSearch(query)
     if (query.trim()) {
       const filtered = refereeList.filter(ref => 
-        ref.name.toLowerCase().includes(query.toLowerCase())
+        ref.referee_name.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 10)
       setMatchupRefereeResults(filtered)
     } else {
-      setMatchupRefereeResults([])
-    }
-  }
-  
-  // Fetch referees for matchup filter
-  const fetchReferees = async (query: string = '') => {
-    try {
-      const response = await fetch('/api/clickhouse/referees')
-      if (!response.ok) return
-      const data = await response.json()
-      if (data.success && data.referees) {
-        const refs = data.referees as RefereeResult[]
-        if (query) {
-          setMatchupRefereeResults(refs.filter(ref => 
-            ref.name.toLowerCase().includes(query.toLowerCase())
-          ).slice(0, 10))
-        } else {
-          setMatchupRefereeResults(refs.slice(0, 10))
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch referees:', err)
+      // Show top 10 when empty
+      setMatchupRefereeResults(refereeList.slice(0, 10))
     }
   }
   
@@ -4153,14 +4133,14 @@ function SportsEngineContent() {
               className={`${styles.queryTypeCard} ${queryType === 'trend' ? styles.queryTypeActive : ''}`}
               onClick={() => navigateToQueryType('trend')}
             >
-              <VscGraph className={styles.queryTypeIcon} />
+              <MdAutoGraph className={styles.queryTypeIcon} />
               <span>Trends</span>
             </button>
             <button
               className={`${styles.queryTypeCard} ${queryType === 'team' ? styles.queryTypeActive : ''}`}
               onClick={() => navigateToQueryType('team')}
             >
-              <GiShieldOpposition className={styles.queryTypeIcon} />
+              <HiShieldCheck className={styles.queryTypeIcon} />
               <span>Teams</span>
             </button>
             <button
@@ -4844,13 +4824,13 @@ function SportsEngineContent() {
                     <div className={styles.teamSearchWrapper}>
                       <input
                         type="text"
-                        placeholder={selectedReferee ? selectedReferee.name : "Any referee"}
+                        placeholder={selectedReferee ? selectedReferee.referee_name : "Any referee"}
                         value={matchupRefereeSearch}
                         onChange={(e) => handleMatchupRefereeSearch(e.target.value)}
                         onFocus={() => {
                           if (!matchupRefereeSearch && matchupRefereeResults.length === 0) {
-                            // Fetch initial list of referees
-                            fetchReferees('')
+                            // Show initial list
+                            setMatchupRefereeResults(refereeList.slice(0, 10))
                           }
                         }}
                         onBlur={() => setTimeout(() => setMatchupRefereeResults([]), 200)}
@@ -4858,9 +4838,9 @@ function SportsEngineContent() {
                       />
                       {matchupRefereeResults.length > 0 && (
                         <div className={styles.teamSearchDropdown}>
-                          {matchupRefereeResults.map((ref: any) => (
+                          {matchupRefereeResults.map((ref: RefereeResult, idx: number) => (
                             <div
-                              key={ref.id}
+                              key={`${ref.referee_name}-${idx}`}
                               className={styles.teamSearchOption}
                               onClick={() => {
                                 setSelectedReferee(ref)
@@ -4869,7 +4849,7 @@ function SportsEngineContent() {
                               }}
                             >
                               <GiWhistle className={styles.refereeIcon} />
-                              <span className={styles.teamOptionName}>{ref.name}</span>
+                              <span className={styles.teamOptionName}>{ref.referee_name}</span>
                             </div>
                           ))}
                         </div>
