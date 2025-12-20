@@ -600,6 +600,188 @@ export async function GET(request: Request) {
     }
   }
   
+  // ============================================
+  // GAME LIFECYCLE MANAGEMENT
+  // ============================================
+  
+  const lifecycleResults = {
+    closingSoon: 0,
+    completed: 0,
+    boxScoresFetched: 0,
+    archived: 0,
+    errors: 0
+  }
+  
+  try {
+    console.log('[LIFECYCLE] Starting game state management...')
+    const now = new Date()
+    
+    // Step 1: Detect games closing soon (< 30 min from kickoff)
+    const closingSoonQuery = await clickhouseQuery<{
+      game_id: string
+      sport: string
+      game_time: string
+      home_team_id: number
+      away_team_id: number
+    }>(`
+      SELECT game_id, sport, game_time, home_team_id, away_team_id
+      FROM games FINAL
+      WHERE status = 'upcoming'
+        AND game_time <= now() + INTERVAL 30 MINUTE
+        AND game_time > now()
+    `)
+    
+    for (const game of closingSoonQuery.data || []) {
+      try {
+        await clickhouseCommand(`
+          INSERT INTO games (
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            status, sportsdata_io_score_id, updated_at
+          )
+          SELECT 
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            'closing_soon', sportsdata_io_score_id, now()
+          FROM games FINAL
+          WHERE game_id = '${game.game_id}'
+          ORDER BY updated_at DESC
+          LIMIT 1
+        `)
+        lifecycleResults.closingSoon++
+      } catch (e) {
+        lifecycleResults.errors++
+      }
+    }
+    
+    console.log(`[LIFECYCLE] ${lifecycleResults.closingSoon} games marked as closing soon`)
+    
+    // Step 2: Detect completed games (game time + 4 hours < now)
+    const completedQuery = await clickhouseQuery<{
+      game_id: string
+      sport: string
+      game_time: string
+      home_team_id: number
+      away_team_id: number
+      sportsdata_io_score_id: number
+    }>(`
+      SELECT game_id, sport, game_time, home_team_id, away_team_id, sportsdata_io_score_id
+      FROM games FINAL
+      WHERE status IN ('upcoming', 'closing_soon', 'in_progress')
+        AND game_time < now() - INTERVAL 4 HOUR
+    `)
+    
+    for (const game of completedQuery.data || []) {
+      try {
+        // Fetch box score from ESPN if needed
+        let boxScoreFetched = false
+        
+        if (game.sport === 'nfl') {
+          try {
+            // Check if box score already exists
+            const existingBoxScore = await clickhouseQuery(`
+              SELECT count(*) as cnt FROM nfl_box_scores_v2 WHERE game_id = '${game.game_id}'
+            `)
+            
+            if (existingBoxScore.data?.[0]?.cnt === 0) {
+              // Fetch from ESPN (you'll need to implement this endpoint)
+              const espnFetch = await fetch(`https://www.thebettinginsider.com/api/backfill/nfl-box-scores?date=${game.game_time.split(' ')[0]}`)
+              if (espnFetch.ok) {
+                boxScoreFetched = true
+                lifecycleResults.boxScoresFetched++
+              }
+            }
+          } catch (e) {
+            console.error(`[LIFECYCLE] Failed to fetch box score for ${game.game_id}`)
+          }
+        }
+        
+        // Mark as completed
+        await clickhouseCommand(`
+          INSERT INTO games (
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            status, sportsdata_io_score_id, updated_at
+          )
+          SELECT 
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            'completed', sportsdata_io_score_id, now()
+          FROM games FINAL
+          WHERE game_id = '${game.game_id}'
+          ORDER BY updated_at DESC
+          LIMIT 1
+        `)
+        lifecycleResults.completed++
+      } catch (e) {
+        lifecycleResults.errors++
+      }
+    }
+    
+    console.log(`[LIFECYCLE] ${lifecycleResults.completed} games marked as completed`)
+    
+    // Step 3: Archive old completed games (> 7 days old)
+    const archiveQuery = await clickhouseQuery<{game_id: string}>(`
+      SELECT game_id
+      FROM games FINAL
+      WHERE status = 'completed'
+        AND game_time < now() - INTERVAL 7 DAY
+    `)
+    
+    for (const game of archiveQuery.data || []) {
+      try {
+        await clickhouseCommand(`
+          INSERT INTO games (
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            status, sportsdata_io_score_id, updated_at
+          )
+          SELECT 
+            game_id, sport, game_time, home_team_id, away_team_id,
+            spread_open, spread_close, total_open, total_close,
+            home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            public_spread_home_bet_pct, public_spread_home_money_pct,
+            public_ml_home_bet_pct, public_ml_home_money_pct,
+            public_total_over_bet_pct, public_total_over_money_pct,
+            'archived', sportsdata_io_score_id, now()
+          FROM games FINAL
+          WHERE game_id = '${game.game_id}'
+          ORDER BY updated_at DESC
+          LIMIT 1
+        `)
+        lifecycleResults.archived++
+      } catch (e) {
+        lifecycleResults.errors++
+      }
+    }
+    
+    console.log(`[LIFECYCLE] ${lifecycleResults.archived} games archived`)
+    console.log(`[LIFECYCLE] Completed with ${lifecycleResults.errors} errors`)
+    
+  } catch (lifecycleError: any) {
+    console.error('[LIFECYCLE] Error:', lifecycleError.message)
+  }
+  
   const duration = Date.now() - startTime
   const totalGames = results.reduce((sum, r) => sum + r.gamesProcessed, 0)
   const totalNewGames = results.reduce((sum, r) => sum + r.newGames, 0)
@@ -612,6 +794,7 @@ export async function GET(request: Request) {
     duration: `${duration}ms`,
     totalGamesProcessed: totalGames,
     totalNewGames,
-    results
+    results,
+    lifecycle: lifecycleResults
   })
 }
