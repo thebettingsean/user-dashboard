@@ -115,6 +115,36 @@ export async function GET(request: Request) {
           continue
         }
         
+        // Extract and update referee data
+        try {
+          const officials = summaryData.gameInfo?.officials
+          if (officials && officials.length > 0) {
+            const referee = officials.find((official: any) => 
+              official.position?.displayName === 'Referee' || 
+              official.position?.abbreviation === 'REF'
+            )
+            
+            if (referee) {
+              const refereeName = (referee.displayName || referee.fullName || '').replace(/'/g, "''")
+              const refereeId = parseInt(referee.id) || 0
+              
+              if (refereeName) {
+                await clickhouseCommand(`
+                  ALTER TABLE nfl_games
+                  UPDATE 
+                    referee_name = '${refereeName}',
+                    referee_id = ${refereeId},
+                    updated_at = now()
+                  WHERE espn_game_id = '${game.espn_game_id}'
+                `)
+                console.log(`[BOX SCORE BACKFILL] Updated referee: ${refereeName}`)
+              }
+            }
+          }
+        } catch (refError: any) {
+          console.log(`[BOX SCORE BACKFILL] Error updating referee for game ${game.espn_game_id}:`, refError.message)
+        }
+        
         // Collect all player stats, deduped by player ID
         const playerStatsMap = new Map<number, { 
           teamId: number, 
