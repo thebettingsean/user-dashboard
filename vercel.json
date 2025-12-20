@@ -25,7 +25,7 @@
       "schedule": "0 */2 * * *"
     },
     {
-      "path": "/api/cron/nfl-props-lifecycle?stage=auto",
+      "path": "/api/cron/sync-nfl-props",
       "schedule": "15 * * * *"
     },
     {
