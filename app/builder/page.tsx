@@ -1610,6 +1610,11 @@ function SportsEngineContent() {
     if (conference !== 'any') filters.push(conference === 'conference' ? 'Conference Game' : 'Non-Conference')
     if (playoff !== 'any') filters.push(playoff === 'playoff' ? 'Playoff' : 'Regular Season')
     
+    // Head Official (Referee)
+    if (selectedReferee && queryType !== 'referee') {
+      filters.push(`Head Official: ${selectedReferee.referee_name}`)
+    }
+    
     // Fav/Dog - different for O/U
     if (!isOUQuery && favorite !== 'any') {
       filters.push(favorite === 'favorite' ? 'Favorite' : 'Underdog')
@@ -1973,6 +1978,11 @@ function SportsEngineContent() {
       if (division !== 'any') filters.is_division = division
       if (conference !== 'any') filters.is_conference = conference
       if (playoff !== 'any') filters.is_playoff = playoff
+      
+      // Referee filter (for all query types except referee)
+      if (selectedReferee && queryType !== 'referee') {
+        filters.referee_id = selectedReferee.referee_name
+      }
       
       // Non-O/U specific filters
       if (!isOUQuery) {
@@ -2389,6 +2399,11 @@ function SportsEngineContent() {
       // Team specific
       if (queryType === 'team' && teamId) {
         filters.team_id = teamId
+      }
+      
+      // Referee filter (for upcoming games)
+      if (selectedReferee && queryType !== 'referee') {
+        filters.referee_id = selectedReferee.referee_name
       }
 
       // Use different endpoint for props
