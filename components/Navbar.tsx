@@ -557,6 +557,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   navDropdown: {
     position: 'relative',
     cursor: 'pointer',
+    zIndex: 10001,
   },
   
   dropdown: {
@@ -571,7 +572,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '12px',
     padding: '8px',
     minWidth: '180px',
-    zIndex: 1001,
+    zIndex: 10000,
     pointerEvents: 'auto',
   },
   
