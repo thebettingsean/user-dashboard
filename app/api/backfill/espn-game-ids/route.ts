@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = 'nfl'
       WHERE g.game_date >= '${startDate}'
         AND g.game_date <= '${endDate}'
-        AND (g.espn_game_id = 0 OR g.espn_game_id IS NULL)
+        AND (g.espn_game_id = '' OR g.espn_game_id IS NULL OR g.espn_game_id = '0')
       ORDER BY g.game_date ASC
     `)
     
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
           // Update our game with ESPN game ID
           await clickhouseCommand(`
             ALTER TABLE nfl_games 
-            UPDATE espn_game_id = ${matchingEspnGame.espn_game_id}
+            UPDATE espn_game_id = '${matchingEspnGame.espn_game_id}'
             WHERE game_id = '${ourGame.game_id}'
           `)
           
