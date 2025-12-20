@@ -51,6 +51,22 @@
     {
       "path": "/api/cron/generate-nhl-scripts",
       "schedule": "45 */2 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-nfl-snapshots",
+      "schedule": "10,40 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-nba-snapshots",
+      "schedule": "12,42 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-nhl-snapshots",
+      "schedule": "14,44 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-cfb-snapshots",
+      "schedule": "16,46 * * * *"
     }
   ]
 }
