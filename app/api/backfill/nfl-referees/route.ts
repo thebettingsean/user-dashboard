@@ -106,8 +106,7 @@ export async function GET(request: Request) {
           ALTER TABLE nfl_games
           UPDATE 
             referee_name = '${refereeName.replace(/'/g, "''")}',
-            referee_id = ${refereeId},
-            updated_at = now()
+            referee_id = ${refereeId}
           WHERE espn_game_id = '${game.espn_game_id}'
         `)
         
