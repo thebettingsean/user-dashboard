@@ -39,7 +39,8 @@ export async function GET(request: Request) {
       WHERE game_date >= '${startDate}'
         AND game_date <= '${endDate}'
         AND (home_score > 0 OR away_score > 0)
-        AND espn_game_id > 0
+        AND espn_game_id != ''
+        AND espn_game_id != '0'
       ORDER BY game_date ASC
     `)
     
