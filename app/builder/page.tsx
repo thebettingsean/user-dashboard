@@ -291,6 +291,7 @@ function SportsEngineContent() {
   
   // Bar graph toggle
   const [viewMode, setViewMode] = useState<'list' | 'graph'>('list')
+  const [graphPage, setGraphPage] = useState(0)
   
   const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>(() => getActiveSectionFromPath(pathname))
   
@@ -789,6 +790,8 @@ function SportsEngineContent() {
     // Clear results
     setResult(null)
     setError(null)
+    setVisibleGames(10)
+    setGraphPage(0)
   }
   
   // ============================================
@@ -1179,6 +1182,11 @@ function SportsEngineContent() {
       loadSavedQueries()
     }
   }, [isSignedIn])
+  
+  // Reset graph page when switching view modes
+  useEffect(() => {
+    setGraphPage(0)
+  }, [viewMode])
   
   // Search players from database
   const searchPlayers = async (query: string, position: string): Promise<void> => {
@@ -1971,6 +1979,7 @@ function SportsEngineContent() {
     setError(null)
     setResult(null)
     setVisibleGames(10)
+    setGraphPage(0)
 
     try {
       const filters: any = {
@@ -3770,11 +3779,12 @@ function SportsEngineContent() {
   }
 
   // Render bar graph for historical games
-  const renderBarGraph = (games: any[]) => {
+  const renderBarGraph = (games: any[], page: number = 0) => {
     if (!games || games.length === 0) return null
     
-    // Reverse games so most recent is on the right
-    const reversedGames = [...games].reverse()
+    // Reverse games so most recent is on the right, then slice for current page
+    const startIdx = page * 10
+    const reversedGames = [...games].reverse().slice(startIdx, startIdx + 10)
     
     // Calculate average value and average book line
     let avgValue = 0
@@ -3878,44 +3888,96 @@ function SportsEngineContent() {
         <div className={styles.barGraphBars}>
           {gameData.map(({ actualValue, bookLineValue, betDisplay, game }, i) => {
             const actualHeightPercent = (actualValue / maxValue) * 100
-            const bookLineHeightPercent = (bookLineValue / maxValue) * 100
             const isHit = game.hit
             
-            // Get team info for label
-            const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'H'
-            const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'A'
+            // Get team info and scores
+            const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'HOME'
+            const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'AWAY'
+            const homeScore = game.home_score || 0
+            const awayScore = game.away_score || 0
+            const margin = Math.abs(homeScore - awayScore)
             
-            // Format date as MM/DD
+            // Format date as MM/DD and full date
             const gameDate = new Date(game.game_date || game.game_time)
             const dateLabel = `${gameDate.getMonth() + 1}/${gameDate.getDate()}`
+            const fullDate = gameDate.toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            })
+            
+            // Build tooltip content based on bet type
+            let tooltipContent: JSX.Element
+            
+            if (queryType === 'prop') {
+              const statType = game.stat_type || ''
+              const playerName = game.player_name || ''
+              const line = game.line || 0
+              const actualStat = game.actual_value || 0
+              const marginValue = (actualStat - line).toFixed(1)
+              
+              tooltipContent = (
+                <>
+                  <div className={styles.tooltipPlayerStat}>
+                    {playerName} {actualStat.toFixed(1)} {statType}
+                  </div>
+                  <div className={styles.tooltipLine}>Line: o{line}</div>
+                  <div className={styles.tooltipMargin}>Margin: {marginValue > 0 ? '+' : ''}{marginValue}</div>
+                  <div className={styles.tooltipDate}>{fullDate}</div>
+                </>
+              )
+            } else if (betType === 'total') {
+              const totalPoints = homeScore + awayScore
+              const line = game.total || game.line || 0
+              const marginValue = totalPoints - line
+              const ouSymbol = overUnder === 'over' ? 'o' : 'u'
+              
+              tooltipContent = (
+                <>
+                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipLine}>Line: {ouSymbol}{line}</div>
+                  <div className={styles.tooltipMargin}>Margin: {marginValue > 0 ? '+' : ''}{marginValue.toFixed(1)}</div>
+                  <div className={styles.tooltipDate}>{fullDate}</div>
+                </>
+              )
+            } else if (betType === 'spread') {
+              const line = game.spread || game.line || 0
+              const spreadWithSign = line > 0 ? `+${line}` : `${line}`
+              
+              tooltipContent = (
+                <>
+                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipLine}>Line: {spreadWithSign}</div>
+                  <div className={styles.tooltipMargin}>Margin: {margin}</div>
+                  <div className={styles.tooltipDate}>{fullDate}</div>
+                </>
+              )
+            } else {
+              // Moneyline
+              const odds = game.moneyline || game.odds || 0
+              const oddsDisplay = odds > 0 ? `+${odds}` : `${odds}`
+              
+              tooltipContent = (
+                <>
+                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipLine}>Line: {oddsDisplay}</div>
+                  <div className={styles.tooltipMargin}>Margin: {margin}</div>
+                  <div className={styles.tooltipDate}>{fullDate}</div>
+                </>
+              )
+            }
             
             return (
               <div key={game.game_id || i} className={styles.barColumn}>
-                {/* Book line bar (grey, behind) */}
-                {bookLineValue > 0 && (
-                  <div 
-                    className={styles.barBookLine}
-                    style={{ height: `${bookLineHeightPercent}%` }}
-                  />
-                )}
-                
-                {/* Actual value bar (colored, in front) */}
+                {/* Actual value bar */}
                 <div 
                   className={`${styles.bar} ${isHit ? styles.barHit : styles.barMiss}`}
                   style={{ height: `${actualHeightPercent}%` }}
                 >
-                  {/* Line indicator at top */}
-                  <div className={styles.barIndicator} />
-                  
                   {/* Tooltip on hover */}
                   <div className={styles.barTooltip}>
-                    <div className={styles.barTooltipBet}>{betDisplay}</div>
-                    <div className={styles.barTooltipResult}>
-                      {queryType === 'prop' ? `${actualValue.toFixed(1)}` : 
-                       betType === 'total' ? `${actualValue} pts` :
-                       `${actualValue} pt margin`}
-                    </div>
-                    <div className={styles.barTooltipTeams}>{awayAbbr} @ {homeAbbr}</div>
+                    {tooltipContent}
                   </div>
                 </div>
                 
@@ -5818,7 +5880,9 @@ function SportsEngineContent() {
               {!showUpcoming && (
                 <div className={styles.gamesSection}>
                   <div className={styles.gamesHeader}>
-                    <h3>Games ({Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
+                    <h3>Games ({viewMode === 'graph' 
+                      ? `${graphPage * 10 + 1}-${Math.min((graphPage + 1) * 10, result.games?.length || 0)}` 
+                      : Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
                     <div className={styles.viewToggle}>
                       <button
                         className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
@@ -5849,15 +5913,24 @@ function SportsEngineContent() {
                   {/* Bar Graph View */}
                   {viewMode === 'graph' && (
                     <div className={styles.barGraphContainer}>
-                      {renderBarGraph(result.games?.slice(0, visibleGames) || [])}
+                      {renderBarGraph(result.games || [], graphPage)}
                     </div>
                   )}
                   
                   {/* Load More Button */}
-                  {result.games && visibleGames < result.games.length && (
+                  {result.games && (
+                    (viewMode === 'list' && visibleGames < result.games.length) ||
+                    (viewMode === 'graph' && (graphPage + 1) * 10 < result.games.length)
+                  ) && (
                     <button 
                       className={styles.loadMoreBtn}
-                      onClick={() => setVisibleGames(prev => prev + 10)}
+                      onClick={() => {
+                        if (viewMode === 'list') {
+                          setVisibleGames(prev => prev + 10)
+                        } else {
+                          setGraphPage(prev => prev + 1)
+                        }
+                      }}
                     >
                       Load Next 10 →
                     </button>

@@ -4430,44 +4430,53 @@
 .barTooltip {
   position: fixed;
   bottom: auto;
-  top: 50%;
+  top: 20%;
   left: 50%;
-  transform: translate(-50%, -120%);
+  transform: translateX(-50%);
   background: #0D0D0D;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 10px 14px;
-  min-width: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 180px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 1000;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
 }
 
 .bar:hover .barTooltip {
   opacity: 1;
 }
 
-.barTooltipBet {
-  font-size: 12px;
+.tooltipPlayerStat,
+.tooltipScore {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.tooltipLine {
+  font-size: 14px;
   font-weight: 600;
   color: #3b82f6;
   margin-bottom: 6px;
   text-align: center;
 }
 
-.barTooltipResult {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
+.tooltipMargin {
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 6px;
   text-align: center;
-  margin-bottom: 4px;
 }
 
-.barTooltipTeams {
+.tooltipDate {
   font-size: 11px;
-  color: #888888;
+  color: #6b7280;
   text-align: center;
 }
 
@@ -4508,24 +4517,25 @@
   }
   
   .barTooltip {
-    min-width: 130px;
-    padding: 8px 11px;
+    min-width: 160px;
+    padding: 10px 14px;
   }
   
-  .barTooltipBet {
-    font-size: 11px;
+  .tooltipPlayerStat,
+  .tooltipScore {
+    font-size: 14px;
   }
   
-  .barTooltipResult {
-    font-size: 16px;
+  .tooltipLine {
+    font-size: 13px;
   }
   
-  .barTooltipTeams {
+  .tooltipMargin {
+    font-size: 13px;
+  }
+  
+  .tooltipDate {
     font-size: 10px;
-  }
-  
-  .barIndicator {
-    width: 14px;
   }
 }
 
