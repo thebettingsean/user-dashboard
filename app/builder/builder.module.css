@@ -4227,3 +4227,263 @@
   }
 }
 
+/* ===========================
+   Bar Graph Styles
+   =========================== */
+
+.gamesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.gamesHeader h3 {
+  margin: 0;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.viewToggleBtn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.viewToggleBtn.active {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.barGraphContainer {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 30px 20px 20px;
+  min-height: 300px;
+}
+
+.barGraph {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.barGraphGrid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  pointer-events: none;
+}
+
+.gridLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-bottom: 1.2px dashed #36383C;
+}
+
+.avgLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.6);
+  z-index: 2;
+}
+
+.avgLineLabel {
+  position: absolute;
+  right: 10px;
+  top: -24px;
+  font-size: 12px;
+  color: #3b82f6;
+  background: rgba(13, 15, 19, 0.9);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.barGraphBars {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+  height: calc(100% - 40px);
+  position: relative;
+  z-index: 1;
+}
+
+.barColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  position: relative;
+}
+
+.bar {
+  width: 100%;
+  min-height: 20px;
+  position: relative;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.bar:hover {
+  transform: translateY(-4px);
+  filter: brightness(1.2);
+}
+
+.barHit {
+  background: linear-gradient(180deg, #10b981 0%, rgba(16, 185, 129, 0.3) 100%);
+  border-top: 4px solid #10b981;
+}
+
+.barMiss {
+  background: linear-gradient(180deg, #ef4444 0%, rgba(239, 68, 68, 0.3) 100%);
+  border-top: 4px solid #ef4444;
+}
+
+.barDot {
+  width: 8px;
+  height: 8px;
+  background: #000000;
+  border: 2px solid #8D9698;
+  box-shadow: 0px 0px 0px 2px #0D0F13;
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  z-index: 3;
+}
+
+.barTooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0D0D0D;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 140px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.bar:hover .barTooltip {
+  opacity: 1;
+}
+
+.barTooltipTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.barTooltipValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.barTooltipDate {
+  font-size: 11px;
+  color: #888888;
+  text-align: center;
+}
+
+.barLabel {
+  font-size: 13px;
+  color: #ffffff;
+  text-align: center;
+  font-weight: 400;
+  padding: 6px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .barGraphContainer {
+    padding: 20px 12px 16px;
+  }
+  
+  .barGraph {
+    height: 240px;
+  }
+  
+  .barGraphBars {
+    gap: 3px;
+  }
+  
+  .barLabel {
+    font-size: 11px;
+  }
+  
+  .avgLineLabel {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .barTooltip {
+    min-width: 120px;
+    padding: 8px 10px;
+  }
+  
+  .barTooltipTitle {
+    font-size: 12px;
+  }
+  
+  .barTooltipValue {
+    font-size: 14px;
+  }
+  
+  .barTooltipDate {
+    font-size: 10px;
+  }
+}
+

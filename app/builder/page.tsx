@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import styles from './builder.module.css'
 
 // Icons
-import { FaCheckCircle, FaToolbox, FaShare } from "react-icons/fa"
+import { FaCheckCircle, FaToolbox, FaShare, FaList, FaChartBar } from "react-icons/fa"
 import { HiOutlineSave } from "react-icons/hi"
 import { FaHammer } from "react-icons/fa6"
 import { HiOutlineXCircle, HiBuildingOffice2 } from "react-icons/hi2"
@@ -288,6 +288,9 @@ function SportsEngineContent() {
   const [upcomingLoading, setUpcomingLoading] = useState(false)
   const [expandedUpcomingGameId, setExpandedUpcomingGameId] = useState<string | null>(null)
   const [upcomingSortBy, setUpcomingSortBy] = useState<'time' | 'best_odds'>('time')
+  
+  // Bar graph toggle
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list')
   
   const [activeSection, setActiveSection] = useState<'builder' | 'myBuilds' | 'buddy' | 'topBuilds' | 'preferences'>(() => getActiveSectionFromPath(pathname))
   
@@ -3766,6 +3769,107 @@ function SportsEngineContent() {
     )
   }
 
+  // Render bar graph for historical games
+  const renderBarGraph = (games: any[]) => {
+    if (!games || games.length === 0) return null
+    
+    // Calculate average value based on bet type and query type
+    let avgValue = 0
+    let metricLabel = ''
+    
+    if (queryType === 'prop') {
+      avgValue = result?.avg_value || 0
+      metricLabel = getAvgStatLabel()
+    } else if (betType === 'moneyline') {
+      avgValue = result?.avg_value || 0
+      metricLabel = 'Avg Win Margin'
+    } else if (betType === 'total') {
+      avgValue = result?.avg_value || 0
+      metricLabel = 'Avg Total'
+    } else {
+      // Spread
+      avgValue = result?.avg_value || 0
+      metricLabel = 'Avg Win Margin'
+    }
+    
+    // Get max value for normalization
+    const values = games.map(game => {
+      if (queryType === 'prop') {
+        return game.actual_value || 0
+      } else if (betType === 'moneyline' || betType === 'spread') {
+        return Math.abs((game.home_score || 0) - (game.away_score || 0))
+      } else {
+        // Total
+        return (game.home_score || 0) + (game.away_score || 0)
+      }
+    })
+    
+    const maxValue = Math.max(...values, avgValue * 1.2) // 20% padding above avg
+    
+    return (
+      <div className={styles.barGraph}>
+        {/* Y-axis grid lines */}
+        <div className={styles.barGraphGrid}>
+          {[0, 25, 50, 75, 100].map(pct => (
+            <div key={pct} className={styles.gridLine} style={{ bottom: `${pct}%` }} />
+          ))}
+        </div>
+        
+        {/* Average line */}
+        {avgValue > 0 && (
+          <div 
+            className={styles.avgLine}
+            style={{ bottom: `${(avgValue / maxValue) * 100}%` }}
+          >
+            <span className={styles.avgLineLabel}>{metricLabel}: {avgValue.toFixed(1)}</span>
+          </div>
+        )}
+        
+        {/* Bars */}
+        <div className={styles.barGraphBars}>
+          {games.map((game, i) => {
+            const value = values[i]
+            const heightPercent = (value / maxValue) * 100
+            const isHit = game.hit
+            
+            // Get team info for label
+            const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'H'
+            const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'A'
+            
+            return (
+              <div key={game.game_id || i} className={styles.barColumn}>
+                <div 
+                  className={`${styles.bar} ${isHit ? styles.barHit : styles.barMiss}`}
+                  style={{ height: `${heightPercent}%` }}
+                >
+                  {/* Dot indicator at top */}
+                  <div className={styles.barDot} />
+                  
+                  {/* Tooltip on hover */}
+                  <div className={styles.barTooltip}>
+                    <div className={styles.barTooltipTitle}>{awayAbbr} @ {homeAbbr}</div>
+                    <div className={styles.barTooltipValue}>
+                      {queryType === 'prop' ? `${value.toFixed(1)} ${game.stat_type || ''}` : 
+                       betType === 'total' ? `${value} pts` :
+                       `${value} pt margin`}
+                    </div>
+                    <div className={styles.barTooltipDate}>{formatHistoricalDate(game.game_date, game.game_time)}</div>
+                  </div>
+                </div>
+                
+                {/* X-axis label */}
+                <div className={styles.barLabel}>
+                  {queryType === 'prop' ? (game.player_name?.split(' ').map(n => n[0]).join('') || i + 1) :
+                   `${awayAbbr[0]}${homeAbbr[0]}`}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   // Render game row based on bet type
   const renderGameRow = (game: any, index: number) => {
     // Get team info - for all game types now
@@ -5654,12 +5758,41 @@ function SportsEngineContent() {
               {/* Recent Games - only show when not in upcoming mode */}
               {!showUpcoming && (
                 <div className={styles.gamesSection}>
-                  <h3>Games ({Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
-                  <div className={styles.gamesList}>
-                    {result.games?.slice(0, visibleGames).map((game, i) => 
-                      queryType === 'prop' ? renderPropGameRow(game, i) : renderGameRow(game, i)
-                    )}
+                  <div className={styles.gamesHeader}>
+                    <h3>Games ({Math.min(visibleGames, result.games?.length || 0)} of {result.games?.length || 0})</h3>
+                    <div className={styles.viewToggle}>
+                      <button
+                        className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.active : ''}`}
+                        onClick={() => setViewMode('list')}
+                        title="List View"
+                      >
+                        <FaList />
+                      </button>
+                      <button
+                        className={`${styles.viewToggleBtn} ${viewMode === 'graph' ? styles.active : ''}`}
+                        onClick={() => setViewMode('graph')}
+                        title="Bar Graph View"
+                      >
+                        <FaChartBar />
+                      </button>
+                    </div>
                   </div>
+                  
+                  {/* List View */}
+                  {viewMode === 'list' && (
+                    <div className={styles.gamesList}>
+                      {result.games?.slice(0, visibleGames).map((game, i) => 
+                        queryType === 'prop' ? renderPropGameRow(game, i) : renderGameRow(game, i)
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Bar Graph View */}
+                  {viewMode === 'graph' && (
+                    <div className={styles.barGraphContainer}>
+                      {renderBarGraph(result.games?.slice(0, Math.min(10, visibleGames)) || [])}
+                    </div>
+                  )}
                   
                   {/* Load More Button */}
                   {result.games && visibleGames < result.games.length && (
