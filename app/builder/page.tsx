@@ -3935,7 +3935,7 @@ function SportsEngineContent() {
               
               tooltipContent = (
                 <>
-                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipScore}>{awayAbbr} {awayScore} @ {homeAbbr} {homeScore}</div>
                   <div className={styles.tooltipLine}>Line: {ouSymbol}{line}</div>
                   <div className={styles.tooltipMargin}>Margin: {marginValue > 0 ? '+' : ''}{marginValue.toFixed(1)}</div>
                   <div className={styles.tooltipDate}>{fullDate}</div>
@@ -3947,7 +3947,7 @@ function SportsEngineContent() {
               
               tooltipContent = (
                 <>
-                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipScore}>{awayAbbr} {awayScore} @ {homeAbbr} {homeScore}</div>
                   <div className={styles.tooltipLine}>Line: {spreadWithSign}</div>
                   <div className={styles.tooltipMargin}>Margin: {margin}</div>
                   <div className={styles.tooltipDate}>{fullDate}</div>
@@ -3960,7 +3960,7 @@ function SportsEngineContent() {
               
               tooltipContent = (
                 <>
-                  <div className={styles.tooltipScore}>{awayScore} @ {homeScore}</div>
+                  <div className={styles.tooltipScore}>{awayAbbr} {awayScore} @ {homeAbbr} {homeScore}</div>
                   <div className={styles.tooltipLine}>Line: {oddsDisplay}</div>
                   <div className={styles.tooltipMargin}>Margin: {margin}</div>
                   <div className={styles.tooltipDate}>{fullDate}</div>

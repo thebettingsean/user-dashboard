@@ -4402,6 +4402,7 @@
 }
 
 .bar:hover {
+  z-index: 10000 !important;
   transform: translateY(-4px);
   filter: brightness(1.2);
 }
@@ -4428,11 +4429,11 @@
 }
 
 .barTooltip {
-  position: fixed;
-  bottom: auto;
-  top: 20%;
+  position: absolute;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
+  margin-bottom: 12px;
   background: #0D0D0D;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
@@ -4441,8 +4442,9 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 9999;
+  z-index: 99999;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
 }
 
 .bar:hover .barTooltip {
