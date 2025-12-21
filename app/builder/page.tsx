@@ -3773,38 +3773,77 @@ function SportsEngineContent() {
   const renderBarGraph = (games: any[]) => {
     if (!games || games.length === 0) return null
     
-    // Calculate average value based on bet type and query type
+    // Reverse games so most recent is on the right
+    const reversedGames = [...games].reverse()
+    
+    // Calculate average value and average book line
     let avgValue = 0
+    let avgBookLine = 0
     let metricLabel = ''
+    let bookLineLabel = ''
     
     if (queryType === 'prop') {
       avgValue = result?.avg_value || 0
       metricLabel = getAvgStatLabel()
+      // Calculate avg book line for props
+      const bookLines = reversedGames.map(g => g.line || 0).filter(l => l > 0)
+      avgBookLine = bookLines.length > 0 ? bookLines.reduce((a, b) => a + b, 0) / bookLines.length : 0
+      bookLineLabel = 'Avg Book Line'
     } else if (betType === 'moneyline') {
       avgValue = result?.avg_value || 0
       metricLabel = 'Avg Win Margin'
+      // No book line for moneyline (it's just odds)
+      avgBookLine = 0
     } else if (betType === 'total') {
       avgValue = result?.avg_value || 0
       metricLabel = 'Avg Total'
+      // Calculate avg book line for totals
+      const bookLines = reversedGames.map(g => Math.abs(g.total || g.line || 0)).filter(l => l > 0)
+      avgBookLine = bookLines.length > 0 ? bookLines.reduce((a, b) => a + b, 0) / bookLines.length : 0
+      bookLineLabel = 'Avg Total Line'
     } else {
       // Spread
       avgValue = result?.avg_value || 0
       metricLabel = 'Avg Win Margin'
+      // Calculate avg book line for spreads
+      const bookLines = reversedGames.map(g => Math.abs(g.spread || g.line || 0)).filter(l => l > 0)
+      avgBookLine = bookLines.length > 0 ? bookLines.reduce((a, b) => a + b, 0) / bookLines.length : 0
+      bookLineLabel = 'Avg Spread Line'
     }
     
-    // Get max value for normalization
-    const values = games.map(game => {
+    // Get values and book lines for each game
+    const gameData = reversedGames.map(game => {
+      let actualValue = 0
+      let bookLineValue = 0
+      let betDisplay = ''
+      
       if (queryType === 'prop') {
-        return game.actual_value || 0
+        actualValue = game.actual_value || 0
+        bookLineValue = game.line || 0
+        betDisplay = `${game.player_name || ''} o${game.line || 0} ${game.stat_type || ''}`
       } else if (betType === 'moneyline' || betType === 'spread') {
-        return Math.abs((game.home_score || 0) - (game.away_score || 0))
+        actualValue = Math.abs((game.home_score || 0) - (game.away_score || 0))
+        bookLineValue = Math.abs(game.spread || game.line || 0)
+        const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'HOME'
+        const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'AWAY'
+        betDisplay = betType === 'spread' 
+          ? `${location === 'home' ? homeAbbr : awayAbbr} ${game.spread > 0 ? '+' : ''}${game.spread || 0}`
+          : `${location === 'home' ? homeAbbr : awayAbbr} ML`
       } else {
         // Total
-        return (game.home_score || 0) + (game.away_score || 0)
+        actualValue = (game.home_score || 0) + (game.away_score || 0)
+        bookLineValue = Math.abs(game.total || game.line || 0)
+        betDisplay = `${overUnder === 'over' ? 'o' : 'u'}${game.total || game.line || 0}`
       }
+      
+      return { actualValue, bookLineValue, betDisplay, game }
     })
     
-    const maxValue = Math.max(...values, avgValue * 1.2) // 20% padding above avg
+    const maxValue = Math.max(
+      ...gameData.map(d => Math.max(d.actualValue, d.bookLineValue)),
+      avgValue * 1.2,
+      avgBookLine * 1.2
+    )
     
     return (
       <div className={styles.barGraph}>
@@ -3815,7 +3854,7 @@ function SportsEngineContent() {
           ))}
         </div>
         
-        {/* Average line */}
+        {/* Average actual value line */}
         {avgValue > 0 && (
           <div 
             className={styles.avgLine}
@@ -3825,43 +3864,63 @@ function SportsEngineContent() {
           </div>
         )}
         
+        {/* Average book line */}
+        {avgBookLine > 0 && (
+          <div 
+            className={styles.avgBookLine}
+            style={{ bottom: `${(avgBookLine / maxValue) * 100}%` }}
+          >
+            <span className={styles.avgBookLineLabel}>{bookLineLabel}: {avgBookLine.toFixed(1)}</span>
+          </div>
+        )}
+        
         {/* Bars */}
         <div className={styles.barGraphBars}>
-          {games.map((game, i) => {
-            const value = values[i]
-            const heightPercent = (value / maxValue) * 100
+          {gameData.map(({ actualValue, bookLineValue, betDisplay, game }, i) => {
+            const actualHeightPercent = (actualValue / maxValue) * 100
+            const bookLineHeightPercent = (bookLineValue / maxValue) * 100
             const isHit = game.hit
             
             // Get team info for label
             const homeAbbr = game.home_abbr || NFL_TEAMS.find(t => t.id === game.home_team_id)?.abbr || 'H'
             const awayAbbr = game.away_abbr || NFL_TEAMS.find(t => t.id === game.away_team_id)?.abbr || 'A'
             
+            // Format date as MM/DD
+            const gameDate = new Date(game.game_date || game.game_time)
+            const dateLabel = `${gameDate.getMonth() + 1}/${gameDate.getDate()}`
+            
             return (
               <div key={game.game_id || i} className={styles.barColumn}>
+                {/* Book line bar (grey, behind) */}
+                {bookLineValue > 0 && (
+                  <div 
+                    className={styles.barBookLine}
+                    style={{ height: `${bookLineHeightPercent}%` }}
+                  />
+                )}
+                
+                {/* Actual value bar (colored, in front) */}
                 <div 
                   className={`${styles.bar} ${isHit ? styles.barHit : styles.barMiss}`}
-                  style={{ height: `${heightPercent}%` }}
+                  style={{ height: `${actualHeightPercent}%` }}
                 >
-                  {/* Dot indicator at top */}
-                  <div className={styles.barDot} />
+                  {/* Line indicator at top */}
+                  <div className={styles.barIndicator} />
                   
                   {/* Tooltip on hover */}
                   <div className={styles.barTooltip}>
-                    <div className={styles.barTooltipTitle}>{awayAbbr} @ {homeAbbr}</div>
-                    <div className={styles.barTooltipValue}>
-                      {queryType === 'prop' ? `${value.toFixed(1)} ${game.stat_type || ''}` : 
-                       betType === 'total' ? `${value} pts` :
-                       `${value} pt margin`}
+                    <div className={styles.barTooltipBet}>{betDisplay}</div>
+                    <div className={styles.barTooltipResult}>
+                      {queryType === 'prop' ? `${actualValue.toFixed(1)}` : 
+                       betType === 'total' ? `${actualValue} pts` :
+                       `${actualValue} pt margin`}
                     </div>
-                    <div className={styles.barTooltipDate}>{formatHistoricalDate(game.game_date, game.game_time)}</div>
+                    <div className={styles.barTooltipTeams}>{awayAbbr} @ {homeAbbr}</div>
                   </div>
                 </div>
                 
-                {/* X-axis label */}
-                <div className={styles.barLabel}>
-                  {queryType === 'prop' ? (game.player_name?.split(' ').map(n => n[0]).join('') || i + 1) :
-                   `${awayAbbr[0]}${homeAbbr[0]}`}
-                </div>
+                {/* X-axis label (date) */}
+                <div className={styles.barLabel}>{dateLabel}</div>
               </div>
             )
           })}
@@ -5790,7 +5849,7 @@ function SportsEngineContent() {
                   {/* Bar Graph View */}
                   {viewMode === 'graph' && (
                     <div className={styles.barGraphContainer}>
-                      {renderBarGraph(result.games?.slice(0, Math.min(10, visibleGames)) || [])}
+                      {renderBarGraph(result.games?.slice(0, visibleGames) || [])}
                     </div>
                   )}
                   

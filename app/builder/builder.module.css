@@ -4244,34 +4244,36 @@
 
 .viewToggle {
   display: flex;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 4px;
-  border-radius: 8px;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .viewToggleBtn {
   background: transparent;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
   color: #696969;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 16px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .viewToggleBtn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   color: #ffffff;
 }
 
 .viewToggleBtn.active {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
   color: #ffffff;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.4);
 }
 
 .barGraphContainer {
@@ -4312,7 +4314,7 @@
   left: 0;
   right: 0;
   height: 0;
-  border-bottom: 2px solid rgba(59, 130, 246, 0.6);
+  border-bottom: 2px solid rgba(59, 130, 246, 0.7);
   z-index: 2;
 }
 
@@ -4320,10 +4322,32 @@
   position: absolute;
   right: 10px;
   top: -24px;
-  font-size: 12px;
+  font-size: 11px;
   color: #3b82f6;
-  background: rgba(13, 15, 19, 0.9);
-  padding: 4px 8px;
+  background: rgba(13, 15, 19, 0.95);
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.avgBookLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-bottom: 2px dashed rgba(156, 163, 175, 0.6);
+  z-index: 2;
+}
+
+.avgBookLineLabel {
+  position: absolute;
+  left: 10px;
+  top: -24px;
+  font-size: 11px;
+  color: #9ca3af;
+  background: rgba(13, 15, 19, 0.95);
+  padding: 3px 7px;
   border-radius: 4px;
   white-space: nowrap;
   font-weight: 500;
@@ -4351,10 +4375,22 @@
   position: relative;
 }
 
+.barBookLine {
+  width: 100%;
+  min-height: 15px;
+  position: absolute;
+  bottom: 32px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, rgba(107, 114, 128, 0.4) 0%, rgba(107, 114, 128, 0.15) 100%);
+  border-top: 3px solid rgba(156, 163, 175, 0.6);
+  z-index: 1;
+}
+
 .bar {
   width: 100%;
   min-height: 20px;
-  position: relative;
+  position: absolute;
+  bottom: 32px;
   border-radius: 4px 4px 0 0;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -4362,6 +4398,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  z-index: 3;
 }
 
 .bar:hover {
@@ -4370,65 +4407,65 @@
 }
 
 .barHit {
-  background: linear-gradient(180deg, #10b981 0%, rgba(16, 185, 129, 0.3) 100%);
+  background: linear-gradient(180deg, #10b981 0%, rgba(16, 185, 129, 0.4) 100%);
   border-top: 4px solid #10b981;
 }
 
 .barMiss {
-  background: linear-gradient(180deg, #ef4444 0%, rgba(239, 68, 68, 0.3) 100%);
+  background: linear-gradient(180deg, #ef4444 0%, rgba(239, 68, 68, 0.4) 100%);
   border-top: 4px solid #ef4444;
 }
 
-.barDot {
-  width: 8px;
-  height: 8px;
-  background: #000000;
-  border: 2px solid #8D9698;
-  box-shadow: 0px 0px 0px 2px #0D0F13;
-  border-radius: 50%;
+.barIndicator {
+  width: 18px;
+  height: 2px;
+  background: #8D9698;
+  border: 1px solid #0D0F13;
+  box-shadow: 0px 0px 0px 1px rgba(141, 150, 152, 0.3);
   position: absolute;
-  top: -6px;
-  z-index: 3;
+  top: -3px;
+  z-index: 4;
 }
 
 .barTooltip {
-  position: absolute;
-  bottom: calc(100% + 12px);
+  position: fixed;
+  bottom: auto;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -120%);
   background: #0D0D0D;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  padding: 10px 12px;
-  min-width: 140px;
+  padding: 10px 14px;
+  min-width: 150px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 .bar:hover .barTooltip {
   opacity: 1;
 }
 
-.barTooltipTitle {
-  font-size: 13px;
-  font-weight: 500;
-  color: #ffffff;
+.barTooltipBet {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b82f6;
   margin-bottom: 6px;
   text-align: center;
 }
 
-.barTooltipValue {
-  font-size: 16px;
-  font-weight: 600;
-  color: #3b82f6;
+.barTooltipResult {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
   text-align: center;
   margin-bottom: 4px;
 }
 
-.barTooltipDate {
+.barTooltipTeams {
   font-size: 11px;
   color: #888888;
   text-align: center;
@@ -4464,26 +4501,31 @@
     font-size: 11px;
   }
   
-  .avgLineLabel {
-    font-size: 10px;
-    padding: 3px 6px;
+  .avgLineLabel,
+  .avgBookLineLabel {
+    font-size: 9px;
+    padding: 2px 5px;
   }
   
   .barTooltip {
-    min-width: 120px;
-    padding: 8px 10px;
+    min-width: 130px;
+    padding: 8px 11px;
   }
   
-  .barTooltipTitle {
-    font-size: 12px;
+  .barTooltipBet {
+    font-size: 11px;
   }
   
-  .barTooltipValue {
-    font-size: 14px;
+  .barTooltipResult {
+    font-size: 16px;
   }
   
-  .barTooltipDate {
+  .barTooltipTeams {
     font-size: 10px;
+  }
+  
+  .barIndicator {
+    width: 14px;
   }
 }
 
