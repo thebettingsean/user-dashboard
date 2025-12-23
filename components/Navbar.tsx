@@ -146,6 +146,7 @@ export default function Navbar() {
                 
                 {openDropdown === 'sports' && (
                   <div 
+                    className="navbar-dropdown"
                     style={styles.dropdown}
                     onMouseEnter={() => handleDropdownMouseEnter('sports')}
                     onMouseLeave={handleMouseLeave}
@@ -209,6 +210,7 @@ export default function Navbar() {
                 
                 {openDropdown === 'tools' && (
                   <div 
+                    className="navbar-dropdown"
                     style={styles.dropdown}
                     onMouseEnter={() => handleDropdownMouseEnter('tools')}
                     onMouseLeave={handleMouseLeave}
@@ -480,13 +482,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     minHeight: '64px',
     maxHeight: '64px',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   
   leftSection: {
     display: 'flex',
     alignItems: 'center',
     gap: '32px',
+    overflow: 'visible',
   },
   
   logoLink: {
@@ -506,6 +509,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    overflow: 'visible',
+    position: 'relative',
   },
   
   navLink: {
@@ -557,7 +562,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   navDropdown: {
     position: 'relative',
     cursor: 'pointer',
-    zIndex: 10001,
+    zIndex: 99999,
+    isolation: 'isolate',
   },
   
   dropdown: {
@@ -572,8 +578,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '12px',
     padding: '8px',
     minWidth: '180px',
-    zIndex: 10000,
+    zIndex: 99999,
     pointerEvents: 'auto',
+    isolation: 'isolate',
   },
   
   dropdownLink: {

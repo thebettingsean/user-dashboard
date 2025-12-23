@@ -203,6 +203,10 @@ export async function GET(request: Request) {
       // IMPORTANT: Use ScoreIDs from nfl_games table for NFL (ScoresByDate returns 401 for future dates)
       const publicBettingMap = new Map<string, { spreadBet: number; spreadMoney: number; mlBet: number; mlMoney: number; totalBet: number; totalMoney: number }>()
       
+      // Map to store SportsDataIO abbreviations by team name (for NBA/NHL matching)
+      // Must be defined here so it's accessible in the matching section later
+      const sportsDataAbbrevMap = new Map<string, string>()
+      
       if (SPORTSDATA_API_KEY && sportConfig.sport === 'nfl') {
         try {
           // Get ScoreIDs from nfl_games table in ClickHouse
@@ -281,7 +285,12 @@ export async function GET(request: Request) {
                     console.log(`[NFL] ScoreID ${game.score_id} (${game.away_abbr}@${game.home_abbr}): Missing Total Points data`)
                   }
                   
-                publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+                // Store under both key orders for flexible matching
+                const bettingData = { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney }
+                publicBettingMap.set(key, bettingData)
+                // Also store reverse order
+                const reverseKey = `${game.away_abbr}_${game.home_abbr}`.toUpperCase()
+                publicBettingMap.set(reverseKey, bettingData)
                 gamesWithSplits++
               } else if (scoreIdsData.indexOf(game) < 3) {
                 console.log(`[NFL] ScoreID ${game.score_id} returned no BettingMarketSplits`)
@@ -296,10 +305,20 @@ export async function GET(request: Request) {
         }
       }
       
-      // NBA, NHL, CFB: Fetch public betting data
-      if (SPORTSDATA_API_KEY && (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl' || sportConfig.sport === 'cfb')) {
+      // NBA, NHL, CFB, CBB: Fetch public betting data
+      if (SPORTSDATA_API_KEY && (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl' || sportConfig.sport === 'cfb' || sportConfig.sport === 'cbb')) {
         try {
-          const gamesToFetch: { gameId: number; homeAbbr: string; awayAbbr: string }[] = []
+          const gamesToFetch: { 
+            gameId: number; 
+            homeAbbr: string; 
+            awayAbbr: string;
+            homeName?: string;
+            awayName?: string;
+            gameTime?: string;
+          }[] = []
+          
+          // Clear the map for this sport (it's defined above)
+          sportsDataAbbrevMap.clear()
           const today = new Date()
           const currentYear = today.getFullYear()
           const currentMonth = today.getMonth() // 0-11
@@ -320,7 +339,23 @@ export async function GET(request: Request) {
                   for (const game of games || []) {
                     const gameId = game.GameID || game.GameId
                     if (gameId && game.HomeTeam && game.AwayTeam) {
-                      gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                      const homeName = game.HomeTeamName || game.HomeTeam
+                      const awayName = game.AwayTeamName || game.AwayTeam
+                      
+                      gamesToFetch.push({ 
+                        gameId, 
+                        homeAbbr: game.HomeTeam, 
+                        awayAbbr: game.AwayTeam,
+                        homeName,
+                        awayName,
+                        gameTime: game.DateTime || game.Day
+                      })
+                      
+                      // Store abbreviations for matching (NBA/NHL only)
+                      if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
+                        sportsDataAbbrevMap.set(homeName, game.HomeTeam)
+                        sportsDataAbbrevMap.set(awayName, game.AwayTeam)
+                      }
                     }
                   }
                 }
@@ -329,12 +364,18 @@ export async function GET(request: Request) {
               }
             }
           } else {
-            // NHL and CFB: Use Games/{season} (GamesByDate returns 401)
+            // NHL, CFB, and CBB: Use Games/{season} (GamesByDate returns 401)
             // NHL season: Oct 2025 - June 2026 = "2026 season"
             // CFB season: Aug 2025 - Jan 2026 = "2025 season"
-            const season = sportConfig.sport === 'nhl'
-              ? (currentMonth >= 9 ? currentYear + 1 : currentYear) // Oct+ = next year's season
-              : currentYear // CFB uses calendar year
+            // CBB season: Nov 2025 - Apr 2026 = "2026 season"
+            let season: number
+            if (sportConfig.sport === 'nhl') {
+              season = currentMonth >= 9 ? currentYear + 1 : currentYear // Oct+ = next year's season
+            } else if (sportConfig.sport === 'cbb') {
+              season = currentMonth >= 10 ? currentYear + 1 : currentYear // Nov+ = next year's season
+            } else {
+              season = currentYear // CFB uses calendar year
+            }
             
             // CFB needs both REG and POST season games (bowl games)
             const seasonsToQuery = sportConfig.sport === 'cfb' 
@@ -349,16 +390,35 @@ export async function GET(request: Request) {
                 if (gamesResp.ok) {
                   const allGames = await gamesResp.json()
                   const todayStr = today.toISOString().split('T')[0]
-                  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-                  const nextWeekStr = nextWeek.toISOString().split('T')[0]
+                  // CBB games might be scheduled further out, use 14 days for CBB
+                  const daysAhead = sportConfig.sport === 'cbb' ? 14 : 7
+                  const futureDate = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000)
+                  const futureDateStr = futureDate.toISOString().split('T')[0]
                   
-                  // Filter for upcoming games (within next 7 days)
+                  // Filter for upcoming games
                   for (const game of allGames || []) {
                     const gameDate = (game.Day || game.DateTime || '').split('T')[0]
-                    if (gameDate >= todayStr && gameDate <= nextWeekStr) {
+                    if (gameDate >= todayStr && gameDate <= futureDateStr) {
                       const gameId = game.GameID || game.GameId
                       if (gameId && game.HomeTeam && game.AwayTeam) {
-                        gamesToFetch.push({ gameId, homeAbbr: game.HomeTeam, awayAbbr: game.AwayTeam })
+                        // Store both abbreviations and full names for better matching
+                        const homeName = game.HomeTeamName || game.HomeTeam
+                        const awayName = game.AwayTeamName || game.AwayTeam
+                        
+                        gamesToFetch.push({ 
+                          gameId, 
+                          homeAbbr: game.HomeTeam, 
+                          awayAbbr: game.AwayTeam,
+                          homeName,
+                          awayName,
+                          gameTime: game.DateTime || game.Day
+                        })
+                        
+                        // Store abbreviations for matching (NBA/NHL only)
+                        if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
+                          sportsDataAbbrevMap.set(homeName, game.HomeTeam)
+                          sportsDataAbbrevMap.set(awayName, game.AwayTeam)
+                        }
                       }
                     }
                   }
@@ -370,6 +430,9 @@ export async function GET(request: Request) {
           }
           
           console.log(`[${sportConfig.sport.toUpperCase()}] Found ${gamesToFetch.length} upcoming games`)
+          if (gamesToFetch.length > 0 && gamesToFetch.length <= 5) {
+            console.log(`[${sportConfig.sport.toUpperCase()}] Sample games:`, gamesToFetch.map(g => `${g.awayAbbr}@${g.homeAbbr}`).join(', '))
+          }
           
           // Fetch betting splits for each game (limit to 30 to avoid rate limits)
           for (const game of gamesToFetch.slice(0, 30)) {
@@ -388,7 +451,66 @@ export async function GET(request: Request) {
               
               const splits = await splitsResponse.json()
               if (splits?.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
-                const key = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
+                // Create multiple keys for matching flexibility
+                const keys: string[] = []
+                
+                // Primary keys: abbreviations (exact match)
+                keys.push(`${game.homeAbbr}_${game.awayAbbr}`.toUpperCase())
+                keys.push(`${game.awayAbbr}_${game.homeAbbr}`.toUpperCase()) // Reverse order
+                
+                // Name-based keys ONLY for CFB/CBB (NBA/NHL use abbreviations which work fine)
+                if ((sportConfig.sport === 'cfb' || sportConfig.sport === 'cbb') && game.homeName && game.awayName) {
+                  const homeNameKey = game.homeName.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                  const awayNameKey = game.awayName.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                  keys.push(`${homeNameKey}_${awayNameKey}`)
+                  keys.push(`${awayNameKey}_${homeNameKey}`)
+                  
+                  // Also try first 5 chars of each name
+                  if (homeNameKey.length >= 5 && awayNameKey.length >= 5) {
+                    keys.push(`${homeNameKey.substring(0, 5)}_${awayNameKey.substring(0, 5)}`)
+                    keys.push(`${awayNameKey.substring(0, 5)}_${homeNameKey.substring(0, 5)}`)
+                  }
+                }
+                
+                // For CBB/CFB ONLY: Create normalized abbreviation keys
+                // SportsDataIO abbreviations are often very short (3-5 chars)
+                // Create variations that might match Odds API team names
+                // NBA/NHL should NOT use this - they have consistent abbreviations
+                if (sportConfig.sport === 'cfb' || sportConfig.sport === 'cbb') {
+                  const normalizeAbbrev = (abbr: string, fullName?: string): string[] => {
+                    const variants: string[] = [abbr.toUpperCase()]
+                    
+                    if (fullName) {
+                      // Try first word of full name
+                      const firstWord = fullName.split(' ')[0]
+                      if (firstWord.length >= 3) {
+                        variants.push(firstWord.substring(0, Math.min(5, firstWord.length)).toUpperCase())
+                      }
+                      
+                      // Try last word (mascot)
+                      const words = fullName.split(' ')
+                      if (words.length > 1) {
+                        const lastWord = words[words.length - 1]
+                        if (lastWord.length >= 3) {
+                          variants.push(lastWord.substring(0, Math.min(5, lastWord.length)).toUpperCase())
+                        }
+                      }
+                    }
+                    
+                    return [...new Set(variants)]
+                  }
+                  
+                  const homeAbbrVariants = normalizeAbbrev(game.homeAbbr, game.homeName)
+                  const awayAbbrVariants = normalizeAbbrev(game.awayAbbr, game.awayName)
+                  
+                  // Add all combinations of abbreviation variants
+                  for (const homeVar of homeAbbrVariants) {
+                    for (const awayVar of awayAbbrVariants) {
+                      keys.push(`${homeVar}_${awayVar}`)
+                      keys.push(`${awayVar}_${homeVar}`)
+                    }
+                  }
+                }
                 
                 let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
                 
@@ -417,7 +539,11 @@ export async function GET(request: Request) {
                   }
                 }
                 
-                publicBettingMap.set(key, { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney })
+                // Store under all possible keys for flexible matching
+                const bettingData = { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney }
+                for (const key of keys) {
+                  publicBettingMap.set(key, bettingData)
+                }
                 gamesWithSplits++
               }
             } catch (e: any) {
@@ -426,6 +552,10 @@ export async function GET(request: Request) {
             }
           }
           console.log(`[${sportConfig.sport.toUpperCase()}] Loaded ${publicBettingMap.size} games with public betting`)
+          if (publicBettingMap.size > 0 && publicBettingMap.size <= 10) {
+            const sampleKeys = Array.from(publicBettingMap.keys()).slice(0, 5)
+            console.log(`[${sportConfig.sport.toUpperCase()}] Sample betting keys:`, sampleKeys.join(', '))
+          }
         } catch (e: any) {
           console.error(`[${sportConfig.sport.toUpperCase()}] Public betting fetch error:`, e.message)
         }
@@ -462,10 +592,219 @@ export async function GET(request: Request) {
           }
           
           // Try to match public betting data
-          const homeAbbrev = TEAM_ABBREV_MAP[game.home_team] || game.home_team.split(' ').pop()?.substring(0, 3).toUpperCase()
-          const awayAbbrev = TEAM_ABBREV_MAP[game.away_team] || game.away_team.split(' ').pop()?.substring(0, 3).toUpperCase()
+          // For NFL/NBA/NHL: Use simple TEAM_ABBREV_MAP matching (they work fine)
+          // For CFB/CBB: Use improved matching with multiple abbreviation options
+          let publicData = null
+          
+          if (sportConfig.sport === 'nfl' || sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
+            // For NBA/NHL: Use SportsDataIO abbreviations directly (they're stored with those keys)
+            // For NFL: Use TEAM_ABBREV_MAP (NFL uses ScoreIDs, not GameIDs, so different flow)
+            let homeAbbrev: string, awayAbbrev: string
+            
+            if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
+              // NBA/NHL: Use SportsDataIO abbreviations (same ones used when storing keys)
+              homeAbbrev = sportsDataAbbrevMap.get(game.home_team) || TEAM_ABBREV_MAP[game.home_team] || game.home_team.split(' ').pop()?.substring(0, 3).toUpperCase() || ''
+              awayAbbrev = sportsDataAbbrevMap.get(game.away_team) || TEAM_ABBREV_MAP[game.away_team] || game.away_team.split(' ').pop()?.substring(0, 3).toUpperCase() || ''
+            } else {
+              // NFL: Use TEAM_ABBREV_MAP (NFL uses different matching via ScoreIDs)
+              homeAbbrev = TEAM_ABBREV_MAP[game.home_team] || game.home_team.split(' ').pop()?.substring(0, 3).toUpperCase() || ''
+              awayAbbrev = TEAM_ABBREV_MAP[game.away_team] || game.away_team.split(' ').pop()?.substring(0, 3).toUpperCase() || ''
+            }
+            
           const bettingKey = `${homeAbbrev}_${awayAbbrev}`.toUpperCase()
-          const publicData = publicBettingMap.get(bettingKey)
+            publicData = publicBettingMap.get(bettingKey)
+            
+            // Also try reverse order
+            if (!publicData) {
+              const reverseKey = `${awayAbbrev}_${homeAbbrev}`.toUpperCase()
+              publicData = publicBettingMap.get(reverseKey)
+            }
+            
+            if (!publicData && gamesProcessed < 3) {
+              console.log(`[${sportConfig.sport.toUpperCase()}] No betting splits match for ${game.away_team} @ ${game.home_team} (tried: ${homeAbbrev}_${awayAbbrev})`)
+              if (publicBettingMap.size > 0) {
+                const sampleKeys = Array.from(publicBettingMap.keys()).slice(0, 5)
+                console.log(`[${sportConfig.sport.toUpperCase()}] Available keys (sample): ${sampleKeys.join(', ')}`)
+              }
+            }
+          } else {
+            // For CFB/CBB: Try multiple matching strategies
+            // SportsDataIO uses abbreviations like "ALA", "AUB" which don't match Odds API full names
+            // Strategy 1: Try to extract abbreviation from team name (last word, first 3-5 letters)
+            const getTeamAbbrev = (teamName: string): string[] => {
+              const abbrevs: string[] = []
+              const words = teamName.split(' ')
+              
+              // Last word abbreviation (most common for college teams)
+              if (words.length > 0) {
+                const lastWord = words[words.length - 1]
+                if (lastWord.length >= 3) {
+                  abbrevs.push(lastWord.substring(0, Math.min(5, lastWord.length)).toUpperCase())
+                }
+              }
+              
+              // First word if it's short (like "Duke", "Kansas")
+              if (words[0] && words[0].length <= 6) {
+                abbrevs.push(words[0].toUpperCase())
+              }
+              
+              // Common CFB team abbreviations
+              const cfbAbbrevs: Record<string, string> = {
+                'alabama': 'ALA', 'auburn': 'AUB', 'georgia': 'UGA', 'florida': 'UF',
+                'florida state': 'FSU', 'miami': 'MIA', 'clemson': 'CLEM', 'south carolina': 'SCAR',
+                'tennessee': 'TENN', 'kentucky': 'UK', 'missouri': 'MIZ', 'vanderbilt': 'VAN',
+                'texas': 'TEX', 'texas a&m': 'TAMU', 'oklahoma': 'OU', 'oklahoma state': 'OKST',
+                'baylor': 'BAY', 'tcu': 'TCU', 'texas tech': 'TTU', 'kansas state': 'KSU',
+                'kansas': 'KU', 'iowa state': 'ISU', 'west virginia': 'WVU',
+                'ohio state': 'OSU', 'michigan': 'MICH', 'penn state': 'PSU', 'michigan state': 'MSU',
+                'wisconsin': 'WISC', 'iowa': 'IOWA', 'nebraska': 'NEB', 'minnesota': 'MINN',
+                'usc': 'USC', 'ucla': 'UCLA', 'oregon': 'ORE', 'washington': 'WASH',
+                'utah': 'UTAH', 'colorado': 'COLO', 'arizona state': 'ASU', 'arizona': 'ARIZ',
+                'notre dame': 'ND', 'stanford': 'STAN', 'california': 'CAL',
+              'kennesaw state': 'KENEST', 'jacksonville state': 'JAXST',
+              'james madison': 'JMAD', 'north texas': 'NTX', 'tulane': 'TULANE',
+              'unlv': 'UNLV', 'boise state': 'BOISE', 'ohio state': 'OHIOST',
+              'indiana': 'IND', 'troy': 'TROY',
+              }
+              
+              const lowerName = teamName.toLowerCase()
+              for (const [key, abbrev] of Object.entries(cfbAbbrevs)) {
+                if (lowerName.includes(key)) {
+                  abbrevs.push(abbrev)
+                  break
+                }
+              }
+              
+              return [...new Set(abbrevs)]
+            }
+            
+            const homeAbbrevsSimple = getTeamAbbrev(game.home_team)
+            const awayAbbrevsSimple = getTeamAbbrev(game.away_team)
+            
+            // Try all combinations of simple abbreviations first
+            for (const homeAbbr of homeAbbrevsSimple) {
+              for (const awayAbbr of awayAbbrevsSimple) {
+                const simpleKey = `${homeAbbr}_${awayAbbr}`.toUpperCase()
+                const simpleKeyReverse = `${awayAbbr}_${homeAbbr}`.toUpperCase()
+                
+                publicData = publicBettingMap.get(simpleKey)
+                if (publicData) break
+                publicData = publicBettingMap.get(simpleKeyReverse)
+                if (publicData) break
+              }
+              if (publicData) break
+            }
+            
+            // If simple matching fails, try improved normalization
+            if (!publicData) {
+              // Improved matching for CFB/CBB
+              const normalizeTeamName = (teamName: string): string[] => {
+            // Remove common words and get multiple abbreviation options
+            const normalized = teamName
+              .replace(/\b(University|College|State|of|the|The)\b/gi, ' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+            
+            const words = normalized.split(' ')
+            const options: string[] = []
+            
+            // Option 1: First 3-5 letters of first significant word
+            if (words[0]) {
+              const firstWord = words[0]
+              if (firstWord.length >= 3) {
+                options.push(firstWord.substring(0, Math.min(5, firstWord.length)).toUpperCase())
+              }
+            }
+            
+            // Option 2: Last word (often the mascot/type)
+            if (words.length > 1 && words[words.length - 1]) {
+              const lastWord = words[words.length - 1]
+              if (lastWord.length >= 3) {
+                options.push(lastWord.substring(0, Math.min(5, lastWord.length)).toUpperCase())
+              }
+            }
+            
+            // Option 3: First letter of each word (acronym)
+            if (words.length > 1) {
+              const acronym = words.map(w => w[0]).join('').toUpperCase()
+              if (acronym.length >= 2 && acronym.length <= 5) {
+                options.push(acronym)
+              }
+            }
+            
+            // Option 4: First 3-4 letters of full name (no spaces)
+            const noSpaces = normalized.replace(/\s/g, '')
+            if (noSpaces.length >= 3) {
+              options.push(noSpaces.substring(0, Math.min(5, noSpaces.length)).toUpperCase())
+            }
+            
+            // Option 5: Common abbreviations for well-known teams
+            const commonAbbrevs: Record<string, string> = {
+              'north carolina': 'UNC', 'north carolina state': 'NCST', 'north carolina state university': 'NCST',
+              'duke': 'DUKE', 'kentucky': 'UK', 'kansas': 'KU', 'kansas state': 'KSU',
+              'michigan state': 'MSU', 'michigan': 'MICH', 'ohio state': 'OSU', 'ohio': 'OHIO',
+              'texas': 'TEX', 'texas a&m': 'TAMU', 'texas tech': 'TTU', 'baylor': 'BAY',
+              'florida': 'UF', 'florida state': 'FSU', 'miami': 'MIA', 'miami florida': 'MIA',
+              'ucla': 'UCLA', 'usc': 'USC', 'arizona': 'ARIZ', 'arizona state': 'ASU',
+              'gonzaga': 'GONZ', 'villanova': 'NOVA', 'georgetown': 'GTWN', 'syracuse': 'CUSE',
+              'connecticut': 'UCONN', 'connecticut university': 'UCONN', 'uconn': 'UCONN',
+              'purdue': 'PUR', 'indiana': 'IU', 'illinois': 'ILL', 'wisconsin': 'WISC',
+              'marquette': 'MARQ', 'creighton': 'CREI', 'xavier': 'XAV',
+            }
+            const lowerName = teamName.toLowerCase()
+            for (const [key, abbrev] of Object.entries(commonAbbrevs)) {
+              if (lowerName.includes(key)) {
+                options.push(abbrev)
+                break
+              }
+            }
+            
+              return [...new Set(options)] // Remove duplicates
+            }
+              
+              const homeAbbrevs = normalizeTeamName(game.home_team)
+              const awayAbbrevs = normalizeTeamName(game.away_team)
+            
+              // Try all combinations of abbreviations
+              const possibleKeys: string[] = []
+              for (const homeAbbr of homeAbbrevs) {
+                for (const awayAbbr of awayAbbrevs) {
+                  possibleKeys.push(`${homeAbbr}_${awayAbbr}`)
+                  possibleKeys.push(`${awayAbbr}_${homeAbbr}`) // Reverse order
+                }
+              }
+              
+              // Also try full name variations
+              const homeNameClean = game.home_team.toUpperCase().replace(/[^A-Z0-9]/g, '')
+              const awayNameClean = game.away_team.toUpperCase().replace(/[^A-Z0-9]/g, '')
+              possibleKeys.push(`${homeNameClean}_${awayNameClean}`)
+              possibleKeys.push(`${awayNameClean}_${homeNameClean}`)
+              
+              // Try partial matches (first 5 chars of each)
+              if (homeNameClean.length >= 5 && awayNameClean.length >= 5) {
+                possibleKeys.push(`${homeNameClean.substring(0, 5)}_${awayNameClean.substring(0, 5)}`)
+                possibleKeys.push(`${awayNameClean.substring(0, 5)}_${homeNameClean.substring(0, 5)}`)
+              }
+              
+              // Try all combinations for CFB/CBB
+              for (const key of possibleKeys) {
+                publicData = publicBettingMap.get(key)
+                if (publicData) {
+                  // Debug: Log successful matches for first few games
+                  if (gamesWithSplits < 3) {
+                    console.log(`[${sportConfig.sport.toUpperCase()}] ✅ Matched betting splits for ${game.away_team} @ ${game.home_team} using key: ${key}`)
+                  }
+                  break
+                }
+              }
+            }
+            
+            if (!publicData && gamesProcessed < 3) {
+              // Debug: Log failed matches for first few games
+              console.log(`[${sportConfig.sport.toUpperCase()}] ❌ No betting splits match for ${game.away_team} @ ${game.home_team}`)
+              console.log(`[${sportConfig.sport.toUpperCase()}]   Simple keys tried: ${simpleKey}, ${simpleKeyReverse}`)
+            }
+          }
           
           if (publicData) gamesWithSplits++
           
@@ -518,24 +857,62 @@ export async function GET(request: Request) {
           try {
             const gameId = `${sportConfig.sport}_${game.id}`
             
-            // Get team IDs
-            const homeTeamQuery = await clickhouseQuery<{team_id: number}>(`
+            // Get or create team IDs
+            const getOrCreateTeam = async (teamName: string): Promise<number | null> => {
+              try {
+                // Try to find existing team
+                const existingTeam = await clickhouseQuery<{team_id: number}>(`
               SELECT team_id FROM teams 
               WHERE sport = '${sportConfig.sport}' 
-                AND name = '${game.home_team.replace(/'/g, "''")}'
+                    AND name = '${teamName.replace(/'/g, "''")}'
               LIMIT 1
             `)
             
-            const awayTeamQuery = await clickhouseQuery<{team_id: number}>(`
-              SELECT team_id FROM teams 
+                if (existingTeam.data?.[0]) {
+                  return existingTeam.data[0].team_id
+                }
+                
+                // Team doesn't exist - create it
+                // Get max team_id for this sport to avoid conflicts
+                const maxTeamQuery = await clickhouseQuery<{max_id: number}>(`
+                  SELECT COALESCE(MAX(team_id), 0) as max_id 
+                  FROM teams 
               WHERE sport = '${sportConfig.sport}' 
-                AND name = '${game.away_team.replace(/'/g, "''")}'
-              LIMIT 1
-            `)
+                `)
+                
+                const sportOffset = { nfl: 1000, nba: 2000, nhl: 3000, cfb: 4000, cbb: 5000 }[sportConfig.sport] || 0
+                const maxId = maxTeamQuery.data?.[0]?.max_id || sportOffset
+                const newTeamId = Math.max(sportOffset, maxId + 1)
+                
+                // Create abbreviation from team name (last word or first letters)
+                const words = teamName.split(' ')
+                const abbrev = words.length > 1 
+                  ? words[words.length - 1].substring(0, 3).toUpperCase()
+                  : teamName.substring(0, 3).toUpperCase()
+                
+                // Insert new team
+                await clickhouseCommand(`
+                  INSERT INTO teams (
+                    team_id, sport, name, abbreviation, city, 
+                    division, conference, logo_url, created_at, updated_at
+                  ) VALUES (
+                    ${newTeamId}, '${sportConfig.sport}', '${teamName.replace(/'/g, "''")}', '${abbrev}', '',
+                    '', '', '', now(), now()
+                  )
+                `)
+                
+                console.log(`[${sportConfig.sport}] Created new team: ${teamName} (ID: ${newTeamId})`)
+                return newTeamId
+              } catch (teamError: any) {
+                console.error(`[${sportConfig.sport}] Error creating team ${teamName}:`, teamError.message)
+                return null
+              }
+            }
             
-            if (homeTeamQuery.data?.[0] && awayTeamQuery.data?.[0]) {
-              const homeTeamId = homeTeamQuery.data[0].team_id
-              const awayTeamId = awayTeamQuery.data[0].team_id
+            const homeTeamId = await getOrCreateTeam(game.home_team)
+            const awayTeamId = await getOrCreateTeam(game.away_team)
+            
+            if (homeTeamId && awayTeamId) {
               
               // Check if game exists to preserve opening lines
               const existingGame = await clickhouseQuery<any>(`

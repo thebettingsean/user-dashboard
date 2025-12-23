@@ -37,27 +37,28 @@ interface GameOdds {
   current_ml_away: number
   ml_home_movement: number
   ml_away_movement: number
-  // Spread percentages
-  public_spread_home_bet_pct: number
-  public_spread_home_money_pct: number
-  public_spread_away_bet_pct: number
-  public_spread_away_money_pct: number
-  // Total percentages (over = home perspective)
-  public_total_over_bet_pct: number
-  public_total_over_money_pct: number
-  public_total_under_bet_pct: number
-  public_total_under_money_pct: number
-  // Moneyline percentages
-  public_ml_home_bet_pct: number
-  public_ml_home_money_pct: number
-  public_ml_away_bet_pct: number
-  public_ml_away_money_pct: number
+  // Spread percentages (can be null if no splits)
+  public_spread_home_bet_pct: number | null
+  public_spread_home_money_pct: number | null
+  public_spread_away_bet_pct: number | null
+  public_spread_away_money_pct: number | null
+  // Total percentages (over = home perspective) (can be null if no splits)
+  public_total_over_bet_pct: number | null
+  public_total_over_money_pct: number | null
+  public_total_under_bet_pct: number | null
+  public_total_under_money_pct: number | null
+  // Moneyline percentages (can be null if no splits)
+  public_ml_home_bet_pct: number | null
+  public_ml_home_money_pct: number | null
+  public_ml_away_bet_pct: number | null
+  public_ml_away_money_pct: number | null
   rlm: string
   rlm_side: string
   respected: string
   respected_side: string
   money_vs_bets_diff: number
   snapshot_count: number
+  has_splits?: boolean
 }
 
 type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'rlm' | 'movement' | null
@@ -334,13 +335,13 @@ const MobileExpandedView = ({
                 className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'away' ? styles.active : ''}`}
                 onClick={() => setHistoryTeam('away')}
               >
-                {getTeamName(game.away_team)}
+                {getTeamName(game.away_team, game.sport)}
               </button>
               <button
                 className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'home' ? styles.active : ''}`}
                 onClick={() => setHistoryTeam('home')}
               >
-                {getTeamName(game.home_team)}
+                {getTeamName(game.home_team, game.sport)}
               </button>
             </div>
             
@@ -400,8 +401,8 @@ const MobileExpandedView = ({
               <thead>
                 <tr>
                   <th>Book</th>
-                  <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
-                  <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                  <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                  <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
                 </tr>
               </thead>
               <tbody>
@@ -504,40 +505,45 @@ export default function PublicBettingPage() {
       const data = await response.json()
       
       if (data.success && data.games) {
-        const processedGames = data.games.map((game: any) => ({
-          ...game,
-          // Logos from API
-          home_logo: game.home_logo || '',
-          away_logo: game.away_logo || '',
-          home_abbrev: game.home_abbrev || getAbbrev(game.home_team),
-          away_abbrev: game.away_abbrev || getAbbrev(game.away_team),
+        const processedGames = data.games.map((game: any) => {
+          const hasSplits = game.has_splits !== false // Default to true if not specified
           
-          // Spread percentages - away is inverse of home
-          public_spread_home_bet_pct: game.public_spread_bet_pct || 50,
-          public_spread_home_money_pct: game.public_spread_money_pct || 50,
-          public_spread_away_bet_pct: 100 - (game.public_spread_bet_pct || 50),
-          public_spread_away_money_pct: 100 - (game.public_spread_money_pct || 50),
-          
-          // Totals percentages - over/under
-          public_total_over_bet_pct: game.public_total_over_bet_pct || 50,
-          public_total_over_money_pct: game.public_total_over_money_pct || 50,
-          public_total_under_bet_pct: 100 - (game.public_total_over_bet_pct || 50),
-          public_total_under_money_pct: 100 - (game.public_total_over_money_pct || 50),
-          
-          // Moneyline percentages - home/away
-          public_ml_home_bet_pct: game.public_ml_bet_pct || 50,
-          public_ml_home_money_pct: game.public_ml_money_pct || 50,
-          public_ml_away_bet_pct: 100 - (game.public_ml_bet_pct || 50),
-          public_ml_away_money_pct: 100 - (game.public_ml_money_pct || 50),
-          
-          // RLM comes from API now
-          rlm: game.rlm || '-',
-          rlm_side: game.rlm_side || '',
-          respected: game.respected || '',
-          respected_side: game.respected_side || '',
-          money_vs_bets_diff: game.money_vs_bets_diff || 0,
-          snapshot_count: game.snapshot_count || 1
-        }))
+          return {
+            ...game,
+            // Logos from API
+            home_logo: game.home_logo || '',
+            away_logo: game.away_logo || '',
+            home_abbrev: game.home_abbrev || getAbbrev(game.home_team),
+            away_abbrev: game.away_abbrev || getAbbrev(game.away_team),
+            
+            // Spread percentages - away is inverse of home (only if has splits)
+            public_spread_home_bet_pct: hasSplits ? (game.public_spread_bet_pct ?? null) : null,
+            public_spread_home_money_pct: hasSplits ? (game.public_spread_money_pct ?? null) : null,
+            public_spread_away_bet_pct: hasSplits ? (game.public_spread_bet_pct !== null ? 100 - game.public_spread_bet_pct : null) : null,
+            public_spread_away_money_pct: hasSplits ? (game.public_spread_money_pct !== null ? 100 - game.public_spread_money_pct : null) : null,
+            
+            // Totals percentages - over/under (only if has splits)
+            public_total_over_bet_pct: hasSplits ? (game.public_total_over_bet_pct ?? null) : null,
+            public_total_over_money_pct: hasSplits ? (game.public_total_over_money_pct ?? null) : null,
+            public_total_under_bet_pct: hasSplits ? (game.public_total_over_bet_pct !== null ? 100 - game.public_total_over_bet_pct : null) : null,
+            public_total_under_money_pct: hasSplits ? (game.public_total_over_money_pct !== null ? 100 - game.public_total_over_money_pct : null) : null,
+            
+            // Moneyline percentages - home/away (only if has splits)
+            public_ml_home_bet_pct: hasSplits ? (game.public_ml_bet_pct ?? null) : null,
+            public_ml_home_money_pct: hasSplits ? (game.public_ml_money_pct ?? null) : null,
+            public_ml_away_bet_pct: hasSplits ? (game.public_ml_bet_pct !== null ? 100 - game.public_ml_bet_pct : null) : null,
+            public_ml_away_money_pct: hasSplits ? (game.public_ml_money_pct !== null ? 100 - game.public_ml_money_pct : null) : null,
+            
+            // RLM comes from API now
+            rlm: game.rlm || '-',
+            rlm_side: game.rlm_side || '',
+            respected: game.respected || '',
+            respected_side: game.respected_side || '',
+            money_vs_bets_diff: game.money_vs_bets_diff || 0,
+            snapshot_count: game.snapshot_count || 1,
+            has_splits: hasSplits
+          }
+        })
         setGames(processedGames)
         console.log(`[Public Betting] Loaded ${processedGames.length} games from ${data.source}`)
       } else {
@@ -561,7 +567,109 @@ export default function PublicBettingPage() {
     return abbrevMap[teamName] || teamName.split(' ').pop()?.substring(0, 3).toUpperCase() || 'UNK'
   }
 
-  const getTeamName = (fullName: string): string => {
+  const getTeamName = (fullName: string, sport?: string): string => {
+    // For CFB and CBB: Show school name (abbreviated if too long), not mascot
+    if (sport === 'cfb' || sport === 'cbb' || selectedSport === 'cfb' || selectedSport === 'cbb') {
+      // Remove mascot (last word, or last 2 words for compound mascots like "Crimson Tide")
+      const words = fullName.split(' ')
+      let schoolName = fullName
+      
+      // Common two-word mascots
+      const twoWordMascots = ['crimson tide', 'tar heels', 'blue devils', 'fighting irish', 'golden gophers', 
+                             'orange crush', 'green wave', 'blue raiders', 'golden eagles', 'red raiders',
+                             'blue demons', 'golden hurricanes']
+      
+      if (words.length >= 2) {
+        const lastTwo = `${words[words.length - 2]} ${words[words.length - 1]}`.toLowerCase()
+        if (twoWordMascots.includes(lastTwo)) {
+          // Remove last 2 words (compound mascot)
+          schoolName = words.slice(0, -2).join(' ')
+        } else {
+          // Remove last word (mascot)
+          schoolName = words.slice(0, -1).join(' ')
+        }
+      }
+      
+      // Remove common prefixes
+      schoolName = schoolName
+        .replace(/^University of /i, '')
+        .replace(/^College of /i, '')
+        .replace(/^The /i, '')
+        .trim()
+      
+      // Common abbreviations for well-known schools
+      const abbrevMap: Record<string, string> = {
+        'North Carolina': 'UNC',
+        'North Carolina State': 'NC State',
+        'Ohio State': 'Ohio St',
+        'Penn State': 'Penn St',
+        'Michigan State': 'Michigan St',
+        'Florida State': 'Florida St',
+        'Oklahoma State': 'Oklahoma St',
+        'Kansas State': 'Kansas St',
+        'Iowa State': 'Iowa St',
+        'Mississippi State': 'Mississippi St',
+        'Washington State': 'Washington St',
+        'Oregon State': 'Oregon St',
+        'Arizona State': 'Arizona St',
+        'Colorado State': 'Colorado St',
+        'San Diego State': 'San Diego St',
+        'Boise State': 'Boise St',
+        'Fresno State': 'Fresno St',
+        'Utah State': 'Utah St',
+        'New Mexico State': 'New Mexico St',
+        'Louisiana State': 'LSU',
+        'Texas A&M': 'Texas A&M',
+        'Texas Christian': 'TCU',
+        'Southern California': 'USC',
+        'Southern Methodist': 'SMU',
+        'Brigham Young': 'BYU',
+        'Virginia Commonwealth': 'VCU',
+        'Massachusetts': 'UMass',
+        'Central Florida': 'UCF',
+        'South Florida': 'USF',
+        'Texas El Paso': 'UTEP',
+        'Texas San Antonio': 'UTSA',
+        'Middle Tennessee': 'Middle Tenn',
+        'Western Kentucky': 'WKU',
+        'Appalachian State': 'App State',
+        'Coastal Carolina': 'Coastal Car',
+        'Georgia Southern': 'Georgia So',
+        'Louisiana Lafayette': 'Louisiana',
+        'Louisiana Monroe': 'ULM',
+        'Prairie View A&M': 'Prairie View',
+        'Mississippi Valley State': 'Miss Valley St',
+        'Alabama Birmingham': 'UAB',
+      }
+      
+      // Check for exact match
+      if (abbrevMap[schoolName]) {
+        return abbrevMap[schoolName]
+      }
+      
+      // Check for partial match (case-insensitive)
+      const schoolNameLower = schoolName.toLowerCase()
+      for (const [key, abbrev] of Object.entries(abbrevMap)) {
+        if (schoolNameLower.includes(key.toLowerCase()) || key.toLowerCase().includes(schoolNameLower)) {
+          return abbrev
+        }
+      }
+      
+      // If too long (more than 15 characters), abbreviate
+      if (schoolName.length > 15) {
+        const schoolWords = schoolName.split(' ')
+        if (schoolWords.length > 1) {
+          // Use first word + first letter of remaining words
+          return `${schoolWords[0]} ${schoolWords.slice(1).map(w => w[0]).join('')}`
+        }
+        // Single word: truncate to 12 chars
+        return schoolName.substring(0, 12)
+      }
+      
+      return schoolName
+    }
+    
+    // For other sports: Return last word (mascot/team name)
     const parts = fullName.split(' ')
     return parts[parts.length - 1]
   }
@@ -704,14 +812,16 @@ export default function PublicBettingPage() {
     return oddsArray
   }
 
-  const formatDiff = (betPct: number, moneyPct: number) => {
+  const formatDiff = (betPct: number | null, moneyPct: number | null) => {
+    if (betPct === null || moneyPct === null) return '—'
     const diff = moneyPct - betPct // Positive = more money than bets
     if (diff > 0) return `+${Math.abs(diff).toFixed(0)}%`
     if (diff < 0) return `-${Math.abs(diff).toFixed(0)}%`
     return '0%'
   }
 
-  const getDiffClass = (betPct: number, moneyPct: number) => {
+  const getDiffClass = (betPct: number | null, moneyPct: number | null) => {
+    if (betPct === null || moneyPct === null) return ''
     const diff = moneyPct - betPct
     if (diff > 5) return styles.diffPositive
     if (diff < -5) return styles.diffNegative
@@ -725,6 +835,11 @@ export default function PublicBettingPage() {
 
   // Get percentages based on selected market type
   const getMarketPcts = (game: GameOdds, isHome: boolean) => {
+    // If game has no splits, return null
+    if (!game.has_splits) {
+      return { betPct: null, moneyPct: null }
+    }
+    
     switch (selectedMarket) {
       case 'spread':
         return {
@@ -812,11 +927,14 @@ export default function PublicBettingPage() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.headerSpacer} />
       {/* Header with Filters */}
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
-            <h1 className={styles.title}>Public Betting</h1>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Public Betting</h1>
+            </div>
             <p className={styles.subtitle}>Public betting splits, movements & indicators from 150 sportsbooks.</p>
           </div>
         </div>
@@ -960,7 +1078,7 @@ export default function PublicBettingPage() {
                     >
                       <td className={styles.teamCell}>
                         {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
-                        <span className={styles.teamName}>{getTeamName(game.away_team)}</span>
+                        <span className={styles.teamName}>{getTeamName(game.away_team, game.sport)}</span>
                       </td>
                       <td>{getMarketOdds(game, false, true)}</td>
                       <td>{getMarketOdds(game, false, false)}</td>
@@ -969,18 +1087,30 @@ export default function PublicBettingPage() {
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${awayPcts.betPct}%` }} />
-                          </div>
+                          {awayPcts.betPct !== null ? (
+                            <>
+                              <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
+                              <div className={styles.miniMeterBlue}>
+                                <div style={{ width: `${awayPcts.betPct}%` }} />
+                              </div>
+                            </>
+                          ) : (
+                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                          )}
                         </div>
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${awayPcts.moneyPct}%` }} />
-                          </div>
+                          {awayPcts.moneyPct !== null ? (
+                            <>
+                              <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
+                              <div className={styles.miniMeterGreen}>
+                                <div style={{ width: `${awayPcts.moneyPct}%` }} />
+                              </div>
+                            </>
+                          ) : (
+                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                          )}
                         </div>
                       </td>
                       <td className={getDiffClass(awayPcts.betPct, awayPcts.moneyPct)}>
@@ -999,7 +1129,7 @@ export default function PublicBettingPage() {
                     >
                       <td className={styles.teamCell}>
                         {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}
-                        <span className={styles.teamName}>{getTeamName(game.home_team)}</span>
+                        <span className={styles.teamName}>{getTeamName(game.home_team, game.sport)}</span>
                       </td>
                       <td>{getMarketOdds(game, true, true)}</td>
                       <td>{getMarketOdds(game, true, false)}</td>
@@ -1008,18 +1138,30 @@ export default function PublicBettingPage() {
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${homePcts.betPct}%` }} />
-                          </div>
+                          {homePcts.betPct !== null ? (
+                            <>
+                              <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
+                              <div className={styles.miniMeterBlue}>
+                                <div style={{ width: `${homePcts.betPct}%` }} />
+                              </div>
+                            </>
+                          ) : (
+                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                          )}
                         </div>
                       </td>
                       <td>
                         <div className={styles.pctStack}>
-                          <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${homePcts.moneyPct}%` }} />
-                          </div>
+                          {homePcts.moneyPct !== null ? (
+                            <>
+                              <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
+                              <div className={styles.miniMeterGreen}>
+                                <div style={{ width: `${homePcts.moneyPct}%` }} />
+                              </div>
+                            </>
+                          ) : (
+                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                          )}
                         </div>
                       </td>
                       <td className={getDiffClass(homePcts.betPct, homePcts.moneyPct)}>
@@ -1039,7 +1181,7 @@ export default function PublicBettingPage() {
                                   {/* Game Matchup - smaller when expanded */}
                                   <div className={styles.expandedMatchupRow}>
                                     {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
-                                    <span className={styles.expandedTeamText}>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
+                                    <span className={styles.expandedTeamText}>{getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}</span>
                                     {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
                                     <span className={styles.expandedGameTime}>{formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}</span>
                                   </div>
@@ -1129,7 +1271,7 @@ export default function PublicBettingPage() {
                                         dot={{ r: 3, fill: '#98ADD1', stroke: '#151E2A', strokeWidth: 1 }}
                                         activeDot={{ r: 5, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
                                         isAnimationActive={false}
-                                        name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team)}
+                                        name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
                                       />
                                       {graphMarketType !== 'total' && (
                                         <Line 
@@ -1140,7 +1282,7 @@ export default function PublicBettingPage() {
                                           dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
                                           activeDot={{ r: 5, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
                                           isAnimationActive={false}
-                                          name={getTeamName(game.away_team)}
+                                          name={getTeamName(game.away_team, game.sport)}
                                           strokeDasharray="5 5"
                                         />
                                       )}
@@ -1152,12 +1294,12 @@ export default function PublicBettingPage() {
                                 <div className={styles.graphLegend}>
                                   <div className={styles.legendItem}>
                                     <span className={styles.legendLine} style={{ background: '#98ADD1' }}></span>
-                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team)}</span>
+                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
                                   </div>
                                   {graphMarketType !== 'total' && (
                                     <div className={styles.legendItem}>
                                       <span className={styles.legendLineDashed} style={{ background: '#EF4444' }}></span>
-                                      <span>{getTeamName(game.away_team)}</span>
+                                      <span>{getTeamName(game.away_team, game.sport)}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1176,8 +1318,8 @@ export default function PublicBettingPage() {
                                     <thead>
                                       <tr>
                                         <th>Time</th>
-                                        <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
-                                        <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                                        <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                                        <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -1227,8 +1369,8 @@ export default function PublicBettingPage() {
                                       <thead>
                                         <tr>
                                           <th>Book</th>
-                                          <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team)}</th>
-                                          <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team)}</th>
+                                          <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                                          <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -1332,12 +1474,24 @@ export default function PublicBettingPage() {
                     </div>
                     <div className={styles.mobileOdds}>{getMarketOdds(game, false, false)}</div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(awayPcts.betPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
+                      {awayPcts.betPct !== null ? (
+                        <>
+                          <span>{Math.round(awayPcts.betPct)}%</span>
+                          <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
+                        </>
+                      ) : (
+                        <span style={{ color: '#696969' }}>N/A</span>
+                      )}
                     </div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(awayPcts.moneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
+                      {awayPcts.moneyPct !== null ? (
+                        <>
+                          <span>{Math.round(awayPcts.moneyPct)}%</span>
+                          <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
+                        </>
+                      ) : (
+                        <span style={{ color: '#696969' }}>N/A</span>
+                      )}
                     </div>
                     <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
                       {game.rlm}
@@ -1353,12 +1507,24 @@ export default function PublicBettingPage() {
                     </div>
                     <div className={styles.mobileOdds}>{getMarketOdds(game, true, false)}</div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(homePcts.betPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
+                      {homePcts.betPct !== null ? (
+                        <>
+                          <span>{Math.round(homePcts.betPct)}%</span>
+                          <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
+                        </>
+                      ) : (
+                        <span style={{ color: '#696969' }}>N/A</span>
+                      )}
                     </div>
                     <div className={styles.mobilePct}>
-                      <span>{Math.round(homePcts.moneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
+                      {homePcts.moneyPct !== null ? (
+                        <>
+                          <span>{Math.round(homePcts.moneyPct)}%</span>
+                          <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
+                        </>
+                      ) : (
+                        <span style={{ color: '#696969' }}>N/A</span>
+                      )}
                     </div>
                     <div className={styles.mobileRlm}></div>
                   </div>

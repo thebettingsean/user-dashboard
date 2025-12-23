@@ -1,5 +1,5 @@
 // lib/utils/sportSelector.ts
-type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb'
+type League = 'nfl' | 'nba' | 'mlb' | 'nhl' | 'cfb' | 'cbb'
 
 interface SportPriority {
   primary: League
@@ -125,6 +125,20 @@ export function getDateRangeForSport(league: League): { from: string; to: string
       from = new Date(today)
       to = new Date(today) // Only today, not +3 days
       break
+      
+    case 'cbb':
+      // College Basketball: Mostly Tuesday-Saturday games
+      if (dayOfWeek >= 1 && dayOfWeek <= 6) {
+        // Mon-Sat: Show through next Saturday
+        from = new Date(today)
+        const daysUntilSaturday = (6 - dayOfWeek + 7) % 7
+        to = new Date(today.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000)
+      } else {
+        // Sunday: Show next week (Mon-Sat)
+        from = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000)
+        to = new Date(from.getTime() + 5 * 24 * 60 * 60 * 1000)
+      }
+      break
   }
   
   return {
@@ -140,7 +154,8 @@ export function getSportDisplayName(league: League): string {
     nba: 'NBA',
     mlb: 'MLB',
     nhl: 'NHL',
-    cfb: 'College Football'
+    cfb: 'College Football',
+    cbb: 'College Basketball'
   }
   return names[league]
 }

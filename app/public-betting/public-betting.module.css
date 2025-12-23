@@ -1,11 +1,15 @@
-/* Design System - Dark Theme */
+/* Design System - Dark Theme (matching builder) */
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
   padding: 24px;
-  padding-top: 40px;
+  padding-top: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+}
+
+.headerSpacer {
+  height: 40px;
 }
 
 /* Header */
@@ -23,12 +27,18 @@
   gap: 4px;
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .title {
   font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: #FFFFFF;
-  margin: 0;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
@@ -79,7 +89,7 @@
   white-space: nowrap;
 }
 
-.filterBtn:hover {
+.filterBtn:hover:not(:disabled) {
   color: #FFFFFF;
   background: rgba(41, 47, 63, 0.3);
 }

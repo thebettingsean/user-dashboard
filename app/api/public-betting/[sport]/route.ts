@@ -4,7 +4,7 @@ import { fetchGames, fetchPublicMoney } from '@/lib/api/sportsData'
 import { getDateRangeForSport } from '@/lib/utils/sportSelector'
 import { findMostPublicBets, findTopTrends } from '@/lib/utils/dataAnalyzer'
 
-type League = 'nfl' | 'nba' | 'nhl' | 'cfb'
+type League = 'nfl' | 'nba' | 'nhl' | 'cfb' | 'cbb'
 
 // Cache per sport with 30-minute TTL
 const cache = new Map<League, { data: any, timestamp: number }>()
@@ -19,7 +19,7 @@ export async function GET(
     const sport = sportParam.toLowerCase() as League
     
     // Validate sport
-    if (!['nfl', 'nba', 'nhl', 'cfb'].includes(sport)) {
+    if (!['nfl', 'nba', 'nhl', 'cfb', 'cbb'].includes(sport)) {
       return NextResponse.json({ error: 'Invalid sport' }, { status: 400 })
     }
 
