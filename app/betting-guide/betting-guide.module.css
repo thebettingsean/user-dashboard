@@ -1,10 +1,11 @@
 .guidePage {
-  background: transparent;
-  color: #ffffff;
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  color: #FFFFFF;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
   position: relative;
+  padding: 24px;
 }
 
 /* Gradient Lines Background */
@@ -140,21 +141,21 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(50, 51, 53, 0.5);
   z-index: 1000;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
   transition: width 0.1s ease-out;
-  box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
 
 /* Hero Section */
 .heroSection {
   position: relative;
-  padding: 8rem 2rem 4rem;
+  padding: 4rem 0 2rem;
   z-index: 2;
   overflow: hidden;
 }
@@ -174,17 +175,18 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #60a5fa;
-  margin-bottom: 1rem;
+  color: #696969;
+  margin-bottom: 0.5rem;
   display: block;
 }
 
 .heroTitle {
   font-size: clamp(2rem, 5vw, 4rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
+  margin-top: 0;
   margin-bottom: 1rem;
-  color: #ffffff;
+  color: #FFFFFF;
   letter-spacing: -0.02em;
   display: block;
   width: 100%;
@@ -192,8 +194,8 @@
 }
 
 .heroSubtitle {
-  font-size: 1.125rem;
-  color: #e5e7eb;
+  font-size: 13px;
+  color: #696969;
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
@@ -204,7 +206,7 @@
   position: relative;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr;
   gap: 3rem;
@@ -218,10 +220,10 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 60px;
   padding: 0.75rem 0.5rem;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -259,10 +261,10 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: #696969;
   text-decoration: none;
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border: 1px solid transparent;
   white-space: nowrap;
   width: 100%;
@@ -270,6 +272,7 @@
   transform: scale(1);
   box-sizing: border-box;
   margin: 0 auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .floatingNav:hover .navLink {
@@ -281,16 +284,16 @@
 
 .navLink:hover,
 .navLinkExpanded {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(41, 47, 63, 0.3);
+  border-color: rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
   transform: scale(1.02);
 }
 
 .navLinkActive {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
+  background: rgba(41, 47, 63, 0.6) !important;
+  border: 1px solid rgba(50, 51, 53, 0.5) !important;
+  color: #FFFFFF !important;
 }
 
 .navLinkActive .navIcon {
@@ -311,16 +314,16 @@
   height: 36px;
   min-width: 36px;
   max-width: 36px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #696969;
   margin-left: auto;
   margin-right: auto;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
   transform: translateX(11px);
   /* GSAP will handle x transform */
 }
 
 .navLink:hover .navIcon {
-  color: rgba(255, 255, 255, 1);
+  color: #FFFFFF;
   transform: scale(1.05);
 }
 
@@ -351,16 +354,18 @@
 .navNumber {
   font-size: 0.65rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  color: #696969;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .navTitle {
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.3;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Main Content */
@@ -375,28 +380,28 @@
 
 /* Chapter Styles */
 .chapter {
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
-  transition: all 0.4s ease;
+  transition: all 0.15s ease;
   opacity: 0;
   animation: fadeInUp 1s ease-out forwards;
 }
 
 .chapter:hover {
   transform: translateY(-2px);
-  border-color: rgba(96, 165, 250, 0.2);
+  border-color: rgba(50, 51, 53, 0.8);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
 .chapterNumber {
   font-size: 0.7rem;
   font-weight: 600;
-  color: #60a5fa;
+  color: #696969;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 0.5rem;
@@ -404,19 +409,20 @@
 
 .chapterTitle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  letter-spacing: -0.02em;
 }
 
 .chapterIcon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.05));
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -428,13 +434,14 @@
 .chapterIcon svg {
   width: 20px;
   height: 20px;
-  color: #60a5fa;
+  color: #9CA3AF;
 }
 
 .chapterContent {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #FFFFFF;
   line-height: 1.7;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .chapterContent p {
@@ -442,44 +449,49 @@
 }
 
 .highlightBox {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   padding: 1rem;
   margin: 1.5rem 0;
 }
 
 .formulaBox {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 10px;
   padding: 1rem;
   margin: 1rem 0;
-  font-family: 'Courier New', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 0.8rem;
 }
 
 .formulaTitle {
-  color: #60a5fa;
+  color: #696969;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  font-family: inherit;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .exampleBox {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 10px;
   padding: 1rem;
   margin: 1rem 0;
 }
 
 .exampleTitle {
-  color: #10b981;
+  color: #696969;
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.75rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tipsList {
@@ -492,11 +504,12 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 0.75rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #FFFFFF;
   padding-left: 1.5rem;
   position: relative;
   font-size: 0.875rem;
   line-height: 1.6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .tipsList li::before {
@@ -535,60 +548,63 @@
 }
 
 .statCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(29, 37, 48, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .statCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(96, 165, 250, 0.2);
-  background: rgba(96, 165, 250, 0.03);
+  border-color: rgba(50, 51, 53, 0.8);
+  background: rgba(41, 47, 63, 0.7);
 }
 
 .statNumber {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #60a5fa;
+  font-weight: 600;
+  color: #E5E7EB;
   margin-bottom: 0.25rem;
 }
 
 .statLabel {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .highlightText {
-  color: #60a5fa;
+  color: #D1D5DB;
   font-weight: 600;
 }
 
 .boldText {
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .sectionDivider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(50, 51, 53, 0.5), transparent);
   margin: 2rem 0;
 }
 
 .sectionTitle {
   font-size: 1.125rem;
   margin-bottom: 0.75rem;
-  color: #60a5fa;
+  color: #696969;
   font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .checklistTitle {
   font-size: 1rem;
   margin-bottom: 0.75rem;
-  color: #ffffff;
+  color: #FFFFFF;
   font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 @keyframes fadeInUp {

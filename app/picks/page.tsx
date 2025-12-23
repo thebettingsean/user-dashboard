@@ -191,17 +191,6 @@ export default function PicksPage() {
   }
 
   const handleDateSelect = (day: number) => {
-    // Block non-subscribed users from selecting dates
-    if (!isSignedIn || !hasAccess) {
-      if (!isSignedIn) {
-        openSignUp()
-      } else if (!hasAccess) {
-        router.push('/pricing')
-      }
-      setDateDropdownOpen(false)
-      return
-    }
-    
     const newDate = new Date(currentDate)
     newDate.setDate(day)
     setCurrentDate(newDate)
@@ -209,34 +198,12 @@ export default function PicksPage() {
   }
 
   const handlePrevMonth = () => {
-    // Block non-subscribed users from navigating months
-    if (!isSignedIn || !hasAccess) {
-      if (!isSignedIn) {
-        openSignUp()
-      } else if (!hasAccess) {
-        router.push('/pricing')
-      }
-      setDateDropdownOpen(false)
-      return
-    }
-    
     const newDate = new Date(currentDate)
     newDate.setMonth(newDate.getMonth() - 1)
     setCurrentDate(newDate)
   }
 
   const handleNextMonth = () => {
-    // Block non-subscribed users from navigating months
-    if (!isSignedIn || !hasAccess) {
-      if (!isSignedIn) {
-        openSignUp()
-      } else if (!hasAccess) {
-        router.push('/pricing')
-      }
-      setDateDropdownOpen(false)
-      return
-    }
-    
     const newDate = new Date(currentDate)
     newDate.setMonth(newDate.getMonth() + 1)
     setCurrentDate(newDate)
@@ -292,21 +259,6 @@ export default function PicksPage() {
 
     fetchMonthPickCounts()
   }, [currentDate.getFullYear(), currentDate.getMonth()])
-
-  // Lock date to today for non-subscribed users
-  useEffect(() => {
-    if (!isSignedIn || !hasAccess) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const currentDateOnly = new Date(currentDate)
-      currentDateOnly.setHours(0, 0, 0, 0)
-      
-      // If currentDate is not today, reset it to today
-      if (currentDateOnly.getTime() !== today.getTime()) {
-        setCurrentDate(today)
-      }
-    }
-  }, [isSignedIn, hasAccess, currentDate])
 
   // Fetch picks data
   useEffect(() => {
@@ -463,21 +415,7 @@ export default function PicksPage() {
             <div className={styles.dateDropdown} ref={dateDropdownRef}>
               <button 
                 className={styles.dateDropdownBtn}
-                onClick={() => {
-                  if (!isSignedIn || !hasAccess) {
-                    if (!isSignedIn) {
-                      openSignUp()
-                    } else if (!hasAccess) {
-                      router.push('/pricing')
-                    }
-                    return
-                  }
-                  setDateDropdownOpen(!dateDropdownOpen)
-                }}
-                style={!isSignedIn || !hasAccess ? { 
-                  opacity: 0.6, 
-                  cursor: 'not-allowed' 
-                } : {}}
+                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
               >
                 {formatDateDisplay(currentDate)}
                 <FiChevronDown className={`${styles.dateDropdownIcon} ${dateDropdownOpen ? styles.rotated : ''}`} />

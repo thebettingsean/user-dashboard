@@ -57,12 +57,6 @@
   align-items: center;
   gap: 12px;
   margin-top: 16px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.filtersRow::-webkit-scrollbar {
-  display: none;
 }
 
 .leftFilters {
@@ -84,13 +78,6 @@
   padding: 0;
   gap: 4px;
   height: 32px;
-  flex-shrink: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.sportFilters::-webkit-scrollbar {
-  display: none;
 }
 
 .filterBtn {
@@ -142,8 +129,6 @@
   cursor: pointer;
   transition: background 0.2s ease;
   min-width: 120px;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .dateDropdownBtn:hover {
@@ -295,45 +280,6 @@
 .calendarDayToday .calendarDayCount {
   color: #60A5FA;
   background: rgba(59, 130, 246, 0.25);
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .filtersRow {
-    gap: 8px;
-    padding-right: 0;
-  }
-
-  .leftFilters {
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .leftFilters::-webkit-scrollbar {
-    display: none;
-  }
-
-  .rightFilters {
-    flex-shrink: 0;
-    margin-left: 8px;
-  }
-
-  .dateDropdownBtn {
-    min-width: 100px;
-    padding: 0 10px;
-    font-size: 11px;
-  }
-
-  .sportFilters {
-    gap: 3px;
-  }
-
-  .filterBtn {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
 }
 
 /* Content Section - Similar to public-betting */
