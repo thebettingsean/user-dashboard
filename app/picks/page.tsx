@@ -90,6 +90,37 @@ export default function PicksPage() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
   }
 
+  // Calculate net win/loss from odds and result
+  const calculateNetUnits = (units: number, odds: string, result: string): number => {
+    if (!result || result === 'pending' || result === 'push') return 0
+    
+    const isWin = result === 'won' || result === 'win'
+    const isLoss = result === 'lost' || result === 'loss'
+    
+    if (!isWin && !isLoss) return 0
+    
+    let oddsNumeric: number
+    if (odds.startsWith('+')) {
+      oddsNumeric = parseInt(odds.substring(1))
+      return isWin ? parseFloat((units * (oddsNumeric / 100)).toFixed(2)) : -units
+    } else if (odds.startsWith('-')) {
+      oddsNumeric = parseInt(odds.substring(1))
+      return isWin ? parseFloat((units * (100 / oddsNumeric)).toFixed(2)) : -units
+    } else {
+      // Default to -110 if no sign
+      return isWin ? parseFloat((units * (100 / 110)).toFixed(2)) : -units
+    }
+  }
+
+  // Check if date is in the past
+  const isPastDate = (date: Date): boolean => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const checkDate = new Date(date)
+    checkDate.setHours(0, 0, 0, 0)
+    return checkDate < today
+  }
+
 
   const togglePickAnalysis = (pickId: string) => {
     // Only allow expanding if user is signed in and has access
@@ -160,6 +191,17 @@ export default function PicksPage() {
   }
 
   const handleDateSelect = (day: number) => {
+    // Block non-subscribed users from selecting dates
+    if (!isSignedIn || !hasAccess) {
+      if (!isSignedIn) {
+        openSignUp()
+      } else if (!hasAccess) {
+        router.push('/pricing')
+      }
+      setDateDropdownOpen(false)
+      return
+    }
+    
     const newDate = new Date(currentDate)
     newDate.setDate(day)
     setCurrentDate(newDate)
@@ -167,12 +209,34 @@ export default function PicksPage() {
   }
 
   const handlePrevMonth = () => {
+    // Block non-subscribed users from navigating months
+    if (!isSignedIn || !hasAccess) {
+      if (!isSignedIn) {
+        openSignUp()
+      } else if (!hasAccess) {
+        router.push('/pricing')
+      }
+      setDateDropdownOpen(false)
+      return
+    }
+    
     const newDate = new Date(currentDate)
     newDate.setMonth(newDate.getMonth() - 1)
     setCurrentDate(newDate)
   }
 
   const handleNextMonth = () => {
+    // Block non-subscribed users from navigating months
+    if (!isSignedIn || !hasAccess) {
+      if (!isSignedIn) {
+        openSignUp()
+      } else if (!hasAccess) {
+        router.push('/pricing')
+      }
+      setDateDropdownOpen(false)
+      return
+    }
+    
     const newDate = new Date(currentDate)
     newDate.setMonth(newDate.getMonth() + 1)
     setCurrentDate(newDate)
@@ -228,6 +292,21 @@ export default function PicksPage() {
 
     fetchMonthPickCounts()
   }, [currentDate.getFullYear(), currentDate.getMonth()])
+
+  // Lock date to today for non-subscribed users
+  useEffect(() => {
+    if (!isSignedIn || !hasAccess) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const currentDateOnly = new Date(currentDate)
+      currentDateOnly.setHours(0, 0, 0, 0)
+      
+      // If currentDate is not today, reset it to today
+      if (currentDateOnly.getTime() !== today.getTime()) {
+        setCurrentDate(today)
+      }
+    }
+  }, [isSignedIn, hasAccess, currentDate])
 
   // Fetch picks data
   useEffect(() => {
@@ -384,7 +463,21 @@ export default function PicksPage() {
             <div className={styles.dateDropdown} ref={dateDropdownRef}>
               <button 
                 className={styles.dateDropdownBtn}
-                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+                onClick={() => {
+                  if (!isSignedIn || !hasAccess) {
+                    if (!isSignedIn) {
+                      openSignUp()
+                    } else if (!hasAccess) {
+                      router.push('/pricing')
+                    }
+                    return
+                  }
+                  setDateDropdownOpen(!dateDropdownOpen)
+                }}
+                style={!isSignedIn || !hasAccess ? { 
+                  opacity: 0.6, 
+                  cursor: 'not-allowed' 
+                } : {}}
               >
                 {formatDateDisplay(currentDate)}
                 <FiChevronDown className={`${styles.dateDropdownIcon} ${dateDropdownOpen ? styles.rotated : ''}`} />
@@ -531,16 +624,47 @@ export default function PicksPage() {
                                 </div>
                               </div>
                               <div className={styles.pickRightSide}>
-                                <div 
-                                  className={styles.pickHeaderMeta}
-                                  style={pick.units > 1.5 ? { 
-                                    background: 'rgba(29, 37, 48, 0.5)', 
-                                    borderColor: 'rgba(251, 146, 60, 0.3)',
-                                    color: 'rgba(251, 146, 60, 0.9)'
-                                  } : {}}
-                                >
-                                  {pick.odds} | {pick.units.toFixed(1)}u
-                                </div>
+                                {(() => {
+                                  const isPast = isPastDate(new Date(pick.game_time))
+                                  const hasResult = pick.result && pick.result !== 'pending'
+                                  const netUnits = hasResult ? calculateNetUnits(pick.units, pick.odds, pick.result) : null
+                                  const isWin = hasResult && (pick.result === 'won' || pick.result === 'win')
+                                  const isLoss = hasResult && (pick.result === 'lost' || pick.result === 'loss')
+                                  
+                                  // For past dates with results, show odds and net win/loss
+                                  if (isPast && hasResult && netUnits !== null) {
+                                    return (
+                                      <div 
+                                        className={styles.pickHeaderMeta}
+                                        style={isWin ? {
+                                          background: 'rgba(34, 197, 94, 0.15)',
+                                          borderColor: 'rgba(34, 197, 94, 0.3)',
+                                          color: '#10b981'
+                                        } : isLoss ? {
+                                          background: 'rgba(248, 113, 113, 0.15)',
+                                          borderColor: 'rgba(248, 113, 113, 0.3)',
+                                          color: '#ef4444'
+                                        } : {}}
+                                      >
+                                        {pick.odds} | {netUnits >= 0 ? '+' : ''}{netUnits.toFixed(2)}u
+                                      </div>
+                                    )
+                                  }
+                                  
+                                  // For future/pending picks, show odds and units risked
+                                  return (
+                                    <div 
+                                      className={styles.pickHeaderMeta}
+                                      style={pick.units > 1.5 ? { 
+                                        background: 'rgba(29, 37, 48, 0.5)', 
+                                        borderColor: 'rgba(251, 146, 60, 0.3)',
+                                        color: 'rgba(251, 146, 60, 0.9)'
+                                      } : {}}
+                                    >
+                                      {pick.odds} | {pick.units.toFixed(1)}u
+                                    </div>
+                                  )
+                                })()}
                                 <div className={styles.pickExpandIconWrapper}>
                                   <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
                                 </div>
