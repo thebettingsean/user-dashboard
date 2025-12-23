@@ -78,11 +78,12 @@ export default function PicksPage() {
   
   const [allPicks, setAllPicks] = useState<Pick[]>([])
   const [isLoadingPicks, setIsLoadingPicks] = useState(false)
-  const [currentDate] = useState(new Date())
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [expandedPicks, setExpandedPicks] = useState<Set<string>>(new Set())
   const [selectedSport, setSelectedSport] = useState<string>('all')
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-  const filterDropdownRef = useRef<HTMLDivElement>(null)
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false)
+  const [pickCounts, setPickCounts] = useState<Record<string, number>>({})
+  const dateDropdownRef = useRef<HTMLDivElement>(null)
 
   // Helper functions
   const formatDateString = (date: Date) => {
@@ -115,13 +116,118 @@ export default function PicksPage() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
-        setFilterDropdownOpen(false)
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(event.target as Node)) {
+        setDateDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Format date for display
+  const formatDateDisplay = (date: Date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const dateToCheck = new Date(date)
+    dateToCheck.setHours(0, 0, 0, 0)
+    
+    if (dateToCheck.getTime() === today.getTime()) {
+      return 'Today'
+    }
+    
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (dateToCheck.getTime() === yesterday.getTime()) {
+      return 'Yesterday'
+    }
+    
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    if (dateToCheck.getTime() === tomorrow.getTime()) {
+      return 'Tomorrow'
+    }
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  // Calendar helper functions
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  }
+
+  const getFirstDayOfMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+  }
+
+  const handleDateSelect = (day: number) => {
+    const newDate = new Date(currentDate)
+    newDate.setDate(day)
+    setCurrentDate(newDate)
+    setDateDropdownOpen(false)
+  }
+
+  const handlePrevMonth = () => {
+    const newDate = new Date(currentDate)
+    newDate.setMonth(newDate.getMonth() - 1)
+    setCurrentDate(newDate)
+  }
+
+  const handleNextMonth = () => {
+    const newDate = new Date(currentDate)
+    newDate.setMonth(newDate.getMonth() + 1)
+    setCurrentDate(newDate)
+  }
+
+  const isToday = (day: number) => {
+    const today = new Date()
+    return day === today.getDate() && 
+           currentDate.getMonth() === today.getMonth() && 
+           currentDate.getFullYear() === today.getFullYear()
+  }
+
+  const isSelected = (day: number) => {
+    // Check if this day matches the selected date (currentDate)
+    return day === currentDate.getDate()
+  }
+
+  // Fetch pick counts for the current month
+  useEffect(() => {
+    async function fetchMonthPickCounts() {
+      try {
+        const year = currentDate.getFullYear()
+        const month = currentDate.getMonth()
+        const start = new Date(year, month, 1)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(year, month + 1, 0)
+        end.setHours(23, 59, 59, 999)
+        
+        const { data, error } = await supabase
+          .from('picks')
+          .select('game_time')
+          .gte('game_time', start.toISOString())
+          .lte('game_time', end.toISOString())
+
+        if (error) throw error
+
+        // Count picks per day
+        const counts: Record<string, number> = {}
+        if (data) {
+          data.forEach(pick => {
+            const pickDate = new Date(pick.game_time)
+            const dateStr = formatDateString(pickDate)
+            counts[dateStr] = (counts[dateStr] || 0) + 1
+          })
+        }
+        
+        setPickCounts(counts)
+      } catch (error) {
+        console.error('Error fetching month pick counts:', error)
+        setPickCounts({})
+      }
+    }
+
+    fetchMonthPickCounts()
+  }, [currentDate.getFullYear(), currentDate.getMonth()])
 
   // Fetch picks data
   useEffect(() => {
@@ -273,20 +379,61 @@ export default function PicksPage() {
             </div>
           </div>
           
-          {/* Right side: Filter Dropdown */}
+          {/* Right side: Date Dropdown */}
           <div className={styles.rightFilters}>
-            <div className={styles.filterDropdown} ref={filterDropdownRef}>
+            <div className={styles.dateDropdown} ref={dateDropdownRef}>
               <button 
-                className={styles.filterDropdownBtn}
-                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                className={styles.dateDropdownBtn}
+                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
               >
-                Filters
-                <FiChevronDown className={`${styles.filterDropdownIcon} ${filterDropdownOpen ? styles.rotated : ''}`} />
+                {formatDateDisplay(currentDate)}
+                <FiChevronDown className={`${styles.dateDropdownIcon} ${dateDropdownOpen ? styles.rotated : ''}`} />
               </button>
-              {filterDropdownOpen && (
-                <div className={styles.filterDropdownMenu}>
-                  {/* Filter options will go here */}
-                  <div className={styles.filterDropdownPlaceholder}>Filter options coming soon</div>
+              {dateDropdownOpen && (
+                <div className={styles.dateDropdownMenu}>
+                  <div className={styles.calendarHeader}>
+                    <button 
+                      className={styles.calendarNavBtn}
+                      onClick={handlePrevMonth}
+                    >
+                      ←
+                    </button>
+                    <div className={styles.calendarMonthYear}>
+                      {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </div>
+                    <button 
+                      className={styles.calendarNavBtn}
+                      onClick={handleNextMonth}
+                    >
+                      →
+                    </button>
+                  </div>
+                  <div className={styles.calendarWeekdays}>
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <div key={day} className={styles.calendarWeekday}>{day}</div>
+                    ))}
+                  </div>
+                  <div className={styles.calendarGrid}>
+                    {Array.from({ length: getFirstDayOfMonth(currentDate) }).map((_, i) => (
+                      <div key={`empty-${i}`} className={styles.calendarDayEmpty} />
+                    ))}
+                    {Array.from({ length: getDaysInMonth(currentDate) }, (_, i) => i + 1).map(day => {
+                      const dateStr = formatDateString(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
+                      const count = pickCounts[dateStr] || 0
+                      return (
+                        <button
+                          key={day}
+                          className={`${styles.calendarDay} ${isToday(day) ? styles.calendarDayToday : ''} ${isSelected(day) ? styles.calendarDaySelected : ''}`}
+                          onClick={() => handleDateSelect(day)}
+                        >
+                          <span className={styles.calendarDayNumber}>{day}</span>
+                          {count > 0 && (
+                            <span className={styles.calendarDayCount}>{count}</span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>

@@ -108,12 +108,12 @@
   background: rgba(41, 47, 63, 0.6);
 }
 
-/* Filter Dropdown */
-.filterDropdown {
+/* Date Dropdown */
+.dateDropdown {
   position: relative;
 }
 
-.filterDropdownBtn {
+.dateDropdownBtn {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -128,41 +128,158 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
+  min-width: 120px;
 }
 
-.filterDropdownBtn:hover {
+.dateDropdownBtn:hover {
   background: rgba(41, 47, 63, 0.7);
 }
 
-.filterDropdownIcon {
+.dateDropdownIcon {
   transition: transform 0.2s ease;
   font-size: 14px;
   color: #696969;
 }
 
-.filterDropdownIcon.rotated {
+.dateDropdownIcon.rotated {
   transform: rotate(180deg);
 }
 
-.filterDropdownMenu {
+.dateDropdownMenu {
   position: absolute;
   top: 100%;
   right: 0;
   margin-top: 4px;
-  min-width: 200px;
+  width: 280px;
   background: #1D2530;
   border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 8px;
   overflow: hidden;
   z-index: 100;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 12px;
 }
 
-.filterDropdownPlaceholder {
-  padding: 16px;
-  color: #696969;
-  font-size: 12px;
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.calendarNavBtn {
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 6px;
+  color: #FFFFFF;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 14px;
+}
+
+.calendarNavBtn:hover {
+  background: rgba(41, 47, 63, 0.7);
+}
+
+.calendarMonthYear {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.calendarWeekday {
   text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #696969;
+  padding: 4px 0;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendarDayEmpty {
+  aspect-ratio: 1;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px;
+  position: relative;
+}
+
+.calendarDay:hover {
+  background: rgba(41, 47, 63, 0.5);
+  border-color: rgba(50, 51, 53, 0.5);
+}
+
+.calendarDayToday {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60A5FA;
+  font-weight: 600;
+}
+
+.calendarDaySelected {
+  background: rgba(59, 130, 246, 0.4);
+  border-color: rgba(59, 130, 246, 0.6);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.calendarDayNumber {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.calendarDayCount {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(59, 130, 246, 0.9);
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 1px 4px;
+  line-height: 1;
+  min-width: 16px;
+  text-align: center;
+}
+
+.calendarDaySelected .calendarDayCount {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.calendarDayToday .calendarDayCount {
+  color: #60A5FA;
+  background: rgba(59, 130, 246, 0.25);
 }
 
 /* Content Section - Similar to public-betting */
