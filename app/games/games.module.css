@@ -1,0 +1,49 @@
+/* Design System - Dark Theme (matching public-betting and builder) */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+}
+
+.headerSpacer {
+  height: 40px;
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+}
+
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+

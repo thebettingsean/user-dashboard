@@ -1,11 +1,14 @@
 /* Design System - Dark Theme (matching builder) */
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  background: #0C0E12 !important;
   padding: 24px;
   padding-top: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
 }
 
 .headerSpacer {

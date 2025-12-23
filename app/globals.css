@@ -15,19 +15,14 @@
 }
 
 html {
-  background: linear-gradient(135deg, 
-    #000000 0%,      /* Black (top-left) */
-    #0a1018 40%,     /* Transition zone */
-    #0e172a 100%     /* Dark blue (bottom-right, more dominant) */
-  ) !important;
-  background-attachment: fixed !important;
+  background: #0C0E12 !important;
   min-height: 100vh !important;
   overflow-x: hidden !important;
   scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears */
 }
 
 body {
-  background: transparent !important;
+  background: #0C0E12 !important;
   color: var(--w);
   min-height: 100vh;
   margin: 0;
@@ -36,6 +31,12 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   position: relative;
   overflow-x: hidden;
+}
+
+#__next {
+  background: transparent !important;
+  min-height: 100vh;
+  position: relative;
 }
 
 @media (max-width: 767px) {

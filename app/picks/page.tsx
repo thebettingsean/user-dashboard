@@ -1,0 +1,449 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { supabase } from '@/lib/supabase'
+import { useSubscription } from '@/lib/hooks/useSubscription'
+import { IoTicketOutline } from 'react-icons/io5'
+import { FaLock, FaFireAlt } from 'react-icons/fa'
+import { FiChevronDown } from 'react-icons/fi'
+import styles from './picks.module.css'
+
+type Pick = {
+  id: string
+  bet_title: string
+  odds: string
+  units: number
+  game_time: string
+  game_id: string
+  result: string
+  bettor_id: string
+  bettor_name: string
+  bettor_record: string
+  bettor_win_streak: number
+  bettor_profile_initials: string
+  bettor_profile_image: string | null
+  sport: string
+  away_team: string | null
+  home_team: string | null
+  analysis: string
+  date: string
+}
+
+// Bettor Profile Image Component
+function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: string | null; initials: string | null; size?: number }) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt="Bettor"
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'rgba(71, 85, 105, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size * 0.4,
+        fontWeight: 600,
+        color: 'rgba(255, 255, 255, 0.8)',
+        flexShrink: 0
+      }}
+    >
+      {initials || '?'}
+    </div>
+  )
+}
+
+export default function PicksPage() {
+  const router = useRouter()
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const { hasAccess } = useSubscription()
+  
+  const [allPicks, setAllPicks] = useState<Pick[]>([])
+  const [isLoadingPicks, setIsLoadingPicks] = useState(false)
+  const [currentDate] = useState(new Date())
+  const [expandedPicks, setExpandedPicks] = useState<Set<string>>(new Set())
+  const [selectedSport, setSelectedSport] = useState<string>('all')
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
+  const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Helper functions
+  const formatDateString = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  }
+
+
+  const togglePickAnalysis = (pickId: string) => {
+    // Only allow expanding if user is signed in and has access
+    if (!isSignedIn || !hasAccess) {
+      if (!isSignedIn) {
+        openSignUp()
+      } else if (!hasAccess) {
+        router.push('/pricing')
+      }
+      return
+    }
+    
+    setExpandedPicks((prev) => {
+      const next = new Set(prev)
+      if (next.has(pickId)) {
+        next.delete(pickId)
+      } else {
+        next.add(pickId)
+      }
+      return next
+    })
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setFilterDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Fetch picks data
+  useEffect(() => {
+    async function fetchPicks() {
+      setIsLoadingPicks(true)
+      try {
+        const targetDate = currentDate
+        const start = new Date(targetDate)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(targetDate)
+        end.setHours(23, 59, 59, 999)
+        
+        const { data, error } = await supabase
+          .from('picks')
+          .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
+          .gte('game_time', start.toISOString())
+          .lte('game_time', end.toISOString())
+          .order('game_time', { ascending: true })
+
+        if (error) throw error
+
+        const picks = (data || []).map(p => ({
+          ...p,
+          id: p.id,
+          bet_title: p.bet_title || '',
+          odds: p.odds || '',
+          units: p.units || 0,
+          game_time: p.game_time || '',
+          game_id: p.game_id || '',
+          result: p.result || 'pending',
+          bettor_id: p.bettor_id || '',
+          bettor_name: p.bettors?.name || 'Unknown',
+          bettor_record: p.bettors?.record || '',
+          bettor_win_streak: p.bettors?.win_streak || 0,
+          bettor_profile_initials: p.bettors?.profile_initials || '??',
+          bettor_profile_image: p.bettors?.profile_image || null,
+          sport: p.sport || '',
+          away_team: null,
+          home_team: null,
+          analysis: p.analysis || '',
+          date: formatDateString(targetDate)
+        }))
+
+        // Sort by bettor name, then by game time
+        picks.sort((a, b) => {
+          if (a.bettor_name !== b.bettor_name) {
+            return a.bettor_name.localeCompare(b.bettor_name)
+          }
+          return new Date(a.game_time).getTime() - new Date(b.game_time).getTime()
+        })
+
+        setAllPicks(picks)
+      } catch (error) {
+        console.error('Error fetching picks:', error)
+        setAllPicks([])
+      } finally {
+        setIsLoadingPicks(false)
+      }
+    }
+
+    fetchPicks()
+  }, [currentDate])
+
+
+  // Filter picks by selected sport
+  const filteredPicks = selectedSport === 'all' 
+    ? allPicks 
+    : allPicks.filter(pick => {
+        const pickSport = pick.sport?.toLowerCase() || ''
+        const selected = selectedSport.toLowerCase()
+        
+        // Handle sport name variations
+        if (selected === 'cfb') {
+          return pickSport === 'cfb' || pickSport === 'ncaaf'
+        }
+        if (selected === 'cbb') {
+          return pickSport === 'cbb' || pickSport === 'ncaab'
+        }
+        
+        return pickSport === selected
+      })
+
+  // Group picks by capper
+  const picksByCapper = filteredPicks.reduce((acc, pick) => {
+    const capperName = pick.bettor_name || 'Unknown'
+    if (!acc[capperName]) {
+      acc[capperName] = {
+        name: capperName,
+        record: pick.bettor_record || '',
+        winStreak: pick.bettor_win_streak || 0,
+        profileImage: pick.bettor_profile_image,
+        profileInitials: pick.bettor_profile_initials,
+        picks: []
+      }
+    }
+    acc[capperName].picks.push(pick)
+    return acc
+  }, {} as Record<string, any>)
+
+  // Sort cappers by win streak (descending), then by record win percentage
+  const cappers = Object.values(picksByCapper).sort((a: any, b: any) => {
+    // First sort by win streak
+    if (b.winStreak !== a.winStreak) {
+      return b.winStreak - a.winStreak
+    }
+    
+    // Then by record (extract wins and calculate percentage)
+    const parseRecord = (record: string) => {
+      if (!record) return 0
+      const match = record.match(/(\d+)-(\d+)/)
+      if (!match) return 0
+      const wins = parseInt(match[1])
+      const losses = parseInt(match[2])
+      const total = wins + losses
+      return total > 0 ? wins / total : 0
+    }
+    
+    return parseRecord(b.record) - parseRecord(a.record)
+  })
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.headerSpacer} />
+      
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Today's Picks</h1>
+            </div>
+            <p className={styles.subtitle}>Expert picks and analysis from our top analysts.</p>
+          </div>
+        </div>
+        
+        <div className={styles.filtersRow}>
+          {/* Left side: Sport Filters */}
+          <div className={styles.leftFilters}>
+            <div className={styles.sportFilters}>
+              {['all', 'nfl', 'nba', 'nhl', 'cfb', 'cbb'].map(sport => (
+                <button
+                  key={sport}
+                  className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
+                  onClick={() => setSelectedSport(sport)}
+                >
+                  {sport === 'all' ? 'All' : sport.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Right side: Filter Dropdown */}
+          <div className={styles.rightFilters}>
+            <div className={styles.filterDropdown} ref={filterDropdownRef}>
+              <button 
+                className={styles.filterDropdownBtn}
+                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+              >
+                Filters
+                <FiChevronDown className={`${styles.filterDropdownIcon} ${filterDropdownOpen ? styles.rotated : ''}`} />
+              </button>
+              {filterDropdownOpen && (
+                <div className={styles.filterDropdownMenu}>
+                  {/* Filter options will go here */}
+                  <div className={styles.filterDropdownPlaceholder}>Filter options coming soon</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Content Section - Similar to public-betting */}
+      <div className={styles.contentSection}>
+        {isLoadingPicks ? (
+          <div className={styles.loadingState}>
+            <div className={styles.loadingText}>Loading picks...</div>
+          </div>
+        ) : (
+          <>
+            {/* All Picks in One Box - Grouped by Capper */}
+            {cappers.length === 0 ? (
+              <div className={styles.emptyState}>
+                <IoTicketOutline className={styles.emptyIcon} />
+                <div className={styles.emptyTitle}>No picks for today</div>
+                <div className={styles.emptySubtitle}>Check back later for new picks</div>
+              </div>
+            ) : (
+              <div className={styles.picksContainer}>
+                {cappers.map((capper, capperIndex) => (
+                  <div key={capper.name} className={styles.capperSection}>
+                    {/* Capper Header */}
+                    <div className={styles.capperSectionHeader}>
+                      <div className={styles.capperSectionHeaderLeft}>
+                        <BettorProfileImage 
+                          imageUrl={capper.profileImage} 
+                          initials={capper.profileInitials}
+                          size={36}
+                        />
+                        <div className={styles.capperSectionInfo}>
+                          <span className={styles.capperSectionName}>{capper.name}</span>
+                          {capper.record && (
+                            <span className={styles.capperSectionRecord}>{capper.record}</span>
+                          )}
+                        </div>
+                        {capper.winStreak > 0 && (
+                          <span className={styles.capperSectionStreak}>
+                            <FaFireAlt className={styles.capperSectionStreakIcon} />
+                            {capper.winStreak}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Capper's Picks */}
+                    <div className={styles.capperPicksList}>
+                      {capper.picks.map((pick: Pick) => {
+                        const isExpanded = expandedPicks.has(pick.id)
+                        return (
+                          <div 
+                            key={pick.id} 
+                            className={styles.pickCard}
+                          >
+                            <div 
+                              className={styles.pickCardMain}
+                              onClick={() => togglePickAnalysis(pick.id)}
+                            >
+                              <div className={styles.pickBodyLeft}>
+                                {(pick.away_team || pick.home_team) && (
+                                  <div className={styles.pickMatchup}>
+                                    {pick.away_team ?? 'Away'} @ {pick.home_team ?? 'Home'}
+                                  </div>
+                                )}
+                                <div className={styles.pickTitleRow}>
+                                  {!isSignedIn || !hasAccess ? (
+                                    <div className={styles.pickAnalysisLocked}>
+                                      <FaLock className={styles.lockIcon} />
+                                      <p className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
+                                        {pick.bet_title}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p className={styles.pickTitle}>
+                                      {pick.bet_title}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className={styles.pickFooter}>
+                                  <span 
+                                    className={styles.pickTime}
+                                    style={!isSignedIn || !hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                                  >
+                                    {new Date(pick.game_time).toLocaleString('en-US', {
+                                      timeZone: 'America/New_York',
+                                      hour: 'numeric',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className={styles.pickRightSide}>
+                                <div 
+                                  className={styles.pickHeaderMeta}
+                                  style={pick.units > 1.5 ? { 
+                                    background: 'rgba(29, 37, 48, 0.5)', 
+                                    borderColor: 'rgba(251, 146, 60, 0.3)',
+                                    color: 'rgba(251, 146, 60, 0.9)'
+                                  } : {}}
+                                >
+                                  {pick.odds} | {pick.units.toFixed(1)}u
+                                </div>
+                                <div className={styles.pickExpandIconWrapper}>
+                                  <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
+                                </div>
+                              </div>
+                            </div>
+                            {pick.analysis && (
+                              <>
+                                {!isSignedIn || !hasAccess ? (
+                                  <div
+                                    className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (!isSignedIn) {
+                                        openSignUp()
+                                      } else if (!hasAccess) {
+                                        router.push('/pricing')
+                                      }
+                                    }}
+                                    style={{ 
+                                      filter: 'blur(6px)', 
+                                      userSelect: 'none',
+                                      cursor: 'pointer'
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
+                                  />
+                                ) : (
+                                  <div
+                                    className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
+                                  />
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    
+                    {/* Separator between cappers (except last) */}
+                    {capperIndex < cappers.length - 1 && (
+                      <div className={styles.capperSeparator} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,583 @@
+/* Design System - Dark Theme (matching public-betting and builder) */
+.container {
+  min-height: 100vh;
+  background: #0C0E12 !important;
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.headerSpacer {
+  height: 40px;
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+}
+
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+
+/* Filters Row - Sports left, Filter dropdown right */
+.filtersRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.leftFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rightFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sportFilters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 4px;
+  height: 32px;
+}
+
+.filterBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.filterBtn:hover:not(:disabled) {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
+}
+
+.filterBtn.active {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
+}
+
+/* Filter Dropdown */
+.filterDropdown {
+  position: relative;
+}
+
+.filterDropdownBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  height: 32px;
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filterDropdownBtn:hover {
+  background: rgba(41, 47, 63, 0.7);
+}
+
+.filterDropdownIcon {
+  transition: transform 0.2s ease;
+  font-size: 14px;
+  color: #696969;
+}
+
+.filterDropdownIcon.rotated {
+  transform: rotate(180deg);
+}
+
+.filterDropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 200px;
+  background: #1D2530;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.filterDropdownPlaceholder {
+  padding: 16px;
+  color: #696969;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Content Section - Similar to public-betting */
+.contentSection {
+  margin-top: 24px;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.loadingText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+/* Date Bar */
+.dateBar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dateButton {
+  min-width: 50px;
+  padding: 0.5rem 0.4rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.dateButton:first-child {
+  min-width: 60px;
+}
+
+.dateButtonHasData {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dateButtonActive {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #8b5cf6;
+}
+
+.dateButtonLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dateButtonActive .dateButtonLabel {
+  color: #e9d5ff;
+}
+
+.dateButtonCount {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.2);
+  padding: 1px 5px;
+  border-radius: 8px;
+  min-width: 20px;
+}
+
+.dateButtonActive .dateButtonCount {
+  color: #c4b5fd;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.emptySubtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Picks Container - One Big Box */
+.picksContainer {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  padding: 16px 18px;
+  box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Capper Section */
+.capperSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.capperSectionHeader {
+  margin-bottom: 0;
+}
+
+.capperSectionHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.capperSectionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.capperSectionName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.capperSectionRecord {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.5);
+}
+
+.capperSectionStreak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(251, 146, 60, 0.9);
+  background: rgba(29, 37, 48, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin-left: auto;
+}
+
+.capperSectionStreakIcon {
+  font-size: 13px;
+}
+
+.capperPicksList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 0;
+  margin-top: 4px;
+}
+
+.capperSeparator {
+  height: 1px;
+  background: rgba(148, 163, 184, 0.1);
+  margin: 16px 0;
+}
+
+.pickCard {
+  padding: 0;
+  margin: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  background: rgba(29, 37, 48, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.pickCardMain {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.pickCard:first-child {
+  margin-top: 0;
+}
+
+.pickCard:last-child {
+  border-bottom: none;
+}
+
+.pickCard:hover {
+  background: rgba(41, 47, 63, 0.4);
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.pickCardHeader {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.pickHeaderMeta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.9);
+  background: rgba(29, 37, 48, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pickRightSide {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pickBody {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.pickBodyLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.pickMatchup {
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pickTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.pickTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #f8fafc;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.pickExpandIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pickExpandIcon {
+  font-size: 18px;
+  color: #696969;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.pickCard:hover .pickExpandIcon {
+  color: #FFFFFF;
+}
+
+.pickExpandIcon.expanded {
+  transform: rotate(180deg);
+}
+
+.pickFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: rgba(203, 213, 225, 0.7);
+}
+
+
+.pickTime {
+  font-size: 0.75rem;
+  color: rgba(203, 213, 225, 0.7);
+}
+
+.pickAnalysisLocked {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  filter: blur(6px);
+  user-select: none;
+}
+
+.lockIcon {
+  font-size: 0.75rem;
+}
+
+.pickUnlockLink {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.pickUnlockLink:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pickAnalysisContent {
+  padding: 0 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  box-sizing: border-box;
+}
+
+.pickAnalysisContent.expanded {
+  max-height: 800px;
+  opacity: 1;
+  padding: 12px 16px;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pickAnalysisContent p {
+  margin: 0 0 6px 0;
+}
+
+.pickAnalysisContent p:last-child {
+  margin-bottom: 0;
+}
+
