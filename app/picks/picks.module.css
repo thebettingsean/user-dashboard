@@ -698,3 +698,50 @@
   margin-bottom: 0;
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 767px) {
+  .container {
+    padding: 16px;
+  }
+
+  .filtersRow {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .leftFilters {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rightFilters {
+    flex-shrink: 0;
+  }
+
+  .dateDropdown {
+    flex-shrink: 0;
+  }
+
+  .dateDropdownBtn {
+    min-width: 100px;
+    max-width: 100%;
+    font-size: 11px;
+    padding: 0 10px;
+  }
+
+  .dateDropdownMenu {
+    right: auto;
+    left: 0;
+    width: calc(100vw - 32px);
+    max-width: 320px;
+  }
+
+  .sportFilters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 8px;
+  }
+}
+
