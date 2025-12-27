@@ -1,11 +1,14 @@
 /* Design System - Dark Theme (matching public-betting and builder) */
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
+  background: #0C0E12 !important;
   padding: 24px;
   padding-top: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
 }
 
 .headerSpacer {
@@ -47,3 +50,441 @@
   margin: 0;
 }
 
+/* Filters Row - Sports left */
+.filtersRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.leftFilters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sportFilters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 4px;
+  height: 32px;
+}
+
+.filterBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.filterBtn:hover:not(:disabled) {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
+}
+
+.filterBtn.active {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
+}
+
+/* Content Section */
+.contentSection {
+  margin-top: 24px;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.loadingText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.emptySubtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Games Container */
+.gamesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Featured Game */
+.featuredGame {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
+}
+
+.featuredGame:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 16px 40px rgba(3, 7, 18, 0.4);
+  transform: translateY(-2px);
+}
+
+.featuredTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.8);
+  text-align: center;
+}
+
+.featuredSeparator {
+  width: 72px;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.2);
+  margin: 0 auto;
+}
+
+.featuredMatchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.featuredLogoWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(29, 37, 48, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.featuredLogo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.featuredRank {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4);
+}
+
+.featuredVs {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+}
+
+.featuredDate {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(226, 232, 240, 0.75);
+  font-weight: 500;
+}
+
+.featuredRef {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(226, 232, 240, 0.6);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.featuredPublicBetting {
+  margin-top: 16px;
+}
+
+.featuredPublicBettingTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.8);
+  margin-bottom: 10px;
+}
+
+.featuredPublicBettingList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.featuredPublicBettingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.featuredPublicBettingHeader {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.85);
+  display: flex;
+  justify-content: space-between;
+}
+
+.featuredPublicBettingPercent {
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.featuredPublicBettingBar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  overflow: hidden;
+}
+
+.featuredPublicBettingBarFill {
+  height: 100%;
+  background: rgba(148, 163, 184, 0.4);
+  transition: width 0.3s ease;
+}
+
+.featuredStats {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.featuredStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.featuredStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.featuredStatValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* Games Grid */
+.gamesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* Game Card */
+.gameCard {
+  background: rgba(29, 37, 48, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gameCard:hover {
+  background: rgba(41, 47, 63, 0.4);
+  border-color: rgba(148, 163, 184, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.gameCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.gameCardTeamRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.gameCardLogo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.gameCardTeamNameWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.gameCardTeamName {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gameCardRank {
+  font-size: 9px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 4px rgba(234, 88, 12, 0.4);
+  line-height: 1;
+}
+
+.gameCardRight {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.gameCardPill {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 7px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gameCardTime {
+  font-size: 10px;
+  color: rgba(226, 232, 240, 0.6);
+  font-weight: 500;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 767px) {
+  .container {
+    padding: 16px;
+  }
+
+  .filtersRow {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .leftFilters {
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sportFilters {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .featuredGame {
+    padding: 18px;
+  }
+
+  .featuredMatchup {
+    gap: 12px;
+  }
+
+  .featuredLogoWrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .featuredLogo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .gamesGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .gameCard {
+    padding: 12px;
+  }
+
+  .gameCardTeamName {
+    font-size: 12px;
+  }
+
+  .gameCardPill {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+}
