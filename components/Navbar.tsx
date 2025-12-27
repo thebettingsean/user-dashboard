@@ -562,7 +562,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   navDropdown: {
     position: 'relative',
     cursor: 'pointer',
-    zIndex: 99999,
+    zIndex: 100002,
     isolation: 'isolate',
   },
   
@@ -578,7 +578,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '12px',
     padding: '8px',
     minWidth: '180px',
-    zIndex: 99999,
+    zIndex: 100001,
     pointerEvents: 'auto',
     isolation: 'isolate',
   },
@@ -741,7 +741,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2px',
-    zIndex: 1000,
+    zIndex: 100001,
     maxHeight: 'calc(100vh - 64px)',
     overflowY: 'auto',
   },

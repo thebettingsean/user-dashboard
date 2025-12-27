@@ -67,7 +67,7 @@ body {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 99998 !important;
+  z-index: 100000 !important;
   display: flex;
   width: 100%;
   background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
@@ -87,7 +87,7 @@ body {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 99998 !important;
+  z-index: 100000 !important;
   width: 100%;
   display: block;
   background: linear-gradient(180deg, #0C0E12 0%, #12151B 100%);
