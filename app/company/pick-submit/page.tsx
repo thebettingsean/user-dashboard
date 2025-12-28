@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
 import { FaFootballBall, FaBasketballBall } from 'react-icons/fa'
 import { IoArrowBack } from 'react-icons/io5'
@@ -52,7 +51,6 @@ type PlayerProp = {
 
 export default function SubmitPicksPage() {
   const router = useRouter()
-  const { user, isSignedIn } = useUser()
   
   // Step state
   const [step, setStep] = useState<'sport' | 'game' | 'market' | 'odds' | 'input'>('sport')
@@ -184,12 +182,6 @@ export default function SubmitPicksPage() {
   }
 
   const handleSubmit = async () => {
-    if (!isSignedIn) {
-      setError('Please sign in to submit a pick')
-      router.push('/sign-in?redirect=/company/pick-submit')
-      return
-    }
-
     if (!selectedGame || !units || !analysis) {
       setError('Please fill in all required fields')
       return
@@ -224,11 +216,10 @@ export default function SubmitPicksPage() {
         }
       }
 
-      // Insert pick
+      // Insert pick (bettor_id will be handled later with auth)
       const { error: insertError } = await supabase
         .from('picks')
         .insert({
-          bettor_id: user?.id,
           sport: selectedGame.sport,
           sport_emoji: selectedGame.sport_emoji,
           bet_title: betTitle,
