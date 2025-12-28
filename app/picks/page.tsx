@@ -735,7 +735,7 @@ export default function PicksPage() {
                                           color: '#ef4444'
                                         } : {}}
                                       >
-                                        {pick.sportsbook && <span>{pick.sportsbook} </span>}
+                                        {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook} </span>}
                                         {pick.odds} | {netUnits >= 0 ? '+' : ''}{netUnits.toFixed(2)}u
                                       </div>
                                     )
@@ -751,7 +751,7 @@ export default function PicksPage() {
                                         color: 'rgba(251, 146, 60, 0.9)'
                                       } : {}}
                                     >
-                                      {pick.sportsbook && <span>{pick.sportsbook} </span>}
+                                      {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook} </span>}
                                       {pick.odds} | {pick.units.toFixed(1)}u
                                     </div>
                                   )

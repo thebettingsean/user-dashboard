@@ -769,6 +769,10 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
+.sportsbookDesktopOnly {
+  display: inline;
+}
+
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
   .container {
@@ -855,12 +859,20 @@
   .pickAnalysisContent {
     font-size: 11px;
   }
+
+  .sportsbookDesktopOnly {
+    display: none !important;
+  }
 }
 
 /* Desktop Styles - Show sportsbook in right side */
 @media (min-width: 768px) {
   .sportsbookInfoMobile {
     display: none !important;
+  }
+
+  .sportsbookDesktopOnly {
+    display: inline !important;
   }
 }
 
