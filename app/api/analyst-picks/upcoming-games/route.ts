@@ -69,13 +69,11 @@ export async function GET(request: NextRequest) {
       team_name: string
       logo_url: string
       abbreviation: string
-      espn_display_name: string
     }>(`
       SELECT 
         name as team_name,
         logo_url,
-        abbreviation,
-        espn_display_name
+        abbreviation
       FROM teams
       WHERE sport = '${sport.toUpperCase()}'
     `)
@@ -84,7 +82,6 @@ export async function GET(request: NextRequest) {
     teamLogosQuery.data?.forEach(team => {
       // Map by various name formats
       teamLogos.set(team.team_name.toLowerCase(), team)
-      teamLogos.set(team.espn_display_name?.toLowerCase(), team)
       teamLogos.set(team.abbreviation?.toLowerCase(), team)
     })
 
