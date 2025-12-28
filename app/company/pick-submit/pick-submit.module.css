@@ -1,4 +1,4 @@
-/* Design System - Dark Theme (matching picks page) */
+/* Design System - Dark Theme */
 .container {
   min-height: 100vh;
   background: #0C0E12 !important;
@@ -17,23 +17,7 @@
 
 /* Header */
 .header {
-  margin-bottom: 32px;
-}
-
-.headerTop {
-  margin-bottom: 20px;
-}
-
-.titleSection {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-bottom: 24px;
 }
 
 .title {
@@ -47,13 +31,13 @@
 .subtitle {
   font-size: 13px;
   color: #696969;
-  margin: 0;
+  margin: 0 0 16px 0;
 }
 
 /* Bettor Selection */
 .bettorSection {
-  margin-top: 24px;
-  padding: 20px;
+  margin-top: 16px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -61,7 +45,7 @@
 
 .bettorLabel {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #FFFFFF;
   margin-bottom: 8px;
@@ -69,93 +53,28 @@
 
 .bettorSelect {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: #FFFFFF;
   font-size: 14px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .bettorSelect:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .bettorSelect:focus {
   outline: none;
   border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .bettorSelect option {
   background: #1a1a1a;
   color: #FFFFFF;
-}
-
-/* Progress Steps */
-.progressSteps {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 24px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  opacity: 0.4;
-  transition: opacity 0.2s ease;
-}
-
-.step.active {
-  opacity: 1;
-}
-
-.step.completed {
-  opacity: 1;
-}
-
-.step.completed .stepNumber {
-  background: #10b981;
-  border-color: #10b981;
-}
-
-.stepNumber {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.step span {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.stepLine {
-  flex: 1;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 0 8px;
-  margin-bottom: 20px;
 }
 
 /* Error Banner */
@@ -169,82 +88,64 @@
   font-size: 14px;
 }
 
-/* Step Content */
-.stepContent {
-  max-width: 800px;
-  margin: 0 auto;
+/* Split Screen Layout */
+.splitLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
 }
 
-.stepHeader {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+.leftPanel,
+.rightPanel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  height: calc(100vh - 280px);
+  overflow-y: auto;
 }
 
-.stepTitle {
-  font-size: 20px;
+.panelTitle {
+  font-size: 18px;
   font-weight: 600;
   color: #FFFFFF;
-  margin: 0;
+  margin: 0 0 16px 0;
 }
 
-.backBtn {
+/* Sport Selector */
+.sportSelector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sportBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.backBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+.sportBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Sport Grid */
-.sportGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.sportCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 32px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #FFFFFF;
-}
-
-.sportCard:hover {
-  background: rgba(255, 255, 255, 0.05);
+.sportBtn.active {
+  background: rgba(59, 130, 246, 0.15);
   border-color: rgba(59, 130, 246, 0.5);
-  transform: translateY(-2px);
-}
-
-.sportCard span {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.sportCard small {
-  font-size: 13px;
-  color: #696969;
+  color: #3b82f6;
 }
 
 /* Games List */
@@ -252,280 +153,271 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 24px;
 }
 
-.gameCard {
+.gameItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gameHeader {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
+  padding: 14px;
+  background: none;
+  border: none;
   color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.gameCard:hover {
+.gameHeader:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .gameTeams {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.teamLogo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-.gameMatchup {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.awayTeam {
+  gap: 10px;
   font-size: 14px;
   font-weight: 500;
 }
 
-.vs {
-  font-size: 12px;
-  color: #696969;
-}
-
-.homeTeam {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.gameTime {
-  font-size: 13px;
-  color: #696969;
-}
-
-/* Selected Game Banner */
-.selectedGameBanner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 12px;
-  margin-bottom: 24px;
-}
-
-.selectedGameTeams {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.selectedGameTeams img {
+.gameTeams img {
   width: 24px;
   height: 24px;
   object-fit: contain;
 }
 
-.selectedGameTime {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* Markets Grid */
-.marketsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.marketCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 24px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #FFFFFF;
-}
-
-.marketCard:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(59, 130, 246, 0.5);
-  transform: translateY(-2px);
-}
-
-.marketTeam {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.marketLine {
-  font-size: 13px;
+.gameExpand {
   color: #696969;
 }
 
-/* Odds List */
-.oddsList {
+/* Markets Dropdown */
+.marketsDropdown {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px;
+}
+
+.loadingMarkets {
+  text-align: center;
+  padding: 20px;
+  color: #696969;
+  font-size: 13px;
+}
+
+.marketsContainer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 16px;
 }
 
-.oddsCard {
+.marketSection h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.oddsGrid {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.oddsBtn {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 8px;
   align-items: center;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #FFFFFF;
+  text-align: left;
 }
 
-.oddsCard:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(59, 130, 246, 0.5);
+.oddsBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
-.oddsBook {
-  font-size: 14px;
+.oddsTeam {
   font-weight: 600;
-  flex: 1;
 }
 
 .oddsLine {
-  font-size: 16px;
-  font-weight: 600;
   color: #3b82f6;
-  min-width: 80px;
-  text-align: center;
+  font-weight: 600;
 }
 
 .oddsValue {
-  font-size: 14px;
   font-weight: 600;
-  min-width: 60px;
+}
+
+.oddsBook {
+  color: #696969;
+  font-size: 12px;
   text-align: right;
 }
 
-/* Pick Preview */
-.pickPreview {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  margin-bottom: 24px;
-}
-
-.pickPreview h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  color: #FFFFFF;
-}
-
-.previewRow {
+/* Right Panel - Slate */
+.slateHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 16px;
 }
 
-.previewRow:last-child {
-  border-bottom: none;
-}
-
-.previewRow span {
-  font-size: 14px;
+.pickCount {
+  font-size: 13px;
   color: #696969;
 }
 
-.previewRow strong {
-  font-size: 14px;
-  font-weight: 600;
-  color: #FFFFFF;
-}
-
-/* Form Inputs */
-.formGroup {
-  margin-bottom: 24px;
-}
-
-.formGroup label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #FFFFFF;
-  margin-bottom: 8px;
-}
-
-.input {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #FFFFFF;
-  font-size: 14px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.input:focus {
-  outline: none;
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.textarea {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #FFFFFF;
-  font-size: 14px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  resize: vertical;
-  min-height: 200px;
-}
-
-.textarea:focus {
-  outline: none;
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Submit Section */
-.submitSection {
+.emptySlate {
   display: flex;
-  gap: 12px;
-  margin-top: 32px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+  color: #696969;
 }
 
-.submitBtn {
+.emptySlate p {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.emptySlate small {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.slateList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Slate Pick Card */
+.slatePickCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.pickCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.pickBetInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   flex: 1;
-  padding: 14px 24px;
+}
+
+.pickBetInfo strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.pickOddsInfo {
+  font-size: 13px;
+  color: #696969;
+}
+
+.deleteBtn {
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.pickGameInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pickGameTime {
+  color: #696969;
+}
+
+.pickInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unitsInput {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
+}
+
+.unitsInput:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.analysisInput {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.analysisInput:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Submit Button */
+.submitBtn {
+  width: 100%;
+  padding: 14px;
   background: #3b82f6;
   border: none;
   border-radius: 8px;
@@ -534,6 +426,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-top: 16px;
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -546,31 +439,80 @@
   cursor: not-allowed;
 }
 
-.cancelBtn {
-  padding: 14px 24px;
-  background: rgba(255, 255, 255, 0.05);
+/* Delete Confirmation Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modalContent {
+  background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modalContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #FFFFFF;
+}
+
+.modalContent p {
+  font-size: 14px;
+  color: #696969;
+  margin: 0 0 20px 0;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+}
+
+.modalBtnCancel,
+.modalBtnConfirm {
+  flex: 1;
+  padding: 12px;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.cancelBtn:hover {
+.modalBtnCancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+}
+
+.modalBtnCancel:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modalBtnConfirm {
+  background: #ef4444;
+  border: none;
+  color: #FFFFFF;
+}
+
+.modalBtnConfirm:hover {
+  background: #dc2626;
 }
 
 /* Loading & No Data */
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #696969;
-  font-size: 14px;
-}
-
+.loading,
 .noData {
   text-align: center;
   padding: 40px;
@@ -578,43 +520,47 @@
   font-size: 14px;
 }
 
-.propsPlaceholder {
-  padding: 40px;
-  text-align: center;
-  color: #696969;
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .splitLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    height: auto;
+    min-height: 300px;
+  }
+
+  .sportSelector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .oddsBtn {
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    font-size: 12px;
+  }
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
     padding: 16px;
   }
 
-  .progressSteps {
+  .splitLayout {
+    gap: 16px;
+  }
+
+  .leftPanel,
+  .rightPanel {
     padding: 16px;
-    overflow-x: auto;
   }
 
-  .step span {
-    display: none;
+  .oddsGrid {
+    font-size: 12px;
   }
 
-  .sportGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .marketsGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .gameCard {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .submitSection {
-    flex-direction: column;
+  .oddsBtn {
+    padding: 8px 10px;
   }
 }
-

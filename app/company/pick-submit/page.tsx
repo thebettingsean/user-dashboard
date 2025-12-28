@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FaFootballBall, FaBasketballBall } from 'react-icons/fa'
-import { IoArrowBack } from 'react-icons/io5'
-import { BsCheckCircleFill } from 'react-icons/bs'
+import { FaFootballBall, FaBasketballBall, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { IoClose } from 'react-icons/io5'
 import styles from './pick-submit.module.css'
 
 type Game = {
@@ -33,20 +32,23 @@ type Market = {
   side?: string
 }
 
-type PlayerProp = {
-  player_name: string
-  position: string
-  team: string
-  headshot_url: string | null
-  injury_status: string | null
-  props: Array<{
-    market: string
-    market_display: string
-    point: number
-    odds: number
-    book: string
-    name: string
-  }>
+type SlatePick = {
+  id: string
+  bet_title: string
+  line: string
+  odds: string
+  sportsbook: string
+  game_title: string
+  game_time: string
+  game_time_est: string
+  units: string
+  analysis: string
+  sport: string
+  sport_emoji: string
+  game_id: string
+  away_team_logo: string | null
+  home_team_logo: string | null
+  prop_image: string | null
 }
 
 type Bettor = {
@@ -61,26 +63,19 @@ export default function SubmitPicksPage() {
   const [bettors, setBettors] = useState<Bettor[]>([])
   const [selectedBettorId, setSelectedBettorId] = useState<string>('')
   
-  // Step state
-  const [step, setStep] = useState<'sport' | 'game' | 'market' | 'odds' | 'input'>('sport')
-  
-  // Selection state
+  // Sport & Games state
   const [selectedSport, setSelectedSport] = useState<string>('')
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null)
-  const [selectedMarketType, setSelectedMarketType] = useState<string>('') // 'spread_home', 'ml_away', 'over', 'props_home', etc
-  const [selectedOdds, setSelectedOdds] = useState<Market | null>(null)
-  const [selectedProp, setSelectedProp] = useState<PlayerProp | null>(null)
-  const [selectedPropMarket, setSelectedPropMarket] = useState<any | null>(null)
-  
-  // Data state
   const [games, setGames] = useState<Game[]>([])
-  const [markets, setMarkets] = useState<any>(null)
-  const [playerProps, setPlayerProps] = useState<PlayerProp[]>([])
-  const [propPosition, setPropPosition] = useState<string>('')
+  const [expandedGame, setExpandedGame] = useState<string | null>(null)
   
-  // Form state
-  const [units, setUnits] = useState<string>('')
-  const [analysis, setAnalysis] = useState<string>('')
+  // Markets state
+  const [gameMarkets, setGameMarkets] = useState<Record<string, any>>({})
+  const [loadingMarkets, setLoadingMarkets] = useState<Record<string, boolean>>({})
+  
+  // Slate state (right side)
+  const [slatePicks, setSlatePicks] = useState<SlatePick[]>([])
+  const [editingPickId, setEditingPickId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   
   // UI state
   const [loading, setLoading] = useState(false)
@@ -91,13 +86,6 @@ export default function SubmitPicksPage() {
   useEffect(() => {
     fetchBettors()
   }, [])
-
-  // Fetch games when sport is selected
-  useEffect(() => {
-    if (selectedSport && step === 'game') {
-      fetchGames()
-    }
-  }, [selectedSport, step])
 
   const fetchBettors = async () => {
     try {
@@ -114,11 +102,11 @@ export default function SubmitPicksPage() {
     }
   }
 
-  const fetchGames = async () => {
+  const fetchGames = async (sport: string) => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`/api/analyst-picks/upcoming-games?sport=${selectedSport}`)
+      const res = await fetch(`/api/analyst-picks/upcoming-games?sport=${sport}`)
       const data = await res.json()
       
       if (data.success) {
@@ -134,90 +122,90 @@ export default function SubmitPicksPage() {
     }
   }
 
-  const fetchGameMarkets = async (game: Game) => {
-    setLoading(true)
-    setError('')
+  const fetchMarkets = async (game: Game) => {
+    if (gameMarkets[game.game_id]) return // Already loaded
+    
+    setLoadingMarkets(prev => ({ ...prev, [game.game_id]: true }))
     try {
       const res = await fetch(`/api/analyst-picks/game-markets?oddsApiId=${game.odds_api_id}&sport=${selectedSport}`)
       const data = await res.json()
       
       if (data.success) {
-        setMarkets(data.markets)
-      } else {
-        setError(data.error || 'Failed to load markets')
+        setGameMarkets(prev => ({ ...prev, [game.game_id]: data.markets }))
       }
     } catch (err: any) {
-      setError('Failed to load markets')
-      console.error(err)
+      console.error('Failed to load markets:', err)
     } finally {
-      setLoading(false)
+      setLoadingMarkets(prev => ({ ...prev, [game.game_id]: false }))
     }
   }
 
-  const fetchPlayerProps = async (game: Game, position?: string) => {
-    setLoading(true)
-    setError('')
-    try {
-      const posParam = position ? `&position=${position}` : ''
-      const res = await fetch(`/api/analyst-picks/player-props?oddsApiId=${game.odds_api_id}&sport=${selectedSport}${posParam}`)
-      const data = await res.json()
-      
-      if (data.success) {
-        setPlayerProps(data.players)
-      } else {
-        setError(data.error || 'Failed to load props')
-      }
-    } catch (err: any) {
-      setError('Failed to load props')
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSportSelect = (sport: string) => {
+  const handleSportChange = (sport: string) => {
     setSelectedSport(sport)
-    setStep('game')
+    setGames([])
+    setExpandedGame(null)
+    setGameMarkets({})
+    fetchGames(sport)
   }
 
-  const handleGameSelect = (game: Game) => {
-    setSelectedGame(game)
-    fetchGameMarkets(game)
-    setStep('market')
+  const handleGameClick = (game: Game) => {
+    if (expandedGame === game.game_id) {
+      setExpandedGame(null)
+    } else {
+      setExpandedGame(game.game_id)
+      fetchMarkets(game)
+    }
   }
 
-  const handleMarketSelect = (marketType: string) => {
-    setSelectedMarketType(marketType)
-    
-    // If props, show position selector
-    if (marketType.startsWith('props_')) {
-      // For now, go to props position selection
-      setStep('odds')
-      return
+  const addPickToSlate = (game: Game, betTitle: string, line: string, odds: number, book: string) => {
+    const newPick: SlatePick = {
+      id: `pick_${Date.now()}_${Math.random()}`,
+      bet_title: betTitle,
+      line,
+      odds: odds > 0 ? `+${odds}` : String(odds),
+      sportsbook: book,
+      game_title: `${game.away_team} @ ${game.home_team}`,
+      game_time: game.game_time,
+      game_time_est: game.game_time_est,
+      units: '',
+      analysis: '',
+      sport: game.sport,
+      sport_emoji: game.sport_emoji,
+      game_id: game.game_id,
+      away_team_logo: game.away_team_logo,
+      home_team_logo: game.home_team_logo,
+      prop_image: null
     }
     
-    setStep('odds')
+    setSlatePicks(prev => [...prev, newPick])
   }
 
-  const handleOddsSelect = (market: Market) => {
-    setSelectedOdds(market)
-    setStep('input')
+  const updatePickInSlate = (pickId: string, field: 'units' | 'analysis', value: string) => {
+    setSlatePicks(prev => prev.map(pick => 
+      pick.id === pickId ? { ...pick, [field]: value } : pick
+    ))
   }
 
-  const handlePropSelect = (player: PlayerProp, prop: any) => {
-    setSelectedProp(player)
-    setSelectedPropMarket(prop)
-    setStep('input')
+  const removePickFromSlate = (pickId: string) => {
+    setSlatePicks(prev => prev.filter(pick => pick.id !== pickId))
+    setDeleteConfirmId(null)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmitPicks = async () => {
     if (!selectedBettorId) {
-      setError('Please select a bettor')
+      setError('Please select an analyst')
       return
     }
 
-    if (!selectedGame || !units || !analysis) {
-      setError('Please fill in all required fields')
+    if (slatePicks.length === 0) {
+      setError('Please add at least one pick')
+      return
+    }
+
+    // Validate all picks have units and analysis
+    const incompletePicks = slatePicks.filter(p => !p.units || !p.analysis)
+    if (incompletePicks.length > 0) {
+      setError(`${incompletePicks.length} pick(s) missing units or analysis`)
       return
     }
 
@@ -225,84 +213,46 @@ export default function SubmitPicksPage() {
     setError('')
 
     try {
-      // Build bet title
-      let betTitle = ''
-      let betType = 'Singles'
-      let propImage = null
-      
-      if (selectedProp && selectedPropMarket) {
-        // Prop bet
-        betTitle = `${selectedProp.player_name} ${selectedPropMarket.name === 'Over' ? 'o' : 'u'}${selectedPropMarket.point} ${selectedPropMarket.market_display}`
-        betType = 'Props'
-        propImage = selectedProp.headshot_url
-      } else if (selectedOdds) {
-        // Game bet
-        const team = selectedOdds.team || ''
-        const point = selectedOdds.point || ''
-        const type = selectedOdds.type || ''
-        
-        if (selectedMarketType.startsWith('spread')) {
-          betTitle = `${team} ${point > 0 ? '+' : ''}${point}`
-        } else if (selectedMarketType.startsWith('ml')) {
-          betTitle = `${team} ML`
-        } else if (selectedMarketType === 'over' || selectedMarketType === 'under') {
-          betTitle = `${selectedGame.away_team} / ${selectedGame.home_team} ${type === 'over' ? 'O' : 'U'}${point}`
-        }
-      }
-
-      // Get current Eastern time
       const easternNow = new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
       const easternTimestamp = new Date(easternNow)
 
-      // Insert pick
+      const picksToInsert = slatePicks.map(pick => ({
+        bettor_id: selectedBettorId,
+        sport: pick.sport,
+        sport_emoji: pick.sport_emoji,
+        bet_title: pick.bet_title,
+        odds: pick.odds,
+        sportsbook: pick.sportsbook,
+        units: parseFloat(pick.units),
+        analysis: pick.analysis,
+        game_time: pick.game_time,
+        posted_at: easternTimestamp.toISOString(),
+        game_id: pick.game_id,
+        bet_type: 'Singles',
+        is_active: true,
+        is_free: false,
+        result: 'pending',
+        recap_status: 'pending',
+        away_team_image: pick.away_team_logo,
+        home_team_image: pick.home_team_logo,
+        prop_image: pick.prop_image,
+        game_title: pick.game_title,
+      }))
+
       const { error: insertError } = await supabase
         .from('picks')
-        .insert({
-          bettor_id: selectedBettorId,
-          sport: selectedGame.sport,
-          sport_emoji: selectedGame.sport_emoji,
-          bet_title: betTitle,
-          odds: String(selectedOdds?.odds || selectedPropMarket?.odds || 0),
-          sportsbook: selectedOdds?.book || selectedPropMarket?.book || '',
-          units: parseFloat(units),
-          analysis,
-          game_time: selectedGame.game_time,
-          posted_at: easternTimestamp.toISOString(),
-          game_id: selectedGame.game_id,
-          bet_type: betType,
-          is_active: true,
-          is_free: false,
-          result: 'pending',
-          recap_status: 'pending',
-          away_team_image: selectedGame.away_team_logo,
-          home_team_image: selectedGame.home_team_logo,
-          prop_image: propImage,
-          game_title: `${selectedGame.away_team} @ ${selectedGame.home_team}`,
-        })
+        .insert(picksToInsert)
 
       if (insertError) throw insertError
 
       // Success! Redirect to picks page
       router.push('/picks')
     } catch (err: any) {
-      setError(err.message || 'Failed to submit pick')
+      setError(err.message || 'Failed to submit picks')
       console.error(err)
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const resetSelection = () => {
-    setStep('sport')
-    setSelectedSport('')
-    setSelectedGame(null)
-    setSelectedMarketType('')
-    setSelectedOdds(null)
-    setSelectedProp(null)
-    setSelectedPropMarket(null)
-    setUnits('')
-    setAnalysis('')
-    setError('')
   }
 
   return (
@@ -311,14 +261,8 @@ export default function SubmitPicksPage() {
       
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.headerTop}>
-          <div className={styles.titleSection}>
-            <div className={styles.titleRow}>
-              <h1 className={styles.title}>Submit Pick</h1>
-            </div>
-            <p className={styles.subtitle}>Submit your analyst picks with auto-filled data</p>
-          </div>
-        </div>
+        <h1 className={styles.title}>Submit Picks</h1>
+        <p className={styles.subtitle}>Build your pick slate</p>
 
         {/* Bettor Selection */}
         <div className={styles.bettorSection}>
@@ -336,34 +280,6 @@ export default function SubmitPicksPage() {
             ))}
           </select>
         </div>
-
-        {/* Progress Steps */}
-        <div className={styles.progressSteps}>
-          <div className={`${styles.step} ${step === 'sport' ? styles.active : ''} ${selectedSport ? styles.completed : ''}`}>
-            <div className={styles.stepNumber}>{selectedSport ? '✓' : '1'}</div>
-            <span>Sport</span>
-          </div>
-          <div className={styles.stepLine} />
-          <div className={`${styles.step} ${step === 'game' ? styles.active : ''} ${selectedGame ? styles.completed : ''}`}>
-            <div className={styles.stepNumber}>{selectedGame ? '✓' : '2'}</div>
-            <span>Game</span>
-          </div>
-          <div className={styles.stepLine} />
-          <div className={`${styles.step} ${step === 'market' ? styles.active : ''} ${selectedMarketType ? styles.completed : ''}`}>
-            <div className={styles.stepNumber}>{selectedMarketType ? '✓' : '3'}</div>
-            <span>Market</span>
-          </div>
-          <div className={styles.stepLine} />
-          <div className={`${styles.step} ${step === 'odds' ? styles.active : ''} ${selectedOdds || selectedPropMarket ? styles.completed : ''}`}>
-            <div className={styles.stepNumber}>{selectedOdds || selectedPropMarket ? '✓' : '4'}</div>
-            <span>Odds</span>
-          </div>
-          <div className={styles.stepLine} />
-          <div className={`${styles.step} ${step === 'input' ? styles.active : ''}`}>
-            <div className={styles.stepNumber}>5</div>
-            <span>Submit</span>
-          </div>
-        </div>
       </header>
 
       {/* Error Display */}
@@ -373,292 +289,259 @@ export default function SubmitPicksPage() {
         </div>
       )}
 
-      {/* Step 1: Sport Selection */}
-      {step === 'sport' && (
-        <div className={styles.stepContent}>
-          <h2 className={styles.stepTitle}>Select Sport</h2>
-          <div className={styles.sportGrid}>
-            <button className={styles.sportCard} onClick={() => handleSportSelect('nfl')}>
-              <FaFootballBall size={32} />
-              <span>NFL</span>
-              <small>Spreads, ML, Totals, Props</small>
+      {/* Split Screen Layout */}
+      <div className={styles.splitLayout}>
+        
+        {/* LEFT SIDE - Picking Process */}
+        <div className={styles.leftPanel}>
+          <h2 className={styles.panelTitle}>Add Picks</h2>
+
+          {/* Sport Selector */}
+          <div className={styles.sportSelector}>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'nfl' ? styles.active : ''}`}
+              onClick={() => handleSportChange('nfl')}
+            >
+              <FaFootballBall /> NFL
             </button>
-            <button className={styles.sportCard} onClick={() => handleSportSelect('nba')}>
-              <FaBasketballBall size={32} />
-              <span>NBA</span>
-              <small>Spreads, ML, Totals, Props</small>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'nba' ? styles.active : ''}`}
+              onClick={() => handleSportChange('nba')}
+            >
+              <FaBasketballBall /> NBA
             </button>
-            <button className={styles.sportCard} onClick={() => handleSportSelect('cfb')}>
-              <FaFootballBall size={32} />
-              <span>CFB</span>
-              <small>Spreads, ML, Totals</small>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'cfb' ? styles.active : ''}`}
+              onClick={() => handleSportChange('cfb')}
+            >
+              <FaFootballBall /> CFB
             </button>
-            <button className={styles.sportCard} onClick={() => handleSportSelect('cbb')}>
-              <FaBasketballBall size={32} />
-              <span>CBB</span>
-              <small>Spreads, ML, Totals</small>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'cbb' ? styles.active : ''}`}
+              onClick={() => handleSportChange('cbb')}
+            >
+              <FaBasketballBall /> CBB
             </button>
           </div>
-        </div>
-      )}
 
-      {/* Step 2: Game Selection */}
-      {step === 'game' && (
-        <div className={styles.stepContent}>
-          <div className={styles.stepHeader}>
-            <button className={styles.backBtn} onClick={() => setStep('sport')}>
-              <IoArrowBack /> Back
-            </button>
-            <h2 className={styles.stepTitle}>Select Game</h2>
-          </div>
-
+          {/* Games List */}
           {loading ? (
             <div className={styles.loading}>Loading games...</div>
-          ) : games.length === 0 ? (
-            <div className={styles.noData}>No upcoming games found for {selectedSport.toUpperCase()}</div>
+          ) : games.length === 0 && selectedSport ? (
+            <div className={styles.noData}>No games found</div>
           ) : (
             <div className={styles.gamesList}>
               {games.map((game) => (
-                <button
-                  key={game.game_id}
-                  className={styles.gameCard}
-                  onClick={() => handleGameSelect(game)}
-                >
-                  <div className={styles.gameTeams}>
-                    {game.away_team_logo && (
-                      <img src={game.away_team_logo} alt={game.away_team} className={styles.teamLogo} />
-                    )}
-                    <div className={styles.gameMatchup}>
-                      <span className={styles.awayTeam}>{game.away_team}</span>
-                      <span className={styles.vs}>@</span>
-                      <span className={styles.homeTeam}>{game.home_team}</span>
+                <div key={game.game_id} className={styles.gameItem}>
+                  <button
+                    className={styles.gameHeader}
+                    onClick={() => handleGameClick(game)}
+                  >
+                    <div className={styles.gameTeams}>
+                      {game.away_team_logo && <img src={game.away_team_logo} alt="" />}
+                      <span>{game.away_team} @ {game.home_team}</span>
+                      {game.home_team_logo && <img src={game.home_team_logo} alt="" />}
                     </div>
-                    {game.home_team_logo && (
-                      <img src={game.home_team_logo} alt={game.home_team} className={styles.teamLogo} />
-                    )}
-                  </div>
-                  <div className={styles.gameTime}>{game.game_time_est}</div>
-                </button>
+                    <div className={styles.gameExpand}>
+                      {expandedGame === game.game_id ? <FaChevronUp /> : <FaChevronDown />}
+                    </div>
+                  </button>
+
+                  {/* Markets Dropdown */}
+                  {expandedGame === game.game_id && (
+                    <div className={styles.marketsDropdown}>
+                      {loadingMarkets[game.game_id] ? (
+                        <div className={styles.loadingMarkets}>Loading odds...</div>
+                      ) : gameMarkets[game.game_id] ? (
+                        <div className={styles.marketsContainer}>
+                          {/* Spreads */}
+                          {gameMarkets[game.game_id].spreads && (
+                            <div className={styles.marketSection}>
+                              <h4>Spreads</h4>
+                              <div className={styles.oddsGrid}>
+                                {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((market: Market, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    className={styles.oddsBtn}
+                                    onClick={() => addPickToSlate(
+                                      game,
+                                      `${market.team} ${market.point && market.point > 0 ? '+' : ''}${market.point}`,
+                                      `${market.point && market.point > 0 ? '+' : ''}${market.point}`,
+                                      market.odds,
+                                      market.book
+                                    )}
+                                  >
+                                    <span className={styles.oddsTeam}>{market.team}</span>
+                                    <span className={styles.oddsLine}>{market.point && market.point > 0 ? '+' : ''}{market.point}</span>
+                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                    <span className={styles.oddsBook}>{market.book}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Moneylines */}
+                          {gameMarkets[game.game_id].moneylines && (
+                            <div className={styles.marketSection}>
+                              <h4>Moneylines</h4>
+                              <div className={styles.oddsGrid}>
+                                {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((market: Market, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    className={styles.oddsBtn}
+                                    onClick={() => addPickToSlate(
+                                      game,
+                                      `${market.team} ML`,
+                                      'ML',
+                                      market.odds,
+                                      market.book
+                                    )}
+                                  >
+                                    <span className={styles.oddsTeam}>{market.team}</span>
+                                    <span className={styles.oddsLine}>ML</span>
+                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                    <span className={styles.oddsBook}>{market.book}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Totals */}
+                          {gameMarkets[game.game_id].totals && (
+                            <div className={styles.marketSection}>
+                              <h4>Totals</h4>
+                              <div className={styles.oddsGrid}>
+                                {[...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under].map((market: Market, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    className={styles.oddsBtn}
+                                    onClick={() => addPickToSlate(
+                                      game,
+                                      `${game.away_team} / ${game.home_team} ${market.type === 'over' ? 'O' : 'U'}${market.point}`,
+                                      `${market.type === 'over' ? 'O' : 'U'}${market.point}`,
+                                      market.odds,
+                                      market.book
+                                    )}
+                                  >
+                                    <span className={styles.oddsTeam}>{market.type?.toUpperCase()}</span>
+                                    <span className={styles.oddsLine}>{market.point}</span>
+                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                    <span className={styles.oddsBook}>{market.book}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className={styles.noData}>No odds available</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </div>
-      )}
 
-      {/* Step 3: Market Selection */}
-      {step === 'market' && selectedGame && (
-        <div className={styles.stepContent}>
-          <div className={styles.stepHeader}>
-            <button className={styles.backBtn} onClick={() => setStep('game')}>
-              <IoArrowBack /> Back
-            </button>
-            <h2 className={styles.stepTitle}>Select Market</h2>
+        {/* RIGHT SIDE - Slate */}
+        <div className={styles.rightPanel}>
+          <div className={styles.slateHeader}>
+            <h2 className={styles.panelTitle}>Pick Slate</h2>
+            <span className={styles.pickCount}>{slatePicks.length} pick{slatePicks.length !== 1 ? 's' : ''}</span>
           </div>
 
-          <div className={styles.selectedGameBanner}>
-            <div className={styles.selectedGameTeams}>
-              {selectedGame.away_team_logo && (
-                <img src={selectedGame.away_team_logo} alt="" />
-              )}
-              <span>{selectedGame.away_team} @ {selectedGame.home_team}</span>
-              {selectedGame.home_team_logo && (
-                <img src={selectedGame.home_team_logo} alt="" />
-              )}
-            </div>
-            <span className={styles.selectedGameTime}>{selectedGame.game_time_est}</span>
-          </div>
-
-          {loading ? (
-            <div className={styles.loading}>Loading markets...</div>
-          ) : (
-            <div className={styles.marketsGrid}>
-              {/* Spreads */}
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('spread_away')}>
-                <span className={styles.marketTeam}>{selectedGame.away_team_abbr}</span>
-                <span className={styles.marketLine}>Spread</span>
-              </button>
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('spread_home')}>
-                <span className={styles.marketTeam}>{selectedGame.home_team_abbr}</span>
-                <span className={styles.marketLine}>Spread</span>
-              </button>
-
-              {/* Moneylines */}
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('ml_away')}>
-                <span className={styles.marketTeam}>{selectedGame.away_team_abbr}</span>
-                <span className={styles.marketLine}>ML</span>
-              </button>
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('ml_home')}>
-                <span className={styles.marketTeam}>{selectedGame.home_team_abbr}</span>
-                <span className={styles.marketLine}>ML</span>
-              </button>
-
-              {/* Totals */}
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('over')}>
-                <span className={styles.marketLine}>Over</span>
-              </button>
-              <button className={styles.marketCard} onClick={() => handleMarketSelect('under')}>
-                <span className={styles.marketLine}>Under</span>
-              </button>
-
-              {/* Props (NFL/NBA only) */}
-              {(selectedSport === 'nfl' || selectedSport === 'nba') && (
-                <>
-                  <button className={styles.marketCard} onClick={() => handleMarketSelect('props_away')}>
-                    <span className={styles.marketTeam}>{selectedGame.away_team_abbr}</span>
-                    <span className={styles.marketLine}>Props</span>
-                  </button>
-                  <button className={styles.marketCard} onClick={() => handleMarketSelect('props_home')}>
-                    <span className={styles.marketTeam}>{selectedGame.home_team_abbr}</span>
-                    <span className={styles.marketLine}>Props</span>
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Step 4: Odds Selection (or Props) */}
-      {step === 'odds' && selectedGame && (
-        <div className={styles.stepContent}>
-          <div className={styles.stepHeader}>
-            <button className={styles.backBtn} onClick={() => setStep('market')}>
-              <IoArrowBack /> Back
-            </button>
-            <h2 className={styles.stepTitle}>
-              {selectedMarketType.startsWith('props_') ? 'Select Player & Prop' : 'Select Book & Odds'}
-            </h2>
-          </div>
-
-          {selectedMarketType.startsWith('props_') ? (
-            // Props selection UI (simplified for now)
-            <div className={styles.propsPlaceholder}>
-              <p>Props interface coming next - will show player list with positions and prop types</p>
-              <button className={styles.backBtn} onClick={() => setStep('market')}>
-                ← Go back and select a game market
-              </button>
+          {slatePicks.length === 0 ? (
+            <div className={styles.emptySlate}>
+              <p>No picks added yet</p>
+              <small>Select bets from the left to build your slate</small>
             </div>
           ) : (
-            // Odds selection
-            loading ? (
-              <div className={styles.loading}>Loading odds...</div>
-            ) : (
-              <div className={styles.oddsList}>
-                {(() => {
-                  let oddsToShow: Market[] = []
-                  
-                  if (selectedMarketType === 'spread_home') oddsToShow = markets?.spreads?.home || []
-                  else if (selectedMarketType === 'spread_away') oddsToShow = markets?.spreads?.away || []
-                  else if (selectedMarketType === 'ml_home') oddsToShow = markets?.moneylines?.home || []
-                  else if (selectedMarketType === 'ml_away') oddsToShow = markets?.moneylines?.away || []
-                  else if (selectedMarketType === 'over') oddsToShow = markets?.totals?.over || []
-                  else if (selectedMarketType === 'under') oddsToShow = markets?.totals?.under || []
-                  
-                  return oddsToShow.length > 0 ? (
-                    oddsToShow.map((market, idx) => (
-                      <button
-                        key={idx}
-                        className={styles.oddsCard}
-                        onClick={() => handleOddsSelect(market)}
-                      >
-                        <span className={styles.oddsBook}>{market.book}</span>
-                        <span className={styles.oddsLine}>
-                          {market.point !== undefined ? 
-                            (market.point > 0 ? `+${market.point}` : market.point) : 
-                            ''
-                          }
-                        </span>
-                        <span className={styles.oddsValue}>
-                          {market.odds > 0 ? `+${market.odds}` : market.odds}
-                        </span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className={styles.noData}>No odds available for this market</div>
-                  )
-                })()}
-              </div>
-            )
+            <div className={styles.slateList}>
+              {slatePicks.map((pick) => (
+                <div key={pick.id} className={styles.slatePickCard}>
+                  <div className={styles.pickCardHeader}>
+                    <div className={styles.pickBetInfo}>
+                      <strong>{pick.bet_title}</strong>
+                      <span className={styles.pickOddsInfo}>
+                        {pick.line}, {pick.odds} {pick.sportsbook}
+                      </span>
+                    </div>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={() => setDeleteConfirmId(pick.id)}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+
+                  <div className={styles.pickGameInfo}>
+                    <span>{pick.game_title}</span>
+                    <span className={styles.pickGameTime}>{pick.game_time_est}</span>
+                  </div>
+
+                  <div className={styles.pickInputs}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Units at risk"
+                      value={pick.units}
+                      onChange={(e) => updatePickInSlate(pick.id, 'units', e.target.value)}
+                      className={styles.unitsInput}
+                    />
+
+                    <textarea
+                      placeholder="Analysis..."
+                      value={pick.analysis}
+                      onChange={(e) => updatePickInSlate(pick.id, 'analysis', e.target.value)}
+                      className={styles.analysisInput}
+                      rows={4}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
-      )}
-
-      {/* Step 5: Units & Analysis Input */}
-      {step === 'input' && (
-        <div className={styles.stepContent}>
-          <div className={styles.stepHeader}>
-            <button className={styles.backBtn} onClick={() => setStep('odds')}>
-              <IoArrowBack /> Back
-            </button>
-            <h2 className={styles.stepTitle}>Finalize Pick</h2>
-          </div>
-
-          {/* Preview */}
-          <div className={styles.pickPreview}>
-            <h3>Pick Preview</h3>
-            <div className={styles.previewRow}>
-              <span>Game:</span>
-              <strong>{selectedGame?.away_team} @ {selectedGame?.home_team}</strong>
-            </div>
-            <div className={styles.previewRow}>
-              <span>Time:</span>
-              <strong>{selectedGame?.game_time_est}</strong>
-            </div>
-            {selectedOdds && (
-              <>
-                <div className={styles.previewRow}>
-                  <span>Book:</span>
-                  <strong>{selectedOdds.book}</strong>
-                </div>
-                <div className={styles.previewRow}>
-                  <span>Odds:</span>
-                  <strong>{selectedOdds.odds > 0 ? `+${selectedOdds.odds}` : selectedOdds.odds}</strong>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Form Inputs */}
-          <div className={styles.formGroup}>
-            <label>Units at Risk</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={units}
-              onChange={(e) => setUnits(e.target.value)}
-              placeholder="1.00"
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label>Analysis</label>
-            <textarea
-              value={analysis}
-              onChange={(e) => setAnalysis(e.target.value)}
-              placeholder="Explain your reasoning for this pick..."
-              className={styles.textarea}
-              rows={10}
-            />
-          </div>
 
           {/* Submit Button */}
-          <div className={styles.submitSection}>
+          {slatePicks.length > 0 && (
             <button
               className={styles.submitBtn}
-              onClick={handleSubmit}
-              disabled={submitting || !units || !analysis}
+              onClick={handleSubmitPicks}
+              disabled={submitting}
             >
-              {submitting ? 'Submitting...' : 'Submit Pick'}
+              {submitting ? 'Submitting...' : `Submit ${slatePicks.length} Pick${slatePicks.length !== 1 ? 's' : ''}`}
             </button>
-            <button className={styles.cancelBtn} onClick={resetSelection}>
-              Start Over
-            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className={styles.modal} onClick={() => setDeleteConfirmId(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h3>Remove Pick?</h3>
+            <p>Are you sure you want to remove this pick from your slate?</p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalBtnCancel}
+                onClick={() => setDeleteConfirmId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalBtnConfirm}
+                onClick={() => removePickFromSlate(deleteConfirmId)}
+              >
+                Remove
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   )
 }
-
