@@ -57,14 +57,19 @@ export async function GET(request: NextRequest) {
     const oddsApiSport = SPORT_MAP[sport]
     const oddsUrl = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
     
-    const oddsResponse = await fetch(oddsUrl)
+    console.log(`[${sport.toUpperCase()}] Fetching from Odds API...`)
+    const oddsResponse = await fetch(oddsUrl, { 
+      signal: AbortSignal.timeout(10000) // 10 second timeout
+    })
     if (!oddsResponse.ok) {
       throw new Error(`Odds API error: ${oddsResponse.status}`)
     }
 
     const games: OddsAPIGame[] = await oddsResponse.json()
+    console.log(`[${sport.toUpperCase()}] Got ${games.length} games from Odds API`)
 
     // Fetch team logos from ClickHouse
+    console.log(`[${sport.toUpperCase()}] Fetching team data from ClickHouse...`)
     const teamLogosQuery = await clickhouseQuery<{
       team_name: string
       logo_url: string
@@ -81,16 +86,64 @@ export async function GET(request: NextRequest) {
     const teamLogos = new Map()
     teamLogosQuery.data?.forEach(team => {
       // Map by various name formats
-      teamLogos.set(team.team_name.toLowerCase(), team)
-      teamLogos.set(team.abbreviation?.toLowerCase(), team)
+      const teamName = team.team_name.toLowerCase()
+      const abbr = team.abbreviation?.toLowerCase()
+      
+      // Store by full name
+      teamLogos.set(teamName, team)
+      
+      // Store by abbreviation
+      if (abbr) {
+        teamLogos.set(abbr, team)
+      }
+      
+      // Store by last word (e.g., "49ers", "Cardinals")
+      const lastWord = teamName.split(' ').pop()
+      if (lastWord) {
+        teamLogos.set(lastWord, team)
+      }
     })
+
+    // Helper function to find team with flexible matching
+    const findTeam = (oddsApiName: string) => {
+      const lower = oddsApiName.toLowerCase()
+      
+      // Try exact match
+      if (teamLogos.has(lower)) return teamLogos.get(lower)
+      
+      // Try abbreviation match (e.g., "TB" from "Tampa Bay")
+      const words = lower.split(' ')
+      if (words.length > 1) {
+        const abbr = words.map(w => w[0]).join('')
+        if (teamLogos.has(abbr)) return teamLogos.get(abbr)
+      }
+      
+      // Try last word match (e.g., "Buccaneers" from "Tampa Bay Buccaneers")
+      const lastWord = words[words.length - 1]
+      if (teamLogos.has(lastWord)) return teamLogos.get(lastWord)
+      
+      // Try partial match
+      for (const [key, value] of teamLogos.entries()) {
+        if (lower.includes(key) || key.includes(lower)) {
+          return value
+        }
+      }
+      
+      return null
+    }
 
     // Match games with team data
     const gamesWithLogos = games.map(game => {
-      const homeTeam = teamLogos.get(game.home_team.toLowerCase()) || 
-                       teamLogos.get(game.home_team.replace(/\s+/g, '').toLowerCase())
-      const awayTeam = teamLogos.get(game.away_team.toLowerCase()) ||
-                       teamLogos.get(game.away_team.replace(/\s+/g, '').toLowerCase())
+      const homeTeam = findTeam(game.home_team)
+      const awayTeam = findTeam(game.away_team)
+
+      // Log if we couldn't find team logos
+      if (!homeTeam) {
+        console.log(`[${sport.toUpperCase()}] Could not find home team: ${game.home_team}`)
+      }
+      if (!awayTeam) {
+        console.log(`[${sport.toUpperCase()}] Could not find away team: ${game.away_team}`)
+      }
 
       // Generate game_id in format: NFL-20251225-DEN-KC
       const gameDate = new Date(game.commence_time)
@@ -123,6 +176,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    console.log(`[${sport.toUpperCase()}] Returning ${gamesWithLogos.length} games`)
+
     // Sort by game time (soonest first)
     gamesWithLogos.sort((a, b) => 
       new Date(a.game_time).getTime() - new Date(b.game_time).getTime()
@@ -137,10 +192,15 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[ANALYST PICKS] Error fetching upcoming games:', error)
+    console.error('[ANALYST PICKS] Error stack:', error.stack)
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 })
   }
 }
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
