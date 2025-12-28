@@ -29,6 +29,12 @@ type Pick = {
   home_team: string | null
   analysis: string
   date: string
+  sportsbook: string
+  // New image fields
+  away_team_image: string | null
+  home_team_image: string | null
+  prop_image: string | null
+  game_title: string
 }
 
 // Bettor Profile Image Component
@@ -68,6 +74,124 @@ function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: strin
       {initials || '?'}
     </div>
   )
+}
+
+// Bet Logo Component - determines which logo to show based on bet type
+function BetLogo({ pick }: { pick: Pick }) {
+  // If prop_image exists, show player image
+  if (pick.prop_image) {
+    return (
+      <img
+        src={pick.prop_image}
+        alt="Player"
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  // Check if it's a total (O/U) - both logos
+  const isTotal = pick.bet_title.includes(' O') || pick.bet_title.includes(' U') || 
+                   pick.bet_title.includes('/') // "Eagles / Bills O45.5"
+  
+  if (isTotal && pick.away_team_image && pick.home_team_image) {
+    return (
+      <div style={{ position: 'relative', width: 42, height: 32, flexShrink: 0 }}>
+        <img
+          src={pick.away_team_image}
+          alt=""
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 0,
+            zIndex: 1,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+        <img
+          src={pick.home_team_image}
+          alt=""
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 18,
+            zIndex: 2,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+      </div>
+    )
+  }
+
+  // For spreads/MLs, try to determine which team is being bet
+  // Check bet_title for team name match
+  const betTitleLower = pick.bet_title.toLowerCase()
+  const gameTitle = pick.game_title || ''
+  const [awayTeam, homeTeam] = gameTitle.split('@').map(t => t.trim())
+  
+  if (homeTeam && betTitleLower.includes(homeTeam.toLowerCase()) && pick.home_team_image) {
+    return (
+      <img
+        src={pick.home_team_image}
+        alt=""
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+  
+  if (awayTeam && betTitleLower.includes(awayTeam.toLowerCase()) && pick.away_team_image) {
+    return (
+      <img
+        src={pick.away_team_image}
+        alt=""
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  // Default: show away team logo
+  if (pick.away_team_image) {
+    return (
+      <img
+        src={pick.away_team_image}
+        alt=""
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  return null
 }
 
 export default function PicksPage() {
@@ -299,7 +423,13 @@ export default function PicksPage() {
           away_team: null,
           home_team: null,
           analysis: p.analysis || '',
-          date: formatDateString(targetDate)
+          date: formatDateString(targetDate),
+          sportsbook: p.sportsbook || '',
+          // New image fields
+          away_team_image: p.away_team_image || null,
+          home_team_image: p.home_team_image || null,
+          prop_image: p.prop_image || null,
+          game_title: p.game_title || ''
         }))
 
         // Sort by bettor name, then by game time
@@ -528,36 +658,58 @@ export default function PicksPage() {
                               onClick={() => togglePickAnalysis(pick.id)}
                             >
                               <div className={styles.pickBodyLeft}>
-                                {(pick.away_team || pick.home_team) && (
-                                  <div className={styles.pickMatchup}>
-                                    {pick.away_team ?? 'Away'} @ {pick.home_team ?? 'Home'}
-                                  </div>
-                                )}
+                                {/* Bet Title with Logo */}
                                 <div className={styles.pickTitleRow}>
-                                  {!isSignedIn || !hasAccess ? (
-                                    <div className={styles.pickAnalysisLocked}>
-                                      <FaLock className={styles.lockIcon} />
-                                      <p className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <BetLogo pick={pick} />
+                                    {!isSignedIn || !hasAccess ? (
+                                      <div className={styles.pickAnalysisLocked}>
+                                        <FaLock className={styles.lockIcon} />
+                                        <p className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
+                                          {pick.bet_title}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <p className={styles.pickTitle}>
                                         {pick.bet_title}
                                       </p>
-                                    </div>
-                                  ) : (
-                                    <p className={styles.pickTitle}>
-                                      {pick.bet_title}
-                                    </p>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
-                                <div className={styles.pickFooter}>
-                                  <span 
-                                    className={styles.pickTime}
-                                    style={!isSignedIn || !hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                                  >
-                                    {new Date(pick.game_time).toLocaleString('en-US', {
-                                      timeZone: 'America/New_York',
-                                      hour: 'numeric',
-                                      minute: '2-digit',
-                                      hour12: true
-                                    })}
+                                
+                                {/* Matchup with Logos */}
+                                {pick.game_title && (
+                                  <div className={styles.pickMatchup} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                                    {pick.away_team_image && (
+                                      <img src={pick.away_team_image} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                                    )}
+                                    <span>{pick.game_title.split('@')[0].trim()}</span>
+                                    <span style={{ color: '#696969', fontSize: '12px' }}>@</span>
+                                    {pick.home_team_image && (
+                                      <img src={pick.home_team_image} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                                    )}
+                                    <span>{pick.game_title.split('@')[1]?.trim()}</span>
+                                    <span style={{ color: '#696969', marginLeft: '8px' }}>
+                                      {new Date(pick.game_time).toLocaleString('en-US', {
+                                        timeZone: 'America/New_York',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                {/* Sportsbook and Units */}
+                                <div className={styles.pickFooter} style={{ marginTop: '8px' }}>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {pick.sportsbook && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.sportsbook}</span>}
+                                    {pick.sportsbook && pick.odds && <span style={{ color: '#696969' }}>•</span>}
+                                    {pick.odds && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.odds}</span>}
+                                    {pick.units && <span style={{ color: '#696969' }}>•</span>}
+                                    {pick.units && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.units}u</span>}
                                   </span>
                                 </div>
                               </div>
