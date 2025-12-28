@@ -116,6 +116,12 @@ export default function SubmitPicksPage() {
       const data = await res.json()
       
       if (data.success) {
+        console.log('📊 Games received:', data.games.length)
+        console.log('🎯 First game logos:', {
+          game: data.games[0]?.home_team + ' vs ' + data.games[0]?.away_team,
+          home_logo: data.games[0]?.home_team_logo,
+          away_logo: data.games[0]?.away_team_logo
+        })
         setGames(data.games)
       } else {
         setError(data.error || 'Failed to load games')
@@ -350,9 +356,19 @@ export default function SubmitPicksPage() {
                     onClick={() => handleGameClick(game)}
                   >
                     <div className={styles.gameTeams}>
-                      {game.away_team_logo && <img src={game.away_team_logo} alt="" />}
-                      <span>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
-                      {game.home_team_logo && <img src={game.home_team_logo} alt="" />}
+                      {game.away_team_logo ? (
+                        <img src={game.away_team_logo} alt={game.away_team} />
+                      ) : (
+                        <div className={styles.logoPlaceholder}>?</div>
+                      )}
+                      <span className={styles.awayTeam}>{getTeamName(game.away_team)}</span>
+                      <span className={styles.atSymbol}>@</span>
+                      {game.home_team_logo ? (
+                        <img src={game.home_team_logo} alt={game.home_team} />
+                      ) : (
+                        <div className={styles.logoPlaceholder}>?</div>
+                      )}
+                      <span className={styles.homeTeam}>{getTeamName(game.home_team)}</span>
                     </div>
                     <div className={styles.gameExpand}>
                       {expandedGame === game.game_id ? <FaChevronUp /> : <FaChevronDown />}
