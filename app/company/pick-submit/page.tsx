@@ -79,13 +79,6 @@ export default function SubmitPicksPage() {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
-  
-  // Redirect if not signed in
-  useEffect(() => {
-    if (!isSignedIn) {
-      router.push('/sign-in?redirect=/company/pick-submit')
-    }
-  }, [isSignedIn, router])
 
   // Fetch games when sport is selected
   useEffect(() => {
@@ -191,6 +184,12 @@ export default function SubmitPicksPage() {
   }
 
   const handleSubmit = async () => {
+    if (!isSignedIn) {
+      setError('Please sign in to submit a pick')
+      router.push('/sign-in?redirect=/company/pick-submit')
+      return
+    }
+
     if (!selectedGame || !units || !analysis) {
       setError('Please fill in all required fields')
       return
@@ -271,10 +270,6 @@ export default function SubmitPicksPage() {
     setUnits('')
     setAnalysis('')
     setError('')
-  }
-
-  if (!isSignedIn) {
-    return null
   }
 
   return (
