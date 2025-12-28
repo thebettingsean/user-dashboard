@@ -90,6 +90,7 @@ export default function SubmitPicksPage() {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('')
 
   // Load bettors on mount
   useEffect(() => {
@@ -177,6 +178,18 @@ export default function SubmitPicksPage() {
     const parts = fullName.split(' ')
     return parts[parts.length - 1] // Last word is usually the team name
   }
+
+  // Filter games by search query
+  const filteredGames = games.filter(game => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      game.home_team.toLowerCase().includes(query) ||
+      game.away_team.toLowerCase().includes(query) ||
+      getTeamName(game.home_team).toLowerCase().includes(query) ||
+      getTeamName(game.away_team).toLowerCase().includes(query)
+    )
+  })
 
   const addPickToSlate = (
     game: Game, 
@@ -378,14 +391,29 @@ export default function SubmitPicksPage() {
             </button>
           </div>
 
+          {/* Search Bar */}
+          {selectedSport && games.length > 0 && (
+            <div className={styles.searchBar}>
+              <input
+                type="text"
+                placeholder="Search teams or players..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+          )}
+
           {/* Games List */}
           {loading ? (
             <div className={styles.loading}>Loading games...</div>
           ) : games.length === 0 && selectedSport ? (
             <div className={styles.noData}>No games found</div>
+          ) : filteredGames.length === 0 && searchQuery ? (
+            <div className={styles.noData}>No games match "{searchQuery}"</div>
           ) : (
             <div className={styles.gamesList}>
-              {games.map((game) => (
+              {filteredGames.map((game) => (
                 <div key={game.game_id} className={styles.gameItem}>
                   <button
                     className={styles.gameHeader}
@@ -405,6 +433,7 @@ export default function SubmitPicksPage() {
                         <div className={styles.logoPlaceholder}>?</div>
                       )}
                       <span className={styles.homeTeam}>{getTeamName(game.home_team)}</span>
+                      <span className={styles.gameTime}>{game.game_time_est}</span>
                     </div>
                     <div className={styles.gameExpand}>
                       {expandedGame === game.game_id ? <FaChevronUp /> : <FaChevronDown />}
@@ -430,13 +459,21 @@ export default function SubmitPicksPage() {
                                   const betKey = `spread_${game.game_id}_${idx}`
                                   const isExpanded = expandedBet === betKey
                                   
+                                  // Determine which team's logo to show
+                                  const isHomeTeam = teamName.toLowerCase().includes(getTeamName(game.home_team).toLowerCase()) ||
+                                                    getTeamName(game.home_team).toLowerCase().includes(teamName.toLowerCase())
+                                  const teamLogo = isHomeTeam ? game.home_team_logo : game.away_team_logo
+                                  
                                   return (
                                     <div key={idx} className={styles.betTypeItem}>
                                       <button
                                         className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <span className={styles.betTeam}>{teamName}</span>
+                                        <div className={styles.betTeamInfo}>
+                                          {teamLogo && <img src={teamLogo} alt="" className={styles.betTeamLogo} />}
+                                          <span className={styles.betTeam}>{teamName}</span>
+                                        </div>
                                         <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
                                       </button>
                                       
@@ -476,13 +513,21 @@ export default function SubmitPicksPage() {
                                   const betKey = `ml_${game.game_id}_${idx}`
                                   const isExpanded = expandedBet === betKey
                                   
+                                  // Determine which team's logo to show
+                                  const isHomeTeam = teamName.toLowerCase().includes(getTeamName(game.home_team).toLowerCase()) ||
+                                                    getTeamName(game.home_team).toLowerCase().includes(teamName.toLowerCase())
+                                  const teamLogo = isHomeTeam ? game.home_team_logo : game.away_team_logo
+                                  
                                   return (
                                     <div key={idx} className={styles.betTypeItem}>
                                       <button
                                         className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <span className={styles.betTeam}>{teamName}</span>
+                                        <div className={styles.betTeamInfo}>
+                                          {teamLogo && <img src={teamLogo} alt="" className={styles.betTeamLogo} />}
+                                          <span className={styles.betTeam}>{teamName}</span>
+                                        </div>
                                         <span className={styles.betLine}>ML</span>
                                       </button>
                                       
@@ -527,7 +572,13 @@ export default function SubmitPicksPage() {
                                         className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
+                                        <div className={styles.betTeamInfo}>
+                                          <div className={styles.totalLogosSmall}>
+                                            {game.away_team_logo && <img src={game.away_team_logo} alt="" className={styles.betTeamLogoTotal} />}
+                                            {game.home_team_logo && <img src={game.home_team_logo} alt="" className={styles.betTeamLogoTotal} />}
+                                          </div>
+                                          <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
+                                        </div>
                                         <span className={styles.betLine}>{firstMarket.point}</span>
                                       </button>
                                       

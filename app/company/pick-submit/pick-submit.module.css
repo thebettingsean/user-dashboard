@@ -148,6 +148,33 @@
   color: #3b82f6;
 }
 
+/* Search Bar */
+.searchBar {
+  padding: 12px 0;
+  margin-bottom: 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
 /* Games List */
 .gamesList {
   display: flex;
@@ -185,6 +212,7 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
+  flex: 1;
 }
 
 .gameTeams img {
@@ -192,6 +220,13 @@
   height: 28px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+.gameTime {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 12px;
+  white-space: nowrap;
 }
 
 .logoPlaceholder {
@@ -286,6 +321,19 @@
   border-color: rgba(59, 130, 246, 0.4);
 }
 
+.betTeamInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.betTeamLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .betTeam {
   font-weight: 600;
 }
@@ -293,6 +341,36 @@
 .betLine {
   color: #3b82f6;
   font-weight: 600;
+}
+
+/* Small overlapped logos for totals in bet buttons */
+.totalLogosSmall {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 28px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.betTeamLogoTotal {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.totalLogosSmall .betTeamLogoTotal:first-child {
+  left: 0;
+  z-index: 1;
+}
+
+.totalLogosSmall .betTeamLogoTotal:last-child {
+  left: 10px;
+  z-index: 2;
 }
 
 /* Book Options (inline dropdown) */
@@ -450,7 +528,7 @@
   display: flex;
   align-items: center;
   position: relative;
-  width: 36px;
+  width: 42px;
   height: 24px;
   flex-shrink: 0;
 }
@@ -471,7 +549,7 @@
 }
 
 .pickTeamLogoTotal:last-child {
-  left: 12px;
+  left: 18px;
   z-index: 2;
 }
 
