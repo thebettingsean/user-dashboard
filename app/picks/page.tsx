@@ -658,38 +658,36 @@ export default function PicksPage() {
                               onClick={() => togglePickAnalysis(pick.id)}
                             >
                               <div className={styles.pickBodyLeft}>
-                                {/* Bet Title with Logo */}
+                                {/* Line 1: Bet Title with Logo */}
                                 <div className={styles.pickTitleRow}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <BetLogo pick={pick} />
-                                    {!isSignedIn || !hasAccess ? (
-                                      <div className={styles.pickAnalysisLocked}>
-                                        <FaLock className={styles.lockIcon} />
-                                        <p className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
-                                          {pick.bet_title}
-                                        </p>
-                                      </div>
-                                    ) : (
-                                      <p className={styles.pickTitle}>
+                                  <BetLogo pick={pick} />
+                                  {!isSignedIn || !hasAccess ? (
+                                    <div className={styles.pickAnalysisLocked}>
+                                      <FaLock className={styles.lockIcon} />
+                                      <span className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
                                         {pick.bet_title}
-                                      </p>
-                                    )}
-                                  </div>
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className={styles.pickTitle}>
+                                      {pick.bet_title}
+                                    </span>
+                                  )}
                                 </div>
                                 
-                                {/* Matchup with Logos */}
+                                {/* Line 2: Matchup with Logos + Game Time (Desktop) / Just Matchup (Mobile) */}
                                 {pick.game_title && (
-                                  <div className={styles.pickMatchup} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                                  <div className={styles.pickMatchup}>
                                     {pick.away_team_image && (
-                                      <img src={pick.away_team_image} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                                      <img src={pick.away_team_image} alt="" className={styles.teamLogo} />
                                     )}
-                                    <span>{pick.game_title.split('@')[0].trim()}</span>
-                                    <span style={{ color: '#696969', fontSize: '12px' }}>@</span>
+                                    <span className={styles.teamName}>{pick.game_title.split('@')[0].trim()}</span>
+                                    <span className={styles.atSymbol}>@</span>
                                     {pick.home_team_image && (
-                                      <img src={pick.home_team_image} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                                      <img src={pick.home_team_image} alt="" className={styles.teamLogo} />
                                     )}
-                                    <span>{pick.game_title.split('@')[1]?.trim()}</span>
-                                    <span style={{ color: '#696969', marginLeft: '8px' }}>
+                                    <span className={styles.teamName}>{pick.game_title.split('@')[1]?.trim()}</span>
+                                    <span className={styles.gameTimeDesktop}>
                                       {new Date(pick.game_time).toLocaleString('en-US', {
                                         timeZone: 'America/New_York',
                                         month: 'short',
@@ -702,15 +700,16 @@ export default function PicksPage() {
                                   </div>
                                 )}
                                 
-                                {/* Sportsbook and Units */}
-                                <div className={styles.pickFooter} style={{ marginTop: '8px' }}>
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    {pick.sportsbook && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.sportsbook}</span>}
-                                    {pick.sportsbook && pick.odds && <span style={{ color: '#696969' }}>•</span>}
-                                    {pick.odds && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.odds}</span>}
-                                    {pick.units && <span style={{ color: '#696969' }}>•</span>}
-                                    {pick.units && <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{pick.units}u</span>}
-                                  </span>
+                                {/* Line 3: Game Time (Mobile Only) */}
+                                <div className={styles.gameTimeMobile}>
+                                  {new Date(pick.game_time).toLocaleString('en-US', {
+                                    timeZone: 'America/New_York',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })}
                                 </div>
                               </div>
                               <div className={styles.pickRightSide}>
@@ -721,7 +720,7 @@ export default function PicksPage() {
                                   const isWin = hasResult && (pick.result === 'won' || pick.result === 'win')
                                   const isLoss = hasResult && (pick.result === 'lost' || pick.result === 'loss')
                                   
-                                  // For past dates with results, show odds and net win/loss
+                                  // For past dates with results, show sportsbook, odds, and net win/loss
                                   if (isPast && hasResult && netUnits !== null) {
                                     return (
                                       <div 
@@ -736,12 +735,13 @@ export default function PicksPage() {
                                           color: '#ef4444'
                                         } : {}}
                                       >
+                                        {pick.sportsbook && <span>{pick.sportsbook} </span>}
                                         {pick.odds} | {netUnits >= 0 ? '+' : ''}{netUnits.toFixed(2)}u
                                       </div>
                                     )
                                   }
                                   
-                                  // For future/pending picks, show odds and units risked
+                                  // For future/pending picks, show sportsbook, odds, and units risked
                                   return (
                                     <div 
                                       className={styles.pickHeaderMeta}
@@ -751,6 +751,7 @@ export default function PicksPage() {
                                         color: 'rgba(251, 146, 60, 0.9)'
                                       } : {}}
                                     >
+                                      {pick.sportsbook && <span>{pick.sportsbook} </span>}
                                       {pick.odds} | {pick.units.toFixed(1)}u
                                     </div>
                                   )
@@ -778,14 +779,24 @@ export default function PicksPage() {
                                       userSelect: 'none',
                                       cursor: 'pointer'
                                     }}
-                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
-                                  />
+                                  >
+                                    {/* Sportsbook info (mobile only) */}
+                                    <div className={styles.sportsbookInfoMobile}>
+                                      {pick.sportsbook} | {pick.odds}
+                                    </div>
+                                    <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                  </div>
                                 ) : (
                                   <div
                                     className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
-                                  />
+                                  >
+                                    {/* Sportsbook info (mobile only) */}
+                                    <div className={styles.sportsbookInfoMobile}>
+                                      {pick.sportsbook} | {pick.odds}
+                                    </div>
+                                    <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                  </div>
                                 )}
                               </>
                             )}
