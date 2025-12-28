@@ -376,29 +376,23 @@ export default function SubmitPicksPage() {
                             <div className={styles.marketSection}>
                               <h4>Spreads</h4>
                               <div className={styles.betTypeGrid}>
-                                {/* Group by team and line */}
-                                {Array.from(new Set(
-                                  [...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home]
-                                    .map((m: Market) => `${m.team}|${m.point}`)
-                                )).map((key) => {
-                                  const [team, point] = key.split('|')
-                                  const allMarkets = [...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home]
-                                    .filter((m: Market) => m.team === team && String(m.point) === point)
-                                  const betTitle = `${getTeamName(team)} ${parseFloat(point) > 0 ? '+' : ''}${point}`
+                                {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((marketGroup: Market[], idx: number) => {
+                                  const firstMarket = marketGroup[0]
+                                  const betTitle = `${getTeamName(firstMarket.team)} ${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`
                                   
                                   return (
                                     <button
-                                      key={key}
+                                      key={idx}
                                       className={styles.betTypeBtn}
                                       onClick={() => setSelectedBet({
                                         game,
                                         betTitle,
-                                        line: `${parseFloat(point) > 0 ? '+' : ''}${point}`,
-                                        markets: allMarkets
+                                        line: `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`,
+                                        markets: marketGroup
                                       })}
                                     >
-                                      <span className={styles.betTeam}>{getTeamName(team)}</span>
-                                      <span className={styles.betLine}>{parseFloat(point) > 0 ? '+' : ''}{point}</span>
+                                      <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
+                                      <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
                                     </button>
                                   )
                                 })}
@@ -411,26 +405,22 @@ export default function SubmitPicksPage() {
                             <div className={styles.marketSection}>
                               <h4>Moneylines</h4>
                               <div className={styles.betTypeGrid}>
-                                {Array.from(new Set(
-                                  [...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home]
-                                    .map((m: Market) => m.team)
-                                )).map((team) => {
-                                  const allMarkets = [...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home]
-                                    .filter((m: Market) => m.team === team)
-                                  const betTitle = `${getTeamName(team)} ML`
+                                {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((marketGroup: Market[], idx: number) => {
+                                  const firstMarket = marketGroup[0]
+                                  const betTitle = `${getTeamName(firstMarket.team)} ML`
                                   
                                   return (
                                     <button
-                                      key={team}
+                                      key={idx}
                                       className={styles.betTypeBtn}
                                       onClick={() => setSelectedBet({
                                         game,
                                         betTitle,
                                         line: 'ML',
-                                        markets: allMarkets
+                                        markets: marketGroup
                                       })}
                                     >
-                                      <span className={styles.betTeam}>{getTeamName(team)}</span>
+                                      <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
                                       <span className={styles.betLine}>ML</span>
                                     </button>
                                   )
@@ -444,28 +434,23 @@ export default function SubmitPicksPage() {
                             <div className={styles.marketSection}>
                               <h4>Totals</h4>
                               <div className={styles.betTypeGrid}>
-                                {Array.from(new Set(
-                                  [...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under]
-                                    .map((m: Market) => `${m.type}|${m.point}`)
-                                )).map((key) => {
-                                  const [type, point] = key.split('|')
-                                  const allMarkets = [...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under]
-                                    .filter((m: Market) => m.type === type && String(m.point) === point)
-                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} ${type === 'over' ? 'O' : 'U'}${point}`
+                                {[...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under].map((marketGroup: Market[], idx: number) => {
+                                  const firstMarket = marketGroup[0]
+                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} ${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`
                                   
                                   return (
                                     <button
-                                      key={key}
+                                      key={idx}
                                       className={styles.betTypeBtn}
                                       onClick={() => setSelectedBet({
                                         game,
                                         betTitle,
-                                        line: `${type === 'over' ? 'O' : 'U'}${point}`,
-                                        markets: allMarkets
+                                        line: `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`,
+                                        markets: marketGroup
                                       })}
                                     >
-                                      <span className={styles.betTeam}>{type?.toUpperCase()}</span>
-                                      <span className={styles.betLine}>{point}</span>
+                                      <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
+                                      <span className={styles.betLine}>{firstMarket.point}</span>
                                     </button>
                                   )
                                 })}

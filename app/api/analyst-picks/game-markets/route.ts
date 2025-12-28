@@ -104,13 +104,48 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Organize by side for easy UI display
-    const homeSpreads = spreadsByBook.filter(s => s.side === 'home')
-    const awaySpreads = spreadsByBook.filter(s => s.side === 'away')
-    const homeMoneylines = moneylinesByBook.filter(m => m.side === 'home')
-    const awayMoneylines = moneylinesByBook.filter(m => m.side === 'away')
-    const overs = totalsByBook.filter(t => t.type === 'over')
-    const unders = totalsByBook.filter(t => t.type === 'under')
+    // Group by unique lines (not by book)
+    const groupByLine = (markets: any[], keyFn: (m: any) => string) => {
+      const grouped = new Map()
+      markets.forEach(market => {
+        const key = keyFn(market)
+        if (!grouped.has(key)) {
+          grouped.set(key, [])
+        }
+        grouped.get(key).push(market)
+      })
+      return Array.from(grouped.values())
+    }
+
+    // Group spreads by team + point
+    const homeSpreadGroups = groupByLine(
+      spreadsByBook.filter(s => s.side === 'home'),
+      s => `${s.team}|${s.point}`
+    )
+    const awaySpreadGroups = groupByLine(
+      spreadsByBook.filter(s => s.side === 'away'),
+      s => `${s.team}|${s.point}`
+    )
+
+    // Group moneylines by team
+    const homeMLGroups = groupByLine(
+      moneylinesByBook.filter(m => m.side === 'home'),
+      m => m.team
+    )
+    const awayMLGroups = groupByLine(
+      moneylinesByBook.filter(m => m.side === 'away'),
+      m => m.team
+    )
+
+    // Group totals by type + point
+    const overGroups = groupByLine(
+      totalsByBook.filter(t => t.type === 'over'),
+      t => `over|${t.point}`
+    )
+    const underGroups = groupByLine(
+      totalsByBook.filter(t => t.type === 'under'),
+      t => `under|${t.point}`
+    )
 
     return NextResponse.json({
       success: true,
@@ -121,16 +156,16 @@ export async function GET(request: NextRequest) {
       },
       markets: {
         spreads: {
-          home: homeSpreads,
-          away: awaySpreads
+          home: homeSpreadGroups,
+          away: awaySpreadGroups
         },
         moneylines: {
-          home: homeMoneylines,
-          away: awayMoneylines
+          home: homeMLGroups,
+          away: awayMLGroups
         },
         totals: {
-          over: overs,
-          under: unders
+          over: overGroups,
+          under: underGroups
         }
       },
       available_books: [...new Set(bookmakers.map((b: any) => b.title))]

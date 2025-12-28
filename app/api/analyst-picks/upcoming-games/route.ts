@@ -71,17 +71,23 @@ export async function GET(request: NextRequest) {
     // Fetch team logos from ClickHouse
     console.log(`[${sport.toUpperCase()}] Fetching team data from ClickHouse...`)
     const teamLogosQuery = await clickhouseQuery<{
+      team_id: number
+      espn_team_id: number
       team_name: string
       logo_url: string
       abbreviation: string
     }>(`
       SELECT 
+        team_id,
+        espn_team_id,
         name as team_name,
         logo_url,
         abbreviation
       FROM teams
-      WHERE sport = '${sport.toUpperCase()}'
+      WHERE sport = '${sport.toUpperCase()}' AND logo_url != ''
     `)
+    
+    console.log(`[${sport.toUpperCase()}] Found ${teamLogosQuery.data?.length || 0} teams with logos`)
 
     const teamLogos = new Map()
     teamLogosQuery.data?.forEach(team => {
