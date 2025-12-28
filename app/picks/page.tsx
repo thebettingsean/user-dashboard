@@ -30,6 +30,7 @@ type Pick = {
   analysis: string
   date: string
   sportsbook: string
+  posted_at: string
   // New image fields
   away_team_image: string | null
   home_team_image: string | null
@@ -425,6 +426,7 @@ export default function PicksPage() {
           analysis: p.analysis || '',
           date: formatDateString(targetDate),
           sportsbook: p.sportsbook || '',
+          posted_at: p.posted_at || '',
           // New image fields
           away_team_image: p.away_team_image || null,
           home_team_image: p.home_team_image || null,
@@ -780,9 +782,16 @@ export default function PicksPage() {
                                       cursor: 'pointer'
                                     }}
                                   >
-                                    {/* Sportsbook info (mobile only) */}
-                                    <div className={styles.sportsbookInfoMobile}>
-                                      {pick.sportsbook} | {pick.odds}
+                                    {/* Sportsbook info with timestamp */}
+                                    <div className={styles.sportsbookInfo}>
+                                      {pick.sportsbook} {pick.odds}, Taken at: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                        timeZone: 'America/New_York',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })} EST
                                     </div>
                                     <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
                                   </div>
@@ -791,9 +800,16 @@ export default function PicksPage() {
                                     className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    {/* Sportsbook info (mobile only) */}
-                                    <div className={styles.sportsbookInfoMobile}>
-                                      {pick.sportsbook} | {pick.odds}
+                                    {/* Sportsbook info with timestamp */}
+                                    <div className={styles.sportsbookInfo}>
+                                      {pick.sportsbook} {pick.odds}, Taken at: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                        timeZone: 'America/New_York',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })} EST
                                     </div>
                                     <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
                                   </div>

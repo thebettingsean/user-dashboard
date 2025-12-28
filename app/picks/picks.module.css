@@ -759,11 +759,11 @@
   margin-top: 2px;
 }
 
-.sportsbookInfoMobile {
-  display: none;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+.sportsbookInfo {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
@@ -863,16 +863,20 @@
   .sportsbookDesktopOnly {
     display: none !important;
   }
+
+  .sportsbookInfo {
+    font-size: 9px;
+  }
 }
 
 /* Desktop Styles - Show sportsbook in right side */
 @media (min-width: 768px) {
-  .sportsbookInfoMobile {
-    display: none !important;
-  }
-
   .sportsbookDesktopOnly {
     display: inline !important;
+  }
+
+  .sportsbookInfo {
+    font-size: 10px;
   }
 }
 
