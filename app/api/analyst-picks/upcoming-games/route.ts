@@ -84,10 +84,23 @@ export async function GET(request: NextRequest) {
         logo_url,
         abbreviation
       FROM teams
-      WHERE sport = '${sport.toUpperCase()}' AND logo_url != ''
+      WHERE LOWER(sport) = '${sport.toLowerCase()}' AND logo_url != ''
     `)
     
+    console.log(`[${sport.toUpperCase()}] ClickHouse query success: ${teamLogosQuery.success}`)
     console.log(`[${sport.toUpperCase()}] Found ${teamLogosQuery.data?.length || 0} teams with logos`)
+    
+    if (!teamLogosQuery.success || !teamLogosQuery.data || teamLogosQuery.data.length === 0) {
+      console.error(`[${sport.toUpperCase()}] ⚠️ WARNING: No teams found in ClickHouse!`)
+      console.error(`[${sport.toUpperCase()}] Query error:`, teamLogosQuery.error)
+    } else {
+      // Log first few teams for debugging
+      console.log(`[${sport.toUpperCase()}] Sample teams:`, teamLogosQuery.data.slice(0, 3).map(t => ({
+        name: t.team_name,
+        abbr: t.abbreviation,
+        has_logo: !!t.logo_url
+      })))
+    }
 
     // Create comprehensive mapping of team names
     const teamLogos = new Map()
