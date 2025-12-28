@@ -49,8 +49,17 @@ type PlayerProp = {
   }>
 }
 
+type Bettor = {
+  id: string
+  name: string
+}
+
 export default function SubmitPicksPage() {
   const router = useRouter()
+  
+  // Bettor state
+  const [bettors, setBettors] = useState<Bettor[]>([])
+  const [selectedBettorId, setSelectedBettorId] = useState<string>('')
   
   // Step state
   const [step, setStep] = useState<'sport' | 'game' | 'market' | 'odds' | 'input'>('sport')
@@ -78,12 +87,32 @@ export default function SubmitPicksPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
 
+  // Load bettors on mount
+  useEffect(() => {
+    fetchBettors()
+  }, [])
+
   // Fetch games when sport is selected
   useEffect(() => {
     if (selectedSport && step === 'game') {
       fetchGames()
     }
   }, [selectedSport, step])
+
+  const fetchBettors = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bettors')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+      
+      if (error) throw error
+      setBettors(data || [])
+    } catch (err: any) {
+      console.error('Failed to load bettors:', err)
+    }
+  }
 
   const fetchGames = async () => {
     setLoading(true)
@@ -182,6 +211,11 @@ export default function SubmitPicksPage() {
   }
 
   const handleSubmit = async () => {
+    if (!selectedBettorId) {
+      setError('Please select a bettor')
+      return
+    }
+
     if (!selectedGame || !units || !analysis) {
       setError('Please fill in all required fields')
       return
@@ -216,10 +250,15 @@ export default function SubmitPicksPage() {
         }
       }
 
-      // Insert pick (bettor_id will be handled later with auth)
+      // Get current Eastern time
+      const easternNow = new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
+      const easternTimestamp = new Date(easternNow)
+
+      // Insert pick
       const { error: insertError } = await supabase
         .from('picks')
         .insert({
+          bettor_id: selectedBettorId,
           sport: selectedGame.sport,
           sport_emoji: selectedGame.sport_emoji,
           bet_title: betTitle,
@@ -228,10 +267,13 @@ export default function SubmitPicksPage() {
           units: parseFloat(units),
           analysis,
           game_time: selectedGame.game_time,
+          posted_at: easternTimestamp.toISOString(),
           game_id: selectedGame.game_id,
           bet_type: betType,
           is_active: true,
+          is_free: false,
           result: 'pending',
+          recap_status: 'pending',
           away_team_image: selectedGame.away_team_logo,
           home_team_image: selectedGame.home_team_logo,
           prop_image: propImage,
@@ -276,6 +318,23 @@ export default function SubmitPicksPage() {
             </div>
             <p className={styles.subtitle}>Submit your analyst picks with auto-filled data</p>
           </div>
+        </div>
+
+        {/* Bettor Selection */}
+        <div className={styles.bettorSection}>
+          <label className={styles.bettorLabel}>Select Analyst</label>
+          <select
+            className={styles.bettorSelect}
+            value={selectedBettorId}
+            onChange={(e) => setSelectedBettorId(e.target.value)}
+          >
+            <option value="">-- Select Analyst --</option>
+            {bettors.map((bettor) => (
+              <option key={bettor.id} value={bettor.id}>
+                {bettor.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Progress Steps */}

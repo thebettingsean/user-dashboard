@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }>(`
       SELECT 
         name as team_name,
-        logo as logo_url,
+        logo_url,
         abbreviation,
         espn_display_name
       FROM teams
