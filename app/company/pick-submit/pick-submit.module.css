@@ -225,50 +225,39 @@
   letter-spacing: 0.05em;
 }
 
-.oddsGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.betTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
 }
 
-.oddsBtn {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
-  gap: 8px;
+.betTypeBtn {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   color: #FFFFFF;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: left;
 }
 
-.oddsBtn:hover {
+.betTypeBtn:hover {
   background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
 }
 
-.oddsTeam {
+.betTeam {
   font-weight: 600;
 }
 
-.oddsLine {
+.betLine {
   color: #3b82f6;
   font-weight: 600;
-}
-
-.oddsValue {
-  font-weight: 600;
-}
-
-.oddsBook {
-  color: #696969;
-  font-size: 12px;
-  text-align: right;
 }
 
 /* Right Panel - Slate */
@@ -279,9 +268,32 @@
   margin-bottom: 16px;
 }
 
+.slateHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .pickCount {
   font-size: 13px;
   color: #696969;
+}
+
+.customPickBtn {
+  padding: 8px 14px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.customPickBtn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .emptySlate {
@@ -333,6 +345,18 @@
   flex: 1;
 }
 
+.pickBetTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pickTeamLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 .pickBetInfo strong {
   font-size: 14px;
   font-weight: 600;
@@ -342,6 +366,26 @@
 .pickOddsInfo {
   font-size: 13px;
   color: #696969;
+}
+
+.pickActions {
+  display: flex;
+  gap: 6px;
+}
+
+.editBtn {
+  padding: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 6px;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
 .deleteBtn {
@@ -458,8 +502,42 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 24px;
-  max-width: 400px;
+  max-width: 500px;
   width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modalHeader h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #FFFFFF;
+}
+
+.modalClose {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .modalContent h3 {
@@ -473,6 +551,57 @@
   font-size: 14px;
   color: #696969;
   margin: 0 0 20px 0;
+}
+
+.modalBetInfo {
+  font-size: 15px;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 16px;
+}
+
+.modalSubtext {
+  font-size: 14px;
+  color: #696969;
+  margin-bottom: 20px;
+}
+
+/* Sportsbooks List */
+.booksList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bookBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+.bookName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bookOdds {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
 }
 
 .modalActions {

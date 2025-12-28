@@ -72,10 +72,21 @@ export default function SubmitPicksPage() {
   const [gameMarkets, setGameMarkets] = useState<Record<string, any>>({})
   const [loadingMarkets, setLoadingMarkets] = useState<Record<string, boolean>>({})
   
+  // Book selection state (when user clicks a bet type)
+  const [selectedBet, setSelectedBet] = useState<{
+    game: Game
+    betTitle: string
+    line: string
+    markets: Market[]
+  } | null>(null)
+  
   // Slate state (right side)
   const [slatePicks, setSlatePicks] = useState<SlatePick[]>([])
   const [editingPickId, setEditingPickId] = useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  
+  // Custom pick state
+  const [showCustomPick, setShowCustomPick] = useState(false)
   
   // UI state
   const [loading, setLoading] = useState(false)
@@ -157,6 +168,12 @@ export default function SubmitPicksPage() {
     }
   }
 
+  // Helper to extract team name without city
+  const getTeamName = (fullName: string) => {
+    const parts = fullName.split(' ')
+    return parts[parts.length - 1] // Last word is usually the team name
+  }
+
   const addPickToSlate = (game: Game, betTitle: string, line: string, odds: number, book: string) => {
     const newPick: SlatePick = {
       id: `pick_${Date.now()}_${Math.random()}`,
@@ -164,7 +181,7 @@ export default function SubmitPicksPage() {
       line,
       odds: odds > 0 ? `+${odds}` : String(odds),
       sportsbook: book,
-      game_title: `${game.away_team} @ ${game.home_team}`,
+      game_title: `${getTeamName(game.away_team)} @ ${getTeamName(game.home_team)}`,
       game_time: game.game_time,
       game_time_est: game.game_time_est,
       units: '',
@@ -339,7 +356,7 @@ export default function SubmitPicksPage() {
                   >
                     <div className={styles.gameTeams}>
                       {game.away_team_logo && <img src={game.away_team_logo} alt="" />}
-                      <span>{game.away_team} @ {game.home_team}</span>
+                      <span>{getTeamName(game.away_team)} @ {getTeamName(game.home_team)}</span>
                       {game.home_team_logo && <img src={game.home_team_logo} alt="" />}
                     </div>
                     <div className={styles.gameExpand}>
@@ -358,25 +375,33 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].spreads && (
                             <div className={styles.marketSection}>
                               <h4>Spreads</h4>
-                              <div className={styles.oddsGrid}>
-                                {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((market: Market, idx: number) => (
-                                  <button
-                                    key={idx}
-                                    className={styles.oddsBtn}
-                                    onClick={() => addPickToSlate(
-                                      game,
-                                      `${market.team} ${market.point && market.point > 0 ? '+' : ''}${market.point}`,
-                                      `${market.point && market.point > 0 ? '+' : ''}${market.point}`,
-                                      market.odds,
-                                      market.book
-                                    )}
-                                  >
-                                    <span className={styles.oddsTeam}>{market.team}</span>
-                                    <span className={styles.oddsLine}>{market.point && market.point > 0 ? '+' : ''}{market.point}</span>
-                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                    <span className={styles.oddsBook}>{market.book}</span>
-                                  </button>
-                                ))}
+                              <div className={styles.betTypeGrid}>
+                                {/* Group by team and line */}
+                                {Array.from(new Set(
+                                  [...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home]
+                                    .map((m: Market) => `${m.team}|${m.point}`)
+                                )).map((key) => {
+                                  const [team, point] = key.split('|')
+                                  const allMarkets = [...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home]
+                                    .filter((m: Market) => m.team === team && String(m.point) === point)
+                                  const betTitle = `${getTeamName(team)} ${parseFloat(point) > 0 ? '+' : ''}${point}`
+                                  
+                                  return (
+                                    <button
+                                      key={key}
+                                      className={styles.betTypeBtn}
+                                      onClick={() => setSelectedBet({
+                                        game,
+                                        betTitle,
+                                        line: `${parseFloat(point) > 0 ? '+' : ''}${point}`,
+                                        markets: allMarkets
+                                      })}
+                                    >
+                                      <span className={styles.betTeam}>{getTeamName(team)}</span>
+                                      <span className={styles.betLine}>{parseFloat(point) > 0 ? '+' : ''}{point}</span>
+                                    </button>
+                                  )
+                                })}
                               </div>
                             </div>
                           )}
@@ -385,25 +410,31 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].moneylines && (
                             <div className={styles.marketSection}>
                               <h4>Moneylines</h4>
-                              <div className={styles.oddsGrid}>
-                                {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((market: Market, idx: number) => (
-                                  <button
-                                    key={idx}
-                                    className={styles.oddsBtn}
-                                    onClick={() => addPickToSlate(
-                                      game,
-                                      `${market.team} ML`,
-                                      'ML',
-                                      market.odds,
-                                      market.book
-                                    )}
-                                  >
-                                    <span className={styles.oddsTeam}>{market.team}</span>
-                                    <span className={styles.oddsLine}>ML</span>
-                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                    <span className={styles.oddsBook}>{market.book}</span>
-                                  </button>
-                                ))}
+                              <div className={styles.betTypeGrid}>
+                                {Array.from(new Set(
+                                  [...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home]
+                                    .map((m: Market) => m.team)
+                                )).map((team) => {
+                                  const allMarkets = [...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home]
+                                    .filter((m: Market) => m.team === team)
+                                  const betTitle = `${getTeamName(team)} ML`
+                                  
+                                  return (
+                                    <button
+                                      key={team}
+                                      className={styles.betTypeBtn}
+                                      onClick={() => setSelectedBet({
+                                        game,
+                                        betTitle,
+                                        line: 'ML',
+                                        markets: allMarkets
+                                      })}
+                                    >
+                                      <span className={styles.betTeam}>{getTeamName(team)}</span>
+                                      <span className={styles.betLine}>ML</span>
+                                    </button>
+                                  )
+                                })}
                               </div>
                             </div>
                           )}
@@ -412,25 +443,32 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].totals && (
                             <div className={styles.marketSection}>
                               <h4>Totals</h4>
-                              <div className={styles.oddsGrid}>
-                                {[...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under].map((market: Market, idx: number) => (
-                                  <button
-                                    key={idx}
-                                    className={styles.oddsBtn}
-                                    onClick={() => addPickToSlate(
-                                      game,
-                                      `${game.away_team} / ${game.home_team} ${market.type === 'over' ? 'O' : 'U'}${market.point}`,
-                                      `${market.type === 'over' ? 'O' : 'U'}${market.point}`,
-                                      market.odds,
-                                      market.book
-                                    )}
-                                  >
-                                    <span className={styles.oddsTeam}>{market.type?.toUpperCase()}</span>
-                                    <span className={styles.oddsLine}>{market.point}</span>
-                                    <span className={styles.oddsValue}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                    <span className={styles.oddsBook}>{market.book}</span>
-                                  </button>
-                                ))}
+                              <div className={styles.betTypeGrid}>
+                                {Array.from(new Set(
+                                  [...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under]
+                                    .map((m: Market) => `${m.type}|${m.point}`)
+                                )).map((key) => {
+                                  const [type, point] = key.split('|')
+                                  const allMarkets = [...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under]
+                                    .filter((m: Market) => m.type === type && String(m.point) === point)
+                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} ${type === 'over' ? 'O' : 'U'}${point}`
+                                  
+                                  return (
+                                    <button
+                                      key={key}
+                                      className={styles.betTypeBtn}
+                                      onClick={() => setSelectedBet({
+                                        game,
+                                        betTitle,
+                                        line: `${type === 'over' ? 'O' : 'U'}${point}`,
+                                        markets: allMarkets
+                                      })}
+                                    >
+                                      <span className={styles.betTeam}>{type?.toUpperCase()}</span>
+                                      <span className={styles.betLine}>{point}</span>
+                                    </button>
+                                  )
+                                })}
                               </div>
                             </div>
                           )}
@@ -450,7 +488,15 @@ export default function SubmitPicksPage() {
         <div className={styles.rightPanel}>
           <div className={styles.slateHeader}>
             <h2 className={styles.panelTitle}>Pick Slate</h2>
-            <span className={styles.pickCount}>{slatePicks.length} pick{slatePicks.length !== 1 ? 's' : ''}</span>
+            <div className={styles.slateHeaderRight}>
+              <span className={styles.pickCount}>{slatePicks.length} pick{slatePicks.length !== 1 ? 's' : ''}</span>
+              <button
+                className={styles.customPickBtn}
+                onClick={() => setShowCustomPick(true)}
+              >
+                + Custom Pick
+              </button>
+            </div>
           </div>
 
           {slatePicks.length === 0 ? (
@@ -464,17 +510,29 @@ export default function SubmitPicksPage() {
                 <div key={pick.id} className={styles.slatePickCard}>
                   <div className={styles.pickCardHeader}>
                     <div className={styles.pickBetInfo}>
-                      <strong>{pick.bet_title}</strong>
+                      <div className={styles.pickBetTitle}>
+                        {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.pickTeamLogo} />}
+                        {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogo} />}
+                        <strong>{pick.bet_title}</strong>
+                      </div>
                       <span className={styles.pickOddsInfo}>
-                        {pick.line}, {pick.odds} {pick.sportsbook}
+                        {pick.odds}, {pick.sportsbook}
                       </span>
                     </div>
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={() => setDeleteConfirmId(pick.id)}
-                    >
-                      <FaTrash />
-                    </button>
+                    <div className={styles.pickActions}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => setEditingPickId(editingPickId === pick.id ? null : pick.id)}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => setDeleteConfirmId(pick.id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
 
                   <div className={styles.pickGameInfo}>
@@ -518,6 +576,54 @@ export default function SubmitPicksPage() {
           )}
         </div>
       </div>
+
+      {/* Sportsbook Selection Modal */}
+      {selectedBet && (
+        <div className={styles.modal} onClick={() => setSelectedBet(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Select Sportsbook</h3>
+              <button className={styles.modalClose} onClick={() => setSelectedBet(null)}>
+                <IoClose />
+              </button>
+            </div>
+            <p className={styles.modalBetInfo}>{selectedBet.betTitle}</p>
+            <div className={styles.booksList}>
+              {selectedBet.markets.map((market, idx) => (
+                <button
+                  key={idx}
+                  className={styles.bookBtn}
+                  onClick={() => {
+                    addPickToSlate(selectedBet.game, selectedBet.betTitle, selectedBet.line, market.odds, market.book)
+                    setSelectedBet(null)
+                  }}
+                >
+                  <span className={styles.bookName}>{market.book}</span>
+                  <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Pick Modal */}
+      {showCustomPick && (
+        <div className={styles.modal} onClick={() => setShowCustomPick(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Custom Pick</h3>
+              <button className={styles.modalClose} onClick={() => setShowCustomPick(false)}>
+                <IoClose />
+              </button>
+            </div>
+            <p className={styles.modalSubtext}>Coming soon - manually enter all pick details</p>
+            <button className={styles.modalBtnCancel} onClick={() => setShowCustomPick(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
