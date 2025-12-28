@@ -89,46 +89,79 @@ export async function GET(request: NextRequest) {
     
     console.log(`[${sport.toUpperCase()}] Found ${teamLogosQuery.data?.length || 0} teams with logos`)
 
+    // Create comprehensive mapping of team names
     const teamLogos = new Map()
+    console.log(`[${sport.toUpperCase()}] Creating team mappings...`)
+    
     teamLogosQuery.data?.forEach(team => {
       // Map by various name formats
       const teamName = team.team_name.toLowerCase()
       const abbr = team.abbreviation?.toLowerCase()
       
-      // Store by full name
+      // Store by full name (e.g., "tampa bay buccaneers")
       teamLogos.set(teamName, team)
       
-      // Store by abbreviation
+      // Store by abbreviation (e.g., "tb", "pit")
       if (abbr) {
         teamLogos.set(abbr, team)
       }
       
-      // Store by last word (e.g., "49ers", "Cardinals")
+      // Store by last word (e.g., "buccaneers", "steelers")
       const lastWord = teamName.split(' ').pop()
       if (lastWord) {
         teamLogos.set(lastWord, team)
       }
+      
+      // For names with "St." or numbers, also store alternate versions
+      const cleanName = teamName.replace(/st\./gi, 'saint').replace(/\./g, '')
+      if (cleanName !== teamName) {
+        teamLogos.set(cleanName, team)
+      }
     })
+    
+    console.log(`[${sport.toUpperCase()}] Created ${teamLogos.size} team name variations`)
 
     // Helper function to find team with flexible matching
     const findTeam = (oddsApiName: string) => {
-      const lower = oddsApiName.toLowerCase()
+      const lower = oddsApiName.toLowerCase().trim()
       
-      // Try exact match
-      if (teamLogos.has(lower)) return teamLogos.get(lower)
+      // Try exact match first
+      if (teamLogos.has(lower)) {
+        return teamLogos.get(lower)
+      }
       
-      // Try abbreviation match (e.g., "TB" from "Tampa Bay")
-      const words = lower.split(' ')
-      if (words.length > 1) {
-        const abbr = words.map(w => w[0]).join('')
-        if (teamLogos.has(abbr)) return teamLogos.get(abbr)
+      // Clean the name (remove special chars)
+      const cleaned = lower.replace(/\./g, '').replace(/st /gi, 'saint ')
+      if (teamLogos.has(cleaned)) {
+        return teamLogos.get(cleaned)
       }
       
       // Try last word match (e.g., "Buccaneers" from "Tampa Bay Buccaneers")
+      const words = lower.split(' ')
       const lastWord = words[words.length - 1]
-      if (teamLogos.has(lastWord)) return teamLogos.get(lastWord)
+      if (teamLogos.has(lastWord)) {
+        return teamLogos.get(lastWord)
+      }
       
-      // Try partial match
+      // Try abbreviation match (e.g., "TB" from "Tampa Bay")
+      if (words.length > 1) {
+        const abbr = words.map(w => w[0]).join('')
+        if (teamLogos.has(abbr)) {
+          return teamLogos.get(abbr)
+        }
+      }
+      
+      // Try partial match - any key that contains or is contained in the search
+      for (const [key, value] of teamLogos.entries()) {
+        if (lower.includes(key) || key.includes(lower)) {
+          // Prioritize longer matches
+          if (key.length > 3) {
+            return value
+          }
+        }
+      }
+      
+      // Last resort: try partial match with short keys
       for (const [key, value] of teamLogos.entries()) {
         if (lower.includes(key) || key.includes(lower)) {
           return value
@@ -145,10 +178,14 @@ export async function GET(request: NextRequest) {
 
       // Log if we couldn't find team logos
       if (!homeTeam) {
-        console.log(`[${sport.toUpperCase()}] Could not find home team: ${game.home_team}`)
+        console.log(`[${sport.toUpperCase()}] ❌ Could not find home team: "${game.home_team}"`)
+      } else {
+        console.log(`[${sport.toUpperCase()}] ✅ Found home team: "${game.home_team}" → ${homeTeam.team_name} (${homeTeam.logo_url ? 'HAS LOGO' : 'NO LOGO'})`)
       }
       if (!awayTeam) {
-        console.log(`[${sport.toUpperCase()}] Could not find away team: ${game.away_team}`)
+        console.log(`[${sport.toUpperCase()}] ❌ Could not find away team: "${game.away_team}"`)
+      } else {
+        console.log(`[${sport.toUpperCase()}] ✅ Found away team: "${game.away_team}" → ${awayTeam.team_name} (${awayTeam.logo_url ? 'HAS LOGO' : 'NO LOGO'})`)
       }
 
       // Generate game_id in format: NFL-20251225-DEN-KC

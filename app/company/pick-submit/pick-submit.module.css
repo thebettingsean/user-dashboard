@@ -225,16 +225,22 @@
   letter-spacing: 0.05em;
 }
 
-.betTypeGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
+.betTypeList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.betTypeItem {
+  display: flex;
+  flex-direction: column;
 }
 
 .betTypeBtn {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -248,7 +254,11 @@
 .betTypeBtn:hover {
   background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
-  transform: translateY(-1px);
+}
+
+.betTypeBtn.expanded {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
 .betTeam {
@@ -258,6 +268,58 @@
 .betLine {
   color: #3b82f6;
   font-weight: 600;
+}
+
+/* Book Options (inline dropdown) */
+.bookOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-left: 12px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bookOption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookOption:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateX(4px);
+}
+
+.bookName {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.bookOdds {
+  font-weight: 600;
+  color: #3b82f6;
+  font-size: 14px;
 }
 
 /* Right Panel - Slate */
@@ -426,12 +488,14 @@
 
 .unitsInput {
   width: 100%;
+  max-width: 100%;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   color: #FFFFFF;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
 .unitsInput:focus {
@@ -442,6 +506,7 @@
 
 .analysisInput {
   width: 100%;
+  max-width: 100%;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -450,6 +515,7 @@
   font-size: 13px;
   resize: vertical;
   min-height: 80px;
+  box-sizing: border-box;
 }
 
 .analysisInput:focus {

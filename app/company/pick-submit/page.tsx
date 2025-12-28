@@ -72,13 +72,8 @@ export default function SubmitPicksPage() {
   const [gameMarkets, setGameMarkets] = useState<Record<string, any>>({})
   const [loadingMarkets, setLoadingMarkets] = useState<Record<string, boolean>>({})
   
-  // Book selection state (when user clicks a bet type)
-  const [selectedBet, setSelectedBet] = useState<{
-    game: Game
-    betTitle: string
-    line: string
-    markets: Market[]
-  } | null>(null)
+  // Book selection state (when user clicks a bet type) - now inline, not modal
+  const [expandedBet, setExpandedBet] = useState<string | null>(null)
   
   // Slate state (right side)
   const [slatePicks, setSlatePicks] = useState<SlatePick[]>([])
@@ -375,25 +370,41 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].spreads && (
                             <div className={styles.marketSection}>
                               <h4>Spreads</h4>
-                              <div className={styles.betTypeGrid}>
+                              <div className={styles.betTypeList}>
                                 {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((marketGroup: Market[], idx: number) => {
                                   const firstMarket = marketGroup[0]
                                   const betTitle = `${getTeamName(firstMarket.team)} ${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`
+                                  const betKey = `spread_${game.game_id}_${idx}`
+                                  const isExpanded = expandedBet === betKey
                                   
                                   return (
-                                    <button
-                                      key={idx}
-                                      className={styles.betTypeBtn}
-                                      onClick={() => setSelectedBet({
-                                        game,
-                                        betTitle,
-                                        line: `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`,
-                                        markets: marketGroup
-                                      })}
-                                    >
-                                      <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
-                                      <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
-                                    </button>
+                                    <div key={idx} className={styles.betTypeItem}>
+                                      <button
+                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
+                                        <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
+                                      </button>
+                                      
+                                      {isExpanded && (
+                                        <div className={styles.bookOptions}>
+                                          {marketGroup.map((market, bookIdx) => (
+                                            <button
+                                              key={bookIdx}
+                                              className={styles.bookOption}
+                                              onClick={() => {
+                                                addPickToSlate(game, betTitle, `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`, market.odds, market.book)
+                                                setExpandedBet(null)
+                                              }}
+                                            >
+                                              <span className={styles.bookName}>{market.book}</span>
+                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
                                   )
                                 })}
                               </div>
@@ -404,25 +415,41 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].moneylines && (
                             <div className={styles.marketSection}>
                               <h4>Moneylines</h4>
-                              <div className={styles.betTypeGrid}>
+                              <div className={styles.betTypeList}>
                                 {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((marketGroup: Market[], idx: number) => {
                                   const firstMarket = marketGroup[0]
                                   const betTitle = `${getTeamName(firstMarket.team)} ML`
+                                  const betKey = `ml_${game.game_id}_${idx}`
+                                  const isExpanded = expandedBet === betKey
                                   
                                   return (
-                                    <button
-                                      key={idx}
-                                      className={styles.betTypeBtn}
-                                      onClick={() => setSelectedBet({
-                                        game,
-                                        betTitle,
-                                        line: 'ML',
-                                        markets: marketGroup
-                                      })}
-                                    >
-                                      <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
-                                      <span className={styles.betLine}>ML</span>
-                                    </button>
+                                    <div key={idx} className={styles.betTypeItem}>
+                                      <button
+                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
+                                        <span className={styles.betLine}>ML</span>
+                                      </button>
+                                      
+                                      {isExpanded && (
+                                        <div className={styles.bookOptions}>
+                                          {marketGroup.map((market, bookIdx) => (
+                                            <button
+                                              key={bookIdx}
+                                              className={styles.bookOption}
+                                              onClick={() => {
+                                                addPickToSlate(game, betTitle, 'ML', market.odds, market.book)
+                                                setExpandedBet(null)
+                                              }}
+                                            >
+                                              <span className={styles.bookName}>{market.book}</span>
+                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
                                   )
                                 })}
                               </div>
@@ -433,25 +460,41 @@ export default function SubmitPicksPage() {
                           {gameMarkets[game.game_id].totals && (
                             <div className={styles.marketSection}>
                               <h4>Totals</h4>
-                              <div className={styles.betTypeGrid}>
+                              <div className={styles.betTypeList}>
                                 {[...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under].map((marketGroup: Market[], idx: number) => {
                                   const firstMarket = marketGroup[0]
                                   const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} ${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`
+                                  const betKey = `total_${game.game_id}_${idx}`
+                                  const isExpanded = expandedBet === betKey
                                   
                                   return (
-                                    <button
-                                      key={idx}
-                                      className={styles.betTypeBtn}
-                                      onClick={() => setSelectedBet({
-                                        game,
-                                        betTitle,
-                                        line: `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`,
-                                        markets: marketGroup
-                                      })}
-                                    >
-                                      <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
-                                      <span className={styles.betLine}>{firstMarket.point}</span>
-                                    </button>
+                                    <div key={idx} className={styles.betTypeItem}>
+                                      <button
+                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
+                                        <span className={styles.betLine}>{firstMarket.point}</span>
+                                      </button>
+                                      
+                                      {isExpanded && (
+                                        <div className={styles.bookOptions}>
+                                          {marketGroup.map((market, bookIdx) => (
+                                            <button
+                                              key={bookIdx}
+                                              className={styles.bookOption}
+                                              onClick={() => {
+                                                addPickToSlate(game, betTitle, `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`, market.odds, market.book)
+                                                setExpandedBet(null)
+                                              }}
+                                            >
+                                              <span className={styles.bookName}>{market.book}</span>
+                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
                                   )
                                 })}
                               </div>
@@ -561,36 +604,6 @@ export default function SubmitPicksPage() {
           )}
         </div>
       </div>
-
-      {/* Sportsbook Selection Modal */}
-      {selectedBet && (
-        <div className={styles.modal} onClick={() => setSelectedBet(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3>Select Sportsbook</h3>
-              <button className={styles.modalClose} onClick={() => setSelectedBet(null)}>
-                <IoClose />
-              </button>
-            </div>
-            <p className={styles.modalBetInfo}>{selectedBet.betTitle}</p>
-            <div className={styles.booksList}>
-              {selectedBet.markets.map((market, idx) => (
-                <button
-                  key={idx}
-                  className={styles.bookBtn}
-                  onClick={() => {
-                    addPickToSlate(selectedBet.game, selectedBet.betTitle, selectedBet.line, market.odds, market.book)
-                    setSelectedBet(null)
-                  }}
-                >
-                  <span className={styles.bookName}>{market.book}</span>
-                  <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Custom Pick Modal */}
       {showCustomPick && (
