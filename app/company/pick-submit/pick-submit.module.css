@@ -627,12 +627,19 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-.pickGameInfo span:first-of-type {
-  flex: 1;
+.pickGameInfo .teamName {
+  font-weight: 500;
+}
+
+.pickGameInfo .atSymbol {
+  color: #696969;
+  font-size: 12px;
+  margin: 0 2px;
 }
 
 .pickGameTime {
   color: #696969;
+  margin-left: auto;
 }
 
 .pickInputs {

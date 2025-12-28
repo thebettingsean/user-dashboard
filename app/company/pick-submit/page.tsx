@@ -39,6 +39,8 @@ type SlatePick = {
   odds: string
   sportsbook: string
   game_title: string
+  away_team_name: string
+  home_team_name: string
   game_time: string
   game_time_est: string
   units: string
@@ -229,6 +231,8 @@ export default function SubmitPicksPage() {
       odds: odds > 0 ? `+${odds}` : String(odds),
       sportsbook: book,
       game_title: `${getTeamName(game.away_team)} @ ${getTeamName(game.home_team)}`,
+      away_team_name: getTeamName(game.away_team),
+      home_team_name: getTeamName(game.home_team),
       game_time: game.game_time,
       game_time_est: game.game_time_est,
       units: '',
@@ -681,10 +685,12 @@ export default function SubmitPicksPage() {
                   </div>
 
                   <div className={styles.pickGameInfo}>
-                    {/* Game info: Always show both logos */}
+                    {/* Game info: (Logo) Away @ (Logo) Home */}
                     {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.gameInfoLogo} />}
-                    <span>{pick.game_title}</span>
+                    <span className={styles.teamName}>{pick.away_team_name}</span>
+                    <span className={styles.atSymbol}>@</span>
                     {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.gameInfoLogo} />}
+                    <span className={styles.teamName}>{pick.home_team_name}</span>
                     <span className={styles.pickGameTime}>{pick.game_time_est}</span>
                   </div>
 
