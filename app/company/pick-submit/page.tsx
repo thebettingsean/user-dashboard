@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { FaFootballBall, FaBasketballBall } from 'react-icons/fa'
 import { IoArrowBack } from 'react-icons/io5'
 import { BsCheckCircleFill } from 'react-icons/bs'
-import styles from './submit-picks.module.css'
+import styles from './pick-submit.module.css'
 
 type Game = {
   game_id: string
@@ -83,7 +83,7 @@ export default function SubmitPicksPage() {
   // Redirect if not signed in
   useEffect(() => {
     if (!isSignedIn) {
-      router.push('/sign-in?redirect=/company/submit-picks')
+      router.push('/sign-in?redirect=/company/pick-submit')
     }
   }, [isSignedIn, router])
 
