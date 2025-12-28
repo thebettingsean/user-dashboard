@@ -439,9 +439,57 @@
 }
 
 .pickTeamLogo {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* For totals - overlapping logos */
+.totalLogos {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 36px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.pickTeamLogoTotal {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.pickTeamLogoTotal:first-child {
+  left: 0;
+  z-index: 1;
+}
+
+.pickTeamLogoTotal:last-child {
+  left: 12px;
+  z-index: 2;
+}
+
+/* For props - player image */
+.pickPlayerImage {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Game info logos */
+.gameInfoLogo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .pickBetInfo strong {
@@ -492,13 +540,17 @@
 
 .pickGameInfo {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   margin-bottom: 12px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.pickGameInfo span:first-of-type {
+  flex: 1;
 }
 
 .pickGameTime {

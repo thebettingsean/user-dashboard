@@ -49,6 +49,9 @@ type SlatePick = {
   away_team_logo: string | null
   home_team_logo: string | null
   prop_image: string | null
+  bet_type: 'spread' | 'moneyline' | 'total' | 'prop'
+  bet_team_logo: string | null // The specific team logo for spread/ML bets
+  bet_team_name: string | null // The specific team name for spread/ML bets
 }
 
 type Bettor = {
@@ -175,7 +178,37 @@ export default function SubmitPicksPage() {
     return parts[parts.length - 1] // Last word is usually the team name
   }
 
-  const addPickToSlate = (game: Game, betTitle: string, line: string, odds: number, book: string) => {
+  const addPickToSlate = (
+    game: Game, 
+    betTitle: string, 
+    line: string, 
+    odds: number, 
+    book: string,
+    betType: 'spread' | 'moneyline' | 'total' | 'prop',
+    teamName?: string // For spreads/MLs - which team is being bet
+  ) => {
+    // Determine which logo to show for the bet title
+    let betTeamLogo: string | null = null
+    let betTeamName: string | null = null
+    
+    if (betType === 'spread' || betType === 'moneyline') {
+      // For spreads/MLs, determine which team is being bet
+      const isHomeTeam = teamName && (
+        teamName.toLowerCase().includes(getTeamName(game.home_team).toLowerCase()) ||
+        getTeamName(game.home_team).toLowerCase().includes(teamName.toLowerCase())
+      )
+      
+      if (isHomeTeam) {
+        betTeamLogo = game.home_team_logo
+        betTeamName = getTeamName(game.home_team)
+      } else {
+        betTeamLogo = game.away_team_logo
+        betTeamName = getTeamName(game.away_team)
+      }
+    }
+    // For totals, we'll show both logos (handled in rendering)
+    // For props, we'll use prop_image (future)
+    
     const newPick: SlatePick = {
       id: `pick_${Date.now()}_${Math.random()}`,
       bet_title: betTitle,
@@ -192,7 +225,10 @@ export default function SubmitPicksPage() {
       game_id: game.game_id,
       away_team_logo: game.away_team_logo,
       home_team_logo: game.home_team_logo,
-      prop_image: null
+      prop_image: null,
+      bet_type: betType,
+      bet_team_logo: betTeamLogo,
+      bet_team_name: betTeamName
     }
     
     setSlatePicks(prev => [...prev, newPick])
@@ -389,7 +425,8 @@ export default function SubmitPicksPage() {
                               <div className={styles.betTypeList}>
                                 {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((marketGroup: Market[], idx: number) => {
                                   const firstMarket = marketGroup[0]
-                                  const betTitle = `${getTeamName(firstMarket.team)} ${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`
+                                  const teamName = getTeamName(firstMarket.team)
+                                  const betTitle = `${teamName} ${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`
                                   const betKey = `spread_${game.game_id}_${idx}`
                                   const isExpanded = expandedBet === betKey
                                   
@@ -399,7 +436,7 @@ export default function SubmitPicksPage() {
                                         className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
+                                        <span className={styles.betTeam}>{teamName}</span>
                                         <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
                                       </button>
                                       
@@ -410,7 +447,7 @@ export default function SubmitPicksPage() {
                                               key={bookIdx}
                                               className={styles.bookOption}
                                               onClick={() => {
-                                                addPickToSlate(game, betTitle, `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`, market.odds, market.book)
+                                                addPickToSlate(game, betTitle, `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`, market.odds, market.book, 'spread', teamName)
                                                 setExpandedBet(null)
                                               }}
                                             >
@@ -434,7 +471,8 @@ export default function SubmitPicksPage() {
                               <div className={styles.betTypeList}>
                                 {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((marketGroup: Market[], idx: number) => {
                                   const firstMarket = marketGroup[0]
-                                  const betTitle = `${getTeamName(firstMarket.team)} ML`
+                                  const teamName = getTeamName(firstMarket.team)
+                                  const betTitle = `${teamName} ML`
                                   const betKey = `ml_${game.game_id}_${idx}`
                                   const isExpanded = expandedBet === betKey
                                   
@@ -444,7 +482,7 @@ export default function SubmitPicksPage() {
                                         className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <span className={styles.betTeam}>{getTeamName(firstMarket.team)}</span>
+                                        <span className={styles.betTeam}>{teamName}</span>
                                         <span className={styles.betLine}>ML</span>
                                       </button>
                                       
@@ -455,7 +493,7 @@ export default function SubmitPicksPage() {
                                               key={bookIdx}
                                               className={styles.bookOption}
                                               onClick={() => {
-                                                addPickToSlate(game, betTitle, 'ML', market.odds, market.book)
+                                                addPickToSlate(game, betTitle, 'ML', market.odds, market.book, 'moneyline', teamName)
                                                 setExpandedBet(null)
                                               }}
                                             >
@@ -500,7 +538,7 @@ export default function SubmitPicksPage() {
                                               key={bookIdx}
                                               className={styles.bookOption}
                                               onClick={() => {
-                                                addPickToSlate(game, betTitle, `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`, market.odds, market.book)
+                                                addPickToSlate(game, betTitle, `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`, market.odds, market.book, 'total')
                                                 setExpandedBet(null)
                                               }}
                                             >
@@ -555,8 +593,20 @@ export default function SubmitPicksPage() {
                   <div className={styles.pickCardHeader}>
                     <div className={styles.pickBetInfo}>
                       <div className={styles.pickBetTitle}>
-                        {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.pickTeamLogo} />}
-                        {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogo} />}
+                        {/* Show logo based on bet type */}
+                        {pick.bet_type === 'spread' || pick.bet_type === 'moneyline' ? (
+                          // Spread/ML: Show single team logo
+                          pick.bet_team_logo && <img src={pick.bet_team_logo} alt="" className={styles.pickTeamLogo} />
+                        ) : pick.bet_type === 'total' ? (
+                          // Total: Show both logos (overlapped)
+                          <div className={styles.totalLogos}>
+                            {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
+                            {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
+                          </div>
+                        ) : pick.bet_type === 'prop' ? (
+                          // Prop: Show player image (future)
+                          pick.prop_image && <img src={pick.prop_image} alt="" className={styles.pickPlayerImage} />
+                        ) : null}
                         <strong>{pick.bet_title}</strong>
                       </div>
                       <span className={styles.pickOddsInfo}>
@@ -580,7 +630,10 @@ export default function SubmitPicksPage() {
                   </div>
 
                   <div className={styles.pickGameInfo}>
+                    {/* Game info: Always show both logos */}
+                    {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.gameInfoLogo} />}
                     <span>{pick.game_title}</span>
+                    {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.gameInfoLogo} />}
                     <span className={styles.pickGameTime}>{pick.game_time_est}</span>
                   </div>
 
