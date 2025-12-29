@@ -122,12 +122,17 @@ export async function GET(request: NextRequest) {
     const marketsParam = propMarkets.join(',')
     const oddsUrl = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/events/${oddsApiId}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketsParam}&oddsFormat=american`
     
+    console.log(`[PROPS API] Fetching props for ${sport} game ${oddsApiId}`)
+    console.log(`[PROPS API] URL: ${oddsUrl.replace(ODDS_API_KEY, 'XXX')}`)
+    
     const oddsResponse = await fetch(oddsUrl)
     if (!oddsResponse.ok) {
+      console.error(`[PROPS API] Odds API returned ${oddsResponse.status}`)
       throw new Error(`Odds API error: ${oddsResponse.status}`)
     }
 
     const gameData = await oddsResponse.json()
+    console.log(`[PROPS API] Bookmakers found: ${gameData.bookmakers?.length || 0}`)
 
     // Fetch player data from ClickHouse (images, positions, teams)
     const playersQuery = await clickhouseQuery<{
@@ -166,6 +171,8 @@ export async function GET(request: NextRequest) {
       playerMap.set(normalized, player)
       playerMap.set(player.name.toLowerCase(), player) // Also store original
     })
+
+    console.log(`[PROPS API] Players in ClickHouse: ${playerMap.size}`)
 
     // Organize props by player
     const propsByPlayer = new Map<string, any>()
@@ -214,14 +221,19 @@ export async function GET(request: NextRequest) {
     // Convert to array and filter by position if specified
     let propsArray = Array.from(propsByPlayer.values())
     
+    console.log(`[PROPS API] Props organized for ${propsArray.length} players`)
+    
     if (position) {
       propsArray = propsArray.filter(p => 
         p.position.toLowerCase() === position
       )
+      console.log(`[PROPS API] After position filter: ${propsArray.length} players`)
     }
 
     // Sort by player name
     propsArray.sort((a, b) => a.player_name.localeCompare(b.player_name))
+
+    console.log(`[PROPS API] Returning ${propsArray.length} players with props`)
 
     return NextResponse.json({
       success: true,

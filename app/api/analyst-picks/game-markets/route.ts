@@ -148,8 +148,16 @@ export async function GET(request: NextRequest) {
     )
 
     // Calculate best lines for each market
-    const bestHomeSpread = getBestSpread(spreadsByBook.filter(s => s.side === 'home'), 'favorite')
-    const bestAwaySpread = getBestSpread(spreadsByBook.filter(s => s.side === 'away'), 'underdog')
+    // Determine who's the favorite by checking spread values (negative = favorite)
+    const homeSpreads = spreadsByBook.filter(s => s.side === 'home')
+    const awaySpreads = spreadsByBook.filter(s => s.side === 'away')
+    
+    // Check first spread to determine favorite/underdog
+    const homeIsFavorite = homeSpreads.length > 0 && homeSpreads[0].point < 0
+    const awayIsFavorite = awaySpreads.length > 0 && awaySpreads[0].point < 0
+    
+    const bestHomeSpread = getBestSpread(homeSpreads, homeIsFavorite ? 'favorite' : 'underdog')
+    const bestAwaySpread = getBestSpread(awaySpreads, awayIsFavorite ? 'favorite' : 'underdog')
     const bestHomeML = getBestMoneyline(moneylinesByBook.filter(m => m.side === 'home'))
     const bestAwayML = getBestMoneyline(moneylinesByBook.filter(m => m.side === 'away'))
     const bestOver = getBestTotal(totalsByBook.filter(t => t.type === 'over'), 'over')
