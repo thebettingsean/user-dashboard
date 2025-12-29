@@ -51,9 +51,20 @@ type SlatePick = {
   away_team_logo: string | null
   home_team_logo: string | null
   prop_image: string | null
-  bet_type: 'spread' | 'moneyline' | 'total' | 'prop'
+  bet_type: 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay'
   bet_team_logo: string | null // The specific team logo for spread/ML bets
   bet_team_name: string | null // The specific team name for spread/ML bets
+  parlay_legs?: Array<{
+    image: string | null
+    player_name?: string
+    team_name?: string
+    game_id: string | null
+    game_title: string
+    game_time: string
+    game_time_est: string
+    away_team_logo?: string
+    home_team_logo?: string
+  }>
 }
 
 type Bettor = {
@@ -1452,8 +1463,18 @@ export default function SubmitPicksPage() {
                             {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
                           </div>
                         ) : pick.bet_type === 'prop' ? (
-                          // Prop: Show player image (future)
+                          // Prop: Show player image
                           pick.prop_image && <img src={pick.prop_image} alt="" className={styles.pickPlayerImage} />
+                        ) : pick.bet_type === 'parlay' && pick.parlay_legs ? (
+                          // Parlay: Show overlapped images from all legs (max 4)
+                          <div className={styles.parlayLogos}>
+                            {pick.parlay_legs.slice(0, 4).map((leg, idx) => (
+                              leg.image && <img key={idx} src={leg.image} alt="" className={styles.pickParlayLogo} />
+                            ))}
+                            {pick.parlay_legs.length > 4 && (
+                              <span className={styles.parlayMore}>+{pick.parlay_legs.length - 4}</span>
+                            )}
+                          </div>
                         ) : null}
                         <strong>{pick.bet_title}</strong>
                       </div>
@@ -1650,28 +1671,207 @@ export default function SubmitPicksPage() {
                     type="text"
                     placeholder="Search player or team..."
                     value={customPickImageSearch}
-                    onChange={(e) => {
-                      setCustomPickImageSearch(e.target.value)
-                      // TODO: Implement search debouncing
+                    onChange={async (e) => {
+                      const query = e.target.value
+                      setCustomPickImageSearch(query)
+                      
+                      if (query.length < 2) {
+                        setCustomPickImageResults([])
+                        return
+                      }
+
+                      setSearchingCustomImages(true)
+
+                      // Search players first (if NFL/NBA)
+                      if (selectedSport === 'nfl' || selectedSport === 'nba') {
+                        try {
+                          const response = await fetch(`/api/analyst-picks/search-players?sport=${selectedSport}&query=${encodeURIComponent(query)}`)
+                          if (response.ok) {
+                            const data = await response.json()
+                            // Add type: 'player' to each result
+                            const playersWithType = data.players.map((p: any) => ({ ...p, type: 'player' }))
+                            setCustomPickImageResults(playersWithType)
+                          }
+                        } catch (err) {
+                          console.error('[CUSTOM PICK] Error searching players:', err)
+                        }
+                      }
+
+                      // Also search teams (filter from games list)
+                      const teamResults = games
+                        .filter(g => 
+                          getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+                          getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+                        )
+                        .flatMap(g => [
+                          { 
+                            type: 'team', 
+                            name: getTeamName(g.away_team),
+                            logo: g.away_team_logo,
+                            game_id: g.game_id,
+                            game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+                            game_time: g.game_time,
+                            game_time_est: g.game_time_est
+                          },
+                          { 
+                            type: 'team', 
+                            name: getTeamName(g.home_team),
+                            logo: g.home_team_logo,
+                            game_id: g.game_id,
+                            game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+                            game_time: g.game_time,
+                            game_time_est: g.game_time_est
+                          }
+                        ])
+                        .filter((team, index, self) => 
+                          // Remove duplicates by name
+                          index === self.findIndex(t => t.name === team.name)
+                        )
+
+                      if (selectedSport !== 'nfl' && selectedSport !== 'nba') {
+                        setCustomPickImageResults(teamResults)
+                      } else {
+                        // Combine players and teams
+                        setCustomPickImageResults(prev => [...prev, ...teamResults])
+                      }
+
+                      setSearchingCustomImages(false)
                     }}
                   />
                   {searchingCustomImages && <small>Searching...</small>}
-                  {/* Image results will go here */}
+                  
+                  {/* Image Results */}
+                  {customPickImageResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {customPickImageResults.slice(0, 5).map((result: any, idx: number) => (
+                        <button
+                          key={idx}
+                          className={styles.searchResultItem}
+                          onClick={() => {
+                            // For single-leg picks, replace the leg
+                            // For multi-leg, prompt to also select game
+                            if (result.type === 'player') {
+                              // Player selected - still need game
+                              setCustomPickImageSearch('')
+                              setCustomPickImageResults([])
+                              // Show in "selected image" state
+                              alert('Player image selected! Now select the game below.')
+                              // Store temporarily
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                tempImage: result.headshot_url || '/placeholder-player.svg',
+                                tempPlayerName: result.name
+                              } as any))
+                            } else {
+                              // Team selected - has game info already
+                              const newLeg = {
+                                image: result.logo,
+                                team_name: result.name,
+                                game_id: result.game_id,
+                                game_title: result.game_title,
+                                game_time: result.game_time,
+                                game_time_est: result.game_time_est,
+                                away_team_logo: games.find(g => g.game_id === result.game_id)?.away_team_logo,
+                                home_team_logo: games.find(g => g.game_id === result.game_id)?.home_team_logo
+                              }
+                              
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                legs: prev.isMultiLeg ? [...prev.legs, newLeg] : [newLeg]
+                              }))
+                              setCustomPickImageSearch('')
+                              setCustomPickImageResults([])
+                            }
+                          }}
+                        >
+                          <img 
+                            src={result.type === 'player' ? (result.headshot_url || '/placeholder-player.svg') : result.logo} 
+                            alt={result.name}
+                            className={styles.searchResultImage}
+                          />
+                          <div className={styles.searchResultInfo}>
+                            <span className={styles.searchResultName}>{result.name}</span>
+                            <span className={styles.searchResultMeta}>
+                              {result.type === 'player' ? `${result.position} | ${result.team}` : 'Team'}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Game Search */}
                 <div className={styles.formGroup}>
-                  <label>Search for Game</label>
+                  <label>Search for Game {(customPickForm as any).tempPlayerName && `(for ${(customPickForm as any).tempPlayerName})`}</label>
                   <input
                     type="text"
                     placeholder="Search team name..."
                     value={customPickGameSearch}
                     onChange={(e) => {
-                      setCustomPickGameSearch(e.target.value)
-                      // TODO: Filter games
+                      const query = e.target.value
+                      setCustomPickGameSearch(query)
+                      
+                      if (query.length < 2) {
+                        setCustomPickGameResults([])
+                        return
+                      }
+
+                      // Filter games by team name
+                      const filtered = games.filter(g =>
+                        getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+                        getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+                      )
+                      
+                      setCustomPickGameResults(filtered)
                     }}
                   />
-                  {/* Game results will go here */}
+                  
+                  {/* Game Results */}
+                  {customPickGameResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {customPickGameResults.slice(0, 5).map((game: Game) => (
+                        <button
+                          key={game.game_id}
+                          className={styles.searchResultItem}
+                          onClick={() => {
+                            const newLeg = {
+                              image: (customPickForm as any).tempImage || null,
+                              player_name: (customPickForm as any).tempPlayerName,
+                              game_id: game.game_id,
+                              game_title: `${getTeamName(game.away_team)} @ ${getTeamName(game.home_team)}`,
+                              game_time: game.game_time,
+                              game_time_est: game.game_time_est,
+                              away_team_logo: game.away_team_logo,
+                              home_team_logo: game.home_team_logo
+                            }
+                            
+                            setCustomPickForm(prev => ({
+                              ...prev,
+                              legs: prev.isMultiLeg ? [...prev.legs, newLeg] : [newLeg],
+                              tempImage: undefined,
+                              tempPlayerName: undefined
+                            } as any))
+                            setCustomPickGameSearch('')
+                            setCustomPickGameResults([])
+                          }}
+                        >
+                          <div className={styles.gameResultLogos}>
+                            <img src={game.away_team_logo} alt="" className={styles.gameResultLogo} />
+                            <img src={game.home_team_logo} alt="" className={styles.gameResultLogo} />
+                          </div>
+                          <div className={styles.searchResultInfo}>
+                            <span className={styles.searchResultName}>
+                              {getTeamName(game.away_team)} @ {getTeamName(game.home_team)}
+                            </span>
+                            <span className={styles.searchResultMeta}>
+                              {game.game_time_est}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Current Legs */}
@@ -1726,15 +1926,95 @@ export default function SubmitPicksPage() {
                 <button 
                   className={styles.modalBtnAdd}
                   onClick={() => {
-                    // TODO: Add custom pick to slate
                     console.log('[CUSTOM PICK] Adding to slate:', customPickForm)
+                    
+                    // Build the pick from custom form
+                    if (customPickForm.isMultiLeg && customPickForm.legs.length > 1) {
+                      // PARLAY: Multiple legs
+                      const latestGame = customPickForm.legs.sort((a, b) => 
+                        new Date(b.game_time).getTime() - new Date(a.game_time).getTime()
+                      )[0]
+                      
+                      const newPick: SlatePick = {
+                        id: `pick_${Date.now()}_${Math.random()}`,
+                        bet_title: customPickForm.betTitle,
+                        line: `${customPickForm.legs.length}-leg parlay`,
+                        odds: customPickForm.odds,
+                        sportsbook: customPickForm.sportsbook,
+                        game_title: `${customPickForm.legs.length}-leg Parlay`,
+                        away_team_name: '',
+                        home_team_name: '',
+                        game_time: latestGame.game_time,
+                        game_time_est: latestGame.game_time_est,
+                        units: '',
+                        analysis: '',
+                        sport: games.find(g => g.game_id === latestGame.game_id)?.sport || selectedSport,
+                        sport_emoji: games.find(g => g.game_id === latestGame.game_id)?.sport_emoji || '🏈',
+                        game_id: latestGame.game_id, // Use latest game ID
+                        away_team_logo: null,
+                        home_team_logo: null,
+                        prop_image: null,
+                        bet_type: 'parlay' as any,
+                        bet_team_logo: null,
+                        bet_team_name: null,
+                        parlay_legs: customPickForm.legs // Store all legs
+                      }
+                      
+                      setSlatePicks(prev => [...prev, newPick])
+                    } else {
+                      // SINGLE LEG: Regular pick
+                      const leg = customPickForm.legs[0]
+                      const game = games.find(g => g.game_id === leg.game_id)
+                      
+                      const newPick: SlatePick = {
+                        id: `pick_${Date.now()}_${Math.random()}`,
+                        bet_title: customPickForm.betTitle,
+                        line: customPickForm.betTitle.split(' ').pop() || '', // Try to extract line
+                        odds: customPickForm.odds,
+                        sportsbook: customPickForm.sportsbook,
+                        game_title: leg.game_title,
+                        away_team_name: getTeamName(game?.away_team || ''),
+                        home_team_name: getTeamName(game?.home_team || ''),
+                        game_time: leg.game_time,
+                        game_time_est: leg.game_time_est,
+                        units: '',
+                        analysis: '',
+                        sport: game?.sport || selectedSport,
+                        sport_emoji: game?.sport_emoji || '🏈',
+                        game_id: leg.game_id || '',
+                        away_team_logo: leg.away_team_logo || null,
+                        home_team_logo: leg.home_team_logo || null,
+                        prop_image: leg.image,
+                        bet_type: customPickForm.betType as any,
+                        bet_team_logo: leg.image,
+                        bet_team_name: leg.player_name || leg.team_name || null
+                      }
+                      
+                      setSlatePicks(prev => [...prev, newPick])
+                    }
+                    
+                    // Reset and close
+                    setShowCustomPick(false)
+                    setCustomPickForm({
+                      isMultiLeg: false,
+                      betType: '',
+                      betTitle: '',
+                      odds: '',
+                      sportsbook: '',
+                      legs: []
+                    })
+                    setCustomPickImageSearch('')
+                    setCustomPickGameSearch('')
+                    setCustomPickImageResults([])
+                    setCustomPickGameResults([])
                   }}
                   disabled={
                     !customPickForm.betType ||
                     !customPickForm.betTitle ||
                     !customPickForm.odds ||
                     !customPickForm.sportsbook ||
-                    customPickForm.legs.length === 0
+                    customPickForm.legs.length === 0 ||
+                    (customPickForm.isMultiLeg && customPickForm.legs.length < 2)
                   }
                 >
                   Add to Slate

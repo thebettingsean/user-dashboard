@@ -1956,6 +1956,103 @@
   cursor: not-allowed;
 }
 
+/* Search Results */
+.searchResults {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.searchResultItem:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.searchResultImage {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.searchResultInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.searchResultName {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.searchResultMeta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gameResultLogos {
+  display: flex;
+  gap: 4px;
+}
+
+.gameResultLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Parlay Logos Overlap */
+.parlayLogos {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-right: 8px;
+}
+
+.pickParlayLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1a1a1a;
+  margin-left: -8px;
+}
+
+.pickParlayLogo:first-child {
+  margin-left: 0;
+}
+
+.parlayMore {
+  margin-left: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .modalContent {
     max-width: 95%;
@@ -1996,5 +2093,36 @@
   .modalBtnAdd {
     padding: 10px;
     font-size: 13px;
+  }
+
+  .searchResults {
+    max-height: 150px;
+  }
+
+  .searchResultItem {
+    padding: 6px;
+  }
+
+  .searchResultImage {
+    width: 28px;
+    height: 28px;
+  }
+
+  .searchResultName {
+    font-size: 12px;
+  }
+
+  .searchResultMeta {
+    font-size: 10px;
+  }
+
+  .gameResultLogo {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pickParlayLogo {
+    width: 20px;
+    height: 20px;
   }
 }
