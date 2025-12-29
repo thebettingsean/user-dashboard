@@ -83,6 +83,7 @@ export default function SubmitPicksPage() {
   const [expandedPosition, setExpandedPosition] = useState<string | null>(null)
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null)
   const [expandedPropType, setExpandedPropType] = useState<string | null>(null)
+  const [expandedAltLine, setExpandedAltLine] = useState<string | null>(null) // For showing specific alt line
   const [showAllLines, setShowAllLines] = useState<Record<string, boolean>>({})
   
   // Book selection state (when user clicks a bet type) - now inline, not modal
@@ -977,28 +978,64 @@ export default function SubmitPicksPage() {
                                                   
                                                   {/* Level 3: Prop Types (shown when player expanded) */}
                                                   {isPlayerExpanded && (() => {
-                                                    // Group props by market + point
-                                                    const propsByMarketPoint: Record<string, any> = {}
+                                                    // Helper to check if market is alternate
+                                                    const isAlternate = (market: string) => market.includes('_alternate')
+                                                    
+                                                    // Group props: standard by market+point, alternates by just market
+                                                    const propsByMarket: Record<string, any> = {}
                                                     
                                                     player.props.forEach((prop: any) => {
-                                                      const marketKey = prop.point 
-                                                        ? `${prop.market}|${prop.point}` 
-                                                        : `${prop.market}|anytime`
+                                                      const isAlt = isAlternate(prop.market)
+                                                      // For alternates, group by just market; for standard, by market+point
+                                                      const marketKey = isAlt 
+                                                        ? prop.market 
+                                                        : (prop.point ? `${prop.market}|${prop.point}` : `${prop.market}|anytime`)
                                                       
-                                                      if (!propsByMarketPoint[marketKey]) {
-                                                        propsByMarketPoint[marketKey] = {
+                                                      if (!propsByMarket[marketKey]) {
+                                                        propsByMarket[marketKey] = {
                                                           market: prop.market,
                                                           market_display: prop.market_display,
-                                                          point: prop.point,
-                                                          overs: [],
-                                                          unders: []
+                                                          isAlternate: isAlt,
+                                                          point: !isAlt ? prop.point : null, // Only for standard
+                                                          lines: {} // For alternates: group by line value
                                                         }
                                                       }
                                                       
-                                                      if (prop.name.toLowerCase().includes('over')) {
-                                                        propsByMarketPoint[marketKey].overs.push(prop)
-                                                      } else if (prop.name.toLowerCase().includes('under')) {
-                                                        propsByMarketPoint[marketKey].unders.push(prop)
+                                                      if (isAlt) {
+                                                        // For alternates, group by line value
+                                                        const lineKey = prop.point || 'anytime'
+                                                        if (!propsByMarket[marketKey].lines[lineKey]) {
+                                                          propsByMarket[marketKey].lines[lineKey] = {
+                                                            point: prop.point,
+                                                            overs: [],
+                                                            unders: []
+                                                          }
+                                                        }
+                                                        if (prop.name.toLowerCase().includes('over')) {
+                                                          propsByMarket[marketKey].lines[lineKey].overs.push(prop)
+                                                        } else if (prop.name.toLowerCase().includes('under')) {
+                                                          propsByMarket[marketKey].lines[lineKey].unders.push(prop)
+                                                        } else {
+                                                          // For Yes/No props like anytime TD
+                                                          if (!propsByMarket[marketKey].lines[lineKey].options) {
+                                                            propsByMarket[marketKey].lines[lineKey].options = []
+                                                          }
+                                                          propsByMarket[marketKey].lines[lineKey].options.push(prop)
+                                                        }
+                                                      } else {
+                                                        // For standard props, use old structure
+                                                        if (!propsByMarket[marketKey].overs) {
+                                                          propsByMarket[marketKey].overs = []
+                                                          propsByMarket[marketKey].unders = []
+                                                          propsByMarket[marketKey].options = []
+                                                        }
+                                                        if (prop.name.toLowerCase().includes('over')) {
+                                                          propsByMarket[marketKey].overs.push(prop)
+                                                        } else if (prop.name.toLowerCase().includes('under')) {
+                                                          propsByMarket[marketKey].unders.push(prop)
+                                                        } else {
+                                                          propsByMarket[marketKey].options.push(prop)
+                                                        }
                                                       }
                                                     })
                                                     

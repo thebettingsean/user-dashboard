@@ -32,6 +32,7 @@ const NFL_PROP_MARKETS = [
   'player_field_goals',
   'player_kicking_points',
   // Alternate markets
+  'player_anytime_td_alternate',
   'player_pass_tds_alternate',
   'player_pass_yds_alternate',
   'player_rush_yds_alternate',
@@ -324,6 +325,7 @@ function formatMarketName(marketKey: string): string {
     player_receptions: 'Receptions',
     player_reception_yds: 'Receiving Yards',
     player_anytime_td: 'Anytime TD',
+    player_anytime_td_alternate: 'Anytime TD (Alt)',
     player_pass_attempts: 'Pass Attempts',
     player_pass_completions: 'Pass Completions',
     player_pass_interceptions: 'Interceptions',
