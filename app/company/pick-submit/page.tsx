@@ -98,6 +98,8 @@ export default function SubmitPicksPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [playerSearchResults, setPlayerSearchResults] = useState<any[]>([])
+  const [searchingPlayers, setSearchingPlayers] = useState(false)
 
   // Load bettors on mount
   useEffect(() => {
@@ -267,6 +269,37 @@ export default function SubmitPicksPage() {
       getTeamName(game.away_team).toLowerCase().includes(query)
     )
   })
+
+  // Search for players when query changes (for NFL/NBA only)
+  useEffect(() => {
+    const searchPlayers = async () => {
+      if (!searchQuery || searchQuery.length < 2) {
+        setPlayerSearchResults([])
+        return
+      }
+
+      if (selectedSport !== 'nfl' && selectedSport !== 'nba') {
+        return
+      }
+
+      setSearchingPlayers(true)
+      try {
+        const res = await fetch(`/api/analyst-picks/search-players?query=${searchQuery}&sport=${selectedSport}`)
+        const data = await res.json()
+        
+        if (data.success) {
+          setPlayerSearchResults(data.players)
+        }
+      } catch (err: any) {
+        console.error('Failed to search players:', err)
+      } finally {
+        setSearchingPlayers(false)
+      }
+    }
+
+    const debounceTimer = setTimeout(searchPlayers, 300)
+    return () => clearTimeout(debounceTimer)
+  }, [searchQuery, selectedSport])
 
   const addPickToSlate = (
     game: Game, 
@@ -982,6 +1015,40 @@ export default function SubmitPicksPage() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Player Search Results */}
+          {searchQuery && searchQuery.length >= 2 && (selectedSport === 'nfl' || selectedSport === 'nba') && (
+            <div className={styles.playerSearchSection}>
+              <h3 className={styles.playerSearchTitle}>Player Results</h3>
+              {searchingPlayers ? (
+                <div className={styles.loading}>Searching players...</div>
+              ) : playerSearchResults.length === 0 ? (
+                <div className={styles.noData}>No players match "{searchQuery}"</div>
+              ) : (
+                <div className={styles.playerResultsList}>
+                  {playerSearchResults.map((player) => (
+                    <div key={player.name} className={styles.playerResultCard}>
+                      {player.headshot_url && (
+                        <img src={player.headshot_url} alt={player.name} className={styles.playerResultImage} />
+                      )}
+                      <div className={styles.playerResultInfo}>
+                        <span className={styles.playerResultName}>{player.name}</span>
+                        <span className={styles.playerResultMeta}>
+                          {player.position} | {player.team}
+                        </span>
+                        {player.injury_status && player.injury_status !== 'ACTIVE' && (
+                          <span className={styles.playerResultInjury}>{player.injury_status}</span>
+                        )}
+                      </div>
+                      <div className={styles.playerResultHint}>
+                        <small>Select their team's game above to see props</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

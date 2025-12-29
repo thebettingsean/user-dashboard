@@ -686,6 +686,84 @@
   border-color: rgba(59, 130, 246, 0.4);
 }
 
+/* Player Search Results */
+.playerSearchSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playerSearchTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.playerResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playerResultCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.playerResultCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.playerResultImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.playerResultInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.playerResultName {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.playerResultMeta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.playerResultInjury {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.playerResultHint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  text-align: right;
+}
+
 /* Book Options (inline dropdown) */
 .bookOptions {
   display: flex;
@@ -1442,5 +1520,41 @@
   .propBookBtn {
     padding: 5px 8px;
     font-size: 10px;
+  }
+
+  /* Player Search Mobile */
+  .playerSearchSection {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  .playerSearchTitle {
+    font-size: 12px;
+  }
+
+  .playerResultCard {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .playerResultImage {
+    width: 32px;
+    height: 32px;
+  }
+
+  .playerResultName {
+    font-size: 12px;
+  }
+
+  .playerResultMeta {
+    font-size: 10px;
+  }
+
+  .playerResultInjury {
+    font-size: 9px;
+  }
+
+  .playerResultHint {
+    font-size: 9px;
   }
 }
