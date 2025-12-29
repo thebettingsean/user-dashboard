@@ -51,7 +51,7 @@ type SlatePick = {
   away_team_logo: string | null
   home_team_logo: string | null
   prop_image: string | null
-  bet_type: 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay'
+  bet_type: 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay' | 'team_special'
   bet_team_logo: string | null // The specific team logo for spread/ML bets
   bet_team_name: string | null // The specific team name for spread/ML bets
   parlay_legs?: Array<{
@@ -1558,23 +1558,44 @@ export default function SubmitPicksPage() {
                     <div className={styles.pickBetInfo}>
                       <div className={styles.pickBetTitle}>
                         {/* Show logo based on bet type */}
-                        {pick.bet_type === 'spread' || pick.bet_type === 'moneyline' ? (
-                          // Spread/ML: Show single team logo
-                          pick.bet_team_logo && <img src={pick.bet_team_logo} alt="" className={styles.pickTeamLogo} />
+                        {pick.bet_type === 'spread' || pick.bet_type === 'moneyline' || pick.bet_type === 'team_special' ? (
+                          // Spread/ML/Team Special: Show single team logo
+                          <img 
+                            src={pick.bet_team_logo || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.pickTeamLogo} 
+                          />
                         ) : pick.bet_type === 'total' ? (
                           // Total: Show both logos (overlapped)
                           <div className={styles.totalLogos}>
-                            {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
-                            {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
+                            <img 
+                              src={pick.away_team_logo || '/placeholder-player.svg'} 
+                              alt="" 
+                              className={styles.pickTeamLogoTotal} 
+                            />
+                            <img 
+                              src={pick.home_team_logo || '/placeholder-player.svg'} 
+                              alt="" 
+                              className={styles.pickTeamLogoTotal} 
+                            />
                           </div>
                         ) : pick.bet_type === 'prop' ? (
                           // Prop: Show player image
-                          pick.prop_image && <img src={pick.prop_image} alt="" className={styles.pickPlayerImage} />
+                          <img 
+                            src={pick.prop_image || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.pickPlayerImage} 
+                          />
                         ) : pick.bet_type === 'parlay' && pick.parlay_legs ? (
                           // Parlay: Show overlapped images from all legs (max 4)
                           <div className={styles.parlayLogos}>
                             {pick.parlay_legs.slice(0, 4).map((leg, idx) => (
-                              leg.image && <img key={idx} src={leg.image} alt="" className={styles.pickParlayLogo} />
+                              <img 
+                                key={idx} 
+                                src={leg.image || '/placeholder-player.svg'} 
+                                alt="" 
+                                className={styles.pickParlayLogo} 
+                              />
                             ))}
                             {pick.parlay_legs.length > 4 && (
                               <span className={styles.parlayMore}>+{pick.parlay_legs.length - 4}</span>
@@ -1605,11 +1626,27 @@ export default function SubmitPicksPage() {
 
                   <div className={styles.pickGameInfo}>
                     {/* Game info: (Logo) Away @ (Logo) Home */}
-                    {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.gameInfoLogo} />}
-                    <span className={styles.teamName}>{pick.away_team_name}</span>
-                    <span className={styles.atSymbol}>@</span>
-                    {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.gameInfoLogo} />}
-                    <span className={styles.teamName}>{pick.home_team_name}</span>
+                    {pick.away_team_name && (
+                      <>
+                        <img 
+                          src={pick.away_team_logo || '/placeholder-player.svg'} 
+                          alt="" 
+                          className={styles.gameInfoLogo} 
+                        />
+                        <span className={styles.teamName}>{pick.away_team_name}</span>
+                        <span className={styles.atSymbol}>@</span>
+                      </>
+                    )}
+                    {pick.home_team_name && (
+                      <>
+                        <img 
+                          src={pick.home_team_logo || '/placeholder-player.svg'} 
+                          alt="" 
+                          className={styles.gameInfoLogo} 
+                        />
+                        <span className={styles.teamName}>{pick.home_team_name}</span>
+                      </>
+                    )}
                     <span className={styles.pickGameTime}>{pick.game_time_est}</span>
                   </div>
 
@@ -1725,6 +1762,7 @@ export default function SubmitPicksPage() {
                       <option value="spread">Spread</option>
                       <option value="moneyline">Moneyline</option>
                       <option value="total">Total</option>
+                      <option value="team_special">Team Special (Team Total, etc.)</option>
                       <option value="prop">Prop</option>
                     </>
                   )}
@@ -1905,7 +1943,11 @@ export default function SubmitPicksPage() {
                     <div className={styles.legsList}>
                       {customPickForm.legs.map((leg, idx) => (
                         <div key={idx} className={styles.legItem}>
-                          {leg.image && <img src={leg.image} alt="" className={styles.legImage} />}
+                          <img 
+                            src={leg.image || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.legImage} 
+                          />
                           <span>{leg.game_title}</span>
                           <button 
                             className={styles.removeLegBtn}
