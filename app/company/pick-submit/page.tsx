@@ -124,8 +124,8 @@ export default function SubmitPicksPage() {
       away_team_logo?: string
       home_team_logo?: string
     }>,
-    tempImage?: string,
-    tempPlayerName?: string
+    tempImage: undefined as string | undefined,
+    tempPlayerName: undefined as string | undefined
   })
   const [customPickImageSearch, setCustomPickImageSearch] = useState('')
   const [customPickGameSearch, setCustomPickGameSearch] = useState('')
@@ -1801,7 +1801,7 @@ export default function SubmitPicksPage() {
                                 ...prev,
                                 tempImage: result.headshot_url || '/placeholder-player.svg',
                                 tempPlayerName: result.name
-                              } as any))
+                              }))
                             } else {
                               // Team selected - has game info already
                               const newLeg = {
@@ -1860,8 +1860,8 @@ export default function SubmitPicksPage() {
                           className={styles.searchResultItem}
                           onClick={() => {
                             const newLeg = {
-                              image: (customPickForm as any).tempImage || null,
-                              player_name: (customPickForm as any).tempPlayerName,
+                              image: customPickForm.tempImage || null,
+                              player_name: customPickForm.tempPlayerName,
                               game_id: game.game_id,
                               game_title: `${getTeamName(game.away_team)} @ ${getTeamName(game.home_team)}`,
                               game_time: game.game_time,
@@ -1875,7 +1875,7 @@ export default function SubmitPicksPage() {
                               legs: prev.isMultiLeg ? [...prev.legs, newLeg] : [newLeg],
                               tempImage: undefined,
                               tempPlayerName: undefined
-                            } as any))
+                            }))
                             setCustomPickGameSearch('')
                             setCustomPickGameResults([])
                           }}
