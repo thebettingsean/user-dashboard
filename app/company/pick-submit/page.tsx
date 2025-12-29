@@ -96,6 +96,30 @@ export default function SubmitPicksPage() {
   
   // Custom pick state
   const [showCustomPick, setShowCustomPick] = useState(false)
+  const [customPickForm, setCustomPickForm] = useState({
+    isMultiLeg: false,
+    betType: '' as 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay' | '',
+    betTitle: '',
+    odds: '',
+    sportsbook: '',
+    legs: [] as Array<{
+      image: string | null
+      player_name?: string
+      team_name?: string
+      game_id: string | null
+      game_title: string
+      game_time: string
+      game_time_est: string
+      away_team_logo?: string
+      home_team_logo?: string
+    }>
+  })
+  const [customPickImageSearch, setCustomPickImageSearch] = useState('')
+  const [customPickGameSearch, setCustomPickGameSearch] = useState('')
+  const [customPickImageResults, setCustomPickImageResults] = useState<any[]>([])
+  const [customPickGameResults, setCustomPickGameResults] = useState<any[]>([])
+  const [searchingCustomImages, setSearchingCustomImages] = useState(false)
+  const [searchingCustomGames, setSearchingCustomGames] = useState(false)
   
   // UI state
   const [loading, setLoading] = useState(false)
@@ -1502,18 +1526,221 @@ export default function SubmitPicksPage() {
 
       {/* Custom Pick Modal */}
       {showCustomPick && (
-        <div className={styles.modal} onClick={() => setShowCustomPick(false)}>
+        <div className={styles.modal} onClick={() => {
+          setShowCustomPick(false)
+          // Reset form
+          setCustomPickForm({
+            isMultiLeg: false,
+            betType: '',
+            betTitle: '',
+            odds: '',
+            sportsbook: '',
+            legs: []
+          })
+          setCustomPickImageSearch('')
+          setCustomPickGameSearch('')
+          setCustomPickImageResults([])
+          setCustomPickGameResults([])
+        }}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Custom Pick</h3>
-              <button className={styles.modalClose} onClick={() => setShowCustomPick(false)}>
+              <button className={styles.modalClose} onClick={() => {
+                setShowCustomPick(false)
+                // Reset form
+                setCustomPickForm({
+                  isMultiLeg: false,
+                  betType: '',
+                  betTitle: '',
+                  odds: '',
+                  sportsbook: '',
+                  legs: []
+                })
+                setCustomPickImageSearch('')
+                setCustomPickGameSearch('')
+                setCustomPickImageResults([])
+                setCustomPickGameResults([])
+              }}>
                 <IoClose />
               </button>
             </div>
-            <p className={styles.modalSubtext}>Coming soon - manually enter all pick details</p>
-            <button className={styles.modalBtnCancel} onClick={() => setShowCustomPick(false)}>
-              Close
-            </button>
+
+            <div className={styles.customPickForm}>
+              {/* Multi-leg Toggle */}
+              <div className={styles.multiLegToggle}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={customPickForm.isMultiLeg}
+                    onChange={(e) => setCustomPickForm(prev => ({
+                      ...prev,
+                      isMultiLeg: e.target.checked,
+                      betType: e.target.checked ? 'parlay' : ''
+                    }))}
+                  />
+                  <span>Multi-leg Parlay</span>
+                </label>
+              </div>
+
+              {/* Bet Type */}
+              <div className={styles.formGroup}>
+                <label>Bet Type</label>
+                <select
+                  value={customPickForm.betType}
+                  onChange={(e) => setCustomPickForm(prev => ({
+                    ...prev,
+                    betType: e.target.value as any
+                  }))}
+                  disabled={customPickForm.isMultiLeg}
+                >
+                  <option value="">Select bet type...</option>
+                  {!customPickForm.isMultiLeg && (
+                    <>
+                      <option value="spread">Spread</option>
+                      <option value="moneyline">Moneyline</option>
+                      <option value="total">Total</option>
+                      <option value="prop">Prop</option>
+                    </>
+                  )}
+                  {customPickForm.isMultiLeg && <option value="parlay">Parlay</option>}
+                </select>
+              </div>
+
+              {/* Bet Title */}
+              <div className={styles.formGroup}>
+                <label>Bet Title</label>
+                <input
+                  type="text"
+                  placeholder={customPickForm.isMultiLeg ? "e.g., Chiefs ML + Bills ML + Eagles ML" : "e.g., Eagles -3"}
+                  value={customPickForm.betTitle}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, betTitle: e.target.value }))}
+                />
+              </div>
+
+              {/* Odds */}
+              <div className={styles.formGroup}>
+                <label>Odds</label>
+                <input
+                  type="text"
+                  placeholder="e.g., -110 or +150"
+                  value={customPickForm.odds}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, odds: e.target.value }))}
+                />
+              </div>
+
+              {/* Sportsbook */}
+              <div className={styles.formGroup}>
+                <label>Sportsbook</label>
+                <input
+                  type="text"
+                  placeholder="e.g., DraftKings"
+                  value={customPickForm.sportsbook}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, sportsbook: e.target.value }))}
+                />
+              </div>
+
+              {/* Image / Game Search Section */}
+              <div className={styles.formSection}>
+                <h4>Add {customPickForm.isMultiLeg ? 'Legs' : 'Image & Game'}</h4>
+                
+                {/* Image Search */}
+                <div className={styles.formGroup}>
+                  <label>Search for Player/Team (for image)</label>
+                  <input
+                    type="text"
+                    placeholder="Search player or team..."
+                    value={customPickImageSearch}
+                    onChange={(e) => {
+                      setCustomPickImageSearch(e.target.value)
+                      // TODO: Implement search debouncing
+                    }}
+                  />
+                  {searchingCustomImages && <small>Searching...</small>}
+                  {/* Image results will go here */}
+                </div>
+
+                {/* Game Search */}
+                <div className={styles.formGroup}>
+                  <label>Search for Game</label>
+                  <input
+                    type="text"
+                    placeholder="Search team name..."
+                    value={customPickGameSearch}
+                    onChange={(e) => {
+                      setCustomPickGameSearch(e.target.value)
+                      // TODO: Filter games
+                    }}
+                  />
+                  {/* Game results will go here */}
+                </div>
+
+                {/* Current Legs */}
+                {customPickForm.legs.length > 0 && (
+                  <div className={styles.customPickLegs}>
+                    <label>Added {customPickForm.isMultiLeg ? 'Legs' : 'Selection'}: {customPickForm.legs.length}</label>
+                    <div className={styles.legsList}>
+                      {customPickForm.legs.map((leg, idx) => (
+                        <div key={idx} className={styles.legItem}>
+                          {leg.image && <img src={leg.image} alt="" className={styles.legImage} />}
+                          <span>{leg.game_title}</span>
+                          <button 
+                            className={styles.removeLegBtn}
+                            onClick={() => {
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                legs: prev.legs.filter((_, i) => i !== idx)
+                              }))
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className={styles.modalActions}>
+                <button 
+                  className={styles.modalBtnCancel} 
+                  onClick={() => {
+                    setShowCustomPick(false)
+                    setCustomPickForm({
+                      isMultiLeg: false,
+                      betType: '',
+                      betTitle: '',
+                      odds: '',
+                      sportsbook: '',
+                      legs: []
+                    })
+                    setCustomPickImageSearch('')
+                    setCustomPickGameSearch('')
+                    setCustomPickImageResults([])
+                    setCustomPickGameResults([])
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className={styles.modalBtnAdd}
+                  onClick={() => {
+                    // TODO: Add custom pick to slate
+                    console.log('[CUSTOM PICK] Adding to slate:', customPickForm)
+                  }}
+                  disabled={
+                    !customPickForm.betType ||
+                    !customPickForm.betTitle ||
+                    !customPickForm.odds ||
+                    !customPickForm.sportsbook ||
+                    customPickForm.legs.length === 0
+                  }
+                >
+                  Add to Slate
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
