@@ -540,6 +540,9 @@ export default function SimulatorPage() {
         />
       </div>
 
+      {/* Dark Overlay to reduce brightness */}
+      <div className={styles.darkOverlay}></div>
+
       {/* Content Overlay */}
       <div className={styles.contentOverlay}>
         {/* Header */}
