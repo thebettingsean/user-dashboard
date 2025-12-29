@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search players in ClickHouse
+    // Sport is stored as lowercase in players table ('nfl', 'nba')
     const playersResult = await clickhouseQuery<{
       name: string
       position: string
@@ -41,8 +42,8 @@ export async function GET(request: NextRequest) {
         p.headshot_url,
         p.injury_status
       FROM players p
-      LEFT JOIN teams t ON p.team_id = t.team_id AND t.sport = '${sport}'
-      WHERE p.sport = '${sport}'
+      LEFT JOIN teams t ON p.team_id = t.team_id AND LOWER(t.sport) = '${sport.toLowerCase()}'
+      WHERE LOWER(p.sport) = '${sport.toLowerCase()}'
         AND p.is_active = true
         AND LOWER(p.name) LIKE '%${query}%'
       ORDER BY p.name

@@ -212,25 +212,31 @@ export default function SubmitPicksPage() {
     console.log('[PROPS] Grouping', players?.length || 0, 'players for', sport)
     
     const positionOrder = sport === 'nfl' 
-      ? ['QB', 'WR', 'RB', 'TE', 'K', 'DEF']
-      : ['Guard', 'Forward', 'Center']
+      ? ['QB', 'WR', 'RB', 'TE', 'K', 'DEF', 'No Position']
+      : ['Guard', 'Forward', 'Center', 'No Position']
     
     const grouped: Record<string, any[]> = {}
     
     players?.forEach(player => {
-      const position = sport === 'nfl' 
+      let position = sport === 'nfl' 
         ? player.position 
         : simplifyNBAPosition(player.position)
       
       console.log('[PROPS] Player:', player.player_name, 'Position:', position)
       
-      // Filter out defensive players (except team defense)
+      // Filter out known defensive players (except team defense)
       if (sport === 'nfl') {
         const defensivePositions = ['LB', 'CB', 'S', 'DE', 'DT', 'OLB', 'ILB', 'FS', 'SS', 'NT', 'EDGE']
         if (defensivePositions.includes(position)) {
           console.log('[PROPS] Skipping defensive player:', player.player_name, position)
           return // Skip defensive players
         }
+      }
+      
+      // Handle Unknown position -> "No Position"
+      if (position === 'Unknown' || !position) {
+        position = 'No Position'
+        console.log('[PROPS] Player has no position:', player.player_name, '-> "No Position"')
       }
       
       if (!grouped[position]) {
@@ -262,10 +268,10 @@ export default function SubmitPicksPage() {
   // Helper to simplify NBA positions
   const simplifyNBAPosition = (position: string) => {
     const pos = position.toUpperCase()
-    if (pos.includes('G') || pos === 'PG' || pos === 'SG') return 'Guard'
-    if (pos.includes('F') || pos === 'SF' || pos === 'PF') return 'Forward'
-    if (pos.includes('C')) return 'Center'
-    return 'Guard' // Default
+    if (pos === 'G' || pos.includes('G') || pos === 'PG' || pos === 'SG') return 'Guard'
+    if (pos === 'F' || pos.includes('F') || pos === 'SF' || pos === 'PF') return 'Forward'
+    if (pos === 'C' || pos.includes('C')) return 'Center'
+    return 'No Position' // Fallback instead of default
   }
 
   const handleSportChange = (sport: string) => {

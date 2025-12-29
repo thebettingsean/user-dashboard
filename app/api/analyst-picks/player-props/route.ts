@@ -135,6 +135,7 @@ export async function GET(request: NextRequest) {
     console.log(`[PROPS API] Bookmakers found: ${gameData.bookmakers?.length || 0}`)
 
     // Fetch player data from ClickHouse (images, positions, teams)
+    // Sport is stored as lowercase in players table ('nfl', 'nba')
     const playersQuery = await clickhouseQuery<{
       name: string
       position: string
@@ -149,12 +150,17 @@ export async function GET(request: NextRequest) {
         p.headshot_url,
         p.injury_status
       FROM players p
-      LEFT JOIN teams t ON p.team_id = t.team_id AND t.sport = '${sport.toUpperCase()}'
-      WHERE p.sport = '${sport.toUpperCase()}'
+      LEFT JOIN teams t ON p.team_id = t.team_id AND LOWER(t.sport) = '${sport.toLowerCase()}'
+      WHERE LOWER(p.sport) = '${sport.toLowerCase()}'
         AND p.is_active = true
         ${position ? `AND LOWER(p.position) = '${position}'` : ''}
       ORDER BY p.name
     `)
+
+    console.log(`[PROPS API] ClickHouse query returned ${playersQuery.data?.length || 0} players`)
+    if (playersQuery.data && playersQuery.data.length > 0) {
+      console.log(`[PROPS API] Sample player from DB:`, playersQuery.data[0])
+    }
 
     // Create player lookup map with multiple variations
     const playerMap = new Map()
