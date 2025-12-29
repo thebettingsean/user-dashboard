@@ -182,16 +182,23 @@ export default function SubmitPicksPage() {
     
     setLoadingProps(prev => ({ ...prev, [game.game_id]: true }))
     try {
+      console.log('[PROPS] Fetching props for game:', game.game_id, 'sport:', selectedSport)
       const res = await fetch(`/api/analyst-picks/player-props?oddsApiId=${game.odds_api_id}&sport=${selectedSport}`)
       const data = await res.json()
       
+      console.log('[PROPS] API Response:', data)
+      
       if (data.success) {
+        console.log('[PROPS] Players received:', data.players?.length || 0)
         // Group props by position
         const grouped = groupPropsByPosition(data.players, selectedSport)
+        console.log('[PROPS] Grouped by position:', Object.keys(grouped))
         setGameProps(prev => ({ 
           ...prev, 
           [game.game_id]: grouped
         }))
+      } else {
+        console.error('[PROPS] API returned success=false:', data.error)
       }
     } catch (err: any) {
       console.error('Failed to load props:', err)
@@ -202,21 +209,26 @@ export default function SubmitPicksPage() {
 
   // Helper to group props by position
   const groupPropsByPosition = (players: any[], sport: string) => {
+    console.log('[PROPS] Grouping', players?.length || 0, 'players for', sport)
+    
     const positionOrder = sport === 'nfl' 
       ? ['QB', 'WR', 'RB', 'TE', 'K', 'DEF']
       : ['Guard', 'Forward', 'Center']
     
     const grouped: Record<string, any[]> = {}
     
-    players.forEach(player => {
+    players?.forEach(player => {
       const position = sport === 'nfl' 
         ? player.position 
         : simplifyNBAPosition(player.position)
+      
+      console.log('[PROPS] Player:', player.player_name, 'Position:', position)
       
       // Filter out defensive players (except team defense)
       if (sport === 'nfl') {
         const defensivePositions = ['LB', 'CB', 'S', 'DE', 'DT', 'OLB', 'ILB', 'FS', 'SS', 'NT', 'EDGE']
         if (defensivePositions.includes(position)) {
+          console.log('[PROPS] Skipping defensive player:', player.player_name, position)
           return // Skip defensive players
         }
       }
@@ -226,6 +238,8 @@ export default function SubmitPicksPage() {
       }
       grouped[position].push(player)
     })
+    
+    console.log('[PROPS] Grouped positions:', Object.keys(grouped))
     
     // Sort each position group by player name
     Object.keys(grouped).forEach(pos => {
@@ -239,6 +253,8 @@ export default function SubmitPicksPage() {
         ordered[pos] = grouped[pos]
       }
     })
+    
+    console.log('[PROPS] Ordered positions:', Object.keys(ordered))
     
     return ordered
   }
@@ -901,7 +917,7 @@ export default function SubmitPicksPage() {
                               <h4 className={styles.marketTitle}>Props</h4>
                               {loadingProps[game.game_id] ? (
                                 <div className={styles.loadingMarkets}>Loading props...</div>
-                              ) : gameProps[game.game_id] ? (
+                              ) : gameProps[game.game_id] && Object.keys(gameProps[game.game_id]).length > 0 ? (
                                 <div className={styles.propsHierarchy}>
                                   {/* Level 1: Position */}
                                   {Object.entries(gameProps[game.game_id]).map(([position, players]: [string, any]) => {
