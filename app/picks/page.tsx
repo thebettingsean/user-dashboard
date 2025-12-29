@@ -677,27 +677,8 @@ export default function PicksPage() {
                                   )}
                                 </div>
                                 
-                                {/* Line 2: Matchup (Text Only) + Game Time (Desktop) / Just Matchup (Mobile) */}
-                                {pick.game_title && (
-                                  <div className={styles.pickMatchup}>
-                                    <span className={styles.teamName}>{pick.game_title.split('@')[0].trim()}</span>
-                                    <span className={styles.atSymbol}>@</span>
-                                    <span className={styles.teamName}>{pick.game_title.split('@')[1]?.trim()}</span>
-                                    <span className={styles.gameTimeDesktop}>
-                                      {new Date(pick.game_time).toLocaleString('en-US', {
-                                        timeZone: 'America/New_York',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                        hour12: true
-                                      })}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                {/* Line 3: Game Time (Mobile Only) */}
-                                <div className={styles.gameTimeMobile}>
+                                {/* Line 2: Game Time Only */}
+                                <div className={styles.pickGameTime}>
                                   {new Date(pick.game_time).toLocaleString('en-US', {
                                     timeZone: 'America/New_York',
                                     month: 'short',
@@ -776,9 +757,23 @@ export default function PicksPage() {
                                       cursor: 'pointer'
                                     }}
                                   >
+                                    {/* Matchup with logos */}
+                                    {pick.game_title && (
+                                      <div className={styles.dropdownMatchup}>
+                                        {pick.away_team_image && (
+                                          <img src={pick.away_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[0].trim()}</span>
+                                        <span className={styles.dropdownAtSymbol}>@</span>
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[1]?.trim()}</span>
+                                        {pick.home_team_image && (
+                                          <img src={pick.home_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                      </div>
+                                    )}
                                     {/* Sportsbook info with timestamp */}
                                     <div className={styles.sportsbookInfo}>
-                                      {pick.sportsbook} {pick.odds}, Taken at: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                      {pick.sportsbook} {pick.odds}, Posted on: {new Date(pick.posted_at).toLocaleString('en-US', {
                                         timeZone: 'America/New_York',
                                         month: 'short',
                                         day: 'numeric',
@@ -794,9 +789,23 @@ export default function PicksPage() {
                                     className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
                                     onClick={(e) => e.stopPropagation()}
                                   >
+                                    {/* Matchup with logos */}
+                                    {pick.game_title && (
+                                      <div className={styles.dropdownMatchup}>
+                                        {pick.away_team_image && (
+                                          <img src={pick.away_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[0].trim()}</span>
+                                        <span className={styles.dropdownAtSymbol}>@</span>
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[1]?.trim()}</span>
+                                        {pick.home_team_image && (
+                                          <img src={pick.home_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                      </div>
+                                    )}
                                     {/* Sportsbook info with timestamp */}
                                     <div className={styles.sportsbookInfo}>
-                                      {pick.sportsbook} {pick.odds}, Taken at: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                      {pick.sportsbook} {pick.odds}, Posted on: {new Date(pick.posted_at).toLocaleString('en-US', {
                                         timeZone: 'America/New_York',
                                         month: 'short',
                                         day: 'numeric',
