@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       ORDER BY p.name
     `)
 
-    // Create player lookup map
+    // Create player lookup map with multiple variations
     const playerMap = new Map()
     playersQuery.data?.forEach(player => {
       // Normalize name for matching (remove Jr., Sr., periods, etc.)
@@ -169,11 +169,21 @@ export async function GET(request: NextRequest) {
         .replace(/ iii$/i, '')
         .trim()
       
+      // Store multiple variations
       playerMap.set(normalized, player)
-      playerMap.set(player.name.toLowerCase(), player) // Also store original
+      playerMap.set(player.name.toLowerCase(), player)
+      
+      // Also store last name only for better matching
+      const parts = normalized.split(' ')
+      if (parts.length > 1) {
+        const lastName = parts[parts.length - 1]
+        const firstInitial = parts[0][0]
+        playerMap.set(`${firstInitial} ${lastName}`, player) // "M Stafford"
+        playerMap.set(`${parts[0]} ${lastName}`, player) // "Matt Stafford" or "Matthew Stafford"
+      }
     })
 
-    console.log(`[PROPS API] Players in ClickHouse: ${playerMap.size}`)
+    console.log(`[PROPS API] Players in ClickHouse: ${playerMap.size / 4} (with variations)`) // Divide by 4 since we store 4 versions
 
     // Organize props by player
     const propsByPlayer = new Map<string, any>()
@@ -185,15 +195,50 @@ export async function GET(request: NextRequest) {
           const playerName = outcome.description || outcome.name
           if (!playerName) return
 
-          // Try to match player
+          // Try to match player with multiple variations
           const normalizedName = playerName
             .toLowerCase()
             .replace(/\./g, '')
             .replace(/ jr$/i, '')
             .replace(/ sr$/i, '')
+            .replace(/ ii$/i, '')
+            .replace(/ iii$/i, '')
             .trim()
           
-          const playerData = playerMap.get(normalizedName) || playerMap.get(playerName.toLowerCase())
+          // Try multiple matching strategies
+          let playerData = playerMap.get(normalizedName) || 
+                          playerMap.get(playerName.toLowerCase())
+          
+          // If still no match, try first initial + last name
+          if (!playerData) {
+            const parts = normalizedName.split(' ')
+            if (parts.length > 1) {
+              const firstInitial = parts[0][0]
+              const lastName = parts[parts.length - 1]
+              playerData = playerMap.get(`${firstInitial} ${lastName}`)
+            }
+          }
+          
+          // If still no match, try just last name match (for rare cases)
+          if (!playerData) {
+            const parts = normalizedName.split(' ')
+            if (parts.length > 1) {
+              const lastName = parts[parts.length - 1]
+              // Find any player with matching last name
+              for (const [key, value] of playerMap.entries()) {
+                if (key.endsWith(lastName) && key.split(' ').length === parts.length) {
+                  playerData = value
+                  break
+                }
+              }
+            }
+          }
+          
+          if (!playerData) {
+            console.log(`[PROPS API] ❌ Could not match player: "${playerName}" (normalized: "${normalizedName}")`)
+          } else {
+            console.log(`[PROPS API] ✅ Matched: "${playerName}" → Position: ${playerData.position}, Team: ${playerData.team_abbr}`)
+          }
 
           if (!propsByPlayer.has(playerName)) {
             propsByPlayer.set(playerName, {
@@ -222,7 +267,10 @@ export async function GET(request: NextRequest) {
     // Convert to array and filter by position if specified
     let propsArray = Array.from(propsByPlayer.values())
     
-    console.log(`[PROPS API] Props organized for ${propsArray.length} players`)
+    const matchedCount = propsArray.filter(p => p.position !== 'Unknown').length
+    const unmatchedCount = propsArray.filter(p => p.position === 'Unknown').length
+    
+    console.log(`[PROPS API] Props organized for ${propsArray.length} players (${matchedCount} matched, ${unmatchedCount} unmatched)`)
     
     if (position) {
       propsArray = propsArray.filter(p => 
@@ -235,6 +283,13 @@ export async function GET(request: NextRequest) {
     propsArray.sort((a, b) => a.player_name.localeCompare(b.player_name))
 
     console.log(`[PROPS API] Returning ${propsArray.length} players with props`)
+    
+    // Log position breakdown
+    const positionCounts: Record<string, number> = {}
+    propsArray.forEach(p => {
+      positionCounts[p.position] = (positionCounts[p.position] || 0) + 1
+    })
+    console.log(`[PROPS API] Position breakdown:`, positionCounts)
 
     return NextResponse.json({
       success: true,
