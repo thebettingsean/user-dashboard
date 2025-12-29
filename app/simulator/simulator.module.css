@@ -1,17 +1,22 @@
-/* Simulator Page Styles */
+/* Design System - Dark Theme (matching public-betting, picks, builder) */
+/* Keep Spline background (glowing dots) */
 
 .container {
   position: relative;
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   background: transparent;
   pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 /* ============================================================================
-   Spline Background
+   Spline Background - KEEP THIS (glowing dots)
    ============================================================================ */
 
 .splineBackground {
@@ -32,13 +37,17 @@
   position: relative;
   z-index: 1000;
   width: 100%;
-  height: 100%;
+  max-width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
+  justify-content: flex-start;
+  padding: 80px 24px 40px;
   pointer-events: auto;
+  background: transparent;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ============================================================================
@@ -46,60 +55,59 @@
    ============================================================================ */
 
 .header {
-  position: absolute;
-  top: 180px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 20px 40px;
+  position: relative;
+  margin-bottom: 32px;
+  padding: 0;
   z-index: 1001;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  text-align: center;
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 300;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 0;
   text-align: center;
-  color: #ffffff;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .subtitle {
-  font-size: 10px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 400;
+  color: #696969;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-align: center;
+  margin: 0;
 }
 
 .versusLink {
-  color: rgba(255, 255, 255, 0.8);
+  color: #94A3B8;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .versusLink:hover {
-  color: rgba(255, 255, 255, 1);
+  color: #FFFFFF;
   text-decoration: underline;
 }
 
 .versusArrow {
   display: inline-block;
-  margin-left: 2px;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  margin-left: 4px;
+  font-size: 12px;
+  color: #94A3B8;
   transition: transform 0.2s ease;
 }
 
@@ -116,23 +124,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 340px;
   padding: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .generationCounter {
-  padding: 12px 24px;
-  margin-bottom: 20px;
-  border-radius: 999px;
-  background: rgba(255, 215, 0, 0.1);
+  padding: 8px 16px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  background: rgba(29, 37, 48, 0.4);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  color: rgba(255, 215, 0, 0.9);
-  font-size: 13px;
-  font-weight: 400;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ============================================================================
@@ -141,45 +150,58 @@
 
 .selectionRow {
   display: flex;
-  gap: 16px;
-  margin-bottom: 40px;
+  gap: 12px;
+  margin-bottom: 32px;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
-.dropdownWrapper {
-  position: relative;
-  z-index: 1001;
-}
-
-.selectionButton {
-  padding: 14px 28px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+/* Native Select - Device Specific Styling */
+.nativeSelect {
+  padding: 8px 16px;
+  padding-right: 32px;
+  border-radius: 8px;
+  background: rgba(29, 37, 48, 0.3);
   backdrop-filter: blur(10px);
-  border: none;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 400;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  pointer-events: auto;
-  position: relative;
-  z-index: 1001;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 150px;
+  min-width: 120px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
 }
 
-.selectionButton:hover {
-  background: rgba(255, 255, 255, 0.1);
+.nativeSelect:hover {
+  background-color: rgba(41, 47, 63, 0.4);
+  border-color: rgba(50, 51, 53, 0.7);
 }
 
-.selectionButtonActive {
-  background: rgba(255, 255, 255, 0.15);
+.nativeSelect:focus {
+  outline: none;
+  border-color: rgba(148, 163, 184, 0.4);
+  background-color: rgba(41, 47, 63, 0.5);
+}
+
+.nativeSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nativeSelect option {
+  background: #1D2530;
+  color: #FFFFFF;
+  padding: 8px;
 }
 
 /* ============================================================================
@@ -188,82 +210,88 @@
 
 .dropdown {
   position: absolute;
-  bottom: calc(100% + 2px);
+  bottom: calc(100% + 4px);
   left: 0;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: none;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
   padding: 8px;
   min-width: 150px;
   z-index: 1003;
   pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .dropdownLarge {
   position: absolute;
-  bottom: calc(100% + 2px);
+  bottom: calc(100% + 4px);
   left: 0;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: none;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
   padding: 12px;
   min-width: 250px;
-  max-height: 200px;
-  overflow: auto;
+  max-height: 300px;
+  overflow-y: auto;
   z-index: 1003;
   pointer-events: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .dropdownSearch {
   width: 100%;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(29, 37, 48, 0.4);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.dropdownSearch:focus {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(41, 47, 63, 0.5);
 }
 
 .dropdownSearch::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #696969;
 }
 
 .dropdownItem {
-  padding: 12px 16px;
-  border-radius: 999px;
+  padding: 10px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  color: #ffffff;
-  font-size: 14px;
+  color: #FFFFFF;
+  font-size: 12px;
   font-weight: 400;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   margin-bottom: 4px;
   transition: all 0.2s ease;
   background: transparent;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   position: relative;
   z-index: 1004;
   pointer-events: auto;
 }
 
 .dropdownItem:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(41, 47, 63, 0.4);
 }
 
 .dropdownItemActive {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(41, 47, 63, 0.6);
+  color: #FFFFFF;
 }
 
 .dropdownLoading,
 .dropdownEmpty {
   padding: 20px;
   text-align: center;
-  color: #ffffff;
+  color: #9CA3AF;
+  font-size: 12px;
 }
 
 /* ============================================================================
@@ -274,26 +302,33 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   align-items: center;
+  width: 100%;
 }
 
 .scoreCard {
-  font-size: 42px;
-  font-weight: 300;
-  color: #ffffff;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  padding: 24px 48px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: none;
+  font-size: 36px;
+  font-weight: 600;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 24px 32px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+  gap: 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 500px;
+}
+
+.scoreCard:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .scoreRow {
@@ -308,74 +343,84 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 4px;
 }
 
 .teamAbbr {
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .teamVenue {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-size: 11px;
+  color: #696969;
+  font-weight: 400;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
 }
 
 .score {
-  font-size: 42px;
+  font-size: 36px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .statsRow {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  max-width: 500px;
 }
 
 .statCard {
-  padding: 16px 24px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: none;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
   transition: all 0.2s ease;
+  flex: 1;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .statCard:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(41, 47, 63, 0.4);
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateY(-1px);
 }
 
 .statLabel {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 6px;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  color: #696969;
+  margin-bottom: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
 }
 
 .statValue {
   font-size: 20px;
-  font-weight: 300;
-  color: #ffffff;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-weight: 600;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .fullSimulatorLink {
-  margin-top: 16px;
+  margin-top: 8px;
   padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  background: rgba(29, 37, 48, 0.3);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #94A3B8;
   font-size: 12px;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
@@ -385,13 +430,13 @@
 }
 
 .fullSimulatorLink:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 1);
+  background: rgba(41, 47, 63, 0.4);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #FFFFFF;
 }
 
 .fullSimulatorArrow {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* ============================================================================
@@ -399,32 +444,36 @@
    ============================================================================ */
 
 .simulateButton {
-  padding: 16px 48px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
+  padding: 12px 32px;
+  border-radius: 10px;
+  background: rgba(29, 37, 48, 0.4);
   backdrop-filter: blur(10px);
-  border: none;
-  color: #ffffff;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
   font-size: 14px;
-  font-weight: 400;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   pointer-events: auto;
   position: relative;
   z-index: 1001;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .simulateButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(41, 47, 63, 0.5);
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .simulateButton:disabled {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(29, 37, 48, 0.2);
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -432,7 +481,6 @@
 .buttonIcon {
   width: 20px;
   height: 20px;
-  margin-right: 8px;
   display: inline-block;
   vertical-align: middle;
   filter: brightness(0) invert(1);
@@ -445,18 +493,17 @@
 .slidersWrapper {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 240px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: none;
+  gap: 24px;
+  width: 280px;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   font-size: 12px;
   position: fixed;
   top: 120px;
-  right: 20px;
+  right: 24px;
   max-height: calc(100vh - 160px);
   overflow-y: auto;
   z-index: 1001;
@@ -465,29 +512,27 @@
 .sliderSection {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .sliderTeamName {
-  font-size: 12px;
-  font-weight: 400;
-  color: #ffffff;
-  margin-bottom: 8px;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .sliderGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .sliderItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .sliderHeader {
@@ -495,19 +540,54 @@
   justify-content: space-between;
   margin-bottom: 4px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #9CA3AF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
 }
 
 .slider {
   width: 100%;
-  height: 4px;
+  height: 6px;
   border-radius: 999px;
-  background: linear-gradient(to right, #667eea, #764ba2);
+  background: rgba(29, 37, 48, 0.5);
   outline: none;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #94A3B8;
+  cursor: pointer;
+  border: 2px solid #1D2530;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #94A3B8;
+  cursor: pointer;
+  border: 2px solid #1D2530;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #FFFFFF;
+  transform: scale(1.1);
 }
 
 /* ============================================================================
@@ -530,11 +610,11 @@
 }
 
 .modal {
-  background: rgba(20, 25, 30, 0.95);
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 40px;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 18px;
+  padding: 32px;
   max-width: 500px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -553,83 +633,86 @@
 }
 
 .modalTitle {
-  font-size: 24px;
-  font-weight: 500;
-  color: #ffffff;
-  margin: 0 0 20px 0;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0 0 16px 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: center;
 }
 
 .modalText {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  color: #9CA3AF;
   margin-bottom: 20px;
   line-height: 1.6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: center;
 }
 
 .modalList {
   list-style: none;
   padding: 0;
-  margin: 0 0 30px 0;
+  margin: 0 0 24px 0;
 }
 
 .modalList li {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  color: #9CA3AF;
   padding: 8px 0;
   padding-left: 24px;
   position: relative;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .modalList li::before {
   content: '✓';
   position: absolute;
   left: 0;
-  color: #667eea;
-  font-weight: bold;
+  color: #94A3B8;
+  font-weight: 600;
 }
 
 .modalButton {
   width: 100%;
-  padding: 16px 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: #ffffff;
-  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  background: rgba(41, 47, 63, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
+  font-size: 14px;
   font-weight: 500;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   margin-bottom: 12px;
 }
 
 .modalButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  background: rgba(41, 47, 63, 0.8);
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .modalButtonSecondary {
   width: 100%;
-  padding: 16px 32px;
-  border-radius: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  font-weight: 400;
-  font-family: 'Helvetica Neue', 'Arial', sans-serif;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #9CA3AF;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .modalButtonSecondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(29, 37, 48, 0.3);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #FFFFFF;
 }
 
 /* ============================================================================
@@ -637,23 +720,24 @@
    ============================================================================ */
 
 @media (max-width: 768px) {
+  .contentOverlay {
+    padding: 80px 16px 40px;
+  }
+
   .header {
-    top: 120px;
-    width: calc(100% - 40px);
-    padding: 12px 20px;
+    margin-bottom: 24px;
   }
 
   .title {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .subtitle {
-    font-size: 8px;
+    font-size: 12px;
   }
 
   .mainContent {
-    margin-top: 260px;
-    padding: 0 16px;
+    padding: 0;
   }
 
   .selectionRow {
@@ -662,21 +746,22 @@
   }
 
   .selectionButton {
-    padding: 12px 16px;
+    padding: 10px 14px;
     font-size: 11px;
     min-width: 100px;
-    width: calc(33.33% - 6px);
+    flex: 1;
   }
 
   .dropdownLarge {
     right: 0;
+    left: auto;
     min-width: 100%;
     max-height: 300px;
   }
 
   .scoreCard {
     font-size: 28px;
-    padding: 16px 24px;
+    padding: 20px 24px;
     width: 100%;
   }
 
@@ -696,17 +781,17 @@
   }
 
   .statLabel {
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .statValue {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .simulateButton {
-    padding: 18px 32px;
+    padding: 14px 24px;
     font-size: 13px;
-    width: calc(100% - 32px);
+    width: 100%;
     min-height: 48px;
   }
 
@@ -714,27 +799,27 @@
     position: relative;
     top: auto;
     right: auto;
-    left: 16px;
-    width: calc(100% - 32px);
+    left: auto;
+    width: 100%;
     margin-top: 24px;
     margin-bottom: 24px;
     max-height: none;
   }
 
   .modal {
-    padding: 30px 20px;
+    padding: 24px 20px;
   }
 
   .modalTitle {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .modalText {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .modalList li {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .fullSimulatorLink {
@@ -742,4 +827,3 @@
     padding: 6px 12px;
   }
 }
-
