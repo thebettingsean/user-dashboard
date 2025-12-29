@@ -147,6 +147,14 @@ export async function GET(request: NextRequest) {
       t => `under|${t.point}`
     )
 
+    // Calculate best lines for each market
+    const bestHomeSpread = getBestSpread(spreadsByBook.filter(s => s.side === 'home'), 'favorite')
+    const bestAwaySpread = getBestSpread(spreadsByBook.filter(s => s.side === 'away'), 'underdog')
+    const bestHomeML = getBestMoneyline(moneylinesByBook.filter(m => m.side === 'home'))
+    const bestAwayML = getBestMoneyline(moneylinesByBook.filter(m => m.side === 'away'))
+    const bestOver = getBestTotal(totalsByBook.filter(t => t.type === 'over'), 'over')
+    const bestUnder = getBestTotal(totalsByBook.filter(t => t.type === 'under'), 'under')
+
     return NextResponse.json({
       success: true,
       game: {
@@ -154,7 +162,21 @@ export async function GET(request: NextRequest) {
         away_team: gameData.away_team,
         commence_time: gameData.commence_time
       },
-      markets: {
+      best_lines: {
+        spreads: {
+          home: bestHomeSpread,
+          away: bestAwaySpread
+        },
+        moneylines: {
+          home: bestHomeML,
+          away: bestAwayML
+        },
+        totals: {
+          over: bestOver,
+          under: bestUnder
+        }
+      },
+      all_lines: {
         spreads: {
           home: homeSpreadGroups,
           away: awaySpreadGroups
@@ -178,5 +200,72 @@ export async function GET(request: NextRequest) {
       error: error.message
     }, { status: 500 })
   }
+}
+
+// Helper: Get best spread (prioritize line value, then juice)
+function getBestSpread(spreads: any[], type: 'favorite' | 'underdog') {
+  if (!spreads || spreads.length === 0) return null
+
+  return spreads.reduce((best, current) => {
+    if (!best) return current
+
+    const bestPoint = Math.abs(best.point)
+    const currentPoint = Math.abs(current.point)
+
+    if (type === 'favorite') {
+      // For favorites, want smallest spread (e.g., -2.5 > -3)
+      if (currentPoint < bestPoint) return current
+      if (currentPoint === bestPoint && current.odds > best.odds) return current // Better juice
+    } else {
+      // For underdogs, want largest spread (e.g., +3.5 > +3)
+      if (currentPoint > bestPoint) return current
+      if (currentPoint === bestPoint && current.odds > best.odds) return current // Better juice
+    }
+
+    return best
+  }, null)
+}
+
+// Helper: Get best moneyline (prioritize line value)
+function getBestMoneyline(moneylines: any[]) {
+  if (!moneylines || moneylines.length === 0) return null
+
+  return moneylines.reduce((best, current) => {
+    if (!best) return current
+
+    // If favorite (negative odds), want closest to even (smallest negative, e.g., -140 > -150)
+    if (current.odds < 0 && best.odds < 0) {
+      return current.odds > best.odds ? current : best
+    }
+
+    // If underdog (positive odds), want highest positive (e.g., +160 > +150)
+    if (current.odds > 0 && best.odds > 0) {
+      return current.odds > best.odds ? current : best
+    }
+
+    // Mixed case: prefer underdog (positive odds)
+    return current.odds > 0 ? current : best
+  }, null)
+}
+
+// Helper: Get best total (prioritize line value, then juice)
+function getBestTotal(totals: any[], type: 'over' | 'under') {
+  if (!totals || totals.length === 0) return null
+
+  return totals.reduce((best, current) => {
+    if (!best) return current
+
+    if (type === 'over') {
+      // For overs, want lower number (e.g., 47.5 < 48.5)
+      if (current.point < best.point) return current
+      if (current.point === best.point && current.odds > best.odds) return current // Better juice
+    } else {
+      // For unders, want higher number (e.g., 48.5 > 47.5)
+      if (current.point > best.point) return current
+      if (current.point === best.point && current.odds > best.odds) return current // Better juice
+    }
+
+    return best
+  }, null)
 }
 

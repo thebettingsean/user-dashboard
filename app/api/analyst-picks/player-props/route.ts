@@ -14,19 +14,78 @@ const SPORT_MAP: Record<string, string> = {
   nba: 'basketball_nba',
 }
 
-// Prop markets to fetch
-const PROP_MARKETS = [
+// NFL Prop markets (standard + alternates)
+const NFL_PROP_MARKETS = [
+  // Standard markets
   'player_pass_tds',
   'player_pass_yds',
   'player_rush_yds',
   'player_receptions',
   'player_reception_yds',
   'player_anytime_td',
+  'player_pass_attempts',
+  'player_pass_completions',
+  'player_pass_interceptions',
+  'player_rush_attempts',
+  'player_reception_tds',
+  'player_rush_tds',
+  'player_field_goals',
+  'player_kicking_points',
+  // Alternate markets
+  'player_pass_tds_alternate',
+  'player_pass_yds_alternate',
+  'player_rush_yds_alternate',
+  'player_receptions_alternate',
+  'player_reception_yds_alternate',
+  'player_pass_attempts_alternate',
+  'player_pass_completions_alternate',
+  'player_pass_interceptions_alternate',
+  'player_pass_longest_completion_alternate',
+  'player_pass_rush_yds_alternate',
+  'player_pass_rush_reception_tds_alternate',
+  'player_pass_rush_reception_yds_alternate',
+  'player_reception_longest_alternate',
+  'player_reception_tds_alternate',
+  'player_rush_attempts_alternate',
+  'player_rush_longest_alternate',
+  'player_rush_reception_tds_alternate',
+  'player_rush_reception_yds_alternate',
+  'player_rush_tds_alternate',
+  'player_field_goals_alternate',
+  'player_kicking_points_alternate',
+  'player_pats_alternate',
+  'player_sacks_alternate',
+  'player_solo_tackles_alternate',
+  'player_tackles_assists_alternate',
+  'player_assists_alternate'
+]
+
+// NBA Prop markets (standard + alternates)
+const NBA_PROP_MARKETS = [
+  // Standard markets
   'player_points',
   'player_rebounds',
   'player_assists',
   'player_threes',
-  'player_points_rebounds_assists'
+  'player_blocks',
+  'player_steals',
+  'player_turnovers',
+  'player_points_rebounds_assists',
+  'player_points_assists',
+  'player_points_rebounds',
+  'player_rebounds_assists',
+  // Alternate markets
+  'player_points_alternate',
+  'player_rebounds_alternate',
+  'player_assists_alternate',
+  'player_blocks_alternate',
+  'player_steals_alternate',
+  'player_turnovers_alternate',
+  'player_threes_alternate',
+  'player_points_assists_alternate',
+  'player_points_rebounds_alternate',
+  'player_rebounds_assists_alternate',
+  'player_points_rebounds_assists_alternate'
 ]
 
 export async function GET(request: NextRequest) {
@@ -59,7 +118,8 @@ export async function GET(request: NextRequest) {
 
     // Fetch props from Odds API
     const oddsApiSport = SPORT_MAP[sport]
-    const marketsParam = PROP_MARKETS.join(',')
+    const propMarkets = sport === 'nfl' ? NFL_PROP_MARKETS : NBA_PROP_MARKETS
+    const marketsParam = propMarkets.join(',')
     const oddsUrl = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/events/${oddsApiId}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketsParam}&oddsFormat=american`
     
     const oddsResponse = await fetch(oddsUrl)
@@ -183,17 +243,72 @@ export async function GET(request: NextRequest) {
 // Helper to format market names
 function formatMarketName(marketKey: string): string {
   const names: Record<string, string> = {
+    // NFL Standard
     player_pass_tds: 'Pass TDs',
     player_pass_yds: 'Pass Yards',
     player_rush_yds: 'Rush Yards',
     player_receptions: 'Receptions',
     player_reception_yds: 'Receiving Yards',
     player_anytime_td: 'Anytime TD',
+    player_pass_attempts: 'Pass Attempts',
+    player_pass_completions: 'Pass Completions',
+    player_pass_interceptions: 'Interceptions',
+    player_rush_attempts: 'Rush Attempts',
+    player_reception_tds: 'Receiving TDs',
+    player_rush_tds: 'Rush TDs',
+    player_field_goals: 'Field Goals',
+    player_kicking_points: 'Kicking Points',
+    // NFL Alternates
+    player_pass_tds_alternate: 'Pass TDs (Alt)',
+    player_pass_yds_alternate: 'Pass Yards (Alt)',
+    player_rush_yds_alternate: 'Rush Yards (Alt)',
+    player_receptions_alternate: 'Receptions (Alt)',
+    player_reception_yds_alternate: 'Receiving Yards (Alt)',
+    player_pass_attempts_alternate: 'Pass Attempts (Alt)',
+    player_pass_completions_alternate: 'Pass Completions (Alt)',
+    player_pass_interceptions_alternate: 'Interceptions (Alt)',
+    player_pass_longest_completion_alternate: 'Longest Pass (Alt)',
+    player_pass_rush_yds_alternate: 'Pass + Rush Yards (Alt)',
+    player_pass_rush_reception_tds_alternate: 'Pass + Rush + Rec TDs (Alt)',
+    player_pass_rush_reception_yds_alternate: 'Pass + Rush + Rec Yards (Alt)',
+    player_reception_longest_alternate: 'Longest Reception (Alt)',
+    player_reception_tds_alternate: 'Receiving TDs (Alt)',
+    player_rush_attempts_alternate: 'Rush Attempts (Alt)',
+    player_rush_longest_alternate: 'Longest Rush (Alt)',
+    player_rush_reception_tds_alternate: 'Rush + Rec TDs (Alt)',
+    player_rush_reception_yds_alternate: 'Rush + Rec Yards (Alt)',
+    player_rush_tds_alternate: 'Rush TDs (Alt)',
+    player_field_goals_alternate: 'Field Goals (Alt)',
+    player_kicking_points_alternate: 'Kicking Points (Alt)',
+    player_pats_alternate: 'PATs (Alt)',
+    player_sacks_alternate: 'Sacks (Alt)',
+    player_solo_tackles_alternate: 'Solo Tackles (Alt)',
+    player_tackles_assists_alternate: 'Tackles + Assists (Alt)',
+    player_assists_alternate: 'Assists (Alt)',
+    // NBA Standard
     player_points: 'Points',
     player_rebounds: 'Rebounds',
     player_assists: 'Assists',
-    player_threes: '3-Pointers Made',
-    player_points_rebounds_assists: 'Points + Rebounds + Assists'
+    player_threes: '3-Pointers',
+    player_blocks: 'Blocks',
+    player_steals: 'Steals',
+    player_turnovers: 'Turnovers',
+    player_points_rebounds_assists: 'Pts + Rebs + Asts',
+    player_points_assists: 'Points + Assists',
+    player_points_rebounds: 'Points + Rebounds',
+    player_rebounds_assists: 'Rebounds + Assists',
+    // NBA Alternates
+    player_points_alternate: 'Points (Alt)',
+    player_rebounds_alternate: 'Rebounds (Alt)',
+    player_assists_alternate: 'Assists (Alt)',
+    player_blocks_alternate: 'Blocks (Alt)',
+    player_steals_alternate: 'Steals (Alt)',
+    player_turnovers_alternate: 'Turnovers (Alt)',
+    player_threes_alternate: '3-Pointers (Alt)',
+    player_points_assists_alternate: 'Pts + Asts (Alt)',
+    player_points_rebounds_alternate: 'Pts + Rebs (Alt)',
+    player_rebounds_assists_alternate: 'Rebs + Asts (Alt)',
+    player_points_rebounds_assists_alternate: 'Pts + Rebs + Asts (Alt)'
   }
   return names[marketKey] || marketKey
 }
