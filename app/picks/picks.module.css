@@ -793,6 +793,7 @@
 
   .dateDropdown {
     flex-shrink: 0;
+    position: relative;
   }
 
   .dateDropdownBtn {
@@ -803,10 +804,10 @@
   }
 
   .dateDropdownMenu {
-    right: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100vw - 32px);
+    right: 0;
+    left: auto;
+    transform: none;
+    width: min(calc(100vw - 32px), 320px);
     max-width: 320px;
   }
 
