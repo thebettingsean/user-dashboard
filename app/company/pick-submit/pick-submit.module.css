@@ -536,6 +536,156 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Props Container */
+.propsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.positionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.positionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.playerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.playerHeadshot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.playerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.playerName {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.playerTeam {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.propCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.propCardBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.propCardBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.propCardBtn.expanded {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.propMarket {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.propLine {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.propBooks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.propSide {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.propSideLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.propBookBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.propBookBtn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
 /* Book Options (inline dropdown) */
 .bookOptions {
   display: flex;
@@ -1238,5 +1388,59 @@
   .propsPlaceholder {
     font-size: 10px;
     padding: 16px;
+  }
+
+  /* Props Mobile Styles */
+  .propsContainer {
+    gap: 16px;
+  }
+
+  .positionTitle {
+    font-size: 10px;
+  }
+
+  .playerGroup {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .playerHeadshot {
+    width: 28px;
+    height: 28px;
+  }
+
+  .playerName {
+    font-size: 11px;
+  }
+
+  .playerTeam {
+    font-size: 9px;
+  }
+
+  .propCardBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .propMarket {
+    font-size: 10px;
+  }
+
+  .propLine {
+    font-size: 10px;
+  }
+
+  .propBooks {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .propSideLabel {
+    font-size: 9px;
+  }
+
+  .propBookBtn {
+    padding: 5px 8px;
+    font-size: 10px;
   }
 }

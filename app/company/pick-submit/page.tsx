@@ -77,6 +77,11 @@ export default function SubmitPicksPage() {
   const [gameMarkets, setGameMarkets] = useState<Record<string, any>>({})
   const [loadingMarkets, setLoadingMarkets] = useState<Record<string, boolean>>({})
   
+  // Props state
+  const [gameProps, setGameProps] = useState<Record<string, any>>({})
+  const [loadingProps, setLoadingProps] = useState<Record<string, boolean>>({})
+  const [expandedProp, setExpandedProp] = useState<string | null>(null)
+  
   // Book selection state (when user clicks a bet type) - now inline, not modal
   const [expandedBet, setExpandedBet] = useState<string | null>(null)
   
@@ -166,6 +171,67 @@ export default function SubmitPicksPage() {
     }
   }
 
+  const fetchProps = async (game: Game) => {
+    // Only fetch props for NFL and NBA
+    if (selectedSport !== 'nfl' && selectedSport !== 'nba') return
+    if (gameProps[game.game_id]) return // Already loaded
+    
+    setLoadingProps(prev => ({ ...prev, [game.game_id]: true }))
+    try {
+      const res = await fetch(`/api/analyst-picks/player-props?oddsApiId=${game.odds_api_id}&sport=${selectedSport}`)
+      const data = await res.json()
+      
+      if (data.success) {
+        // Group props by position
+        const grouped = groupPropsByPosition(data.players, selectedSport)
+        setGameProps(prev => ({ 
+          ...prev, 
+          [game.game_id]: grouped
+        }))
+      }
+    } catch (err: any) {
+      console.error('Failed to load props:', err)
+    } finally {
+      setLoadingProps(prev => ({ ...prev, [game.game_id]: false }))
+    }
+  }
+
+  // Helper to group props by position
+  const groupPropsByPosition = (players: any[], sport: string) => {
+    const positionOrder = sport === 'nfl' 
+      ? ['QB', 'RB', 'WR', 'TE', 'K']
+      : ['Guard', 'Forward', 'Center']
+    
+    const grouped: Record<string, any[]> = {}
+    
+    players.forEach(player => {
+      const position = sport === 'nfl' 
+        ? player.position 
+        : simplifyNBAPosition(player.position)
+      
+      if (!grouped[position]) {
+        grouped[position] = []
+      }
+      grouped[position].push(player)
+    })
+    
+    // Sort each position group by player name
+    Object.keys(grouped).forEach(pos => {
+      grouped[pos].sort((a, b) => a.player_name.localeCompare(b.player_name))
+    })
+    
+    return grouped
+  }
+
+  // Helper to simplify NBA positions
+  const simplifyNBAPosition = (position: string) => {
+    const pos = position.toUpperCase()
+    if (pos.includes('G') || pos === 'PG' || pos === 'SG') return 'Guard'
+    if (pos.includes('F') || pos === 'SF' || pos === 'PF') return 'Forward'
+    if (pos.includes('C')) return 'Center'
+    return 'Guard' // Default
+  }
+
   const handleSportChange = (sport: string) => {
     setSelectedSport(sport)
     setGames([])
@@ -180,6 +246,7 @@ export default function SubmitPicksPage() {
     } else {
       setExpandedGame(game.game_id)
       fetchMarkets(game)
+      fetchProps(game) // Also fetch props for NFL/NBA
     }
   }
 
@@ -781,9 +848,130 @@ export default function SubmitPicksPage() {
                           {(selectedSport === 'nfl' || selectedSport === 'nba') && (
                             <div className={styles.marketSection}>
                               <h4 className={styles.marketTitle}>Props</h4>
-                              <div className={styles.propsPlaceholder}>
-                                <p>Props coming soon...</p>
-                              </div>
+                              {loadingProps[game.game_id] ? (
+                                <div className={styles.loadingMarkets}>Loading props...</div>
+                              ) : gameProps[game.game_id] ? (
+                                <div className={styles.propsContainer}>
+                                  {Object.entries(gameProps[game.game_id]).map(([position, players]: [string, any]) => (
+                                    <div key={position} className={styles.positionGroup}>
+                                      <h5 className={styles.positionTitle}>{position}</h5>
+                                      {players.map((player: any) => (
+                                        <div key={player.player_name} className={styles.playerGroup}>
+                                          <div className={styles.playerHeader}>
+                                            {player.headshot_url && (
+                                              <img src={player.headshot_url} alt={player.player_name} className={styles.playerHeadshot} />
+                                            )}
+                                            <div className={styles.playerInfo}>
+                                              <span className={styles.playerName}>{player.player_name}</span>
+                                              <span className={styles.playerTeam}>{player.team}</span>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Group props by market type */}
+                                          {(() => {
+                                            const propsByMarket: Record<string, any[]> = {}
+                                            player.props.forEach((prop: any) => {
+                                              if (!propsByMarket[prop.market]) {
+                                                propsByMarket[prop.market] = []
+                                              }
+                                              propsByMarket[prop.market].push(prop)
+                                            })
+                                            
+                                            return Object.entries(propsByMarket).map(([market, props]: [string, any]) => {
+                                              // Group by point value (for O/U markets)
+                                              const byPoint: Record<string, any[]> = {}
+                                              props.forEach((prop: any) => {
+                                                const key = prop.point ? `${prop.point}` : 'anytime'
+                                                if (!byPoint[key]) {
+                                                  byPoint[key] = []
+                                                }
+                                                byPoint[key].push(prop)
+                                              })
+                                              
+                                              return Object.entries(byPoint).map(([point, propList]: [string, any]) => {
+                                                const firstProp = propList[0]
+                                                const marketDisplay = firstProp.market_display || market
+                                                const propKey = `prop_${player.player_name}_${market}_${point}`
+                                                const isExpanded = expandedProp === propKey
+                                                
+                                                // Separate overs and unders
+                                                const overs = propList.filter((p: any) => p.name.toLowerCase().includes('over'))
+                                                const unders = propList.filter((p: any) => p.name.toLowerCase().includes('under'))
+                                                
+                                                if (overs.length === 0 && unders.length === 0) return null // Skip if no O/U
+                                                
+                                                return (
+                                                  <div key={propKey} className={styles.propCard}>
+                                                    <button
+                                                      className={`${styles.propCardBtn} ${isExpanded ? styles.expanded : ''}`}
+                                                      onClick={() => setExpandedProp(isExpanded ? null : propKey)}
+                                                    >
+                                                      <span className={styles.propMarket}>{marketDisplay}</span>
+                                                      {firstProp.point && (
+                                                        <span className={styles.propLine}>O/U {firstProp.point}</span>
+                                                      )}
+                                                    </button>
+                                                    
+                                                    {isExpanded && (
+                                                      <div className={styles.propBooks}>
+                                                        {/* Overs */}
+                                                        {overs.length > 0 && (
+                                                          <div className={styles.propSide}>
+                                                            <span className={styles.propSideLabel}>Over</span>
+                                                            {overs.map((prop: any, idx: number) => (
+                                                              <button
+                                                                key={idx}
+                                                                className={styles.propBookBtn}
+                                                                onClick={() => {
+                                                                  const betTitle = `${player.player_name} ${marketDisplay} O${prop.point || ''}`
+                                                                  addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop')
+                                                                  setExpandedProp(null)
+                                                                }}
+                                                              >
+                                                                <span className={styles.bookName}>{prop.book}</span>
+                                                                <span className={styles.bookOdds}>{prop.odds > 0 ? '+' : ''}{prop.odds}</span>
+                                                              </button>
+                                                            ))}
+                                                          </div>
+                                                        )}
+                                                        
+                                                        {/* Unders */}
+                                                        {unders.length > 0 && (
+                                                          <div className={styles.propSide}>
+                                                            <span className={styles.propSideLabel}>Under</span>
+                                                            {unders.map((prop: any, idx: number) => (
+                                                              <button
+                                                                key={idx}
+                                                                className={styles.propBookBtn}
+                                                                onClick={() => {
+                                                                  const betTitle = `${player.player_name} ${marketDisplay} U${prop.point || ''}`
+                                                                  addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop')
+                                                                  setExpandedProp(null)
+                                                                }}
+                                                              >
+                                                                <span className={styles.bookName}>{prop.book}</span>
+                                                                <span className={styles.bookOdds}>{prop.odds > 0 ? '+' : ''}{prop.odds}</span>
+                                                              </button>
+                                                            ))}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                )
+                                              })
+                                            })
+                                          })()}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className={styles.propsPlaceholder}>
+                                  <p>No props available for this game</p>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
