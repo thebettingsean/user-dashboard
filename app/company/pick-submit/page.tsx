@@ -149,7 +149,15 @@ export default function SubmitPicksPage() {
       const data = await res.json()
       
       if (data.success) {
-        setGameMarkets(prev => ({ ...prev, [game.game_id]: data.markets }))
+        // Store both best_lines and all_lines from new API structure
+        setGameMarkets(prev => ({ 
+          ...prev, 
+          [game.game_id]: {
+            best_lines: data.best_lines,
+            all_lines: data.all_lines,
+            available_books: data.available_books
+          }
+        }))
       }
     } catch (err: any) {
       console.error('Failed to load markets:', err)
@@ -449,10 +457,10 @@ export default function SubmitPicksPage() {
                     <div className={styles.marketsDropdown}>
                       {loadingMarkets[game.game_id] ? (
                         <div className={styles.loadingMarkets}>Loading odds...</div>
-                      ) : gameMarkets[game.game_id] ? (
+                      ) : gameMarkets[game.game_id] && gameMarkets[game.game_id].best_lines ? (
                         <div className={styles.marketsContainer}>
                           {/* Spreads */}
-                          {gameMarkets[game.game_id].spreads && (
+                          {gameMarkets[game.game_id].best_lines.spreads && (
                             <div className={styles.marketSection}>
                               <h4>Spreads</h4>
                               <div className={styles.betTypeList}>
