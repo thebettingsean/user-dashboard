@@ -138,21 +138,22 @@ export async function GET(request: NextRequest) {
     const playersQuery = await clickhouseQuery<{
       name: string
       position: string
-      team: string
+      team_abbr: string
       headshot_url: string
       injury_status: string
     }>(`
       SELECT 
-        name,
-        position,
-        team,
-        headshot_url,
-        injury_status
-      FROM players
-      WHERE sport = '${sport.toUpperCase()}'
-        AND is_active = true
-        ${position ? `AND LOWER(position) = '${position}'` : ''}
-      ORDER BY name
+        p.name,
+        p.position,
+        t.abbreviation as team_abbr,
+        p.headshot_url,
+        p.injury_status
+      FROM players p
+      LEFT JOIN teams t ON p.team_id = t.team_id AND t.sport = '${sport.toUpperCase()}'
+      WHERE p.sport = '${sport.toUpperCase()}'
+        AND p.is_active = true
+        ${position ? `AND LOWER(p.position) = '${position}'` : ''}
+      ORDER BY p.name
     `)
 
     // Create player lookup map
@@ -198,7 +199,7 @@ export async function GET(request: NextRequest) {
             propsByPlayer.set(playerName, {
               player_name: playerName,
               position: playerData?.position || 'Unknown',
-              team: playerData?.team || 'Unknown',
+              team: playerData?.team_abbr || 'Unknown',
               headshot_url: playerData?.headshot_url || null,
               injury_status: playerData?.injury_status || null,
               props: []

@@ -35,16 +35,17 @@ export async function GET(request: NextRequest) {
       injury_status: string
     }>(`
       SELECT 
-        name,
-        position,
-        team,
-        headshot_url,
-        injury_status
-      FROM players
-      WHERE sport = '${sport}'
-        AND is_active = true
-        AND LOWER(name) LIKE '%${query}%'
-      ORDER BY name
+        p.name,
+        p.position,
+        t.abbreviation as team,
+        p.headshot_url,
+        p.injury_status
+      FROM players p
+      LEFT JOIN teams t ON p.team_id = t.team_id AND t.sport = '${sport}'
+      WHERE p.sport = '${sport}'
+        AND p.is_active = true
+        AND LOWER(p.name) LIKE '%${query}%'
+      ORDER BY p.name
       LIMIT 20
     `)
 
