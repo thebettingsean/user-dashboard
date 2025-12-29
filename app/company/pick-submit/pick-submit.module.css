@@ -373,6 +373,169 @@
   z-index: 2;
 }
 
+/* NEW: Side-by-Side Layout for Best Lines */
+.marketTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sideBySide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.betCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.betCardBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.betCardBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.betCardBtn.expanded {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.betCardLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.betCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.betCardTeam {
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.betCardLine {
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Overlapped logos for totals */
+.totalLogos {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 32px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.totalLogos img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.totalLogos img:first-child {
+  left: 0;
+  z-index: 1;
+}
+
+.totalLogos img:last-child {
+  left: 12px;
+  z-index: 2;
+}
+
+/* All Books Dropdown */
+.allBooks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+.bookBtn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.bookBtn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.bookName {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.bookLine {
+  color: #3b82f6;
+  font-weight: 600;
+  text-align: right;
+}
+
+.bookOdds {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Props Placeholder */
+.propsPlaceholder {
+  padding: 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* Book Options (inline dropdown) */
 .bookOptions {
   display: flex;
@@ -901,23 +1064,179 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 16px;
+    padding: 12px;
   }
 
   .splitLayout {
-    gap: 16px;
+    gap: 12px;
   }
 
   .leftPanel,
   .rightPanel {
-    padding: 16px;
+    padding: 12px;
   }
 
   .oddsGrid {
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .oddsBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  /* COMPREHENSIVE MOBILE FONT SIZE REDUCTIONS */
+  
+  /* Header */
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 10px;
+  }
+
+  /* Panels */
+  .panelTitle {
+    font-size: 14px;
+  }
+
+  /* Sport Selector */
+  .sportBtn {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+
+  /* Search */
+  .searchInput {
+    font-size: 11px;
     padding: 8px 10px;
+  }
+
+  /* Game List */
+  .gameTeams {
+    font-size: 11px;
+  }
+
+  .awayTeam,
+  .homeTeam {
+    font-size: 11px;
+  }
+
+  .atSymbol {
+    font-size: 10px;
+  }
+
+  .gameTime {
+    font-size: 10px;
+  }
+
+  /* Markets */
+  .marketTitle {
+    font-size: 11px;
+  }
+
+  .betCardBtn {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .betCardTeam {
+    font-size: 11px;
+  }
+
+  .betCardLine {
+    font-size: 10px;
+  }
+
+  .betCardLogo {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Books */
+  .bookBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .bookName {
+    font-size: 10px;
+  }
+
+  .bookLine,
+  .bookOdds {
+    font-size: 10px;
+  }
+
+  /* Pick Slate */
+  .pickCard {
+    padding: 12px;
+  }
+
+  .pickCardHeader {
+    font-size: 11px;
+  }
+
+  .pickCardTeams {
+    font-size: 10px;
+  }
+
+  .pickCardBetTitle {
+    font-size: 12px;
+  }
+
+  .pickCardOddsBook {
+    font-size: 10px;
+  }
+
+  .unitsInput,
+  .analysisTextarea {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  /* Slate Header */
+  .pickCount {
+    font-size: 10px;
+  }
+
+  .customPickBtn {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  /* Submit */
+  .submitBtn {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  /* Bettor Select */
+  .bettorLabel {
+    font-size: 11px;
+  }
+
+  .bettorSelect {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  /* Loading/Error */
+  .loading,
+  .noData,
+  .loadingMarkets {
+    font-size: 11px;
+  }
+
+  .errorBanner {
+    font-size: 11px;
+    padding: 12px;
+  }
+
+  /* Props Placeholder */
+  .propsPlaceholder {
+    font-size: 10px;
+    padding: 16px;
   }
 }
