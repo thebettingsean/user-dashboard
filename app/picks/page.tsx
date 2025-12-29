@@ -712,7 +712,7 @@ export default function PicksPage() {
                                           color: '#ef4444'
                                         } : {}}
                                       >
-                                        {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook} </span>}
+                                        {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
                                         {pick.odds} | {netUnits >= 0 ? '+' : ''}{netUnits.toFixed(2)}u
                                       </div>
                                     )
@@ -728,7 +728,7 @@ export default function PicksPage() {
                                         color: 'rgba(251, 146, 60, 0.9)'
                                       } : {}}
                                     >
-                                      {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook} </span>}
+                                      {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
                                       {pick.odds} | {pick.units.toFixed(1)}u
                                     </div>
                                   )
@@ -771,9 +771,13 @@ export default function PicksPage() {
                                         )}
                                       </div>
                                     )}
-                                    {/* Sportsbook info with timestamp */}
-                                    <div className={styles.sportsbookInfo}>
-                                      {pick.sportsbook} {pick.odds}, Posted on: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                    {/* Bet title and sportsbook */}
+                                    <div className={styles.dropdownBetInfo}>
+                                      {pick.bet_title}, {pick.sportsbook} {pick.odds}
+                                    </div>
+                                    {/* Posted timestamp */}
+                                    <div className={styles.dropdownPostedAt}>
+                                      Posted on {new Date(pick.posted_at).toLocaleString('en-US', {
                                         timeZone: 'America/New_York',
                                         month: 'short',
                                         day: 'numeric',
@@ -803,9 +807,13 @@ export default function PicksPage() {
                                         )}
                                       </div>
                                     )}
-                                    {/* Sportsbook info with timestamp */}
-                                    <div className={styles.sportsbookInfo}>
-                                      {pick.sportsbook} {pick.odds}, Posted on: {new Date(pick.posted_at).toLocaleString('en-US', {
+                                    {/* Bet title and sportsbook */}
+                                    <div className={styles.dropdownBetInfo}>
+                                      {pick.bet_title}, {pick.sportsbook} {pick.odds}
+                                    </div>
+                                    {/* Posted timestamp */}
+                                    <div className={styles.dropdownPostedAt}>
+                                      Posted on {new Date(pick.posted_at).toLocaleString('en-US', {
                                         timeZone: 'America/New_York',
                                         month: 'short',
                                         day: 'numeric',

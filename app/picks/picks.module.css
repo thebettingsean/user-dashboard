@@ -728,9 +728,7 @@
   font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  margin-bottom: 4px;
 }
 
 .dropdownTeamLogo {
@@ -753,14 +751,18 @@
   margin: 0 2px;
 }
 
-.sportsbookInfo {
-  display: block;
-  font-size: 10px;
+.dropdownBetInfo {
+  font-size: 11px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+.dropdownPostedAt {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
 }
 
 .sportsbookDesktopOnly {
@@ -842,8 +844,24 @@
     display: none !important;
   }
 
-  .sportsbookInfo {
-    font-size: 9px;
+  .dropdownMatchup {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .dropdownTeamLogo {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dropdownBetInfo {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+
+  .dropdownPostedAt {
+    font-size: 8px;
+    margin-bottom: 10px;
   }
 }
 
@@ -851,10 +869,6 @@
 @media (min-width: 768px) {
   .sportsbookDesktopOnly {
     display: inline !important;
-  }
-
-  .sportsbookInfo {
-    font-size: 10px;
   }
 }
 
