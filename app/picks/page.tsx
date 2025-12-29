@@ -86,8 +86,8 @@ function BetLogo({ pick }: { pick: Pick }) {
         src={pick.prop_image}
         alt="Player"
         style={{
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
           objectFit: 'cover',
           flexShrink: 0
@@ -102,13 +102,13 @@ function BetLogo({ pick }: { pick: Pick }) {
   
   if (isTotal && pick.away_team_image && pick.home_team_image) {
     return (
-      <div style={{ position: 'relative', width: 42, height: 32, flexShrink: 0 }}>
+      <div style={{ position: 'relative', width: 36, height: 28, flexShrink: 0 }}>
         <img
           src={pick.away_team_image}
           alt=""
           style={{
-            width: 28,
-            height: 28,
+            width: 24,
+            height: 24,
             borderRadius: '50%',
             objectFit: 'contain',
             position: 'absolute',
@@ -122,12 +122,12 @@ function BetLogo({ pick }: { pick: Pick }) {
           src={pick.home_team_image}
           alt=""
           style={{
-            width: 28,
-            height: 28,
+            width: 24,
+            height: 24,
             borderRadius: '50%',
             objectFit: 'contain',
             position: 'absolute',
-            left: 18,
+            left: 14,
             zIndex: 2,
             border: '1px solid rgba(0, 0, 0, 0.5)',
             background: 'rgba(0, 0, 0, 0.3)'
@@ -149,8 +149,8 @@ function BetLogo({ pick }: { pick: Pick }) {
         src={pick.home_team_image}
         alt=""
         style={{
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
           objectFit: 'contain',
           flexShrink: 0
@@ -165,8 +165,8 @@ function BetLogo({ pick }: { pick: Pick }) {
         src={pick.away_team_image}
         alt=""
         style={{
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           borderRadius: '50%',
           objectFit: 'contain',
           flexShrink: 0
@@ -677,17 +677,11 @@ export default function PicksPage() {
                                   )}
                                 </div>
                                 
-                                {/* Line 2: Matchup with Logos + Game Time (Desktop) / Just Matchup (Mobile) */}
+                                {/* Line 2: Matchup (Text Only) + Game Time (Desktop) / Just Matchup (Mobile) */}
                                 {pick.game_title && (
                                   <div className={styles.pickMatchup}>
-                                    {pick.away_team_image && (
-                                      <img src={pick.away_team_image} alt="" className={styles.teamLogo} />
-                                    )}
                                     <span className={styles.teamName}>{pick.game_title.split('@')[0].trim()}</span>
                                     <span className={styles.atSymbol}>@</span>
-                                    {pick.home_team_image && (
-                                      <img src={pick.home_team_image} alt="" className={styles.teamLogo} />
-                                    )}
                                     <span className={styles.teamName}>{pick.game_title.split('@')[1]?.trim()}</span>
                                     <span className={styles.gameTimeDesktop}>
                                       {new Date(pick.game_time).toLocaleString('en-US', {
