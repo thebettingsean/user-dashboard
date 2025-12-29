@@ -1041,11 +1041,143 @@ export default function SubmitPicksPage() {
                                                     
                                                     return (
                                                       <div className={styles.propTypesContainer}>
-                                                        {Object.entries(propsByMarketPoint).map(([marketKey, propGroup]: [string, any]) => {
-                                                          if (propGroup.overs.length === 0 && propGroup.unders.length === 0) return null
-                                                          
+                                                        {Object.entries(propsByMarket).map(([marketKey, propGroup]: [string, any]) => {
                                                           const propTypeKey = `${playerKey}_${marketKey}`
                                                           const isPropExpanded = expandedPropType === propTypeKey
+                                                          const marketDisplay = propGroup.market_display || propGroup.market
+                                                          
+                                                          // Handle ALTERNATE props differently
+                                                          if (propGroup.isAlternate) {
+                                                            const lineCount = Object.keys(propGroup.lines).length
+                                                            if (lineCount === 0) return null
+                                                            
+                                                            return (
+                                                              <div key={marketKey} className={styles.propTypeCollapse}>
+                                                                <button
+                                                                  className={`${styles.propTypeBtn} ${isPropExpanded ? styles.expanded : ''}`}
+                                                                  onClick={() => {
+                                                                    setExpandedPropType(isPropExpanded ? null : propTypeKey)
+                                                                    setExpandedAltLine(null)
+                                                                  }}
+                                                                >
+                                                                  <span className={styles.propTypeLabel}>{marketDisplay}</span>
+                                                                  <span className={styles.propAltLineCount}>{lineCount} lines</span>
+                                                                  <span className={styles.expandIcon}>{isPropExpanded ? '−' : '+'}</span>
+                                                                </button>
+                                                                
+                                                                {/* Show all line values when expanded */}
+                                                                {isPropExpanded && (
+                                                                  <div className={styles.altLinesContainer}>
+                                                                    {Object.entries(propGroup.lines)
+                                                                      .sort(([a]: [string, any], [b]: [string, any]) => {
+                                                                        if (a === 'anytime') return -1
+                                                                        if (b === 'anytime') return 1
+                                                                        return parseFloat(a) - parseFloat(b)
+                                                                      })
+                                                                      .map(([lineValue, lineData]: [string, any]) => {
+                                                                        const altLineKey = `${propTypeKey}_${lineValue}`
+                                                                        const isAltLineExpanded = expandedAltLine === altLineKey
+                                                                        
+                                                                        return (
+                                                                          <div key={lineValue} className={styles.altLineItem}>
+                                                                            <button
+                                                                              className={`${styles.altLineBtn} ${isAltLineExpanded ? styles.expanded : ''}`}
+                                                                              onClick={() => {
+                                                                                setExpandedAltLine(isAltLineExpanded ? null : altLineKey)
+                                                                              }}
+                                                                            >
+                                                                              <span className={styles.altLineLabel}>
+                                                                                {lineValue === 'anytime' ? 'Anytime' : `O/U ${lineValue}`}
+                                                                              </span>
+                                                                              <span className={styles.expandIcon}>{isAltLineExpanded ? '−' : '+'}</span>
+                                                                            </button>
+                                                                            
+                                                                            {/* Show all books for this line */}
+                                                                            {isAltLineExpanded && (
+                                                                              <div className={styles.propLinesContainer}>
+                                                                                {lineData.overs.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    <span className={styles.propLineLabel}>OVER</span>
+                                                                                    {lineData.overs.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} O${prop.point || ''}`
+                                                                                          addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>O{prop.point}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                                
+                                                                                {lineData.unders.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    <span className={styles.propLineLabel}>UNDER</span>
+                                                                                    {lineData.unders.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} U${prop.point || ''}`
+                                                                                          addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>U{prop.point}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                                
+                                                                                {lineData.options && lineData.options.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    {lineData.options.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} ${prop.name}`
+                                                                                          addPickToSlate(game, betTitle, prop.name, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>{prop.name}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                              </div>
+                                                                            )}
+                                                                          </div>
+                                                                        )
+                                                                      })}
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            )
+                                                          }
+                                                          
+                                                          // Handle STANDARD props (existing logic)
+                                                          if (!propGroup.overs || (propGroup.overs.length === 0 && propGroup.unders.length === 0 && (!propGroup.options || propGroup.options.length === 0))) return null
                                                           
                                                           // Find best line (lowest for over, highest for under)
                                                           const bestOver = propGroup.overs.length > 0 
@@ -1053,7 +1185,6 @@ export default function SubmitPicksPage() {
                                                             : null
                                                           
                                                           const displayLine = bestOver?.point || propGroup.unders[0]?.point
-                                                          const marketDisplay = propGroup.market_display || propGroup.market
                                                           
                                                           return (
                                                             <div key={marketKey} className={styles.propTypeCollapse}>

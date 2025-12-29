@@ -693,6 +693,56 @@
   margin-right: 8px;
 }
 
+.propAltLineCount {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  margin-right: 8px;
+}
+
+/* Alternate Lines Container */
+.altLinesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.altLineItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.altLineBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.altLineBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.altLineBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.altLineLabel {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
 /* Level 4: Lines */
 .propLinesContainer {
   display: flex;
@@ -1648,6 +1698,25 @@
     padding: 6px 10px;
     font-size: 10px;
     margin-top: 6px;
+  }
+
+  .propAltLineCount {
+    font-size: 9px;
+    margin-right: 6px;
+  }
+
+  .altLinesContainer {
+    padding-left: 8px;
+    gap: 3px;
+  }
+
+  .altLineBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .altLineLabel {
+    font-size: 10px;
   }
 
   /* Player Search Mobile */
