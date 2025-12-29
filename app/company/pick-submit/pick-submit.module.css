@@ -755,6 +755,26 @@
   font-weight: 500;
 }
 
+.showAllLinesBtn {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showAllLinesBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+}
+
 /* Player Search Results */
 .playerSearchSection {
   margin-top: 24px;
@@ -786,11 +806,14 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .playerResultCard:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .playerResultImage {
@@ -1619,6 +1642,12 @@
 
   .propLineOdds {
     font-size: 10px;
+  }
+
+  .showAllLinesBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+    margin-top: 6px;
   }
 
   /* Player Search Mobile */

@@ -83,6 +83,7 @@ export default function SubmitPicksPage() {
   const [expandedPosition, setExpandedPosition] = useState<string | null>(null)
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null)
   const [expandedPropType, setExpandedPropType] = useState<string | null>(null)
+  const [showAllLines, setShowAllLines] = useState<Record<string, boolean>>({})
   
   // Book selection state (when user clicks a bet type) - now inline, not modal
   const [expandedBet, setExpandedBet] = useState<string | null>(null)
@@ -348,7 +349,8 @@ export default function SubmitPicksPage() {
     odds: number, 
     book: string,
     betType: 'spread' | 'moneyline' | 'total' | 'prop',
-    teamName?: string // For spreads/MLs - which team is being bet
+    teamName?: string, // For spreads/MLs - which team is being bet
+    playerImage?: string // For props - player headshot
   ) => {
     // Determine which logo to show for the bet title
     let betTeamLogo: string | null = null
@@ -370,7 +372,7 @@ export default function SubmitPicksPage() {
       }
     }
     // For totals, we'll show both logos (handled in rendering)
-    // For props, we'll use prop_image (future)
+    // For props, we'll use playerImage parameter
     
     const newPick: SlatePick = {
       id: `pick_${Date.now()}_${Math.random()}`,
@@ -390,7 +392,7 @@ export default function SubmitPicksPage() {
       game_id: game.game_id,
       away_team_logo: game.away_team_logo,
       home_team_logo: game.home_team_logo,
-      prop_image: null,
+      prop_image: betType === 'prop' ? (playerImage || null) : null,
       bet_type: betType,
       bet_team_logo: betTeamLogo,
       bet_team_name: betTeamName
@@ -566,7 +568,7 @@ export default function SubmitPicksPage() {
           ) : (
             <div className={styles.gamesList}>
               {filteredGames.map((game) => (
-                <div key={game.game_id} className={styles.gameItem}>
+                <div key={game.game_id} className={styles.gameItem} data-game-id={game.game_id}>
                   <button
                     className={styles.gameHeader}
                     onClick={() => handleGameClick(game)}
@@ -1034,21 +1036,29 @@ export default function SubmitPicksPage() {
                                                               </button>
                                                               
                                                               {/* Level 4: Lines (shown when prop type expanded) */}
-                                                              {isPropExpanded && (
-                                                                <div className={styles.propLinesContainer}>
-                                                                  {/* Overs */}
-                                                                  {propGroup.overs.length > 0 && (
-                                                                    <div className={styles.propLineGroup}>
-                                                                      <span className={styles.propLineLabel}>OVER</span>
-                                                                      {propGroup.overs
-                                                                        .sort((a: any, b: any) => a.point - b.point)
-                                                                        .map((prop: any, idx: number) => (
+                                                              {isPropExpanded && (() => {
+                                                                const showAllKey = propTypeKey
+                                                                const isShowingAll = showAllLines[showAllKey] || false
+                                                                const sortedOvers = propGroup.overs.sort((a: any, b: any) => a.point - b.point)
+                                                                const sortedUnders = propGroup.unders.sort((a: any, b: any) => b.point - a.point)
+                                                                const displayOvers = isShowingAll ? sortedOvers : sortedOvers.slice(0, 3)
+                                                                const displayUnders = isShowingAll ? sortedUnders : sortedUnders.slice(0, 3)
+                                                                const hasMoreOvers = sortedOvers.length > 3
+                                                                const hasMoreUnders = sortedUnders.length > 3
+                                                                
+                                                                return (
+                                                                  <div className={styles.propLinesContainer}>
+                                                                    {/* Overs */}
+                                                                    {propGroup.overs.length > 0 && (
+                                                                      <div className={styles.propLineGroup}>
+                                                                        <span className={styles.propLineLabel}>OVER</span>
+                                                                        {displayOvers.map((prop: any, idx: number) => (
                                                                           <button
                                                                             key={idx}
                                                                             className={styles.propLineBtn}
                                                                             onClick={() => {
                                                                               const betTitle = `${player.player_name} ${marketDisplay} O${prop.point || ''}`
-                                                                              addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop')
+                                                                              addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
                                                                               setExpandedPropType(null)
                                                                             }}
                                                                           >
@@ -1059,22 +1069,20 @@ export default function SubmitPicksPage() {
                                                                             </span>
                                                                           </button>
                                                                         ))}
-                                                                    </div>
-                                                                  )}
-                                                                  
-                                                                  {/* Unders */}
-                                                                  {propGroup.unders.length > 0 && (
-                                                                    <div className={styles.propLineGroup}>
-                                                                      <span className={styles.propLineLabel}>UNDER</span>
-                                                                      {propGroup.unders
-                                                                        .sort((a: any, b: any) => b.point - a.point)
-                                                                        .map((prop: any, idx: number) => (
+                                                                      </div>
+                                                                    )}
+                                                                    
+                                                                    {/* Unders */}
+                                                                    {propGroup.unders.length > 0 && (
+                                                                      <div className={styles.propLineGroup}>
+                                                                        <span className={styles.propLineLabel}>UNDER</span>
+                                                                        {displayUnders.map((prop: any, idx: number) => (
                                                                           <button
                                                                             key={idx}
                                                                             className={styles.propLineBtn}
                                                                             onClick={() => {
                                                                               const betTitle = `${player.player_name} ${marketDisplay} U${prop.point || ''}`
-                                                                              addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop')
+                                                                              addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
                                                                               setExpandedPropType(null)
                                                                             }}
                                                                           >
@@ -1085,10 +1093,29 @@ export default function SubmitPicksPage() {
                                                                             </span>
                                                                           </button>
                                                                         ))}
-                                                                    </div>
-                                                                  )}
-                                                                </div>
-                                                              )}
+                                                                      </div>
+                                                                    )}
+                                                                    
+                                                                    {/* Show All / Show Less button */}
+                                                                    {(hasMoreOvers || hasMoreUnders) && (
+                                                                      <button
+                                                                        className={styles.showAllLinesBtn}
+                                                                        onClick={() => {
+                                                                          setShowAllLines(prev => ({
+                                                                            ...prev,
+                                                                            [showAllKey]: !isShowingAll
+                                                                          }))
+                                                                        }}
+                                                                      >
+                                                                        {isShowingAll 
+                                                                          ? 'Show Less' 
+                                                                          : `Show All ${sortedOvers.length + sortedUnders.length} Lines`
+                                                                        }
+                                                                      </button>
+                                                                    )}
+                                                                  </div>
+                                                                )
+                                                              })()}
                                                             </div>
                                                           )
                                                         })}
@@ -1132,25 +1159,63 @@ export default function SubmitPicksPage() {
                 <div className={styles.noData}>No players match "{searchQuery}"</div>
               ) : (
                 <div className={styles.playerResultsList}>
-                  {playerSearchResults.map((player) => (
-                    <div key={player.name} className={styles.playerResultCard}>
-                      {player.headshot_url && (
-                        <img src={player.headshot_url} alt={player.name} className={styles.playerResultImage} />
-                      )}
-                      <div className={styles.playerResultInfo}>
-                        <span className={styles.playerResultName}>{player.name}</span>
-                        <span className={styles.playerResultMeta}>
-                          {player.position} | {player.team}
-                        </span>
-                        {player.injury_status && player.injury_status !== 'ACTIVE' && (
-                          <span className={styles.playerResultInjury}>{player.injury_status}</span>
+                  {playerSearchResults.map((player) => {
+                    // Find the game where this player's team is playing
+                    const playerGame = games.find(g => 
+                      g.home_team.toLowerCase().includes(player.team.toLowerCase()) ||
+                      g.away_team.toLowerCase().includes(player.team.toLowerCase()) ||
+                      getTeamName(g.home_team).toLowerCase().includes(player.team.toLowerCase()) ||
+                      getTeamName(g.away_team).toLowerCase().includes(player.team.toLowerCase())
+                    )
+                    
+                    return (
+                      <button
+                        key={player.name} 
+                        className={styles.playerResultCard}
+                        onClick={() => {
+                          if (playerGame) {
+                            // Expand the game
+                            setExpandedGame(playerGame.game_id)
+                            // Fetch markets and props
+                            fetchMarkets(playerGame)
+                            fetchProps(playerGame)
+                            // Expand position for this player
+                            const position = selectedSport === 'nfl' 
+                              ? player.position 
+                              : simplifyNBAPosition(player.position)
+                            const positionKey = `${playerGame.game_id}_${position}`
+                            setExpandedPosition(positionKey)
+                            // Expand the player
+                            const playerKey = `${positionKey}_${player.name}`
+                            setExpandedPlayer(playerKey)
+                            // Clear search
+                            setSearchQuery('')
+                            setPlayerSearchResults([])
+                            // Scroll to game
+                            setTimeout(() => {
+                              document.querySelector(`[data-game-id="${playerGame.game_id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }, 100)
+                          }
+                        }}
+                      >
+                        {player.headshot_url && (
+                          <img src={player.headshot_url} alt={player.name} className={styles.playerResultImage} />
                         )}
-                      </div>
-                      <div className={styles.playerResultHint}>
-                        <small>Select their team's game above to see props</small>
-                      </div>
-                    </div>
-                  ))}
+                        <div className={styles.playerResultInfo}>
+                          <span className={styles.playerResultName}>{player.name}</span>
+                          <span className={styles.playerResultMeta}>
+                            {player.position} | {player.team}
+                          </span>
+                          {player.injury_status && player.injury_status !== 'ACTIVE' && (
+                            <span className={styles.playerResultInjury}>{player.injury_status}</span>
+                          )}
+                        </div>
+                        <div className={styles.playerResultHint}>
+                          <small>{playerGame ? `Click to jump to ${player.team} game` : 'No upcoming game found'}</small>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
