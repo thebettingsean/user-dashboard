@@ -123,7 +123,9 @@ export default function SubmitPicksPage() {
       game_time_est: string
       away_team_logo?: string
       home_team_logo?: string
-    }>
+    }>,
+    tempImage?: string,
+    tempPlayerName?: string
   })
   const [customPickImageSearch, setCustomPickImageSearch] = useState('')
   const [customPickGameSearch, setCustomPickGameSearch] = useState('')
@@ -131,6 +133,109 @@ export default function SubmitPicksPage() {
   const [customPickGameResults, setCustomPickGameResults] = useState<any[]>([])
   const [searchingCustomImages, setSearchingCustomImages] = useState(false)
   const [searchingCustomGames, setSearchingCustomGames] = useState(false)
+  
+  // Custom pick image search effect
+  useEffect(() => {
+    const searchCustomImages = async () => {
+      const query = customPickImageSearch.trim()
+      
+      if (query.length < 2) {
+        setCustomPickImageResults([])
+        return
+      }
+
+      setSearchingCustomImages(true)
+      console.log('[CUSTOM PICK] Searching images for:', query)
+
+      try {
+        let results: any[] = []
+
+        // Search players first (if NFL/NBA)
+        if (selectedSport === 'nfl' || selectedSport === 'nba') {
+          try {
+            const response = await fetch(`/api/analyst-picks/search-players?sport=${selectedSport}&query=${encodeURIComponent(query)}`)
+            if (response.ok) {
+              const data = await response.json()
+              // Add type: 'player' to each result
+              const playersWithType = data.players.map((p: any) => ({ ...p, type: 'player' }))
+              results = playersWithType
+              console.log('[CUSTOM PICK] Found players:', playersWithType.length)
+            }
+          } catch (err) {
+            console.error('[CUSTOM PICK] Error searching players:', err)
+          }
+        }
+
+        // Also search teams (filter from games list)
+        const teamResults = games
+          .filter(g => 
+            getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+            getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+          )
+          .flatMap(g => [
+            { 
+              type: 'team', 
+              name: getTeamName(g.away_team),
+              logo: g.away_team_logo,
+              game_id: g.game_id,
+              game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+              game_time: g.game_time,
+              game_time_est: g.game_time_est,
+              away_team_logo: g.away_team_logo,
+              home_team_logo: g.home_team_logo
+            },
+            { 
+              type: 'team', 
+              name: getTeamName(g.home_team),
+              logo: g.home_team_logo,
+              game_id: g.game_id,
+              game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+              game_time: g.game_time,
+              game_time_est: g.game_time_est,
+              away_team_logo: g.away_team_logo,
+              home_team_logo: g.home_team_logo
+            }
+          ])
+          .filter((team, index, self) => 
+            // Remove duplicates by name
+            index === self.findIndex(t => t.name === team.name)
+          )
+
+        console.log('[CUSTOM PICK] Found teams:', teamResults.length)
+
+        // Combine results
+        setCustomPickImageResults([...results, ...teamResults])
+      } catch (err) {
+        console.error('[CUSTOM PICK] Search error:', err)
+      } finally {
+        setSearchingCustomImages(false)
+      }
+    }
+
+    const timer = setTimeout(searchCustomImages, 300)
+    return () => clearTimeout(timer)
+  }, [customPickImageSearch, selectedSport, games])
+
+  // Custom pick game search effect
+  useEffect(() => {
+    const query = customPickGameSearch.trim()
+    
+    if (query.length < 2) {
+      setCustomPickGameResults([])
+      return
+    }
+
+    console.log('[CUSTOM PICK] Searching games for:', query)
+
+    // Filter games by team name
+    const filtered = games.filter(g =>
+      getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+      getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+    )
+    
+    console.log('[CUSTOM PICK] Found games:', filtered.length)
+    setCustomPickGameResults(filtered)
+  }, [customPickGameSearch, games])
   
   // UI state
   const [loading, setLoading] = useState(false)
@@ -1671,72 +1776,7 @@ export default function SubmitPicksPage() {
                     type="text"
                     placeholder="Search player or team..."
                     value={customPickImageSearch}
-                    onChange={async (e) => {
-                      const query = e.target.value
-                      setCustomPickImageSearch(query)
-                      
-                      if (query.length < 2) {
-                        setCustomPickImageResults([])
-                        return
-                      }
-
-                      setSearchingCustomImages(true)
-
-                      // Search players first (if NFL/NBA)
-                      if (selectedSport === 'nfl' || selectedSport === 'nba') {
-                        try {
-                          const response = await fetch(`/api/analyst-picks/search-players?sport=${selectedSport}&query=${encodeURIComponent(query)}`)
-                          if (response.ok) {
-                            const data = await response.json()
-                            // Add type: 'player' to each result
-                            const playersWithType = data.players.map((p: any) => ({ ...p, type: 'player' }))
-                            setCustomPickImageResults(playersWithType)
-                          }
-                        } catch (err) {
-                          console.error('[CUSTOM PICK] Error searching players:', err)
-                        }
-                      }
-
-                      // Also search teams (filter from games list)
-                      const teamResults = games
-                        .filter(g => 
-                          getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
-                          getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
-                        )
-                        .flatMap(g => [
-                          { 
-                            type: 'team', 
-                            name: getTeamName(g.away_team),
-                            logo: g.away_team_logo,
-                            game_id: g.game_id,
-                            game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
-                            game_time: g.game_time,
-                            game_time_est: g.game_time_est
-                          },
-                          { 
-                            type: 'team', 
-                            name: getTeamName(g.home_team),
-                            logo: g.home_team_logo,
-                            game_id: g.game_id,
-                            game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
-                            game_time: g.game_time,
-                            game_time_est: g.game_time_est
-                          }
-                        ])
-                        .filter((team, index, self) => 
-                          // Remove duplicates by name
-                          index === self.findIndex(t => t.name === team.name)
-                        )
-
-                      if (selectedSport !== 'nfl' && selectedSport !== 'nba') {
-                        setCustomPickImageResults(teamResults)
-                      } else {
-                        // Combine players and teams
-                        setCustomPickImageResults(prev => [...prev, ...teamResults])
-                      }
-
-                      setSearchingCustomImages(false)
-                    }}
+                    onChange={(e) => setCustomPickImageSearch(e.target.value)}
                   />
                   {searchingCustomImages && <small>Searching...</small>}
                   
@@ -1803,28 +1843,12 @@ export default function SubmitPicksPage() {
 
                 {/* Game Search */}
                 <div className={styles.formGroup}>
-                  <label>Search for Game {(customPickForm as any).tempPlayerName && `(for ${(customPickForm as any).tempPlayerName})`}</label>
+                  <label>Search for Game {customPickForm.tempPlayerName && `(for ${customPickForm.tempPlayerName})`}</label>
                   <input
                     type="text"
                     placeholder="Search team name..."
                     value={customPickGameSearch}
-                    onChange={(e) => {
-                      const query = e.target.value
-                      setCustomPickGameSearch(query)
-                      
-                      if (query.length < 2) {
-                        setCustomPickGameResults([])
-                        return
-                      }
-
-                      // Filter games by team name
-                      const filtered = games.filter(g =>
-                        getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
-                        getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
-                      )
-                      
-                      setCustomPickGameResults(filtered)
-                    }}
+                    onChange={(e) => setCustomPickGameSearch(e.target.value)}
                   />
                   
                   {/* Game Results */}

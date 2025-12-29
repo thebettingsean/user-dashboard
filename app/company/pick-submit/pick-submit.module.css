@@ -1262,11 +1262,12 @@
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
+  padding: 20px;
+  max-width: 480px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modalHeader {
@@ -1277,7 +1278,7 @@
 }
 
 .modalHeader h3 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
   color: #FFFFFF;
@@ -1760,42 +1761,42 @@
 .customPickForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .multiLegToggle {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: 8px 10px;
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .multiLegToggle label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #FFFFFF;
 }
 
 .multiLegToggle input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .formGroup label {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
 }
@@ -1803,13 +1804,14 @@
 .formGroup input,
 .formGroup select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 7px 9px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  border-radius: 5px;
   color: #FFFFFF;
-  font-size: 14px;
+  font-size: 12px;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .formGroup input:focus,
@@ -1829,23 +1831,23 @@
 }
 
 .formGroup small {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .formSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .formSection h4 {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -1853,11 +1855,11 @@
 .customPickLegs {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .customPickLegs label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
 }
@@ -1865,45 +1867,50 @@
 .legsList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .legItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
 .legImage {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .legItem span {
   flex: 1;
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .removeLegBtn {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 4px;
+  border-radius: 3px;
   color: #ef4444;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .removeLegBtn:hover {
@@ -1913,16 +1920,16 @@
 
 .modalActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: 8px;
 }
 
 .modalBtnCancel,
 .modalBtnAdd {
   flex: 1;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1960,12 +1967,12 @@
 .searchResults {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
-  max-height: 200px;
+  gap: 3px;
+  margin-top: 6px;
+  max-height: 160px;
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: 5px;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
 }
@@ -1973,8 +1980,8 @@
 .searchResultItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
+  gap: 8px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
@@ -1982,6 +1989,7 @@
   transition: all 0.2s ease;
   width: 100%;
   text-align: left;
+  box-sizing: border-box;
 }
 
 .searchResultItem:hover {
@@ -1990,38 +1998,47 @@
 }
 
 .searchResultImage {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .searchResultInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   flex: 1;
+  min-width: 0;
 }
 
 .searchResultName {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .searchResultMeta {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gameResultLogos {
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .gameResultLogo {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
 }
 
@@ -2056,73 +2073,98 @@
 @media (max-width: 768px) {
   .modalContent {
     max-width: 95%;
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .modalHeader h3 {
+    font-size: 14px;
+  }
+
+  .customPickForm {
+    gap: 10px;
   }
 
   .multiLegToggle {
-    padding: 10px;
+    padding: 7px 8px;
   }
 
   .multiLegToggle label {
-    font-size: 13px;
+    font-size: 11px;
+  }
+
+  .multiLegToggle input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
   }
 
   .formGroup label {
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .formGroup input,
   .formGroup select {
-    padding: 9px 10px;
-    font-size: 13px;
+    padding: 6px 8px;
+    font-size: 11px;
   }
 
   .formSection {
-    padding: 12px;
+    padding: 10px;
+    gap: 8px;
   }
 
   .formSection h4 {
-    font-size: 13px;
+    font-size: 11px;
   }
 
-  .modalActions {
-    flex-direction: column;
-  }
-
-  .modalBtnCancel,
-  .modalBtnAdd {
-    padding: 10px;
-    font-size: 13px;
-  }
-
-  .searchResults {
-    max-height: 150px;
-  }
-
-  .searchResultItem {
-    padding: 6px;
-  }
-
-  .searchResultImage {
-    width: 28px;
-    height: 28px;
-  }
-
-  .searchResultName {
-    font-size: 12px;
-  }
-
-  .searchResultMeta {
-    font-size: 10px;
-  }
-
-  .gameResultLogo {
+  .legImage {
     width: 18px;
     height: 18px;
   }
 
+  .legItem span {
+    font-size: 10px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modalBtnCancel,
+  .modalBtnAdd {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .searchResults {
+    max-height: 140px;
+  }
+
+  .searchResultItem {
+    padding: 5px;
+    gap: 6px;
+  }
+
+  .searchResultImage {
+    width: 24px;
+    height: 24px;
+  }
+
+  .searchResultName {
+    font-size: 10px;
+  }
+
+  .searchResultMeta {
+    font-size: 9px;
+  }
+
+  .gameResultLogo {
+    width: 16px;
+    height: 16px;
+  }
+
   .pickParlayLogo {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 }
