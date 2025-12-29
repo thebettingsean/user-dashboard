@@ -536,84 +536,133 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Props Container */
-.propsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.positionGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.positionTitle {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.playerGroup {
+/* Props Hierarchy */
+.propsHierarchy {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
 }
 
-.playerHeader {
+/* Level 1: Position */
+.positionCollapse {
+  display: flex;
+  flex-direction: column;
+}
+
+.positionBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.positionBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.positionBtn.expanded {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.positionLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.expandIcon {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Level 2: Players */
+.playersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.playerCollapse {
+  display: flex;
+  flex-direction: column;
+}
+
+.playerBtn {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.playerHeadshot {
-  width: 32px;
-  height: 32px;
+.playerBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.playerBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.playerThumb {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
-.playerInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.playerName {
-  font-size: 13px;
-  font-weight: 600;
+.playerLabel {
+  flex: 1;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 }
 
-.playerTeam {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+/* Level 3: Prop Types */
+.propTypesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
 }
 
-.propCard {
+.propTypeCollapse {
   display: flex;
   flex-direction: column;
 }
 
-.propCardBtn {
+.propTypeBtn {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   color: #FFFFFF;
   font-size: 12px;
@@ -621,27 +670,31 @@
   transition: all 0.2s ease;
 }
 
-.propCardBtn:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
+.propTypeBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-.propCardBtn.expanded {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.4);
+.propTypeBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
 }
 
-.propMarket {
+.propTypeLabel {
+  flex: 1;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.propLine {
+.propBestLine {
   color: #3b82f6;
   font-weight: 600;
+  font-size: 11px;
+  margin-right: 8px;
 }
 
-.propBooks {
+/* Level 4: Lines */
+.propLinesContainer {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -651,13 +704,13 @@
   border-radius: 6px;
 }
 
-.propSide {
+.propLineGroup {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.propSideLabel {
+.propLineLabel {
   font-size: 10px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -666,9 +719,10 @@
   margin-bottom: 2px;
 }
 
-.propBookBtn {
-  display: flex;
-  justify-content: space-between;
+.propLineBtn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
   align-items: center;
   width: 100%;
   padding: 6px 10px;
@@ -681,9 +735,24 @@
   transition: all 0.2s ease;
 }
 
-.propBookBtn:hover {
+.propLineBtn:hover {
   background: rgba(59, 130, 246, 0.15);
   border-color: rgba(59, 130, 246, 0.4);
+}
+
+.propLineBook {
+  text-align: left;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.propLineValue {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.propLineOdds {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
 /* Player Search Results */
@@ -1469,56 +1538,86 @@
   }
 
   /* Props Mobile Styles */
-  .propsContainer {
-    gap: 16px;
-  }
-
-  .positionTitle {
-    font-size: 10px;
-  }
-
-  .playerGroup {
-    padding: 10px;
+  .propsHierarchy {
     gap: 6px;
   }
 
-  .playerHeadshot {
-    width: 28px;
-    height: 28px;
-  }
-
-  .playerName {
+  .positionBtn {
+    padding: 10px 12px;
     font-size: 11px;
   }
 
-  .playerTeam {
-    font-size: 9px;
+  .positionLabel {
+    font-size: 11px;
   }
 
-  .propCardBtn {
-    padding: 6px 10px;
+  .expandIcon {
+    font-size: 14px;
+  }
+
+  .playersContainer {
+    padding-left: 8px;
+    gap: 4px;
+  }
+
+  .playerBtn {
+    padding: 8px 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  .playerThumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  .playerLabel {
+    font-size: 11px;
+  }
+
+  .propTypesContainer {
+    padding-left: 8px;
+    gap: 4px;
+  }
+
+  .propTypeBtn {
+    padding: 7px 10px;
     font-size: 10px;
   }
 
-  .propMarket {
+  .propTypeLabel {
     font-size: 10px;
   }
 
-  .propLine {
+  .propBestLine {
     font-size: 10px;
+    margin-right: 6px;
   }
 
-  .propBooks {
+  .propLinesContainer {
     padding: 6px;
     gap: 6px;
   }
 
-  .propSideLabel {
+  .propLineLabel {
     font-size: 9px;
   }
 
-  .propBookBtn {
+  .propLineBtn {
     padding: 5px 8px;
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .propLineBook {
+    font-size: 10px;
+  }
+
+  .propLineValue {
+    font-size: 10px;
+  }
+
+  .propLineOdds {
     font-size: 10px;
   }
 
