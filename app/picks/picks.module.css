@@ -683,12 +683,35 @@
 }
 
 .pickAnalysisContent.expanded {
-  max-height: 800px;
+  max-height: 400px;
   opacity: 1;
   padding: 12px 16px;
+  overflow-y: auto; /* Make it scrollable */
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+}
+
+/* Webkit scrollbar styling for Chrome/Safari */
+.pickAnalysisContent.expanded::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .pickAnalysisContent p {
