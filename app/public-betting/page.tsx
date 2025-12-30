@@ -827,6 +827,7 @@ export default function PublicBettingPage() {
   // Get team color with fallback
   const getTeamColor = (game: GameOdds, isHome: boolean): string => {
     const color = isHome ? game.home_primary_color : game.away_primary_color
+    
     // If color exists and is valid hex, use it
     if (color && color.startsWith('#')) {
       return color

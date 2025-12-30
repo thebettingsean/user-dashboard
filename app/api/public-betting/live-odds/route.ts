@@ -180,6 +180,10 @@ export async function GET(request: Request) {
         away_abbrev: game.away_abbrev,
         home_logo: game.home_logo,
         away_logo: game.away_logo,
+        home_primary_color: game.home_primary_color,
+        away_primary_color: game.away_primary_color,
+        home_secondary_color: game.home_secondary_color,
+        away_secondary_color: game.away_secondary_color,
         game_time: game.game_time,
         
         opening_spread: game.opening_spread,
