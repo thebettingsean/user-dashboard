@@ -1244,6 +1244,40 @@
   min-width: 0;
 }
 
+/* Collapsible Header */
+.collapsibleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(41, 47, 63, 0.3);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-bottom: 12px;
+}
+
+.collapsibleHeader:hover {
+  background: rgba(41, 47, 63, 0.5);
+}
+
+.collapsibleTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.collapsibleHeader svg {
+  width: 16px;
+  height: 16px;
+  color: #696969;
+  transition: transform 0.2s ease;
+}
+
 .sportsbooksWrapper {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;

@@ -25,10 +25,14 @@ export async function GET(request: Request) {
         ht.name as home_team,
         ht.abbreviation as home_abbrev,
         ht.logo_url as home_logo,
+        ht.primary_color as home_primary_color,
+        ht.secondary_color as home_secondary_color,
         
         at.name as away_team,
         at.abbreviation as away_abbrev,
         at.logo_url as away_logo,
+        at.primary_color as away_primary_color,
+        at.secondary_color as away_secondary_color,
         
         g.spread_open as opening_spread,
         g.spread_close as current_spread,
@@ -67,9 +71,13 @@ export async function GET(request: Request) {
       home_team: string
       home_abbrev: string
       home_logo: string
+      home_primary_color: string
+      home_secondary_color: string
       away_team: string
       away_abbrev: string
       away_logo: string
+      away_primary_color: string
+      away_secondary_color: string
       opening_spread: number
       current_spread: number
       spread_movement: number

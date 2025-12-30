@@ -24,6 +24,10 @@ interface GameOdds {
   away_abbrev: string
   home_logo: string
   away_logo: string
+  home_primary_color?: string
+  away_primary_color?: string
+  home_secondary_color?: string
+  away_secondary_color?: string
   game_time: string
   opening_spread: number
   current_spread: number
@@ -157,25 +161,31 @@ const CustomTooltip = ({ active, payload, label, marketType }: any) => {
   
   const data = payload[0].payload
   
-  // Get value based on market type
-  let value: number = 0
+  // Get values for both sides
+  let formattedValue: string = ''
   let betPct: number = 50
   
   if (marketType === 'spread') {
-    value = data.homeLine
+    const homeLine = data.homeLine
+    const awayLine = data.awayLine
+    // Show as "+3.5/-3.5" or "-3.5/+3.5"
+    const homeFormatted = homeLine > 0 ? `+${homeLine}` : homeLine.toString()
+    const awayFormatted = awayLine > 0 ? `+${awayLine}` : awayLine.toString()
+    formattedValue = `${awayFormatted}/${homeFormatted}`
     betPct = data.homeBetPct
   } else if (marketType === 'ml') {
-    value = data.mlHome
+    const mlHome = data.mlHome
+    const mlAway = data.mlAway
+    // Show as "-145/+120" or "+105/-125"
+    const homeFormatted = mlHome > 0 ? `+${mlHome}` : mlHome.toString()
+    const awayFormatted = mlAway > 0 ? `+${mlAway}` : mlAway.toString()
+    formattedValue = `${awayFormatted}/${homeFormatted}`
     betPct = data.mlHomeBetPct || 50
   } else if (marketType === 'total') {
-    value = data.total
+    // For totals, just show the total value
+    formattedValue = data.total.toString()
     betPct = data.totalOverBetPct || 50
   }
-  
-  // Format value
-  const formattedValue = marketType === 'total' 
-    ? value.toString() 
-    : (value > 0 ? `+${value}` : value.toString())
   
   return (
     <div className={styles.graphTooltip}>
@@ -472,6 +482,8 @@ export default function PublicBettingPage() {
   const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [booksOpen, setBooksOpen] = useState(false)
 
   useEffect(() => {
     fetchGames()
@@ -523,11 +535,15 @@ export default function PublicBettingPage() {
           
           return {
             ...game,
-            // Logos from API
+            // Logos and colors from API
             home_logo: game.home_logo || '',
             away_logo: game.away_logo || '',
             home_abbrev: game.home_abbrev || getAbbrev(game.home_team),
             away_abbrev: game.away_abbrev || getAbbrev(game.away_team),
+            home_primary_color: game.home_primary_color || null,
+            away_primary_color: game.away_primary_color || null,
+            home_secondary_color: game.home_secondary_color || null,
+            away_secondary_color: game.away_secondary_color || null,
             
             // Spread percentages - away is inverse of home (only if has splits)
             public_spread_home_bet_pct: hasSplits ? (game.public_spread_bet_pct ?? null) : null,
@@ -806,6 +822,17 @@ export default function PublicBettingPage() {
   const formatSpread = (spread: number, isHome: boolean) => {
     const val = isHome ? spread : -spread
     return val > 0 ? `+${val}` : val.toString()
+  }
+
+  // Get team color with fallback
+  const getTeamColor = (game: GameOdds, isHome: boolean): string => {
+    const color = isHome ? game.home_primary_color : game.away_primary_color
+    // If color exists and is valid hex, use it
+    if (color && color.startsWith('#')) {
+      return color
+    }
+    // Default fallback colors
+    return isHome ? '#98ADD1' : '#EF4444'
   }
 
   // Helper to parse game time as UTC and return Date object
@@ -1360,10 +1387,10 @@ export default function PublicBettingPage() {
                                       <Line 
                                         type="monotone" 
                                         dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
-                                        stroke="#98ADD1" 
+                                        stroke={graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true)} 
                                         strokeWidth={2}
-                                        dot={{ r: 3, fill: '#98ADD1', stroke: '#151E2A', strokeWidth: 1 }}
-                                        activeDot={{ r: 5, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                        dot={{ r: 3, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#151E2A', strokeWidth: 1 }}
+                                        activeDot={{ r: 5, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#FFFFFF', strokeWidth: 2 }}
                                         isAnimationActive={false}
                                         name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
                                       />
@@ -1371,10 +1398,10 @@ export default function PublicBettingPage() {
                                         <Line 
                                           type="monotone" 
                                           dataKey={graphMarketType === 'spread' ? 'awayLine' : 'mlAway'} 
-                                          stroke="#EF4444" 
+                                          stroke={getTeamColor(game, false)} 
                                           strokeWidth={2}
-                                          dot={{ r: 3, fill: '#EF4444', stroke: '#151E2A', strokeWidth: 1 }}
-                                          activeDot={{ r: 5, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+                                          dot={{ r: 3, fill: getTeamColor(game, false), stroke: '#151E2A', strokeWidth: 1 }}
+                                          activeDot={{ r: 5, fill: getTeamColor(game, false), stroke: '#FFFFFF', strokeWidth: 2 }}
                                           isAnimationActive={false}
                                           name={getTeamName(game.away_team, game.sport)}
                                           strokeDasharray="5 5"
@@ -1387,12 +1414,12 @@ export default function PublicBettingPage() {
                                 {/* Legend */}
                                 <div className={styles.graphLegend}>
                                   <div className={styles.legendItem}>
-                                    <span className={styles.legendLine} style={{ background: '#98ADD1' }}></span>
+                                    <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
                                     <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
                                   </div>
                                   {graphMarketType !== 'total' && (
                                     <div className={styles.legendItem}>
-                                      <span className={styles.legendLineDashed} style={{ background: '#EF4444' }}></span>
+                                      <span className={styles.legendLineDashed} style={{ background: getTeamColor(game, false) }}></span>
                                       <span>{getTeamName(game.away_team, game.sport)}</span>
                                     </div>
                                   )}
@@ -1400,103 +1427,117 @@ export default function PublicBettingPage() {
                               </div>
                             </div>
                             
-                            {/* Bottom Section: History + Sportsbooks */}
+                            {/* Bottom Section: History + Sportsbooks (Collapsible) */}
                             <div className={styles.bottomSection}>
-                              {/* Odds History Table */}
+                              {/* Odds History Table (Collapsible) */}
                               <div className={styles.oddsHistorySection}>
-                                <h4 className={styles.historyTitle}>
-                                  {graphMarketType === 'spread' ? 'Spread' : graphMarketType === 'ml' ? 'Moneyline' : 'Total'} History
-                                </h4>
-                                <div className={styles.historyTableWrapper}>
-                                  <table className={styles.historyTable}>
-                                    <thead>
-                                      <tr>
-                                        <th>Time</th>
-                                        <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                                        <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {timelineData.length === 0 ? (
-                                        <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
-                                      ) : (
-                                        timelineData.map((point: any, idx) => {
-                                          // Get values based on market type
-                                          let awayVal: string, homeVal: string
-                                          
-                                          if (graphMarketType === 'spread') {
-                                            awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
-                                            homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
-                                          } else if (graphMarketType === 'ml') {
-                                            awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
-                                            homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
-                                          } else {
-                                            // Total
-                                            awayVal = `O ${point.total}`
-                                            homeVal = `U ${point.total}`
-                                          }
-                                          
-                                          const isCurrent = idx === timelineData.length - 1
-                                          
-                                          return (
-                                            <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
-                                              <td>{point.time}</td>
-                                              <td>{awayVal}</td>
-                                              <td>{homeVal}</td>
-                                            </tr>
-                                          )
-                                        })
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {/* Sportsbooks Comparison */}
-                              <div className={styles.sportsbooksSection}>
-                                <h4 className={styles.historyTitle}>Sportsbooks</h4>
-                                <div className={styles.sportsbooksWrapper}>
-                                  {!sportsbookOdds ? (
-                                    <div className={styles.emptyCell}>Loading...</div>
-                                  ) : (
-                                    <table className={styles.sportsbooksTable}>
+                                <button 
+                                  className={styles.collapsibleHeader}
+                                  onClick={(e) => { e.stopPropagation(); setHistoryOpen(!historyOpen) }}
+                                >
+                                  <span className={styles.collapsibleTitle}>Line History</span>
+                                  {historyOpen ? <FiChevronUp /> : <FiChevronDown />}
+                                </button>
+                                {historyOpen && (
+                                  <div className={styles.historyTableWrapper}>
+                                    <table className={styles.historyTable}>
                                       <thead>
                                         <tr>
-                                          <th>Book</th>
+                                          <th>Time</th>
                                           <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
                                           <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
-                                          let awayVal: string, homeVal: string
-                                          
-                                          if (graphMarketType === 'ml') {
-                                            const ml = bookOdds.value as { home: number, away: number }
-                                            awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
-                                            homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
-                                          } else if (graphMarketType === 'spread') {
-                                            const spread = bookOdds.value as number
-                                            awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
-                                            homeVal = spread > 0 ? `+${spread}` : spread.toString()
-                                          } else {
-                                            const total = bookOdds.value as number
-                                            awayVal = `O ${total}`
-                                            homeVal = `U ${total}`
-                                          }
-                                          
-                                          return (
-                                            <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
-                                              <td className={styles.bookName}>{bookOdds.book}</td>
-                                              <td>{awayVal}</td>
-                                              <td>{homeVal}</td>
-                                            </tr>
-                                          )
-                                        })}
+                                        {timelineData.length === 0 ? (
+                                          <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
+                                        ) : (
+                                          timelineData.map((point: any, idx) => {
+                                            // Get values based on market type
+                                            let awayVal: string, homeVal: string
+                                            
+                                            if (graphMarketType === 'spread') {
+                                              awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
+                                              homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
+                                            } else if (graphMarketType === 'ml') {
+                                              awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
+                                              homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
+                                            } else {
+                                              // Total
+                                              awayVal = `O ${point.total}`
+                                              homeVal = `U ${point.total}`
+                                            }
+                                            
+                                            const isCurrent = idx === timelineData.length - 1
+                                            
+                                            return (
+                                              <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
+                                                <td>{point.time}</td>
+                                                <td>{awayVal}</td>
+                                                <td>{homeVal}</td>
+                                              </tr>
+                                            )
+                                          })
+                                        )}
                                       </tbody>
                                     </table>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Sportsbooks Comparison (Collapsible) */}
+                              <div className={styles.sportsbooksSection}>
+                                <button 
+                                  className={styles.collapsibleHeader}
+                                  onClick={(e) => { e.stopPropagation(); setBooksOpen(!booksOpen) }}
+                                >
+                                  <span className={styles.collapsibleTitle}>All Books</span>
+                                  {booksOpen ? <FiChevronUp /> : <FiChevronDown />}
+                                </button>
+                                {booksOpen && (
+                                  <div className={styles.sportsbooksWrapper}>
+                                    {!sportsbookOdds ? (
+                                      <div className={styles.emptyCell}>Loading...</div>
+                                    ) : (
+                                      <table className={styles.sportsbooksTable}>
+                                        <thead>
+                                          <tr>
+                                            <th>Book</th>
+                                            <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                                            <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
+                                            let awayVal: string, homeVal: string
+                                            
+                                            if (graphMarketType === 'ml') {
+                                              const ml = bookOdds.value as { home: number, away: number }
+                                              awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
+                                              homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
+                                            } else if (graphMarketType === 'spread') {
+                                              const spread = bookOdds.value as number
+                                              awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
+                                              homeVal = spread > 0 ? `+${spread}` : spread.toString()
+                                            } else {
+                                              const total = bookOdds.value as number
+                                              awayVal = `O ${total}`
+                                              homeVal = `U ${total}`
+                                            }
+                                            
+                                            return (
+                                              <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
+                                                <td className={styles.bookName}>{bookOdds.book}</td>
+                                                <td>{awayVal}</td>
+                                                <td>{homeVal}</td>
+                                              </tr>
+                                            )
+                                          })}
+                                        </tbody>
+                                      </table>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
