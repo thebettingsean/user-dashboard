@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FaFootballBall, FaBasketballBall, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { FaFootballBall, FaBasketballBall, FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaHockeyPuck, FaBaseballBall } from 'react-icons/fa'
 import { IoClose } from 'react-icons/io5'
 import styles from './pick-submit.module.css'
 
@@ -671,6 +671,18 @@ export default function SubmitPicksPage() {
               onClick={() => handleSportChange('nba')}
             >
               <FaBasketballBall /> NBA
+            </button>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'nhl' ? styles.active : ''}`}
+              onClick={() => handleSportChange('nhl')}
+            >
+              <FaHockeyPuck /> NHL
+            </button>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'mlb' ? styles.active : ''}`}
+              onClick={() => handleSportChange('mlb')}
+            >
+              <FaBaseballBall /> MLB
             </button>
             <button
               className={`${styles.sportBtn} ${selectedSport === 'cfb' ? styles.active : ''}`}

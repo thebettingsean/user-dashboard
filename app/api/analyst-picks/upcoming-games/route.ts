@@ -14,6 +14,8 @@ const SPORT_MAP: Record<string, string> = {
   nba: 'basketball_nba',
   cfb: 'americanfootball_ncaaf',
   cbb: 'basketball_ncaab',
+  nhl: 'icehockey_nhl',
+  mlb: 'baseball_mlb',
 }
 
 // Sport emojis
@@ -22,6 +24,8 @@ const SPORT_EMOJI: Record<string, string> = {
   nba: '🏀',
   cfb: '🏈',
   cbb: '🏀',
+  nhl: '🏒',
+  mlb: '⚾',
 }
 
 // Map frontend sport names to ClickHouse database sport names
@@ -30,6 +34,8 @@ const DB_SPORT_MAP: Record<string, string> = {
   nba: 'nba',
   cfb: 'cfb',
   cbb: 'ncaab', // ClickHouse uses 'ncaab' for college basketball
+  nhl: 'nhl',
+  mlb: 'mlb',
 }
 
 interface OddsAPIGame {
@@ -50,7 +56,7 @@ export async function GET(request: NextRequest) {
     if (!SPORT_MAP[sport]) {
       return NextResponse.json({
         success: false,
-        error: 'Invalid sport. Must be: nfl, nba, cfb, or cbb'
+        error: 'Invalid sport. Must be: nfl, nba, cfb, cbb, nhl, or mlb'
       }, { status: 400 })
     }
 
