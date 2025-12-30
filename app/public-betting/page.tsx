@@ -747,10 +747,35 @@ export default function PublicBettingPage() {
     return val > 0 ? `+${val}` : val.toString()
   }
 
+  // Helper to parse game time as UTC and return Date object
+  const parseGameTimeEST = (gameTime: string): Date | null => {
+    if (!gameTime) return null
+    
+    try {
+      // Handle format "2025-12-14 18:00:00" from ClickHouse (stored as UTC)
+      const cleanTime = gameTime.replace(' ', 'T') + 'Z'
+      const date = new Date(cleanTime)
+      
+      if (isNaN(date.getTime())) {
+        return null
+      }
+      
+      return date
+    } catch {
+      return null
+    }
+  }
+
   const formatGameDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    // Format as "Mon, Dec 18"
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    const date = parseGameTimeEST(dateStr)
+    if (!date) return ''
+    // Format as "Mon, Dec 18" in EST
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric',
+      timeZone: 'America/New_York'
+    })
   }
 
   const getGamesByDate = () => {
@@ -758,7 +783,17 @@ export default function PublicBettingPage() {
     const grouped: { [date: string]: typeof sorted } = {}
     
     sorted.forEach(game => {
-      const dateKey = new Date(game.game_time).toDateString()
+      const date = parseGameTimeEST(game.game_time)
+      if (!date) return
+      
+      // Group by EST date (not UTC or local)
+      const dateKey = date.toLocaleDateString('en-US', { 
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'America/New_York'
+      })
+      
       if (!grouped[dateKey]) {
         grouped[dateKey] = []
       }
@@ -901,25 +936,23 @@ export default function PublicBettingPage() {
     }
   }
 
-  // Format game date/time for display
+  // Format game date/time for display in EST
   const formatGameTime = (gameTime: string) => {
-    if (!gameTime) return { date: '', time: '' }
+    const date = parseGameTimeEST(gameTime)
+    if (!date) return { date: '', time: '' }
     
-    try {
-      // Handle format "2025-12-14 18:00:00" from ClickHouse
-      const cleanTime = gameTime.replace(' ', 'T') + 'Z'
-      const date = new Date(cleanTime)
-      
-      if (isNaN(date.getTime())) {
-        return { date: '', time: '' }
-      }
-      
-      return {
-        date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-      }
-    } catch {
-      return { date: '', time: '' }
+    return {
+      date: date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric',
+        timeZone: 'America/New_York'
+      }),
+      time: date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        timeZone: 'America/New_York'
+      })
     }
   }
 
