@@ -61,9 +61,17 @@ interface GameOdds {
   has_splits?: boolean
 }
 
-type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'rlm' | 'movement' | null
+type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'signal' | 'movement'
 type MarketType = 'spread' | 'total' | 'ml'
 type TimeFilter = 'all' | '24hr'
+
+interface ActiveSorts {
+  movement: boolean
+  bet_pct: boolean
+  money_pct: boolean
+  diff: boolean
+  signal: boolean
+}
 
 interface LineMovementPoint {
   time: string
@@ -449,8 +457,13 @@ export default function PublicBettingPage() {
   const [loading, setLoading] = useState(true)
   const [selectedSport, setSelectedSport] = useState<string>('nfl')
   const [selectedMarket, setSelectedMarket] = useState<MarketType>('spread')
-  const [sortField, setSortField] = useState<SortField>(null)
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [activeSorts, setActiveSorts] = useState<ActiveSorts>({
+    movement: false,
+    bet_pct: false,
+    money_pct: false,
+    diff: false,
+    signal: false
+  })
   const [expandedGame, setExpandedGame] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
@@ -687,12 +700,33 @@ export default function PublicBettingPage() {
   }
 
   const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')
-    } else {
-      setSortField(field)
-      setSortDirection('desc')
-    }
+    setActiveSorts(prev => {
+      // If signal is clicked, turn off all others and toggle signal
+      if (field === 'signal') {
+        return {
+          movement: false,
+          bet_pct: false,
+          money_pct: false,
+          diff: false,
+          signal: !prev.signal
+        }
+      }
+      
+      // If any other field is clicked and signal is on, turn signal off
+      if (prev.signal) {
+        return {
+          ...prev,
+          signal: false,
+          [field]: true
+        }
+      }
+      
+      // Toggle the clicked field
+      return {
+        ...prev,
+        [field]: !prev[field]
+      }
+    })
   }
 
   const getSortedGames = () => {
@@ -710,35 +744,62 @@ export default function PublicBettingPage() {
       )
     }
 
-    if (!sortField) return filtered
+    // Check if any sorts are active
+    const hasActiveSorts = Object.values(activeSorts).some(v => v)
+    if (!hasActiveSorts) return filtered
 
+    // Sort by combined score of all active filters
     return [...filtered].sort((a, b) => {
-      let aVal = 0, bVal = 0
+      let aScore = 0, bScore = 0
       
-      switch (sortField) {
-        case 'bet_pct':
-          aVal = Math.abs((a.public_spread_home_bet_pct || 50) - 50)
-          bVal = Math.abs((b.public_spread_home_bet_pct || 50) - 50)
-          break
-        case 'money_pct':
-          aVal = Math.abs((a.public_spread_home_money_pct || 50) - 50)
-          bVal = Math.abs((b.public_spread_home_money_pct || 50) - 50)
-          break
-        case 'diff':
-          aVal = Math.abs((a.public_spread_home_bet_pct || 50) - (a.public_spread_home_money_pct || 50))
-          bVal = Math.abs((b.public_spread_home_bet_pct || 50) - (b.public_spread_home_money_pct || 50))
-          break
-        case 'movement':
-          aVal = Math.abs(a.spread_movement || 0)
-          bVal = Math.abs(b.spread_movement || 0)
-          break
-        case 'rlm':
-          aVal = a.rlm !== '-' ? 1 : 0
-          bVal = b.rlm !== '-' ? 1 : 0
-          break
+      // For each active sort, add to the score
+      if (activeSorts.movement) {
+        // Biggest absolute movement = higher score
+        aScore += Math.abs(a.spread_movement || 0) * 10 // Weight by 10 to make it significant
+        bScore += Math.abs(b.spread_movement || 0) * 10
       }
       
-      return sortDirection === 'desc' ? bVal - aVal : aVal - bVal
+      if (activeSorts.bet_pct) {
+        // Most bets (highest percentage on either side) = higher score
+        const aHomeBets = a.public_spread_home_bet_pct || 50
+        const aAwayBets = a.public_spread_away_bet_pct || 50
+        const bHomeBets = b.public_spread_home_bet_pct || 50
+        const bAwayBets = b.public_spread_away_bet_pct || 50
+        
+        aScore += Math.max(aHomeBets, aAwayBets)
+        bScore += Math.max(bHomeBets, bAwayBets)
+      }
+      
+      if (activeSorts.money_pct) {
+        // Most money (highest percentage on either side) = higher score
+        const aHomeMoney = a.public_spread_home_money_pct || 50
+        const aAwayMoney = a.public_spread_away_money_pct || 50
+        const bHomeMoney = b.public_spread_home_money_pct || 50
+        const bAwayMoney = b.public_spread_away_money_pct || 50
+        
+        aScore += Math.max(aHomeMoney, aAwayMoney)
+        bScore += Math.max(bHomeMoney, bAwayMoney)
+      }
+      
+      if (activeSorts.diff) {
+        // Biggest absolute difference between bets and money = higher score
+        const aHomeDiff = Math.abs((a.public_spread_home_bet_pct || 50) - (a.public_spread_home_money_pct || 50))
+        const aAwayDiff = Math.abs((a.public_spread_away_bet_pct || 50) - (a.public_spread_away_money_pct || 50))
+        const bHomeDiff = Math.abs((b.public_spread_home_bet_pct || 50) - (b.public_spread_home_money_pct || 50))
+        const bAwayDiff = Math.abs((b.public_spread_away_bet_pct || 50) - (b.public_spread_away_money_pct || 50))
+        
+        aScore += Math.max(aHomeDiff, aAwayDiff) * 2 // Weight by 2
+        bScore += Math.max(bHomeDiff, bAwayDiff) * 2
+      }
+      
+      if (activeSorts.signal) {
+        // Has signal = higher score
+        aScore += (a.rlm !== '-' ? 100 : 0)
+        bScore += (b.rlm !== '-' ? 100 : 0)
+      }
+      
+      // Sort descending (highest score first)
+      return bScore - aScore
     })
   }
 
@@ -1053,34 +1114,34 @@ export default function PublicBettingPage() {
               <th>Open</th>
               <th>Current</th>
               <th 
-                className={`${styles.sortable} ${sortField === 'movement' ? styles.sorted : ''}`}
+                className={`${styles.sortable} ${activeSorts.movement ? styles.sorted : ''}`}
                 onClick={() => handleSort('movement')}
               >
-                Move {sortField === 'movement' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                Move {activeSorts.movement && <FiChevronDown />}
               </th>
               <th 
-                className={`${styles.sortable} ${sortField === 'bet_pct' ? styles.sorted : ''}`}
+                className={`${styles.sortable} ${activeSorts.bet_pct ? styles.sorted : ''}`}
                 onClick={() => handleSort('bet_pct')}
               >
-                Bets {sortField === 'bet_pct' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                Bets {activeSorts.bet_pct && <FiChevronDown />}
               </th>
               <th 
-                className={`${styles.sortable} ${sortField === 'money_pct' ? styles.sorted : ''}`}
+                className={`${styles.sortable} ${activeSorts.money_pct ? styles.sorted : ''}`}
                 onClick={() => handleSort('money_pct')}
               >
-                Money {sortField === 'money_pct' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                Money {activeSorts.money_pct && <FiChevronDown />}
               </th>
               <th 
-                className={`${styles.sortable} ${sortField === 'diff' ? styles.sorted : ''}`}
+                className={`${styles.sortable} ${activeSorts.diff ? styles.sorted : ''}`}
                 onClick={() => handleSort('diff')}
               >
-                Diff {sortField === 'diff' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                Diff {activeSorts.diff && <FiChevronDown />}
               </th>
               <th 
-                className={`${styles.sortable} ${sortField === 'rlm' ? styles.sorted : ''}`}
-                onClick={() => handleSort('rlm')}
+                className={`${styles.sortable} ${activeSorts.signal ? styles.sorted : ''}`}
+                onClick={() => handleSort('signal')}
               >
-                RLM {sortField === 'rlm' && (sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />)}
+                Signal {activeSorts.signal && <FiChevronDown />}
               </th>
             </tr>
           </thead>
@@ -1456,22 +1517,22 @@ export default function PublicBettingPage() {
             <div className={styles.mobileHeaderCell}>Team</div>
             <div className={styles.mobileHeaderCell}>Odds</div>
             <div 
-              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'bet_pct' ? styles.sorted : ''}`}
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${activeSorts.bet_pct ? styles.sorted : ''}`}
               onClick={() => handleSort('bet_pct')}
             >
               Bets
             </div>
             <div 
-              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'money_pct' ? styles.sorted : ''}`}
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${activeSorts.money_pct ? styles.sorted : ''}`}
               onClick={() => handleSort('money_pct')}
             >
               $$$
             </div>
             <div 
-              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${sortField === 'rlm' ? styles.sorted : ''}`}
-              onClick={() => handleSort('rlm')}
+              className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${activeSorts.signal ? styles.sorted : ''}`}
+              onClick={() => handleSort('signal')}
             >
-              RLM
+              Signal
             </div>
           </div>
           
