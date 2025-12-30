@@ -665,7 +665,7 @@
   border-top: 1px solid rgba(148, 163, 184, 0.2);
   color: #ffffff;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.6;
   width: 100%;
   max-width: 100%;
   background: rgba(0, 0, 0, 0.15);
@@ -679,6 +679,7 @@
   overflow-wrap: break-word;
   hyphens: auto;
   box-sizing: border-box;
+  white-space: pre-wrap; /* Preserve line breaks and spacing for rich text */
 }
 
 .pickAnalysisContent.expanded {

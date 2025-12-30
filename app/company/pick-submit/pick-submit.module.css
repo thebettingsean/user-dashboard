@@ -1211,6 +1211,9 @@
   resize: vertical;
   min-height: 80px;
   box-sizing: border-box;
+  white-space: pre-wrap; /* Preserve line breaks and spacing */
+  line-height: 1.6; /* Better readability for formatted text */
+  font-family: inherit;
 }
 
 .analysisInput:focus {
