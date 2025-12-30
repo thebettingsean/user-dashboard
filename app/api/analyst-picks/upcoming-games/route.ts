@@ -24,6 +24,14 @@ const SPORT_EMOJI: Record<string, string> = {
   cbb: '🏀',
 }
 
+// Map frontend sport names to ClickHouse database sport names
+const DB_SPORT_MAP: Record<string, string> = {
+  nfl: 'nfl',
+  nba: 'nba',
+  cfb: 'cfb',
+  cbb: 'ncaab', // ClickHouse uses 'ncaab' for college basketball
+}
+
 interface OddsAPIGame {
   id: string
   sport_key: string
@@ -70,6 +78,8 @@ export async function GET(request: NextRequest) {
 
     // Fetch team logos from ClickHouse
     console.log(`[${sport.toUpperCase()}] Fetching team data from ClickHouse...`)
+    const dbSport = DB_SPORT_MAP[sport] || sport
+    console.log(`[${sport.toUpperCase()}] Querying ClickHouse for sport: '${dbSport}'`)
     const teamLogosQuery = await clickhouseQuery<{
       team_id: number
       espn_team_id: number
@@ -84,7 +94,7 @@ export async function GET(request: NextRequest) {
         logo_url,
         abbreviation
       FROM teams
-      WHERE LOWER(sport) = '${sport.toLowerCase()}' AND logo_url != ''
+      WHERE LOWER(sport) = '${dbSport}' AND logo_url != ''
     `)
     
     console.log(`[${sport.toUpperCase()}] ClickHouse query success: ${teamLogosQuery.success}`)
