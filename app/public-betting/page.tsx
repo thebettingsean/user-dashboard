@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
 import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp } from 'react-icons/fi'
 import { 
@@ -858,6 +858,17 @@ export default function PublicBettingPage() {
   }
 
   const formatGameDate = (dateStr: string) => {
+    // If it's already a YYYY-MM-DD string from getGamesByDate
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateStr.split('-').map(Number)
+      const date = new Date(year, month - 1, day)
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric'
+      })
+    }
+
     const date = parseGameTimeEST(dateStr)
     if (!date) return ''
     // Format as "Mon, Dec 18" in EST
@@ -1063,7 +1074,9 @@ export default function PublicBettingPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <div className={styles.titleRow}>
-            <h1 className={styles.title}>Public Betting</h1>
+              <h1 className={styles.title}>
+                {selectedSport === 'all' ? '' : `${selectedSport.toUpperCase()} `}Public Betting
+              </h1>
             </div>
             <p className={styles.subtitle}>Public betting splits, movements & indicators from 150 sportsbooks.</p>
           </div>
@@ -1187,380 +1200,382 @@ export default function PublicBettingPage() {
             ) : sortedGames.length === 0 ? (
               <tr><td colSpan={8} className={styles.emptyCell}>No games found</td></tr>
             ) : (
-              Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
-                // Date separator row
-                <tr key={`date-${dateKey}`} className={styles.dateSeparator}>
-                  <td colSpan={8}>{formatGameDate(dateKey)}</td>
-                </tr>,
-                // Games for this date
-                ...gamesOnDate.flatMap(game => {
-                const awayPcts = getMarketPcts(game, false)
-                const homePcts = getMarketPcts(game, true)
-                const awayMove = getMarketMove(game, false)
-                const homeMove = getMarketMove(game, true)
-                const isExpanded = expandedGame === game.id
+              Object.entries(getGamesByDate()).map(([dateKey, gamesOnDate]) => (
+                <React.Fragment key={`group-${dateKey}`}>
+                  {/* Date separator row */}
+                  <tr className={styles.dateSeparator}>
+                    <td colSpan={8}>{formatGameDate(dateKey)}</td>
+                  </tr>
+                  {/* Games for this date */}
+                  {gamesOnDate.map(game => {
+                    const awayPcts = getMarketPcts(game, false)
+                    const homePcts = getMarketPcts(game, true)
+                    const awayMove = getMarketMove(game, false)
+                    const homeMove = getMarketMove(game, true)
+                    const isExpanded = expandedGame === game.id
 
-                return [
-                    <tr 
-                      key={`${game.id}-away`} 
-                      className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''}`}
-                      onClick={() => setExpandedGame(isExpanded ? null : game.id)}
-                    >
-                      <td className={styles.teamCell}>
-                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
-                        <span className={styles.teamName}>{getTeamName(game.away_team, game.sport)}</span>
-                      </td>
-                      <td>{getMarketOdds(game, false, true)}</td>
-                      <td>{getMarketOdds(game, false, false)}</td>
-                      <td className={awayMove !== 0 ? (awayMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
-                        {formatMove(awayMove)}
-                      </td>
-                      <td>
-                        <div className={styles.pctStack}>
-                          {awayPcts.betPct !== null ? (
-                            <>
-                          <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${awayPcts.betPct}%` }} />
-                          </div>
-                            </>
-                          ) : (
-                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.pctStack}>
-                          {awayPcts.moneyPct !== null ? (
-                            <>
-                          <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${awayPcts.moneyPct}%` }} />
-                          </div>
-                            </>
-                          ) : (
-                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className={getDiffClass(awayPcts.betPct, awayPcts.moneyPct)}>
-                        {formatDiff(awayPcts.betPct, awayPcts.moneyPct)}
-                      </td>
-                      <td>
-                        <span className={`${styles.rlmBadge} ${game.rlm !== '-' ? styles.hasRlm : ''}`}>
-                          {game.rlm}
-                        </span>
-                      </td>
-                    </tr>,
-                    <tr 
-                      key={`${game.id}-home`} 
-                      className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''}`}
-                      onClick={() => setExpandedGame(isExpanded ? null : game.id)}
-                    >
-                      <td className={styles.teamCell}>
-                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}
-                        <span className={styles.teamName}>{getTeamName(game.home_team, game.sport)}</span>
-                      </td>
-                      <td>{getMarketOdds(game, true, true)}</td>
-                      <td>{getMarketOdds(game, true, false)}</td>
-                      <td className={homeMove !== 0 ? (homeMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
-                        {formatMove(homeMove)}
-                      </td>
-                      <td>
-                        <div className={styles.pctStack}>
-                          {homePcts.betPct !== null ? (
-                            <>
-                          <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}>
-                            <div style={{ width: `${homePcts.betPct}%` }} />
-                          </div>
-                            </>
-                          ) : (
-                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.pctStack}>
-                          {homePcts.moneyPct !== null ? (
-                            <>
-                          <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}>
-                            <div style={{ width: `${homePcts.moneyPct}%` }} />
-                          </div>
-                            </>
-                          ) : (
-                            <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className={getDiffClass(homePcts.betPct, homePcts.moneyPct)}>
-                        {formatDiff(homePcts.betPct, homePcts.moneyPct)}
-                      </td>
-                      <td></td>
-                    </tr>,
-                    isExpanded && (
-                      <tr key={`${game.id}-details`} className={styles.detailsRow}>
-                        <td colSpan={8}>
-                          <div className={styles.expandedPanel}>
-                            {/* Graph Container - Combined Header */}
-                            <div className={styles.graphContainer}>
-                              {/* Combined Header: Game Info + Line Movement Title + Filters */}
-                              <div className={styles.graphHeader}>
-                                <div className={styles.graphHeaderLeft}>
-                                  {/* Game Matchup - smaller when expanded */}
-                                  <div className={styles.expandedMatchupRow}>
-                                    {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
-                                    <span className={styles.expandedTeamText}>{getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}</span>
-                                    {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
-                                    <span className={styles.expandedGameTime}>{formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}</span>
+                    return (
+                      <React.Fragment key={game.id}>
+                        <tr 
+                          className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''}`}
+                          onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                        >
+                          <td className={styles.teamCell}>
+                            {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
+                            <span className={styles.teamName}>{getTeamName(game.away_team, game.sport)}</span>
+                          </td>
+                          <td>{getMarketOdds(game, false, true)}</td>
+                          <td>{getMarketOdds(game, false, false)}</td>
+                          <td className={awayMove !== 0 ? (awayMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
+                            {formatMove(awayMove)}
+                          </td>
+                          <td>
+                            <div className={styles.pctStack}>
+                              {awayPcts.betPct !== null ? (
+                                <>
+                                  <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
+                                  <div className={styles.miniMeterBlue}>
+                                    <div style={{ width: `${awayPcts.betPct}%` }} />
                                   </div>
-                                  {/* Line Movement Title */}
-                                  <div className={styles.graphTitleRow}>
-                                    <FiTrendingUp className={styles.graphTitleIcon} />
-                                    <span className={styles.graphTitle}>Line Movement</span>
-                                  </div>
-                                </div>
-                                <div className={styles.graphHeaderRight}>
-                                  {/* Market Type Filter */}
-                                  <div className={styles.graphFilterGroup}>
-                                    {(['spread', 'total', 'ml'] as const).map(market => (
-                                      <button
-                                        key={market}
-                                        className={`${styles.graphFilterBtn} ${graphMarketType === market ? styles.active : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); setGraphMarketType(market) }}
-                                      >
-                                        {market === 'ml' ? 'ML' : market === 'total' ? 'O/U' : 'Spread'}
-                                      </button>
-                                    ))}
-                                  </div>
-                                  {/* Time Filter */}
-                                  <div className={styles.graphTimeFilter}>
-                                    <button
-                                      className={`${styles.graphTimeBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
-                                      onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('all') }}
-                                    >
-                                      All
-                                    </button>
-                                    <button
-                                      className={`${styles.graphTimeBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
-                                      onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('24hr') }}
-                                    >
-                                      24hr
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* Graph Content */}
-                              <div className={styles.graphContent}>
-                                {timelineLoading ? (
-                                  <div className={styles.graphLoading}>Loading timeline data...</div>
-                                ) : timelineData.length === 0 ? (
-                                  <div className={styles.graphLoading}>No historical data available</div>
-                                ) : (
-                                  <ResponsiveContainer width="100%" height={220}>
-                                    <ComposedChart 
-                                      data={timelineData}
-                                      margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
-                                    >
-                                      <defs>
-                                        <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
-                                          <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
-                                          <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
-                                        </linearGradient>
-                                      </defs>
-                                      <XAxis 
-                                        dataKey="time" 
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                        dy={10}
-                                      />
-                                      <YAxis 
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                        domain={['auto', 'auto']}
-                                        tickFormatter={(val) => graphMarketType === 'ml' ? (val > 0 ? `+${val}` : val) : (val > 0 ? `+${val}` : val)}
-                                        dx={-5}
-                                      />
-                                      <Tooltip content={<CustomTooltip marketType={graphMarketType} />} />
-                                      {graphMarketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
-                                      <Area 
-                                        type="monotone" 
-                                        dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
-                                        fill={`url(#areaGradient-${game.id})`}
-                                        stroke="none"
-                                      />
-                                      <Line 
-                                        type="monotone" 
-                                        dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
-                                        stroke={graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true)} 
-                                        strokeWidth={2}
-                                        dot={{ r: 3, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#151E2A', strokeWidth: 1 }}
-                                        activeDot={{ r: 5, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#FFFFFF', strokeWidth: 2 }}
-                                        isAnimationActive={false}
-                                        name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
-                                      />
-                                      {graphMarketType !== 'total' && (
-                                        <Line 
-                                          type="monotone" 
-                                          dataKey={graphMarketType === 'spread' ? 'awayLine' : 'mlAway'} 
-                                          stroke={getTeamColor(game, false)} 
-                                          strokeWidth={2}
-                                          dot={{ r: 3, fill: getTeamColor(game, false), stroke: '#151E2A', strokeWidth: 1 }}
-                                          activeDot={{ r: 5, fill: getTeamColor(game, false), stroke: '#FFFFFF', strokeWidth: 2 }}
-                                          isAnimationActive={false}
-                                          name={getTeamName(game.away_team, game.sport)}
-                                          strokeDasharray="5 5"
-                                        />
-                                      )}
-                                    </ComposedChart>
-                                  </ResponsiveContainer>
-                                )}
-                                
-                                {/* Legend */}
-                                <div className={styles.graphLegend}>
-                                  {graphMarketType !== 'total' && (
-                                    <div className={styles.legendItem}>
-                                      <span 
-                                        className={styles.legendLineDashed} 
-                                        style={{ 
-                                          background: `repeating-linear-gradient(90deg, ${getTeamColor(game, false)}, ${getTeamColor(game, false)} 4px, transparent 4px, transparent 6px)`
-                                        }}
-                                      ></span>
-                                      <span>{getTeamName(game.away_team, game.sport)}</span>
-                                    </div>
-                                  )}
-                                  <div className={styles.legendItem}>
-                                    <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
-                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
-                                  </div>
-                                </div>
-                              </div>
+                                </>
+                              ) : (
+                                <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                              )}
                             </div>
-                            
-                            {/* Bottom Section: History + Sportsbooks (Collapsible) */}
-                            <div className={styles.bottomSection}>
-                              {/* Odds History Table (Collapsible) */}
-                              <div className={styles.oddsHistorySection}>
-                                <button 
-                                  className={styles.collapsibleHeader}
-                                  onClick={(e) => { e.stopPropagation(); setHistoryOpen(!historyOpen) }}
-                                >
-                                  <span className={styles.collapsibleTitle}>Line History</span>
-                                  {historyOpen ? <FiChevronUp /> : <FiChevronDown />}
-                                </button>
-                                {historyOpen && (
-                                  <div className={styles.historyTableWrapper}>
-                                    <table className={styles.historyTable}>
-                                      <thead>
-                                        <tr>
-                                          <th>Time</th>
-                                          <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                                          <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {timelineData.length === 0 ? (
-                                          <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
-                                        ) : (
-                                          timelineData.map((point: any, idx) => {
-                                            // Get values based on market type
-                                            let awayVal: string, homeVal: string
-                                            
-                                            if (graphMarketType === 'spread') {
-                                              awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
-                                              homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
-                                            } else if (graphMarketType === 'ml') {
-                                              awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
-                                              homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
-                                            } else {
-                                              // Total
-                                              awayVal = `O ${point.total}`
-                                              homeVal = `U ${point.total}`
-                                            }
-                                            
-                                            const isCurrent = idx === timelineData.length - 1
-                                            
-                                            return (
-                                              <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
-                                                <td>{point.time}</td>
-                                                <td>{awayVal}</td>
-                                                <td>{homeVal}</td>
-                                              </tr>
-                                            )
-                                          })
-                                        )}
-                                      </tbody>
-                                    </table>
+                          </td>
+                          <td>
+                            <div className={styles.pctStack}>
+                              {awayPcts.moneyPct !== null ? (
+                                <>
+                                  <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
+                                  <div className={styles.miniMeterGreen}>
+                                    <div style={{ width: `${awayPcts.moneyPct}%` }} />
                                   </div>
-                                )}
-                              </div>
-
-                              {/* Sportsbooks Comparison (Collapsible) */}
-                              <div className={styles.sportsbooksSection}>
-                                <button 
-                                  className={styles.collapsibleHeader}
-                                  onClick={(e) => { e.stopPropagation(); setBooksOpen(!booksOpen) }}
-                                >
-                                  <span className={styles.collapsibleTitle}>All Books</span>
-                                  {booksOpen ? <FiChevronUp /> : <FiChevronDown />}
-                                </button>
-                                {booksOpen && (
-                                  <div className={styles.sportsbooksWrapper}>
-                                    {!sportsbookOdds ? (
-                                      <div className={styles.emptyCell}>Loading...</div>
+                                </>
+                              ) : (
+                                <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className={getDiffClass(awayPcts.betPct, awayPcts.moneyPct)}>
+                            {formatDiff(awayPcts.betPct, awayPcts.moneyPct)}
+                          </td>
+                          <td>
+                            <span className={`${styles.rlmBadge} ${game.rlm !== '-' ? styles.hasRlm : ''}`}>
+                              {game.rlm}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr 
+                          className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''}`}
+                          onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                        >
+                          <td className={styles.teamCell}>
+                            {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}
+                            <span className={styles.teamName}>{getTeamName(game.home_team, game.sport)}</span>
+                          </td>
+                          <td>{getMarketOdds(game, true, true)}</td>
+                          <td>{getMarketOdds(game, true, false)}</td>
+                          <td className={homeMove !== 0 ? (homeMove > 0 ? styles.moveDown : styles.moveUp) : ''}>
+                            {formatMove(homeMove)}
+                          </td>
+                          <td>
+                            <div className={styles.pctStack}>
+                              {homePcts.betPct !== null ? (
+                                <>
+                                  <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
+                                  <div className={styles.miniMeterBlue}>
+                                    <div style={{ width: `${homePcts.betPct}%` }} />
+                                  </div>
+                                </>
+                              ) : (
+                                <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <div className={styles.pctStack}>
+                              {homePcts.moneyPct !== null ? (
+                                <>
+                                  <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
+                                  <div className={styles.miniMeterGreen}>
+                                    <div style={{ width: `${homePcts.moneyPct}%` }} />
+                                  </div>
+                                </>
+                              ) : (
+                                <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className={getDiffClass(homePcts.betPct, homePcts.moneyPct)}>
+                            {formatDiff(homePcts.betPct, homePcts.moneyPct)}
+                          </td>
+                          <td></td>
+                        </tr>
+                        {isExpanded && (
+                          <tr key={`${game.id}-details`} className={styles.detailsRow}>
+                            <td colSpan={8}>
+                              <div className={styles.expandedPanel}>
+                                {/* Graph Container - Combined Header */}
+                                <div className={styles.graphContainer}>
+                                  {/* Combined Header: Game Info + Line Movement Title + Filters */}
+                                  <div className={styles.graphHeader}>
+                                    <div className={styles.graphHeaderLeft}>
+                                      {/* Game Matchup - smaller when expanded */}
+                                      <div className={styles.expandedMatchupRow}>
+                                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
+                                        <span className={styles.expandedTeamText}>{getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}</span>
+                                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
+                                        <span className={styles.expandedGameTime}>{formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}</span>
+                                      </div>
+                                      {/* Line Movement Title */}
+                                      <div className={styles.graphTitleRow}>
+                                        <FiTrendingUp className={styles.graphTitleIcon} />
+                                        <span className={styles.graphTitle}>Line Movement</span>
+                                      </div>
+                                    </div>
+                                    <div className={styles.graphHeaderRight}>
+                                      {/* Market Type Filter */}
+                                      <div className={styles.graphFilterGroup}>
+                                        {(['spread', 'total', 'ml'] as const).map(market => (
+                                          <button
+                                            key={market}
+                                            className={`${styles.graphFilterBtn} ${graphMarketType === market ? styles.active : ''}`}
+                                            onClick={(e) => { e.stopPropagation(); setGraphMarketType(market) }}
+                                          >
+                                            {market === 'ml' ? 'ML' : market === 'total' ? 'O/U' : 'Spread'}
+                                          </button>
+                                        ))}
+                                      </div>
+                                      {/* Time Filter */}
+                                      <div className={styles.graphTimeFilter}>
+                                        <button
+                                          className={`${styles.graphTimeBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
+                                          onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('all') }}
+                                        >
+                                          All
+                                        </button>
+                                        <button
+                                          className={`${styles.graphTimeBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
+                                          onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('24hr') }}
+                                        >
+                                          24hr
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Graph Content */}
+                                  <div className={styles.graphContent}>
+                                    {timelineLoading ? (
+                                      <div className={styles.graphLoading}>Loading timeline data...</div>
+                                    ) : timelineData.length === 0 ? (
+                                      <div className={styles.graphLoading}>No historical data available</div>
                                     ) : (
-                                      <table className={styles.sportsbooksTable}>
-                                        <thead>
-                                          <tr>
-                                            <th>Book</th>
-                                            <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                                            <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
-                                            let awayVal: string, homeVal: string
-                                            
-                                            if (graphMarketType === 'ml') {
-                                              const ml = bookOdds.value as { home: number, away: number }
-                                              awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
-                                              homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
-                                            } else if (graphMarketType === 'spread') {
-                                              const spread = bookOdds.value as number
-                                              awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
-                                              homeVal = spread > 0 ? `+${spread}` : spread.toString()
-                                            } else {
-                                              const total = bookOdds.value as number
-                                              awayVal = `O ${total}`
-                                              homeVal = `U ${total}`
-                                            }
-                                            
-                                            return (
-                                              <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
-                                                <td className={styles.bookName}>{bookOdds.book}</td>
-                                                <td>{awayVal}</td>
-                                                <td>{homeVal}</td>
-                                              </tr>
-                                            )
-                                          })}
-                                        </tbody>
-                                      </table>
+                                      <ResponsiveContainer width="100%" height={220}>
+                                        <ComposedChart 
+                                          data={timelineData}
+                                          margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
+                                        >
+                                          <defs>
+                                            <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
+                                              <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+                                            </linearGradient>
+                                          </defs>
+                                          <XAxis 
+                                            dataKey="time" 
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                            dy={10}
+                                          />
+                                          <YAxis 
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#FFFFFF', fontSize: 12 }}
+                                            domain={['auto', 'auto']}
+                                            tickFormatter={(val) => graphMarketType === 'ml' ? (val > 0 ? `+${val}` : val) : (val > 0 ? `+${val}` : val)}
+                                            dx={-5}
+                                          />
+                                          <Tooltip content={<CustomTooltip marketType={graphMarketType} />} />
+                                          {graphMarketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
+                                          <Area 
+                                            type="monotone" 
+                                            dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
+                                            fill={`url(#areaGradient-${game.id})`}
+                                            stroke="none"
+                                          />
+                                          <Line 
+                                            type="monotone" 
+                                            dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
+                                            stroke={graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true)} 
+                                            strokeWidth={2}
+                                            dot={{ r: 3, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#151E2A', strokeWidth: 1 }}
+                                            activeDot={{ r: 5, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#FFFFFF', strokeWidth: 2 }}
+                                            isAnimationActive={false}
+                                            name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
+                                          />
+                                          {graphMarketType !== 'total' && (
+                                            <Line 
+                                              type="monotone" 
+                                              dataKey={graphMarketType === 'spread' ? 'awayLine' : 'mlAway'} 
+                                              stroke={getTeamColor(game, false)} 
+                                              strokeWidth={2}
+                                              dot={{ r: 3, fill: getTeamColor(game, false), stroke: '#151E2A', strokeWidth: 1 }}
+                                              activeDot={{ r: 5, fill: getTeamColor(game, false), stroke: '#FFFFFF', strokeWidth: 2 }}
+                                              isAnimationActive={false}
+                                              name={getTeamName(game.away_team, game.sport)}
+                                              strokeDasharray="5 5"
+                                            />
+                                          )}
+                                        </ComposedChart>
+                                      </ResponsiveContainer>
+                                    )}
+                                    
+                                    {/* Legend */}
+                                    <div className={styles.graphLegend}>
+                                      {graphMarketType !== 'total' && (
+                                        <div className={styles.legendItem}>
+                                          <span 
+                                            className={styles.legendLineDashed} 
+                                            style={{ 
+                                              background: `repeating-linear-gradient(90deg, ${getTeamColor(game, false)}, ${getTeamColor(game, false)} 4px, transparent 4px, transparent 6px)`
+                                            }}
+                                          ></span>
+                                          <span>{getTeamName(game.away_team, game.sport)}</span>
+                                        </div>
+                                      )}
+                                      <div className={styles.legendItem}>
+                                        <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
+                                        <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Bottom Section: History + Sportsbooks (Collapsible) */}
+                                <div className={styles.bottomSection}>
+                                  {/* Odds History Table (Collapsible) */}
+                                  <div className={styles.oddsHistorySection}>
+                                    <button 
+                                      className={styles.collapsibleHeader}
+                                      onClick={(e) => { e.stopPropagation(); setHistoryOpen(!historyOpen) }}
+                                    >
+                                      <span className={styles.collapsibleTitle}>Line History</span>
+                                      {historyOpen ? <FiChevronUp /> : <FiChevronDown />}
+                                    </button>
+                                    {historyOpen && (
+                                      <div className={styles.historyTableWrapper}>
+                                        <table className={styles.historyTable}>
+                                          <thead>
+                                            <tr>
+                                              <th>Time</th>
+                                              <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                                              <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {timelineData.length === 0 ? (
+                                              <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
+                                            ) : (
+                                              timelineData.map((point: any, idx) => {
+                                                // Get values based on market type
+                                                let awayVal: string, homeVal: string
+                                                
+                                                if (graphMarketType === 'spread') {
+                                                  awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
+                                                  homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
+                                                } else if (graphMarketType === 'ml') {
+                                                  awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
+                                                  homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
+                                                } else {
+                                                  // Total
+                                                  awayVal = `O ${point.total}`
+                                                  homeVal = `U ${point.total}`
+                                                }
+                                                
+                                                const isCurrent = idx === timelineData.length - 1
+                                                
+                                                return (
+                                                  <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
+                                                    <td>{point.time}</td>
+                                                    <td>{awayVal}</td>
+                                                    <td>{homeVal}</td>
+                                                  </tr>
+                                                )
+                                              })
+                                            )}
+                                          </tbody>
+                                        </table>
+                                      </div>
                                     )}
                                   </div>
-                                )}
+
+                                  {/* Sportsbooks Comparison (Collapsible) */}
+                                  <div className={styles.sportsbooksSection}>
+                                    <button 
+                                      className={styles.collapsibleHeader}
+                                      onClick={(e) => { e.stopPropagation(); setBooksOpen(!booksOpen) }}
+                                    >
+                                      <span className={styles.collapsibleTitle}>All Books</span>
+                                      {booksOpen ? <FiChevronUp /> : <FiChevronDown />}
+                                    </button>
+                                    {booksOpen && (
+                                      <div className={styles.sportsbooksWrapper}>
+                                        {!sportsbookOdds ? (
+                                          <div className={styles.emptyCell}>Loading...</div>
+                                        ) : (
+                                          <table className={styles.sportsbooksTable}>
+                                            <thead>
+                                              <tr>
+                                                <th>Book</th>
+                                                <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
+                                                <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
+                                                let awayVal: string, homeVal: string
+                                                
+                                                if (graphMarketType === 'ml') {
+                                                  const ml = bookOdds.value as { home: number, away: number }
+                                                  awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
+                                                  homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
+                                                } else if (graphMarketType === 'spread') {
+                                                  const spread = bookOdds.value as number
+                                                  awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
+                                                  homeVal = spread > 0 ? `+${spread}` : spread.toString()
+                                                } else {
+                                                  const total = bookOdds.value as number
+                                                  awayVal = `O ${total}`
+                                                  homeVal = `U ${total}`
+                                                }
+                                                
+                                                return (
+                                                  <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
+                                                    <td className={styles.bookName}>{bookOdds.book}</td>
+                                                    <td>{awayVal}</td>
+                                                    <td>{homeVal}</td>
+                                                  </tr>
+                                                )
+                                              })}
+                                            </tbody>
+                                          </table>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     )
-                ].filter(Boolean)
-                })
-              ])
+                  })}
+                </React.Fragment>
+              ))
             )}
           </tbody>
         </table>
@@ -1596,108 +1611,110 @@ export default function PublicBettingPage() {
           ) : sortedGames.length === 0 ? (
             <div className={styles.emptyCell}>No games found</div>
           ) : (
-            Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
-              // Date separator
-              <div key={`mobile-date-${dateKey}`} className={styles.mobileDateSeparator}>
-                {formatGameDate(dateKey)}
-              </div>,
-              // Games for this date
-              ...gamesOnDate.map(game => {
-              const awayPcts = getMarketPcts(game, false)
-              const homePcts = getMarketPcts(game, true)
-              const isExpanded = expandedGame === game.id
-
-              return (
-                <div 
-                  key={game.id} 
-                  className={`${styles.mobileGameCard} ${isExpanded ? styles.expanded : ''}`}
-                  onClick={() => setExpandedGame(isExpanded ? null : game.id)}
-                >
-                  <div className={styles.mobileRow}>
-                    <div className={styles.mobileTeam}>
-                      {game.away_logo ? (
-                        <img src={game.away_logo} alt="" className={styles.mobileTeamLogo} />
-                      ) : (
-                        <span>{game.away_abbrev}</span>
-                      )}
-                    </div>
-                    <div className={styles.mobileOdds}>{getMarketOdds(game, false, false)}</div>
-                    <div className={styles.mobilePct}>
-                      {awayPcts.betPct !== null ? (
-                        <>
-                      <span>{Math.round(awayPcts.betPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
-                        </>
-                      ) : (
-                        <span style={{ color: '#696969' }}>N/A</span>
-                      )}
-                    </div>
-                    <div className={styles.mobilePct}>
-                      {awayPcts.moneyPct !== null ? (
-                        <>
-                      <span>{Math.round(awayPcts.moneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
-                        </>
-                      ) : (
-                        <span style={{ color: '#696969' }}>N/A</span>
-                      )}
-                    </div>
-                    <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
-                      {game.rlm}
-                    </div>
-                  </div>
-                  <div className={styles.mobileRow}>
-                    <div className={styles.mobileTeam}>
-                      {game.home_logo ? (
-                        <img src={game.home_logo} alt="" className={styles.mobileTeamLogo} />
-                      ) : (
-                        <span>{game.home_abbrev}</span>
-                      )}
-                    </div>
-                    <div className={styles.mobileOdds}>{getMarketOdds(game, true, false)}</div>
-                    <div className={styles.mobilePct}>
-                      {homePcts.betPct !== null ? (
-                        <>
-                      <span>{Math.round(homePcts.betPct)}%</span>
-                      <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
-                        </>
-                      ) : (
-                        <span style={{ color: '#696969' }}>N/A</span>
-                      )}
-                    </div>
-                    <div className={styles.mobilePct}>
-                      {homePcts.moneyPct !== null ? (
-                        <>
-                      <span>{Math.round(homePcts.moneyPct)}%</span>
-                      <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
-                        </>
-                      ) : (
-                        <span style={{ color: '#696969' }}>N/A</span>
-                      )}
-                    </div>
-                    <div className={styles.mobileRlm}></div>
-                  </div>
-                  
-                  {isExpanded && (
-                    <MobileExpandedView 
-                      game={game}
-                      graphTimeFilter={graphTimeFilter}
-                      setGraphTimeFilter={setGraphTimeFilter}
-                      graphMarketType={graphMarketType}
-                      setGraphMarketType={setGraphMarketType}
-                      formatSpread={formatSpread}
-                      getTeamName={getTeamName}
-                      getTeamColor={getTeamColor}
-                      timelineData={timelineData}
-                      timelineLoading={timelineLoading}
-                      sportsbookOdds={sportsbookOdds}
-                      getSportsbookOddsForMarket={getSportsbookOddsForMarket}
-                    />
-                  )}
+            Object.entries(getGamesByDate()).map(([dateKey, gamesOnDate]) => (
+              <React.Fragment key={`mobile-group-${dateKey}`}>
+                {/* Date separator */}
+                <div className={styles.mobileDateSeparator}>
+                  {formatGameDate(dateKey)}
                 </div>
-              )
-              })
-            ])
+                {/* Games for this date */}
+                {gamesOnDate.map(game => {
+                  const awayPcts = getMarketPcts(game, false)
+                  const homePcts = getMarketPcts(game, true)
+                  const isExpanded = expandedGame === game.id
+
+                  return (
+                    <div 
+                      key={game.id} 
+                      className={`${styles.mobileGameCard} ${isExpanded ? styles.expanded : ''}`}
+                      onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                    >
+                      <div className={styles.mobileRow}>
+                        <div className={styles.mobileTeam}>
+                          {game.away_logo ? (
+                            <img src={game.away_logo} alt="" className={styles.mobileTeamLogo} />
+                          ) : (
+                            <span>{game.away_abbrev}</span>
+                          )}
+                        </div>
+                        <div className={styles.mobileOdds}>{getMarketOdds(game, false, false)}</div>
+                        <div className={styles.mobilePct}>
+                          {awayPcts.betPct !== null ? (
+                            <>
+                              <span>{Math.round(awayPcts.betPct)}%</span>
+                              <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
+                            </>
+                          ) : (
+                            <span style={{ color: '#696969' }}>N/A</span>
+                          )}
+                        </div>
+                        <div className={styles.mobilePct}>
+                          {awayPcts.moneyPct !== null ? (
+                            <>
+                              <span>{Math.round(awayPcts.moneyPct)}%</span>
+                              <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
+                            </>
+                          ) : (
+                            <span style={{ color: '#696969' }}>N/A</span>
+                          )}
+                        </div>
+                        <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
+                          {game.rlm}
+                        </div>
+                      </div>
+                      <div className={styles.mobileRow}>
+                        <div className={styles.mobileTeam}>
+                          {game.home_logo ? (
+                            <img src={game.home_logo} alt="" className={styles.mobileTeamLogo} />
+                          ) : (
+                            <span>{game.home_abbrev}</span>
+                          )}
+                        </div>
+                        <div className={styles.mobileOdds}>{getMarketOdds(game, true, false)}</div>
+                        <div className={styles.mobilePct}>
+                          {homePcts.betPct !== null ? (
+                            <>
+                              <span>{Math.round(homePcts.betPct)}%</span>
+                              <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
+                            </>
+                          ) : (
+                            <span style={{ color: '#696969' }}>N/A</span>
+                          )}
+                        </div>
+                        <div className={styles.mobilePct}>
+                          {homePcts.moneyPct !== null ? (
+                            <>
+                              <span>{Math.round(homePcts.moneyPct)}%</span>
+                              <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
+                            </>
+                          ) : (
+                            <span style={{ color: '#696969' }}>N/A</span>
+                          )}
+                        </div>
+                        <div className={styles.mobileRlm}></div>
+                      </div>
+                      
+                      {isExpanded && (
+                        <MobileExpandedView 
+                          game={game}
+                          graphTimeFilter={graphTimeFilter}
+                          setGraphTimeFilter={setGraphTimeFilter}
+                          graphMarketType={graphMarketType}
+                          setGraphMarketType={setGraphMarketType}
+                          formatSpread={formatSpread}
+                          getTeamName={getTeamName}
+                          getTeamColor={getTeamColor}
+                          timelineData={timelineData}
+                          timelineLoading={timelineLoading}
+                          sportsbookOdds={sportsbookOdds}
+                          getSportsbookOddsForMarket={getSportsbookOddsForMarket}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </React.Fragment>
+            ))
           )}
         </div>
       </div>

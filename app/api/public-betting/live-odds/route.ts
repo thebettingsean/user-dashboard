@@ -66,8 +66,10 @@ export async function GET(request: Request) {
         g.updated_at
         
       FROM games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (ht.sport = g.sport OR (ht.sport = 'ncaab' AND g.sport = 'cbb') OR (ht.sport = 'cbb' AND g.sport = 'ncaab'))
-      LEFT JOIN teams at ON g.away_team_id = at.team_id AND (at.sport = g.sport OR (at.sport = 'ncaab' AND g.sport = 'cbb') OR (at.sport = 'cbb' AND g.sport = 'ncaab'))
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id 
+        AND (ht.sport = g.sport OR (g.sport = 'cbb' AND ht.sport = 'ncaab') OR (g.sport = 'ncaab' AND ht.sport = 'cbb'))
+      LEFT JOIN teams at ON g.away_team_id = at.team_id 
+        AND (at.sport = g.sport OR (g.sport = 'cbb' AND at.sport = 'ncaab') OR (g.sport = 'ncaab' AND at.sport = 'cbb'))
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${sportFilter}
       ORDER BY g.game_time ASC, g.updated_at DESC
