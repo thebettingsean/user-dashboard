@@ -1416,10 +1416,6 @@ export default function PublicBettingPage() {
                                 
                                 {/* Legend */}
                                 <div className={styles.graphLegend}>
-                                  <div className={styles.legendItem}>
-                                    <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
-                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
-                                  </div>
                                   {graphMarketType !== 'total' && (
                                     <div className={styles.legendItem}>
                                       <span 
@@ -1431,6 +1427,10 @@ export default function PublicBettingPage() {
                                       <span>{getTeamName(game.away_team, game.sport)}</span>
                                     </div>
                                   )}
+                                  <div className={styles.legendItem}>
+                                    <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
+                                    <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
