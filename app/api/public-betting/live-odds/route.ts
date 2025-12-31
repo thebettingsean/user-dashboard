@@ -84,7 +84,27 @@ export async function GET(request: Request) {
         ht.primary_color as home_primary_color,
         at.primary_color as away_primary_color,
         ht.secondary_color as home_secondary_color,
-        at.secondary_color as away_secondary_color
+        at.secondary_color as away_secondary_color,
+        
+        -- Signal columns
+        g.spread_home_public_respect,
+        g.spread_home_vegas_backed,
+        g.spread_home_whale_respect,
+        g.spread_away_public_respect,
+        g.spread_away_vegas_backed,
+        g.spread_away_whale_respect,
+        g.total_over_public_respect,
+        g.total_over_vegas_backed,
+        g.total_over_whale_respect,
+        g.total_under_public_respect,
+        g.total_under_vegas_backed,
+        g.total_under_whale_respect,
+        g.ml_home_public_respect,
+        g.ml_home_vegas_backed,
+        g.ml_home_whale_respect,
+        g.ml_away_public_respect,
+        g.ml_away_vegas_backed,
+        g.ml_away_whale_respect
         
       FROM games g
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (
@@ -140,6 +160,25 @@ export async function GET(request: Request) {
       public_total_over_bet_pct: number | null
       public_total_over_money_pct: number | null
       updated_at: string
+      // Signal columns
+      spread_home_public_respect: number
+      spread_home_vegas_backed: number
+      spread_home_whale_respect: number
+      spread_away_public_respect: number
+      spread_away_vegas_backed: number
+      spread_away_whale_respect: number
+      total_over_public_respect: number
+      total_over_vegas_backed: number
+      total_over_whale_respect: number
+      total_under_public_respect: number
+      total_under_vegas_backed: number
+      total_under_whale_respect: number
+      ml_home_public_respect: number
+      ml_home_vegas_backed: number
+      ml_home_whale_respect: number
+      ml_away_public_respect: number
+      ml_away_vegas_backed: number
+      ml_away_whale_respect: number
     }>(gamesQuery)
 
     // Smart Deduplication: Get the latest game_time but preserve interesting splits
@@ -258,20 +297,43 @@ export async function GET(request: Request) {
         
         has_splits: game.has_real_splits,
         
-        // Signals - will be populated once columns exist and cron runs
-        // For now, return empty signals (all 0s)
+        // Signals
         signals: {
           spread: {
-            home: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
-            away: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
+            home: {
+              publicRespect: game.spread_home_public_respect || 0,
+              vegasBacked: game.spread_home_vegas_backed || 0,
+              whaleRespect: game.spread_home_whale_respect || 0,
+            },
+            away: {
+              publicRespect: game.spread_away_public_respect || 0,
+              vegasBacked: game.spread_away_vegas_backed || 0,
+              whaleRespect: game.spread_away_whale_respect || 0,
+            },
           },
           total: {
-            over: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
-            under: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
+            over: {
+              publicRespect: game.total_over_public_respect || 0,
+              vegasBacked: game.total_over_vegas_backed || 0,
+              whaleRespect: game.total_over_whale_respect || 0,
+            },
+            under: {
+              publicRespect: game.total_under_public_respect || 0,
+              vegasBacked: game.total_under_vegas_backed || 0,
+              whaleRespect: game.total_under_whale_respect || 0,
+            },
           },
           ml: {
-            home: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
-            away: { publicRespect: 0, vegasBacked: 0, whaleRespect: 0 },
+            home: {
+              publicRespect: game.ml_home_public_respect || 0,
+              vegasBacked: game.ml_home_vegas_backed || 0,
+              whaleRespect: game.ml_home_whale_respect || 0,
+            },
+            away: {
+              publicRespect: game.ml_away_public_respect || 0,
+              vegasBacked: game.ml_away_vegas_backed || 0,
+              whaleRespect: game.ml_away_whale_respect || 0,
+            },
           },
         },
       }
