@@ -92,8 +92,7 @@ export async function GET(request: Request) {
       LEFT JOIN game_first_seen gfs ON gfs.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${gamesSportFilter}
-      ORDER BY g.updated_at DESC
-      LIMIT 1 BY g.game_id
+      ORDER BY g.game_time ASC, g.updated_at DESC
     `
     
     const gamesResult = await clickhouseQuery<{
@@ -133,16 +132,68 @@ export async function GET(request: Request) {
       updated_at: string
     }>(gamesQuery)
 
-    // Deduplication is now handled in SQL with LIMIT 1 BY game_id
-    // Each game_id appears only once with the most recently updated record
-    const deduplicatedData = (gamesResult.data || []).map(row => {
+    // Smart Deduplication: Get the latest game_time but preserve interesting splits
+    const gameMap = new Map<string, any>()
+    
+    for (const row of gamesResult.data || []) {
+      const existing = gameMap.get(row.game_id)
+      
+      // Check if this row has interesting splits (not null and not exactly 50/50)
+      const hasInterestingSplits = (
+        (row.public_spread_home_bet_pct !== null && row.public_spread_home_bet_pct !== 50) ||
+        (row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== 50) ||
+        (row.public_ml_home_bet_pct !== null && row.public_ml_home_bet_pct !== 50) ||
+        (row.public_total_over_bet_pct !== null && row.public_total_over_bet_pct !== 50)
+      )
+      
       const hasSplits = (
         row.public_spread_home_bet_pct !== null ||
         row.public_spread_home_money_pct !== null ||
         row.public_ml_home_bet_pct !== null ||
         row.public_total_over_bet_pct !== null
       )
-      return { ...row, has_real_splits: hasSplits }
+
+      if (!existing) {
+        gameMap.set(row.game_id, { 
+          ...row, 
+          has_real_splits: hasSplits,
+          has_interesting_splits: hasInterestingSplits
+        })
+      } else {
+        // Compare updated_at to determine which record is newer
+        const existingTime = existing.updated_at ? new Date(existing.updated_at.replace(' ', 'T') + 'Z').getTime() : 0
+        const rowTime = row.updated_at ? new Date(row.updated_at.replace(' ', 'T') + 'Z').getTime() : 0
+        const rowIsNewer = rowTime > existingTime
+        
+        // If the new row has interesting splits, use its splits
+        // Otherwise, keep existing interesting splits
+        const useNewSplits = hasInterestingSplits || (!existing.has_interesting_splits && hasSplits)
+        
+        const updated = {
+          // Take game_time from the NEWER record (more accurate)
+          ...(rowIsNewer ? row : existing),
+          // Take splits from whichever has interesting data
+          public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
+          public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
+          public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
+          public_ml_home_money_pct: useNewSplits ? row.public_ml_home_money_pct : existing.public_ml_home_money_pct,
+          public_total_over_bet_pct: useNewSplits ? row.public_total_over_bet_pct : existing.public_total_over_bet_pct,
+          public_total_over_money_pct: useNewSplits ? row.public_total_over_money_pct : existing.public_total_over_money_pct,
+          has_real_splits: existing.has_real_splits || hasSplits,
+          has_interesting_splits: existing.has_interesting_splits || hasInterestingSplits
+        }
+        gameMap.set(row.game_id, updated)
+      }
+    }
+    
+    // Convert to array and sort by EST date, then EST time within each date
+    const deduplicatedData = Array.from(gameMap.values()).sort((a, b) => {
+      // First sort by EST date
+      if (a.est_date !== b.est_date) {
+        return a.est_date.localeCompare(b.est_date)
+      }
+      // Then sort by EST time (HH:MM format sorts correctly as string)
+      return a.est_time.localeCompare(b.est_time)
     })
     
     // Build final games array - team info comes directly from the JOIN
