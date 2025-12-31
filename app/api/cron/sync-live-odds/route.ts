@@ -571,18 +571,20 @@ export async function GET(request: Request) {
           const isOpening = !seenGameIds.has(game.id) && hasValidOpeningLines ? 1 : 0
           if (isOpening) {
             newGames++
-            // Record this as first seen with real opening lines
+            // Record this as first seen with real opening lines AND juice
             const gameTime = game.commence_time.replace('T', ' ').replace('Z', '')
             await clickhouseCommand(`
               INSERT INTO game_first_seen (
                 odds_api_game_id, sport, first_seen_time, 
-                opening_spread, opening_total, opening_ml_home, opening_ml_away, bookmaker_count
+                opening_spread, opening_total, opening_ml_home, opening_ml_away, bookmaker_count,
+                opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice
               ) VALUES (
                 '${game.id}', '${sportConfig.sport}', '${snapshotTime}',
-                ${consensus.spread}, ${consensus.total}, ${consensus.mlHome}, ${consensus.mlAway}, ${bookCount}
+                ${consensus.spread}, ${consensus.total}, ${consensus.mlHome}, ${consensus.mlAway}, ${bookCount},
+                ${consensus.spreadJuiceHome}, ${consensus.spreadJuiceAway}, ${consensus.overJuice}, ${consensus.underJuice}
               )
             `)
-            console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: spread=${consensus.spread}, total=${consensus.total}`)
+            console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: spread=${consensus.spread} (${consensus.spreadJuiceHome}/${consensus.spreadJuiceAway}), total=${consensus.total} (${consensus.overJuice}/${consensus.underJuice})`)
           } else if (!seenGameIds.has(game.id) && !hasValidOpeningLines) {
             // Game not yet marked as seen because we don't have real lines yet
             console.log(`[${sportConfig.sport.toUpperCase()}] WAITING for real lines: ${game.away_team} @ ${game.home_team} - Current: spread=${consensus.spread}, total=${consensus.total}`)
@@ -787,9 +789,11 @@ export async function GET(request: Request) {
                 SELECT * FROM games WHERE game_id = '${gameId}' ORDER BY updated_at DESC LIMIT 1
               `)
               
-              // Get TRUE opening lines from game_first_seen (same source as frontend)
+              // Get TRUE opening lines AND juice from game_first_seen (same source as frontend)
               const firstSeenData = await clickhouseQuery<any>(`
-                SELECT opening_spread, opening_total, opening_ml_home, opening_ml_away
+                SELECT 
+                  opening_spread, opening_total, opening_ml_home, opening_ml_away,
+                  opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice
                 FROM game_first_seen 
                 WHERE odds_api_game_id = '${game.id}'
                 LIMIT 1
@@ -806,21 +810,24 @@ export async function GET(request: Request) {
               const mlAwayOpen = isOpening ? consensus.mlAway 
                 : (gfs?.opening_ml_away ?? existingGame.data?.[0]?.away_ml_open ?? consensus.mlAway)
               
-              // Get opening juice values
-              // If existing game has default -110, treat as "not yet recorded" and use current
-              const existingSpreadJuiceHome = existingGame.data?.[0]?.opening_home_spread_juice
-              const existingSpreadJuiceAway = existingGame.data?.[0]?.opening_away_spread_juice
-              const existingOverJuice = existingGame.data?.[0]?.opening_over_juice
-              const existingUnderJuice = existingGame.data?.[0]?.opening_under_juice
-              
+              // Get opening juice from game_first_seen first, then games table
+              // For existing games, game_first_seen should have the TRUE opening juice
               const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome 
-                : (existingSpreadJuiceHome && existingSpreadJuiceHome !== -110 ? existingSpreadJuiceHome : consensus.spreadJuiceHome)
+                : (gfs?.opening_home_spread_juice && gfs.opening_home_spread_juice !== -110 
+                    ? gfs.opening_home_spread_juice 
+                    : consensus.spreadJuiceHome)
               const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway 
-                : (existingSpreadJuiceAway && existingSpreadJuiceAway !== -110 ? existingSpreadJuiceAway : consensus.spreadJuiceAway)
+                : (gfs?.opening_away_spread_juice && gfs.opening_away_spread_juice !== -110 
+                    ? gfs.opening_away_spread_juice 
+                    : consensus.spreadJuiceAway)
               const overJuiceOpen = isOpening ? consensus.overJuice 
-                : (existingOverJuice && existingOverJuice !== -110 ? existingOverJuice : consensus.overJuice)
+                : (gfs?.opening_over_juice && gfs.opening_over_juice !== -110 
+                    ? gfs.opening_over_juice 
+                    : consensus.overJuice)
               const underJuiceOpen = isOpening ? consensus.underJuice 
-                : (existingUnderJuice && existingUnderJuice !== -110 ? existingUnderJuice : consensus.underJuice)
+                : (gfs?.opening_under_juice && gfs.opening_under_juice !== -110 
+                    ? gfs.opening_under_juice 
+                    : consensus.underJuice)
               
               // Calculate signals using opening vs current data
               const signals = calculateGameSignals(
@@ -852,13 +859,28 @@ export async function GET(request: Request) {
                 publicData?.mlMoney || 50
               )
               
-              // Debug log for signal calculation
+              // Debug log for signal calculation - ALWAYS log first game of each sport
+              const isFirstGame = gamesProcessed === 0
+              if (isFirstGame) {
+                console.log(`[${sportConfig.sport}] FIRST GAME DEBUG: ${game.away_team} @ ${game.home_team}:`, {
+                  fromGameFirstSeen: gfs ? {
+                    opening_spread: gfs.opening_spread,
+                    opening_home_spread_juice: gfs.opening_home_spread_juice,
+                  } : 'NOT FOUND',
+                  calculatedOpening: { spreadOpen, spreadJuiceHomeOpen },
+                  current: { spread: consensus.spread, juice: consensus.spreadJuiceHome },
+                  publicData: publicData ? { betPct: publicData.spreadBet, moneyPct: publicData.spreadMoney } : 'NO SPLITS',
+                  allSignals: signals
+                })
+              }
+              
               const hasAnySignal = signals.spread_home_public_respect > 0 || signals.spread_away_public_respect > 0 ||
                 signals.spread_home_vegas_backed > 0 || signals.spread_away_vegas_backed > 0 ||
                 signals.spread_home_whale_respect > 0 || signals.spread_away_whale_respect > 0
               if (hasAnySignal) {
                 console.log(`[${sportConfig.sport}] SIGNAL DETECTED for ${game.away_team} @ ${game.home_team}:`, {
-                  spreadOpen, spreadCurrent: consensus.spread,
+                  spreadOpen, spreadCurrent: consensus.spread, movement: consensus.spread - spreadOpen,
+                  juiceOpen: spreadJuiceHomeOpen, juiceCurrent: consensus.spreadJuiceHome,
                   betPct: publicData?.spreadBet || 50, moneyPct: publicData?.spreadMoney || 50,
                   signals: {
                     spreadHomePublic: signals.spread_home_public_respect,
