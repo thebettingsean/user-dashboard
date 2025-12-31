@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+import { useSubscription } from '@/lib/hooks/useSubscription'
 import { generateGameSlug } from '@/lib/utils/gameSlug'
+import { FaLock } from 'react-icons/fa'
 import styles from './games.module.css'
 
 type Game = {
@@ -48,8 +51,78 @@ function toNumber(value: any): number | null {
   return Number.isNaN(num) ? null : num
 }
 
+// Mock data for featured game
+const generateMockBestOdds = (game: Game) => ({
+  spread: {
+    away: { line: -3.5, odds: -110, book: 'DraftKings' },
+    home: { line: 3.5, odds: -110, book: 'FanDuel' }
+  },
+  total: {
+    over: { line: 48.5, odds: -105, book: 'BetMGM' },
+    under: { line: 48.5, odds: -105, book: 'Caesars' }
+  }
+})
+
+const generateMockActiveBets = (game: Game) => [
+  {
+    id: '1',
+    type: 'Spread',
+    selection: `${game.awayTeam} -3.5`,
+    odds: -110,
+    units: 2.5,
+    status: 'active'
+  },
+  {
+    id: '2',
+    type: 'Total',
+    selection: 'Over 48.5',
+    odds: -105,
+    units: 1.5,
+    status: 'active'
+  },
+  {
+    id: '3',
+    type: 'ML',
+    selection: `${game.homeTeam} ML`,
+    odds: +145,
+    units: 1.0,
+    status: 'active'
+  },
+  {
+    id: '4',
+    type: 'Prop',
+    selection: `${game.awayTeam} Team Total Over 24.5`,
+    odds: -115,
+    units: 2.0,
+    status: 'active'
+  }
+]
+
+const generateMockGameScripts = (game: Game) => [
+  {
+    id: '1',
+    title: 'High Scoring Affair',
+    description: 'Both teams rank in the top 10 for pace and offensive efficiency. Expect a back-and-forth game with plenty of scoring opportunities.',
+    probability: 65
+  },
+  {
+    id: '2',
+    title: 'Defensive Battle',
+    description: 'Strong defensive units on both sides could lead to a lower-scoring game. Key matchups favor the under.',
+    probability: 35
+  },
+  {
+    id: '3',
+    title: 'Home Field Advantage',
+    description: 'Home team has won 8 of last 10 at this venue. Crowd noise and familiarity could be the difference maker.',
+    probability: 55
+  }
+]
+
 export default function GamesPage() {
   const router = useRouter()
+  const { isSignedIn } = useUser()
+  const { hasAccess } = useSubscription()
   const [allGames, setAllGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -152,53 +225,193 @@ export default function GamesPage() {
     return filteredGames.filter(game => game.id !== featuredGame.id)
   }, [filteredGames, featuredGame])
 
-  // Render public betting section
+  // Render Best Odds section
+  const renderBestOdds = (game: Game) => {
+    const odds = generateMockBestOdds(game)
+    
+    return (
+      <div className={styles.featuredBestOdds}>
+        <div className={styles.featuredSectionTitle}>Best Odds</div>
+        <div className={styles.bestOddsGrid}>
+          <div className={styles.bestOddsMarket}>
+            <div className={styles.bestOddsMarketLabel}>Spread</div>
+            <div className={styles.bestOddsRow}>
+              <div className={styles.bestOddsSide}>
+                <span className={styles.bestOddsTeam}>{game.awayTeam}</span>
+                <span className={styles.bestOddsLine}>{odds.spread.away.line > 0 ? '+' : ''}{odds.spread.away.line}</span>
+                <span className={styles.bestOddsValue}>{odds.spread.away.odds > 0 ? '+' : ''}{odds.spread.away.odds}</span>
+                <span className={styles.bestOddsBook}>{odds.spread.away.book}</span>
+              </div>
+              <div className={styles.bestOddsSide}>
+                <span className={styles.bestOddsTeam}>{game.homeTeam}</span>
+                <span className={styles.bestOddsLine}>{odds.spread.home.line > 0 ? '+' : ''}{odds.spread.home.line}</span>
+                <span className={styles.bestOddsValue}>{odds.spread.home.odds > 0 ? '+' : ''}{odds.spread.home.odds}</span>
+                <span className={styles.bestOddsBook}>{odds.spread.home.book}</span>
+              </div>
+            </div>
+          </div>
+          <div className={styles.bestOddsMarket}>
+            <div className={styles.bestOddsMarketLabel}>Total</div>
+            <div className={styles.bestOddsRow}>
+              <div className={styles.bestOddsSide}>
+                <span className={styles.bestOddsTeam}>Over</span>
+                <span className={styles.bestOddsLine}>{odds.total.over.line}</span>
+                <span className={styles.bestOddsValue}>{odds.total.over.odds > 0 ? '+' : ''}{odds.total.over.odds}</span>
+                <span className={styles.bestOddsBook}>{odds.total.over.book}</span>
+              </div>
+              <div className={styles.bestOddsSide}>
+                <span className={styles.bestOddsTeam}>Under</span>
+                <span className={styles.bestOddsLine}>{odds.total.under.line}</span>
+                <span className={styles.bestOddsValue}>{odds.total.under.odds > 0 ? '+' : ''}{odds.total.under.odds}</span>
+                <span className={styles.bestOddsBook}>{odds.total.under.book}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Render Active Bets section
+  const renderActiveBets = (game: Game) => {
+    const bets = generateMockActiveBets(game)
+    const hasAccessToBets = isSignedIn && hasAccess()
+    
+    return (
+      <div className={styles.featuredActiveBets}>
+        <div className={styles.featuredSectionTitle}>
+          Active Bets
+          <span className={styles.activeBetsCount}>We have {bets.length} bets active — view now for free.</span>
+        </div>
+        <div className={styles.activeBetsGrid}>
+          {bets.map((bet) => (
+            <div key={bet.id} className={styles.activeBetCard}>
+              <div 
+                className={styles.activeBetContent}
+                style={!hasAccessToBets ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+              >
+                <div className={styles.activeBetHeader}>
+                  <span className={styles.activeBetType}>{bet.type}</span>
+                  <span className={styles.activeBetUnits}>{bet.units}u</span>
+                </div>
+                <div className={styles.activeBetSelection}>{bet.selection}</div>
+                <div className={styles.activeBetOdds}>{bet.odds > 0 ? '+' : ''}{bet.odds}</div>
+              </div>
+              {!hasAccessToBets && (
+                <div className={styles.activeBetBlur}>
+                  <FaLock className={styles.activeBetLockIcon} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Render Public Betting section (enhanced)
   const renderPublicBetting = (game: Game) => {
     const pm = game.publicMoney
     if (!pm) return null
 
-    // Get the most public ML (by stake %)
-    const mlOptions = [
-      { label: `${game.homeTeam} ML`, bets: pm.public_money_ml_home_bets_pct, stake: pm.public_money_ml_home_stake_pct },
-      { label: `${game.awayTeam} ML`, bets: pm.public_money_ml_away_bets_pct, stake: pm.public_money_ml_away_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topML = mlOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
+    // Spread data
+    const spreadHomeBets = pm.public_money_spread_home_bets_pct ?? 50
+    const spreadHomeMoney = pm.public_money_spread_home_stake_pct ?? 50
+    const spreadAwayBets = pm.public_money_spread_away_bets_pct ?? 50
+    const spreadAwayMoney = pm.public_money_spread_away_stake_pct ?? 50
 
-    // Get the most public Spread (by stake %)
-    const spreadOptions = [
-      { label: `${game.homeTeam} Spread`, bets: pm.public_money_spread_home_bets_pct, stake: pm.public_money_spread_home_stake_pct },
-      { label: `${game.awayTeam} Spread`, bets: pm.public_money_spread_away_bets_pct, stake: pm.public_money_spread_away_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topSpread = spreadOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
-
-    // Get the most public O/U (by stake %)
-    const ouOptions = [
-      { label: 'Over', bets: pm.public_money_over_bets_pct, stake: pm.public_money_over_stake_pct },
-      { label: 'Under', bets: pm.public_money_under_bets_pct, stake: pm.public_money_under_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topOU = ouOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
-
-    const topMarkets = [topML, topSpread, topOU].filter(Boolean)
-    if (topMarkets.length === 0) return null
+    // Total data
+    const totalOverBets = pm.public_money_over_bets_pct ?? 50
+    const totalOverMoney = pm.public_money_over_stake_pct ?? 50
+    const totalUnderBets = pm.public_money_under_bets_pct ?? 50
+    const totalUnderMoney = pm.public_money_under_stake_pct ?? 50
 
     return (
       <div className={styles.featuredPublicBetting}>
-        <div className={styles.featuredPublicBettingTitle}>Most Public Bets</div>
-        <div className={styles.featuredPublicBettingList}>
-          {topMarkets.map((market, idx) => (
-            <div key={idx} className={styles.featuredPublicBettingItem}>
-              <div className={styles.featuredPublicBettingHeader}>
-                <span>{market!.label}</span>
-                <span className={styles.featuredPublicBettingPercent}>
-                  {formatPercentage(market!.stake)} $ · {formatPercentage(market!.bets)} bets
-                </span>
+        <div className={styles.featuredSectionTitle}>Public Betting</div>
+        <div className={styles.publicBettingGrid}>
+          <div className={styles.publicBettingMarket}>
+            <div className={styles.publicBettingMarketLabel}>Spread</div>
+            <div className={styles.publicBettingRow}>
+              <div className={styles.publicBettingSide}>
+                <div className={styles.publicBettingSideLabel}>{game.awayTeam}</div>
+                <div className={styles.publicBettingBar}>
+                  <div 
+                    className={styles.publicBettingBarFill}
+                    style={{ width: `${spreadAwayBets}%` }}
+                  />
+                </div>
+                <div className={styles.publicBettingPercents}>
+                  <span>{formatPercentage(spreadAwayBets)} tickets</span>
+                  <span>{formatPercentage(spreadAwayMoney)} money</span>
+                </div>
               </div>
-              <div className={styles.featuredPublicBettingBar}>
-                <div 
-                  className={styles.featuredPublicBettingBarFill}
-                  style={{ width: `${market!.stake}%` }}
-                />
+              <div className={styles.publicBettingSide}>
+                <div className={styles.publicBettingSideLabel}>{game.homeTeam}</div>
+                <div className={styles.publicBettingBar}>
+                  <div 
+                    className={styles.publicBettingBarFill}
+                    style={{ width: `${spreadHomeBets}%` }}
+                  />
+                </div>
+                <div className={styles.publicBettingPercents}>
+                  <span>{formatPercentage(spreadHomeBets)} tickets</span>
+                  <span>{formatPercentage(spreadHomeMoney)} money</span>
+                </div>
               </div>
+            </div>
+          </div>
+          <div className={styles.publicBettingMarket}>
+            <div className={styles.publicBettingMarketLabel}>Total</div>
+            <div className={styles.publicBettingRow}>
+              <div className={styles.publicBettingSide}>
+                <div className={styles.publicBettingSideLabel}>Over</div>
+                <div className={styles.publicBettingBar}>
+                  <div 
+                    className={styles.publicBettingBarFill}
+                    style={{ width: `${totalOverBets}%` }}
+                  />
+                </div>
+                <div className={styles.publicBettingPercents}>
+                  <span>{formatPercentage(totalOverBets)} tickets</span>
+                  <span>{formatPercentage(totalOverMoney)} money</span>
+                </div>
+              </div>
+              <div className={styles.publicBettingSide}>
+                <div className={styles.publicBettingSideLabel}>Under</div>
+                <div className={styles.publicBettingBar}>
+                  <div 
+                    className={styles.publicBettingBarFill}
+                    style={{ width: `${totalUnderBets}%` }}
+                  />
+                </div>
+                <div className={styles.publicBettingPercents}>
+                  <span>{formatPercentage(totalUnderBets)} tickets</span>
+                  <span>{formatPercentage(totalUnderMoney)} money</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Render Game Scripts section
+  const renderGameScripts = (game: Game) => {
+    const scripts = generateMockGameScripts(game)
+    
+    return (
+      <div className={styles.featuredGameScripts}>
+        <div className={styles.featuredSectionTitle}>Game Scripts</div>
+        <div className={styles.gameScriptsGrid}>
+          {scripts.map((script) => (
+            <div key={script.id} className={styles.gameScriptCard}>
+              <div className={styles.gameScriptHeader}>
+                <span className={styles.gameScriptTitle}>{script.title}</span>
+                <span className={styles.gameScriptProbability}>{script.probability}%</span>
+              </div>
+              <div className={styles.gameScriptDescription}>{script.description}</div>
             </div>
           ))}
         </div>
@@ -273,60 +486,55 @@ export default function GamesPage() {
           <div className={styles.gamesContainer}>
             {/* Featured Game Section */}
             {featuredGame && (
-              <div 
-                className={styles.featuredGame}
-                onClick={() => handleGameClick(featuredGame)}
-              >
-                <div className={styles.featuredTitle}>Featured Game</div>
-                <div className={styles.featuredSeparator} />
-                
-                {/* Teams & Date */}
-                <div className={styles.featuredMatchup}>
-                  {featuredGame.awayTeamLogo && (
-                    <div className={styles.featuredLogoWrapper}>
-                      <img src={featuredGame.awayTeamLogo} alt={featuredGame.awayTeam} className={styles.featuredLogo} />
-                      {isCollegeSport(featuredGame.sport) && featuredGame.awayTeamRank && (
-                        <div className={styles.featuredRank}>#{featuredGame.awayTeamRank}</div>
-                      )}
-                    </div>
-                  )}
-                  <span className={styles.featuredVs}>@</span>
-                  {featuredGame.homeTeamLogo && (
-                    <div className={styles.featuredLogoWrapper}>
-                      <img src={featuredGame.homeTeamLogo} alt={featuredGame.homeTeam} className={styles.featuredLogo} />
-                      {isCollegeSport(featuredGame.sport) && featuredGame.homeTeamRank && (
-                        <div className={styles.featuredRank}>#{featuredGame.homeTeamRank}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.featuredDate}>
-                  {formatKickoffDate(featuredGame.kickoff)} · {featuredGame.kickoffLabel}
-                </div>
-                
-                {/* Referee/Coach (NFL/NBA only) */}
-                {(featuredGame.sport === 'NFL' || featuredGame.sport === 'NBA') && featuredGame.referee && (
-                  <div className={styles.featuredRef}>
-                    Referee · {(featuredGame.referee as any)?.referee_name || 'TBD'}
+              <div className={styles.featuredGame}>
+                {/* Header */}
+                <div className={styles.featuredHeader}>
+                  <div className={styles.featuredTitle}>Featured Game</div>
+                  <div className={styles.featuredSeparator} />
+                  
+                  {/* Teams & Date */}
+                  <div className={styles.featuredMatchup}>
+                    {featuredGame.awayTeamLogo && (
+                      <div className={styles.featuredLogoWrapper}>
+                        <img src={featuredGame.awayTeamLogo} alt={featuredGame.awayTeam} className={styles.featuredLogo} />
+                        {isCollegeSport(featuredGame.sport) && featuredGame.awayTeamRank && (
+                          <div className={styles.featuredRank}>#{featuredGame.awayTeamRank}</div>
+                        )}
+                      </div>
+                    )}
+                    <span className={styles.featuredVs}>@</span>
+                    {featuredGame.homeTeamLogo && (
+                      <div className={styles.featuredLogoWrapper}>
+                        <img src={featuredGame.homeTeamLogo} alt={featuredGame.homeTeam} className={styles.featuredLogo} />
+                        {isCollegeSport(featuredGame.sport) && featuredGame.homeTeamRank && (
+                          <div className={styles.featuredRank}>#{featuredGame.homeTeamRank}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                {/* Public Betting Splits */}
+                  <div className={styles.featuredDate}>
+                    {formatKickoffDate(featuredGame.kickoff)} · {featuredGame.kickoffLabel}
+                  </div>
+                  
+                  {/* Referee/Coach (NFL/NBA only) */}
+                  {(featuredGame.sport === 'NFL' || featuredGame.sport === 'NBA') && featuredGame.referee && (
+                    <div className={styles.featuredRef}>
+                      Referee · {(featuredGame.referee as any)?.referee_name || 'TBD'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Best Odds Section */}
+                {renderBestOdds(featuredGame)}
+
+                {/* Active Bets Section */}
+                {renderActiveBets(featuredGame)}
+
+                {/* Public Betting Section */}
                 {renderPublicBetting(featuredGame)}
-                
-                {/* Stats */}
-                <div className={styles.featuredStats}>
-                  <div className={styles.featuredStat}>
-                    <span className={styles.featuredStatLabel}>Active Picks</span>
-                    <span className={styles.featuredStatValue}>{featuredGame.picks.total}</span>
-                  </div>
-                  <div className={styles.featuredStat}>
-                    <span className={styles.featuredStatLabel}>Game Data</span>
-                    <span className={styles.featuredStatValue}>
-                      {(featuredGame.publicMoney ? 1 : 0) + (featuredGame.referee ? 1 : 0) + (featuredGame.teamTrends ? 1 : 0) + (featuredGame.propsCount > 0 ? 1 : 0)}/4
-                    </span>
-                  </div>
-                </div>
+
+                {/* Game Scripts Section */}
+                {renderGameScripts(featuredGame)}
               </div>
             )}
 

@@ -552,25 +552,25 @@ export default function PublicBettingPage() {
             public_spread_home_money_pct: hasSplits ? (game.public_spread_money_pct ?? null) : null,
             public_spread_away_bet_pct: hasSplits ? (game.public_spread_bet_pct !== null ? 100 - game.public_spread_bet_pct : null) : null,
             public_spread_away_money_pct: hasSplits ? (game.public_spread_money_pct !== null ? 100 - game.public_spread_money_pct : null) : null,
-            
+          
             // Totals percentages - over/under (only if has splits)
             public_total_over_bet_pct: hasSplits ? (game.public_total_over_bet_pct ?? null) : null,
             public_total_over_money_pct: hasSplits ? (game.public_total_over_money_pct ?? null) : null,
             public_total_under_bet_pct: hasSplits ? (game.public_total_over_bet_pct !== null ? 100 - game.public_total_over_bet_pct : null) : null,
             public_total_under_money_pct: hasSplits ? (game.public_total_over_money_pct !== null ? 100 - game.public_total_over_money_pct : null) : null,
-            
+          
             // Moneyline percentages - home/away (only if has splits)
             public_ml_home_bet_pct: hasSplits ? (game.public_ml_bet_pct ?? null) : null,
             public_ml_home_money_pct: hasSplits ? (game.public_ml_money_pct ?? null) : null,
             public_ml_away_bet_pct: hasSplits ? (game.public_ml_bet_pct !== null ? 100 - game.public_ml_bet_pct : null) : null,
             public_ml_away_money_pct: hasSplits ? (game.public_ml_money_pct !== null ? 100 - game.public_ml_money_pct : null) : null,
-            
-            // RLM comes from API now
-            rlm: game.rlm || '-',
-            rlm_side: game.rlm_side || '',
-            respected: game.respected || '',
-            respected_side: game.respected_side || '',
-            money_vs_bets_diff: game.money_vs_bets_diff || 0,
+          
+          // RLM comes from API now
+          rlm: game.rlm || '-',
+          rlm_side: game.rlm_side || '',
+          respected: game.respected || '',
+          respected_side: game.respected_side || '',
+          money_vs_bets_diff: game.money_vs_bets_diff || 0,
             snapshot_count: game.snapshot_count || 1,
             has_splits: hasSplits
           }
@@ -1057,7 +1057,7 @@ export default function PublicBettingPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <div className={styles.titleRow}>
-              <h1 className={styles.title}>Public Betting</h1>
+            <h1 className={styles.title}>Public Betting</h1>
             </div>
             <p className={styles.subtitle}>Public betting splits, movements & indicators from 150 sportsbooks.</p>
           </div>
@@ -1213,10 +1213,10 @@ export default function PublicBettingPage() {
                         <div className={styles.pctStack}>
                           {awayPcts.betPct !== null ? (
                             <>
-                              <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
-                              <div className={styles.miniMeterBlue}>
-                                <div style={{ width: `${awayPcts.betPct}%` }} />
-                              </div>
+                          <span className={styles.pctValue}>{Math.round(awayPcts.betPct)}%</span>
+                          <div className={styles.miniMeterBlue}>
+                            <div style={{ width: `${awayPcts.betPct}%` }} />
+                          </div>
                             </>
                           ) : (
                             <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
@@ -1227,10 +1227,10 @@ export default function PublicBettingPage() {
                         <div className={styles.pctStack}>
                           {awayPcts.moneyPct !== null ? (
                             <>
-                              <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
-                              <div className={styles.miniMeterGreen}>
-                                <div style={{ width: `${awayPcts.moneyPct}%` }} />
-                              </div>
+                          <span className={styles.pctValue}>{Math.round(awayPcts.moneyPct)}%</span>
+                          <div className={styles.miniMeterGreen}>
+                            <div style={{ width: `${awayPcts.moneyPct}%` }} />
+                          </div>
                             </>
                           ) : (
                             <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
@@ -1264,10 +1264,10 @@ export default function PublicBettingPage() {
                         <div className={styles.pctStack}>
                           {homePcts.betPct !== null ? (
                             <>
-                              <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
-                              <div className={styles.miniMeterBlue}>
-                                <div style={{ width: `${homePcts.betPct}%` }} />
-                              </div>
+                          <span className={styles.pctValue}>{Math.round(homePcts.betPct)}%</span>
+                          <div className={styles.miniMeterBlue}>
+                            <div style={{ width: `${homePcts.betPct}%` }} />
+                          </div>
                             </>
                           ) : (
                             <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
@@ -1278,10 +1278,10 @@ export default function PublicBettingPage() {
                         <div className={styles.pctStack}>
                           {homePcts.moneyPct !== null ? (
                             <>
-                              <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
-                              <div className={styles.miniMeterGreen}>
-                                <div style={{ width: `${homePcts.moneyPct}%` }} />
-                              </div>
+                          <span className={styles.pctValue}>{Math.round(homePcts.moneyPct)}%</span>
+                          <div className={styles.miniMeterGreen}>
+                            <div style={{ width: `${homePcts.moneyPct}%` }} />
+                          </div>
                             </>
                           ) : (
                             <span className={styles.pctValue} style={{ color: '#696969' }}>N/A</span>
@@ -1619,8 +1619,8 @@ export default function PublicBettingPage() {
                     <div className={styles.mobilePct}>
                       {awayPcts.betPct !== null ? (
                         <>
-                          <span>{Math.round(awayPcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
+                      <span>{Math.round(awayPcts.betPct)}%</span>
+                      <div className={styles.miniMeterBlue}><div style={{ width: `${awayPcts.betPct}%` }} /></div>
                         </>
                       ) : (
                         <span style={{ color: '#696969' }}>N/A</span>
@@ -1629,8 +1629,8 @@ export default function PublicBettingPage() {
                     <div className={styles.mobilePct}>
                       {awayPcts.moneyPct !== null ? (
                         <>
-                          <span>{Math.round(awayPcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
+                      <span>{Math.round(awayPcts.moneyPct)}%</span>
+                      <div className={styles.miniMeterGreen}><div style={{ width: `${awayPcts.moneyPct}%` }} /></div>
                         </>
                       ) : (
                         <span style={{ color: '#696969' }}>N/A</span>
@@ -1652,8 +1652,8 @@ export default function PublicBettingPage() {
                     <div className={styles.mobilePct}>
                       {homePcts.betPct !== null ? (
                         <>
-                          <span>{Math.round(homePcts.betPct)}%</span>
-                          <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
+                      <span>{Math.round(homePcts.betPct)}%</span>
+                      <div className={styles.miniMeterBlue}><div style={{ width: `${homePcts.betPct}%` }} /></div>
                         </>
                       ) : (
                         <span style={{ color: '#696969' }}>N/A</span>
@@ -1662,8 +1662,8 @@ export default function PublicBettingPage() {
                     <div className={styles.mobilePct}>
                       {homePcts.moneyPct !== null ? (
                         <>
-                          <span>{Math.round(homePcts.moneyPct)}%</span>
-                          <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
+                      <span>{Math.round(homePcts.moneyPct)}%</span>
+                      <div className={styles.miniMeterGreen}><div style={{ width: `${homePcts.moneyPct}%` }} /></div>
                         </>
                       ) : (
                         <span style={{ color: '#696969' }}>N/A</span>

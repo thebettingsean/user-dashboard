@@ -154,11 +154,10 @@
   background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
   border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  cursor: pointer;
+  gap: 24px;
   transition: all 0.2s ease;
   box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
 }
@@ -166,7 +165,13 @@
 .featuredGame:hover {
   border-color: rgba(148, 163, 184, 0.3);
   box-shadow: 0 16px 40px rgba(3, 7, 18, 0.4);
-  transform: translateY(-2px);
+}
+
+.featuredHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .featuredTitle {
@@ -249,82 +254,329 @@
   margin-bottom: 8px;
 }
 
-.featuredPublicBetting {
-  margin-top: 16px;
-}
 
-.featuredPublicBettingTitle {
+/* Section Title */
+.featuredSectionTitle {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(226, 232, 240, 0.8);
-  margin-bottom: 10px;
-}
-
-.featuredPublicBettingList {
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
-.featuredPublicBettingItem {
+.activeBetsCount {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: rgba(226, 232, 240, 0.6);
+  margin-top: 2px;
+}
+
+/* Best Odds Section */
+.featuredBestOdds {
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.bestOddsGrid {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.bestOddsMarket {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.bestOddsMarketLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bestOddsRow {
+  display: flex;
+  gap: 8px;
+}
+
+.bestOddsSide {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 6px;
+}
+
+.bestOddsTeam {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bestOddsLine {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.bestOddsValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.8);
+  white-space: nowrap;
+}
+
+.bestOddsBook {
+  font-size: 8px;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Active Bets Section */
+.featuredActiveBets {
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.activeBetsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.activeBetCard {
+  position: relative;
+  padding: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.activeBetContent {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.featuredPublicBettingHeader {
-  font-size: 12px;
+.activeBetBlur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 14, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.activeBetLockIcon {
+  font-size: 20px;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.activeBetUnlockBtn {
+  padding: 8px 16px;
+  background: rgba(41, 47, 63, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(226, 232, 240, 0.85);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.activeBetUnlockBtn:hover {
+  background: rgba(41, 47, 63, 1);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+.activeBetHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-.featuredPublicBettingPercent {
+.activeBetType {
+  font-size: 9px;
+  font-weight: 700;
   color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.featuredPublicBettingBar {
+.activeBetUnits {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(251, 146, 60, 0.9);
+}
+
+.activeBetSelection {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  line-height: 1.3;
+}
+
+.activeBetOdds {
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+/* Public Betting Section (Enhanced) */
+.featuredPublicBetting {
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.publicBettingGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.publicBettingMarket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.publicBettingMarketLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.publicBettingRow {
+  display: flex;
+  gap: 12px;
+}
+
+.publicBettingSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.publicBettingSideLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.publicBettingBar {
   height: 6px;
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.15);
   overflow: hidden;
 }
 
-.featuredPublicBettingBarFill {
+.publicBettingBarFill {
   height: 100%;
   background: rgba(148, 163, 184, 0.4);
   transition: width 0.3s ease;
 }
 
-.featuredStats {
+.publicBettingPercents {
   display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 8px;
+  gap: 8px;
+  font-size: 9px;
+  color: rgba(226, 232, 240, 0.6);
+  font-weight: 500;
 }
 
-.featuredStat {
+/* Game Scripts Section */
+.featuredGameScripts {
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.gameScriptsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.gameScriptCard {
+  padding: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
-.featuredStatLabel {
+.gameScriptHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gameScriptTitle {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  color: rgba(226, 232, 240, 0.9);
   text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.8);
+  letter-spacing: 0.05em;
 }
 
-.featuredStatValue {
-  font-size: 14px;
+.gameScriptProbability {
+  font-size: 10px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: rgba(251, 146, 60, 0.9);
+  padding: 2px 6px;
+  background: rgba(251, 146, 60, 0.15);
+  border-radius: 4px;
+}
+
+.gameScriptDescription {
+  font-size: 11px;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.4;
 }
 
 /* Games Grid */
@@ -486,5 +738,68 @@
   .gameCardPill {
     font-size: 8px;
     padding: 2px 6px;
+  }
+
+  .featuredGame {
+    padding: 18px;
+    gap: 20px;
+  }
+
+  .bestOddsGrid {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bestOddsRow {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bestOddsSide {
+    padding: 5px 6px;
+    gap: 6px;
+  }
+
+  .bestOddsTeam {
+    font-size: 8px;
+  }
+
+  .bestOddsLine {
+    font-size: 10px;
+  }
+
+  .bestOddsValue {
+    font-size: 9px;
+  }
+
+  .bestOddsBook {
+    font-size: 7px;
+  }
+
+  .activeBetsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .publicBettingRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gameScriptsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .bestOddsTeam {
+    font-size: 10px;
+  }
+
+  .activeBetSelection {
+    font-size: 10px;
+  }
+
+  .gameScriptDescription {
+    font-size: 10px;
   }
 }
