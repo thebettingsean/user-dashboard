@@ -504,11 +504,10 @@ export default function PublicBettingPage() {
   const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
   const [graphTimeFilter, setGraphTimeFilter] = useState<TimeFilter>('all')
   const [graphMarketType, setGraphMarketType] = useState<MarketType>('spread')
+  const [dropdownMarketType, setDropdownMarketType] = useState<MarketType>('spread')
   const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [booksOpen, setBooksOpen] = useState(false)
 
   useEffect(() => {
     fetchGames()
@@ -774,13 +773,20 @@ export default function PublicBettingPage() {
     }
   }
   
-  // Get signal label
-  const getSignalLabel = (type: 'public' | 'vegas' | 'whale' | null): string => {
+  // Get signal label - full names on desktop, short on mobile
+  const getSignalLabel = (type: 'public' | 'vegas' | 'whale' | null, isMobile: boolean = false): string => {
     if (!type) return '-'
+    if (isMobile) {
+      switch (type) {
+        case 'public': return 'Public'
+        case 'vegas': return 'Vegas'
+        case 'whale': return 'Whale'
+      }
+    }
     switch (type) {
-      case 'public': return 'PUBLIC'
-      case 'vegas': return 'VEGAS'
-      case 'whale': return 'WHALE'
+      case 'public': return 'Public Respect'
+      case 'vegas': return 'Vegas Backed'
+      case 'whale': return 'Whale Respect'
     }
   }
   
@@ -1385,8 +1391,7 @@ export default function PublicBettingPage() {
                               const signal = getGameSignal(game, false)
                               return signal.type ? (
                                 <span className={`${styles.signalBadge} ${getSignalBadgeClass(signal.type)}`}>
-                                  {getSignalLabel(signal.type)}
-                                  <span className={styles.signalScore}>{signal.score}</span>
+                                  {getSignalLabel(signal.type, false)}
                                 </span>
                               ) : (
                                 <span className={styles.signalEmpty}>-</span>
@@ -1445,8 +1450,7 @@ export default function PublicBettingPage() {
                               const signal = getGameSignal(game, true)
                               return signal.type ? (
                                 <span className={`${styles.signalBadge} ${getSignalBadgeClass(signal.type)}`}>
-                                  {getSignalLabel(signal.type)}
-                                  <span className={styles.signalScore}>{signal.score}</span>
+                                  {getSignalLabel(signal.type, false)}
                                 </span>
                               ) : (
                                 <span className={styles.signalEmpty}>-</span>
@@ -1457,390 +1461,245 @@ export default function PublicBettingPage() {
                         {isExpanded && (
                           <tr key={`${game.id}-details`} className={styles.detailsRow}>
                             <td colSpan={8}>
-                              <div className={styles.expandedPanel}>
-                                {/* Graph Container - Combined Header */}
-                                <div className={styles.graphContainer}>
-                                  {/* Combined Header: Game Info + Line Movement Title + Filters */}
-                                  <div className={styles.graphHeader}>
-                                    <div className={styles.graphHeaderLeft}>
-                                      {/* Game Matchup - smaller when expanded */}
-                                      <div className={styles.expandedMatchupRow}>
-                                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
-                                        <span className={styles.expandedTeamText}>{getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}</span>
-                                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
-                                        <span className={styles.expandedGameTime}>{formatGameDate(game.est_date)} • {formatGameTimeDisplay(game)}</span>
-                                      </div>
-                                      {/* Line Movement Title */}
-                                      <div className={styles.graphTitleRow}>
-                                        <FiTrendingUp className={styles.graphTitleIcon} />
-                                        <span className={styles.graphTitle}>Line Movement</span>
-                                      </div>
+                              <div className={styles.expandedPanelV2}>
+                                {/* Graph Section - Shared */}
+                                <div className={styles.graphSectionV2}>
+                                  <div className={styles.graphHeaderV2}>
+                                    <div className={styles.graphInfoV2}>
+                                      <span className={styles.graphMatchupV2}>
+                                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.miniLogoV2} />}
+                                        {getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}
+                                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.miniLogoV2} />}
+                                      </span>
+                                      <span className={styles.graphTimeV2}>{formatGameDate(game.est_date)} • {formatGameTimeDisplay(game)}</span>
                                     </div>
-                                    <div className={styles.graphHeaderRight}>
-                                      {/* Market Type Filter */}
-                                      <div className={styles.graphFilterGroup}>
+                                    <div className={styles.graphFiltersV2}>
+                                      <div className={styles.marketTabsV2}>
                                         {(['spread', 'total', 'ml'] as const).map(market => (
                                           <button
                                             key={market}
-                                            className={`${styles.graphFilterBtn} ${graphMarketType === market ? styles.active : ''}`}
-                                            onClick={(e) => { e.stopPropagation(); setGraphMarketType(market) }}
+                                            className={`${styles.marketTabV2} ${dropdownMarketType === market ? styles.active : ''}`}
+                                            onClick={(e) => { e.stopPropagation(); setDropdownMarketType(market); setGraphMarketType(market) }}
                                           >
                                             {market === 'ml' ? 'ML' : market === 'total' ? 'O/U' : 'Spread'}
                                           </button>
                                         ))}
                                       </div>
-                                      {/* Time Filter */}
-                                      <div className={styles.graphTimeFilter}>
-                                        <button
-                                          className={`${styles.graphTimeBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
-                                          onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('all') }}
-                                        >
-                                          All
-                                        </button>
-                                        <button
-                                          className={`${styles.graphTimeBtn} ${graphTimeFilter === '24hr' ? styles.active : ''}`}
-                                          onClick={(e) => { e.stopPropagation(); setGraphTimeFilter('24hr') }}
-                                        >
-                                          24hr
-                                        </button>
-                                      </div>
                                     </div>
                                   </div>
-                                  
-                                  {/* Graph Content */}
-                                  <div className={styles.graphContent}>
+                                  <div className={styles.graphContentV2}>
                                     {timelineLoading ? (
-                                      <div className={styles.graphLoading}>Loading timeline data...</div>
+                                      <div className={styles.graphLoadingV2}>Loading...</div>
                                     ) : timelineData.length === 0 ? (
-                                      <div className={styles.graphLoading}>No historical data available</div>
+                                      <div className={styles.graphLoadingV2}>No historical data</div>
                                     ) : (
-                                      <ResponsiveContainer width="100%" height={220}>
-                                        <ComposedChart 
-                                          data={timelineData}
-                                          margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
-                                        >
+                                      <ResponsiveContainer width="100%" height={180}>
+                                        <ComposedChart data={timelineData} margin={{ top: 15, right: 20, left: 5, bottom: 5 }}>
                                           <defs>
-                                            <linearGradient id={`areaGradient-${game.id}`} x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="0%" stopColor="#2A3442" stopOpacity={0.8} />
-                                              <stop offset="100%" stopColor="#0F1319" stopOpacity={0.2} />
+                                            <linearGradient id={`areaGradientV2-${game.id}`} x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="0%" stopColor="#2A3442" stopOpacity={0.6} />
+                                              <stop offset="100%" stopColor="#0F1319" stopOpacity={0.1} />
                                             </linearGradient>
                                           </defs>
-                                          <XAxis 
-                                            dataKey="time" 
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                            dy={10}
-                                          />
-                                          <YAxis 
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#FFFFFF', fontSize: 12 }}
-                                            domain={['auto', 'auto']}
-                                            tickFormatter={(val) => graphMarketType === 'ml' ? (val > 0 ? `+${val}` : val) : (val > 0 ? `+${val}` : val)}
-                                            dx={-5}
-                                          />
-                                          <Tooltip content={<CustomTooltip marketType={graphMarketType} />} />
-                                          {graphMarketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
-                                          <Area 
-                                            type="monotone" 
-                                            dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
-                                            fill={`url(#areaGradient-${game.id})`}
-                                            stroke="none"
-                                          />
-                                          <Line 
-                                            type="monotone" 
-                                            dataKey={graphMarketType === 'spread' ? 'homeLine' : graphMarketType === 'ml' ? 'mlHome' : 'total'} 
-                                            stroke={graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true)} 
-                                            strokeWidth={2}
-                                            dot={{ r: 3, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#151E2A', strokeWidth: 1 }}
-                                            activeDot={{ r: 5, fill: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true), stroke: '#FFFFFF', strokeWidth: 2 }}
-                                            isAnimationActive={false}
-                                            name={graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
-                                          />
-                                          {graphMarketType !== 'total' && (
-                                            <Line 
-                                              type="monotone" 
-                                              dataKey={graphMarketType === 'spread' ? 'awayLine' : 'mlAway'} 
-                                              stroke={getTeamColor(game, false)} 
-                                              strokeWidth={2}
-                                              dot={{ r: 3, fill: getTeamColor(game, false), stroke: '#151E2A', strokeWidth: 1 }}
-                                              activeDot={{ r: 5, fill: getTeamColor(game, false), stroke: '#FFFFFF', strokeWidth: 2 }}
-                                              isAnimationActive={false}
-                                              name={getTeamName(game.away_team, game.sport)}
-                                              strokeDasharray="5 5"
-                                            />
+                                          <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} dy={5} />
+                                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(val) => val > 0 ? `+${val}` : val} dx={-5} />
+                                          <Tooltip content={<CustomTooltip marketType={dropdownMarketType} />} />
+                                          {dropdownMarketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
+                                          <Area type="monotone" dataKey={dropdownMarketType === 'spread' ? 'homeLine' : dropdownMarketType === 'ml' ? 'mlHome' : 'total'} fill={`url(#areaGradientV2-${game.id})`} stroke="none" />
+                                          <Line type="monotone" dataKey={dropdownMarketType === 'spread' ? 'homeLine' : dropdownMarketType === 'ml' ? 'mlHome' : 'total'} stroke={dropdownMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true)} strokeWidth={2} dot={{ r: 2, fill: dropdownMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }} isAnimationActive={false} />
+                                          {dropdownMarketType !== 'total' && (
+                                            <Line type="monotone" dataKey={dropdownMarketType === 'spread' ? 'awayLine' : 'mlAway'} stroke={getTeamColor(game, false)} strokeWidth={2} strokeDasharray="4 4" dot={{ r: 2, fill: getTeamColor(game, false) }} isAnimationActive={false} />
                                           )}
                                         </ComposedChart>
                                       </ResponsiveContainer>
                                     )}
-                                    
-                                    {/* Legend */}
-                                    <div className={styles.graphLegend}>
-                                      {graphMarketType !== 'total' && (
-                                        <div className={styles.legendItem}>
-                                          <span 
-                                            className={styles.legendLineDashed} 
-                                            style={{ 
-                                              background: `repeating-linear-gradient(90deg, ${getTeamColor(game, false)}, ${getTeamColor(game, false)} 4px, transparent 4px, transparent 6px)`
-                                            }}
-                                          ></span>
-                                          <span>{getTeamName(game.away_team, game.sport)}</span>
-                                        </div>
+                                    <div className={styles.graphLegendV2}>
+                                      {dropdownMarketType !== 'total' && (
+                                        <span className={styles.legendItemV2}>
+                                          <span className={styles.legendDashV2} style={{ background: `repeating-linear-gradient(90deg, ${getTeamColor(game, false)}, ${getTeamColor(game, false)} 3px, transparent 3px, transparent 5px)` }}></span>
+                                          {getTeamName(game.away_team, game.sport)}
+                                        </span>
                                       )}
-                                      <div className={styles.legendItem}>
-                                        <span className={styles.legendLine} style={{ background: graphMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
-                                        <span>{graphMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}</span>
-                                      </div>
+                                      <span className={styles.legendItemV2}>
+                                        <span className={styles.legendSolidV2} style={{ background: dropdownMarketType === 'total' ? '#98ADD1' : getTeamColor(game, true) }}></span>
+                                        {dropdownMarketType === 'total' ? 'Total' : getTeamName(game.home_team, game.sport)}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
-                                
-                                {/* Signal Details Section */}
-                                {game.signals && (
-                                  <div className={styles.signalDetailsSection}>
-                                    <div className={styles.signalDetailsHeader}>
-                                      <span className={styles.signalDetailsTitle}>Market Signals</span>
+
+                                {/* Team Columns - Two Column Layout */}
+                                <div className={styles.teamColumnsV2}>
+                                  {/* Away Team Column */}
+                                  <div className={styles.teamColumnV2}>
+                                    <div className={styles.teamHeaderV2}>
+                                      {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogoV2} />}
+                                      <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</span>
                                     </div>
-                                    <div className={styles.signalDetailsGrid}>
-                                      {/* Away/Over Side */}
-                                      <div className={styles.signalDetailsSide}>
-                                        <div className={styles.signalSideHeader}>
-                                          {selectedMarket === 'total' ? (
-                                            <span>Over</span>
-                                          ) : (
+                                    
+                                    {/* Signals Card */}
+                                    <div className={styles.signalCardV2}>
+                                      <div className={styles.signalCardHeader}>Signals</div>
+                                      <div className={styles.signalBarsV2}>
+                                        {game.signals && (() => {
+                                          const signals = dropdownMarketType === 'spread' ? game.signals.spread.away
+                                            : dropdownMarketType === 'total' ? game.signals.total.over
+                                            : game.signals.ml.away
+                                          const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                                          return hasSignal ? (
                                             <>
-                                              {game.away_logo && <img src={game.away_logo} alt="" className={styles.signalSideLogo} />}
-                                              <span>{getTeamName(game.away_team, game.sport)}</span>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Public Respect</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.publicBar}`} style={{ width: `${signals.publicRespect}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                              </div>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.vegasBar}`} style={{ width: `${signals.vegasBacked}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                              </div>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.whaleBar}`} style={{ width: `${signals.whaleRespect}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                              </div>
                                             </>
-                                          )}
-                                        </div>
-                                        <div className={styles.signalBars}>
-                                          {(() => {
-                                            const signal = getGameSignal(game, false)
-                                            const signals = selectedMarket === 'spread' ? game.signals.spread.away
-                                              : selectedMarket === 'total' ? game.signals.total.over
-                                              : game.signals.ml.away
-                                            return (
-                                              <>
-                                                {signals.publicRespect > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalPublic}`}>PUBLIC</span>
-                                                      <span className={styles.signalBarValue}>{signals.publicRespect}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalPublic}`} style={{ width: `${signals.publicRespect}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.vegasBacked > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalVegas}`}>VEGAS</span>
-                                                      <span className={styles.signalBarValue}>{signals.vegasBacked}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalVegas}`} style={{ width: `${signals.vegasBacked}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.whaleRespect > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalWhale}`}>WHALE</span>
-                                                      <span className={styles.signalBarValue}>{signals.whaleRespect}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalWhale}`} style={{ width: `${signals.whaleRespect}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.publicRespect === 0 && signals.vegasBacked === 0 && signals.whaleRespect === 0 && (
-                                                  <div className={styles.noSignal}>No signals detected</div>
-                                                )}
-                                              </>
-                                            )
-                                          })()}
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Home/Under Side */}
-                                      <div className={styles.signalDetailsSide}>
-                                        <div className={styles.signalSideHeader}>
-                                          {selectedMarket === 'total' ? (
-                                            <span>Under</span>
                                           ) : (
-                                            <>
-                                              {game.home_logo && <img src={game.home_logo} alt="" className={styles.signalSideLogo} />}
-                                              <span>{getTeamName(game.home_team, game.sport)}</span>
-                                            </>
-                                          )}
-                                        </div>
-                                        <div className={styles.signalBars}>
-                                          {(() => {
-                                            const signal = getGameSignal(game, true)
-                                            const signals = selectedMarket === 'spread' ? game.signals.spread.home
-                                              : selectedMarket === 'total' ? game.signals.total.under
-                                              : game.signals.ml.home
-                                            return (
-                                              <>
-                                                {signals.publicRespect > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalPublic}`}>PUBLIC</span>
-                                                      <span className={styles.signalBarValue}>{signals.publicRespect}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalPublic}`} style={{ width: `${signals.publicRespect}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.vegasBacked > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalVegas}`}>VEGAS</span>
-                                                      <span className={styles.signalBarValue}>{signals.vegasBacked}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalVegas}`} style={{ width: `${signals.vegasBacked}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.whaleRespect > 0 && (
-                                                  <div className={styles.signalBar}>
-                                                    <div className={styles.signalBarLabel}>
-                                                      <span className={`${styles.signalIndicator} ${styles.signalWhale}`}>WHALE</span>
-                                                      <span className={styles.signalBarValue}>{signals.whaleRespect}%</span>
-                                                    </div>
-                                                    <div className={styles.signalBarTrack}>
-                                                      <div className={`${styles.signalBarFill} ${styles.signalWhale}`} style={{ width: `${signals.whaleRespect}%` }} />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {signals.publicRespect === 0 && signals.vegasBacked === 0 && signals.whaleRespect === 0 && (
-                                                  <div className={styles.noSignal}>No signals detected</div>
-                                                )}
-                                              </>
-                                            )
-                                          })()}
-                                        </div>
+                                            <div className={styles.noSignalV2}>No signals</div>
+                                          )
+                                        })()}
                                       </div>
                                     </div>
-                                  </div>
-                                )}
-                                
-                                {/* Bottom Section: History + Sportsbooks (Collapsible) */}
-                                <div className={styles.bottomSection}>
-                                  {/* Odds History Table (Collapsible) */}
-                                  <div className={styles.oddsHistorySection}>
-                                    <button 
-                                      className={styles.collapsibleHeader}
-                                      onClick={(e) => { e.stopPropagation(); setHistoryOpen(!historyOpen) }}
-                                    >
-                                      <span className={styles.collapsibleTitle}>Line History</span>
-                                      {historyOpen ? <FiChevronUp /> : <FiChevronDown />}
-                                    </button>
-                                    {historyOpen && (
-                                      <div className={styles.historyTableWrapper}>
-                                        <table className={styles.historyTable}>
-                                          <thead>
-                                            <tr>
-                                              <th>Time</th>
-                                              <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                                              <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {timelineData.length === 0 ? (
-                                              <tr><td colSpan={3} className={styles.emptyCell}>No history available</td></tr>
-                                            ) : (
-                                              timelineData.map((point: any, idx) => {
-                                                // Get values based on market type
-                                                let awayVal: string, homeVal: string
-                                                
-                                                if (graphMarketType === 'spread') {
-                                                  awayVal = point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString()
-                                                  homeVal = point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString()
-                                                } else if (graphMarketType === 'ml') {
-                                                  awayVal = point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString()
-                                                  homeVal = point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString()
-                                                } else {
-                                                  // Total
-                                                  awayVal = `O ${point.total}`
-                                                  homeVal = `U ${point.total}`
-                                                }
-                                                
-                                                const isCurrent = idx === timelineData.length - 1
-                                                
-                                                return (
-                                                  <tr key={idx} className={isCurrent ? styles.currentRow : ''}>
-                                                    <td>{point.time}</td>
-                                                    <td>{awayVal}</td>
-                                                    <td>{homeVal}</td>
-                                                  </tr>
-                                                )
-                                              })
-                                            )}
-                                          </tbody>
-                                        </table>
+
+                                    {/* History */}
+                                    <div className={styles.historyCardV2}>
+                                      <div className={styles.historyCardHeader}>History</div>
+                                      <div className={styles.historyListV2}>
+                                        {timelineData.slice(-5).map((point: any, idx) => {
+                                          let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
+                                            : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
+                                            : `O ${point.total}`
+                                          return (
+                                            <div key={idx} className={styles.historyItemV2}>
+                                              <span className={styles.historyTimeV2}>{point.time}</span>
+                                              <span className={styles.historyValV2}>{val}</span>
+                                            </div>
+                                          )
+                                        })}
                                       </div>
-                                    )}
+                                    </div>
+
+                                    {/* Books */}
+                                    <div className={styles.booksCardV2}>
+                                      <div className={styles.booksCardHeader}>All Books</div>
+                                      <div className={styles.booksListV2}>
+                                        {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
+                                          let val = dropdownMarketType === 'ml' 
+                                            ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
+                                            : dropdownMarketType === 'spread'
+                                            ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
+                                            : `O ${bookOdds.value}`
+                                          return (
+                                            <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                              <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                              <span className={styles.bookValV2}>{val}</span>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
                                   </div>
 
-                                  {/* Sportsbooks Comparison (Collapsible) */}
-                                  <div className={styles.sportsbooksSection}>
-                                    <button 
-                                      className={styles.collapsibleHeader}
-                                      onClick={(e) => { e.stopPropagation(); setBooksOpen(!booksOpen) }}
-                                    >
-                                      <span className={styles.collapsibleTitle}>All Books</span>
-                                      {booksOpen ? <FiChevronUp /> : <FiChevronDown />}
-                                    </button>
-                                    {booksOpen && (
-                                      <div className={styles.sportsbooksWrapper}>
-                                        {!sportsbookOdds ? (
-                                          <div className={styles.emptyCell}>Loading...</div>
-                                        ) : (
-                                          <table className={styles.sportsbooksTable}>
-                                            <thead>
-                                              <tr>
-                                                <th>Book</th>
-                                                <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                                                <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
-                                                let awayVal: string, homeVal: string
-                                                
-                                                if (graphMarketType === 'ml') {
-                                                  const ml = bookOdds.value as { home: number, away: number }
-                                                  awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
-                                                  homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
-                                                } else if (graphMarketType === 'spread') {
-                                                  const spread = bookOdds.value as number
-                                                  awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
-                                                  homeVal = spread > 0 ? `+${spread}` : spread.toString()
-                                                } else {
-                                                  const total = bookOdds.value as number
-                                                  awayVal = `O ${total}`
-                                                  homeVal = `U ${total}`
-                                                }
-                                                
-                                                return (
-                                                  <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
-                                                    <td className={styles.bookName}>{bookOdds.book}</td>
-                                                    <td>{awayVal}</td>
-                                                    <td>{homeVal}</td>
-                                                  </tr>
-                                                )
-                                              })}
-                                            </tbody>
-                                          </table>
-                                        )}
+                                  {/* Home Team Column */}
+                                  <div className={styles.teamColumnV2}>
+                                    <div className={styles.teamHeaderV2}>
+                                      {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogoV2} />}
+                                      <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</span>
+                                    </div>
+                                    
+                                    {/* Signals Card */}
+                                    <div className={styles.signalCardV2}>
+                                      <div className={styles.signalCardHeader}>Signals</div>
+                                      <div className={styles.signalBarsV2}>
+                                        {game.signals && (() => {
+                                          const signals = dropdownMarketType === 'spread' ? game.signals.spread.home
+                                            : dropdownMarketType === 'total' ? game.signals.total.under
+                                            : game.signals.ml.home
+                                          const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                                          return hasSignal ? (
+                                            <>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Public Respect</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.publicBar}`} style={{ width: `${signals.publicRespect}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                              </div>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.vegasBar}`} style={{ width: `${signals.vegasBacked}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                              </div>
+                                              <div className={styles.signalRowV2}>
+                                                <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                <div className={styles.signalBarContainerV2}>
+                                                  <div className={`${styles.signalBarV2} ${styles.whaleBar}`} style={{ width: `${signals.whaleRespect}%` }}></div>
+                                                </div>
+                                                <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                              </div>
+                                            </>
+                                          ) : (
+                                            <div className={styles.noSignalV2}>No signals</div>
+                                          )
+                                        })()}
                                       </div>
-                                    )}
+                                    </div>
+
+                                    {/* History */}
+                                    <div className={styles.historyCardV2}>
+                                      <div className={styles.historyCardHeader}>History</div>
+                                      <div className={styles.historyListV2}>
+                                        {timelineData.slice(-5).map((point: any, idx) => {
+                                          let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
+                                            : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
+                                            : `U ${point.total}`
+                                          return (
+                                            <div key={idx} className={styles.historyItemV2}>
+                                              <span className={styles.historyTimeV2}>{point.time}</span>
+                                              <span className={styles.historyValV2}>{val}</span>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    {/* Books */}
+                                    <div className={styles.booksCardV2}>
+                                      <div className={styles.booksCardHeader}>All Books</div>
+                                      <div className={styles.booksListV2}>
+                                        {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
+                                          let val = dropdownMarketType === 'ml' 
+                                            ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
+                                            : dropdownMarketType === 'spread'
+                                            ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
+                                            : `U ${bookOdds.value}`
+                                          return (
+                                            <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                              <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                              <span className={styles.bookValV2}>{val}</span>
+                                            </div>
+                                          )
+                                        })}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -1939,7 +1798,7 @@ export default function PublicBettingPage() {
                             const signal = getGameSignal(game, false)
                             return signal.type ? (
                               <span className={`${styles.signalBadgeMobile} ${getSignalBadgeClass(signal.type)}`}>
-                                {getSignalLabel(signal.type).slice(0, 3)}
+                                {getSignalLabel(signal.type, true)}
                               </span>
                             ) : (
                               <span className={styles.signalEmpty}>-</span>
@@ -1981,7 +1840,7 @@ export default function PublicBettingPage() {
                             const signal = getGameSignal(game, true)
                             return signal.type ? (
                               <span className={`${styles.signalBadgeMobile} ${getSignalBadgeClass(signal.type)}`}>
-                                {getSignalLabel(signal.type).slice(0, 3)}
+                                {getSignalLabel(signal.type, true)}
                               </span>
                             ) : (
                               <span className={styles.signalEmpty}>-</span>
