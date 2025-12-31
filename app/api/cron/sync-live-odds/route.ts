@@ -537,10 +537,18 @@ export async function GET(request: Request) {
           const { consensus, allBooks, bookCount } = calculateConsensus(game.bookmakers, game.home_team)
           
           // Check if this is a NEW game (opening line)
-          const isOpening = !seenGameIds.has(game.id) ? 1 : 0
+          // IMPORTANT: Only record opening lines if we have REAL values (not 0)
+          // For NHL especially, spread/total can be 0 initially before real lines are posted
+          const hasValidOpeningLines = (
+            consensus.spread !== 0 || // Valid spread
+            consensus.total !== 0 ||  // Valid total
+            (consensus.mlHome !== 0 && consensus.mlAway !== 0) // Valid moneylines
+          )
+          
+          const isOpening = !seenGameIds.has(game.id) && hasValidOpeningLines ? 1 : 0
           if (isOpening) {
             newGames++
-            // Record this as first seen
+            // Record this as first seen with real opening lines
             const gameTime = game.commence_time.replace('T', ' ').replace('Z', '')
             await clickhouseCommand(`
               INSERT INTO game_first_seen (
@@ -551,7 +559,10 @@ export async function GET(request: Request) {
                 ${consensus.spread}, ${consensus.total}, ${consensus.mlHome}, ${consensus.mlAway}, ${bookCount}
               )
             `)
-            console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: ${consensus.spread}`)
+            console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: spread=${consensus.spread}, total=${consensus.total}`)
+          } else if (!seenGameIds.has(game.id) && !hasValidOpeningLines) {
+            // Game not yet marked as seen because we don't have real lines yet
+            console.log(`[${sportConfig.sport.toUpperCase()}] WAITING for real lines: ${game.away_team} @ ${game.home_team} - Current: spread=${consensus.spread}, total=${consensus.total}`)
           }
           
           // Try multiple matching strategies:

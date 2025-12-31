@@ -971,10 +971,25 @@ export default function PublicBettingPage() {
     return movement > 0 ? `+${movement.toFixed(1)}` : movement.toFixed(1)
   }
 
+  // Check if ALL markets for a game are 50/50 (indicating no real data)
+  // If spread, ML, AND O/U are all 50/50, we don't have real betting splits
+  const hasAllMarketsAt50 = (game: GameOdds): boolean => {
+    const spreadIs50 = game.public_spread_home_bet_pct === 50 && game.public_spread_home_money_pct === 50
+    const mlIs50 = game.public_ml_home_bet_pct === 50 && game.public_ml_home_money_pct === 50
+    const totalIs50 = game.public_total_over_bet_pct === 50 && game.public_total_over_money_pct === 50
+    
+    return spreadIs50 && mlIs50 && totalIs50
+  }
+
   // Get percentages based on selected market type
   const getMarketPcts = (game: GameOdds, isHome: boolean) => {
     // If game has no splits, return null
     if (!game.has_splits) {
+      return { betPct: null, moneyPct: null }
+    }
+    
+    // If ALL markets are 50/50, treat as no real data (show N/A)
+    if (hasAllMarketsAt50(game)) {
       return { betPct: null, moneyPct: null }
     }
     
@@ -1003,12 +1018,15 @@ export default function PublicBettingPage() {
     switch (selectedMarket) {
       case 'spread':
         const spread = isOpening ? game.opening_spread : game.current_spread
+        // If opening spread is 0, show "-" (no real opening line yet)
+        if (isOpening && spread === 0) return '-'
         return formatSpread(spread, isHome)
       case 'ml':
         if (isOpening) {
-          return isHome 
-            ? formatML(game.opening_ml_home) 
-            : formatML(game.opening_ml_away)
+          const ml = isHome ? game.opening_ml_home : game.opening_ml_away
+          // If opening ML is 0, show "-" (no real opening line yet)
+          if (ml === 0) return '-'
+          return formatML(ml)
         }
         return isHome 
           ? formatML(game.current_ml_home) 
@@ -1016,6 +1034,8 @@ export default function PublicBettingPage() {
       case 'total':
         // Away row (top) = Over, Home row (bottom) = Under
         const total = isOpening ? game.opening_total : game.current_total
+        // If opening total is 0, show "-" (no real opening line yet)
+        if (isOpening && total === 0) return '-'
         return isHome ? `U ${total}` : `O ${total}`
     }
   }
