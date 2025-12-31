@@ -58,6 +58,12 @@ export async function GET(request: Request) {
         g.home_ml_close as current_ml_home,
         g.away_ml_close as current_ml_away,
         
+        -- Juice/odds for spreads and totals
+        g.home_spread_juice,
+        g.away_spread_juice,
+        g.over_juice,
+        g.under_juice,
+        
         g.public_spread_home_bet_pct,
         g.public_spread_home_money_pct,
         g.public_ml_home_bet_pct,
@@ -123,6 +129,10 @@ export async function GET(request: Request) {
       opening_ml_away: number
       current_ml_home: number
       current_ml_away: number
+      home_spread_juice: number
+      away_spread_juice: number
+      over_juice: number
+      under_juice: number
       public_spread_home_bet_pct: number | null
       public_spread_home_money_pct: number | null
       public_ml_home_bet_pct: number | null
@@ -232,6 +242,12 @@ export async function GET(request: Request) {
         current_ml_away: game.current_ml_away,
         ml_home_movement,
         ml_away_movement,
+        
+        // Juice/odds for spreads and totals
+        home_spread_juice: game.home_spread_juice || -110,
+        away_spread_juice: game.away_spread_juice || -110,
+        over_juice: game.over_juice || -110,
+        under_juice: game.under_juice || -110,
         
         public_spread_bet_pct: game.public_spread_home_bet_pct,
         public_spread_money_pct: game.public_spread_home_money_pct,

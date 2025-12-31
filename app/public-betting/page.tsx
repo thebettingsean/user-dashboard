@@ -43,6 +43,11 @@ interface GameOdds {
   current_ml_away: number
   ml_home_movement: number
   ml_away_movement: number
+  // Juice/odds for spreads and totals
+  home_spread_juice: number
+  away_spread_juice: number
+  over_juice: number
+  under_juice: number
   // Spread percentages (can be null if no splits)
   public_spread_home_bet_pct: number | null
   public_spread_home_money_pct: number | null
@@ -1014,13 +1019,22 @@ export default function PublicBettingPage() {
   }
 
   // Get odds based on selected market type
+  // For CURRENT lines, include juice in parentheses (important for NHL/MLB where lines are fixed)
   const getMarketOdds = (game: GameOdds, isHome: boolean, isOpening: boolean) => {
     switch (selectedMarket) {
       case 'spread':
         const spread = isOpening ? game.opening_spread : game.current_spread
         // If opening spread is 0, show "-" (no real opening line yet)
         if (isOpening && spread === 0) return '-'
-        return formatSpread(spread, isHome)
+        const spreadLine = formatSpread(spread, isHome)
+        // Add juice for current spread (always show for current, especially important for NHL puck line)
+        if (!isOpening) {
+          const juice = isHome ? game.home_spread_juice : game.away_spread_juice
+          if (juice) {
+            return `${spreadLine} (${formatJuice(juice)})`
+          }
+        }
+        return spreadLine
       case 'ml':
         if (isOpening) {
           const ml = isHome ? game.opening_ml_home : game.opening_ml_away
@@ -1036,13 +1050,27 @@ export default function PublicBettingPage() {
         const total = isOpening ? game.opening_total : game.current_total
         // If opening total is 0, show "-" (no real opening line yet)
         if (isOpening && total === 0) return '-'
-        return isHome ? `U ${total}` : `O ${total}`
+        const totalLine = isHome ? `U ${total}` : `O ${total}`
+        // Add juice for current total (always show for current, especially important for NHL/MLB)
+        if (!isOpening) {
+          const juice = isHome ? game.under_juice : game.over_juice
+          if (juice) {
+            return `${totalLine} (${formatJuice(juice)})`
+          }
+        }
+        return totalLine
     }
   }
 
   const formatML = (ml: number) => {
     if (ml === 0) return '-'
     return ml > 0 ? `+${ml}` : ml.toString()
+  }
+
+  // Format juice/odds (e.g., -110, +100, -120)
+  const formatJuice = (juice: number) => {
+    if (!juice || juice === 0) return ''
+    return juice > 0 ? `+${juice}` : juice.toString()
   }
 
   // Get movement based on market type

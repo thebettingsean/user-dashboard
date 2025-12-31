@@ -68,9 +68,11 @@ interface OddsApiGame {
 
 interface BookOdds {
   spread: number
-  spreadJuice: number
+  spreadJuiceHome: number
+  spreadJuiceAway: number
   total: number
-  totalJuice: number
+  overJuice: number
+  underJuice: number
   mlHome: number
   mlAway: number
 }
@@ -85,21 +87,27 @@ function median(arr: number[]): number {
 
 // Extract odds from a bookmaker for a specific team
 function extractBookOdds(bookmaker: OddsApiGame['bookmakers'][0], homeTeam: string): BookOdds {
-  let spread = 0, spreadJuice = -110, total = 0, totalJuice = -110, mlHome = 0, mlAway = 0
+  let spread = 0, spreadJuiceHome = -110, spreadJuiceAway = -110
+  let total = 0, overJuice = -110, underJuice = -110
+  let mlHome = 0, mlAway = 0
 
   for (const market of bookmaker.markets) {
     if (market.key === 'spreads') {
       for (const outcome of market.outcomes) {
         if (outcome.name === homeTeam) {
           spread = outcome.point || 0
-          spreadJuice = outcome.price
+          spreadJuiceHome = outcome.price
+        } else {
+          spreadJuiceAway = outcome.price
         }
       }
     } else if (market.key === 'totals') {
       for (const outcome of market.outcomes) {
         if (outcome.name === 'Over') {
           total = outcome.point || 0
-          totalJuice = outcome.price
+          overJuice = outcome.price
+        } else if (outcome.name === 'Under') {
+          underJuice = outcome.price
         }
       }
     } else if (market.key === 'h2h') {
@@ -113,7 +121,7 @@ function extractBookOdds(bookmaker: OddsApiGame['bookmakers'][0], homeTeam: stri
     }
   }
 
-  return { spread, spreadJuice, total, totalJuice, mlHome, mlAway }
+  return { spread, spreadJuiceHome, spreadJuiceAway, total, overJuice, underJuice, mlHome, mlAway }
 }
 
 // Calculate consensus from all bookmakers
@@ -124,7 +132,11 @@ function calculateConsensus(bookmakers: OddsApiGame['bookmakers'], homeTeam: str
 } {
   const allBooks: Record<string, BookOdds> = {}
   const spreads: number[] = []
+  const spreadJuiceHomes: number[] = []
+  const spreadJuiceAways: number[] = []
   const totals: number[] = []
+  const overJuices: number[] = []
+  const underJuices: number[] = []
   const mlHomes: number[] = []
   const mlAways: number[] = []
 
@@ -132,8 +144,16 @@ function calculateConsensus(bookmakers: OddsApiGame['bookmakers'], homeTeam: str
     const odds = extractBookOdds(book, homeTeam)
     allBooks[book.key] = odds
     
-    if (odds.spread !== 0) spreads.push(odds.spread)
-    if (odds.total !== 0) totals.push(odds.total)
+    if (odds.spread !== 0) {
+      spreads.push(odds.spread)
+      spreadJuiceHomes.push(odds.spreadJuiceHome)
+      spreadJuiceAways.push(odds.spreadJuiceAway)
+    }
+    if (odds.total !== 0) {
+      totals.push(odds.total)
+      overJuices.push(odds.overJuice)
+      underJuices.push(odds.underJuice)
+    }
     if (odds.mlHome !== 0) mlHomes.push(odds.mlHome)
     if (odds.mlAway !== 0) mlAways.push(odds.mlAway)
   }
@@ -141,9 +161,11 @@ function calculateConsensus(bookmakers: OddsApiGame['bookmakers'], homeTeam: str
   return {
     consensus: {
       spread: median(spreads),
-      spreadJuice: -110,
+      spreadJuiceHome: Math.round(median(spreadJuiceHomes)) || -110,
+      spreadJuiceAway: Math.round(median(spreadJuiceAways)) || -110,
       total: median(totals),
-      totalJuice: -110,
+      overJuice: Math.round(median(overJuices)) || -110,
+      underJuice: Math.round(median(underJuices)) || -110,
       mlHome: Math.round(median(mlHomes)),
       mlAway: Math.round(median(mlAways)),
     },
@@ -775,6 +797,7 @@ export async function GET(request: Request) {
                   game_id, sport, game_time, home_team_id, away_team_id,
                   spread_open, spread_close, total_open, total_close,
                   home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+                  home_spread_juice, away_spread_juice, over_juice, under_juice,
                   public_spread_home_bet_pct, public_spread_home_money_pct,
                   public_ml_home_bet_pct, public_ml_home_money_pct,
                   public_total_over_bet_pct, public_total_over_money_pct,
@@ -783,6 +806,7 @@ export async function GET(request: Request) {
                   '${gameId}', '${sportConfig.sport}', '${gameTime}', ${homeTeamId}, ${awayTeamId},
                   ${spreadOpen}, ${consensus.spread}, ${totalOpen}, ${consensus.total},
                   ${mlHomeOpen}, ${mlAwayOpen}, ${consensus.mlHome}, ${consensus.mlAway},
+                  ${consensus.spreadJuiceHome}, ${consensus.spreadJuiceAway}, ${consensus.overJuice}, ${consensus.underJuice},
                   ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
                   ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
                   ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
@@ -860,6 +884,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
@@ -869,6 +894,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
@@ -932,6 +958,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
@@ -941,6 +968,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
@@ -973,6 +1001,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
@@ -982,6 +1011,7 @@ export async function GET(request: Request) {
             game_id, sport, game_time, home_team_id, away_team_id,
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+            home_spread_juice, away_spread_juice, over_juice, under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
