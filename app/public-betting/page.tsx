@@ -70,6 +70,21 @@ interface GameOdds {
   money_vs_bets_diff: number
   snapshot_count: number
   has_splits?: boolean
+  // Signals
+  signals?: {
+    spread: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    total: {
+      over: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      under: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    ml: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+  }
 }
 
 type SortField = 'bet_pct' | 'money_pct' | 'diff' | 'signal' | 'movement'
@@ -580,7 +595,8 @@ export default function PublicBettingPage() {
           respected_side: game.respected_side || '',
           money_vs_bets_diff: game.money_vs_bets_diff || 0,
             snapshot_count: game.snapshot_count || 1,
-            has_splits: hasSplits
+            has_splits: hasSplits,
+            signals: game.signals
           }
         })
         setGames(processedGames)
@@ -722,6 +738,59 @@ export default function PublicBettingPage() {
     return '-'
   }
 
+  // Get signal display for a game based on selected market and side
+  const getGameSignal = (game: GameOdds, isHome: boolean): { type: 'public' | 'vegas' | 'whale' | null; score: number } => {
+    if (!game.signals) return { type: null, score: 0 }
+    
+    let signals
+    if (selectedMarket === 'spread') {
+      signals = isHome ? game.signals.spread.home : game.signals.spread.away
+    } else if (selectedMarket === 'total') {
+      signals = isHome ? game.signals.total.under : game.signals.total.over
+    } else {
+      signals = isHome ? game.signals.ml.home : game.signals.ml.away
+    }
+    
+    if (!signals) return { type: null, score: 0 }
+    
+    const candidates = [
+      { type: 'public' as const, score: signals.publicRespect || 0 },
+      { type: 'vegas' as const, score: signals.vegasBacked || 0 },
+      { type: 'whale' as const, score: signals.whaleRespect || 0 },
+    ].filter(s => s.score > 0)
+    
+    if (candidates.length === 0) return { type: null, score: 0 }
+    
+    return candidates.reduce((best, curr) => curr.score > best.score ? curr : best)
+  }
+  
+  // Get signal badge styling
+  const getSignalBadgeClass = (type: 'public' | 'vegas' | 'whale' | null): string => {
+    if (!type) return ''
+    switch (type) {
+      case 'public': return styles.signalPublic
+      case 'vegas': return styles.signalVegas
+      case 'whale': return styles.signalWhale
+    }
+  }
+  
+  // Get signal label
+  const getSignalLabel = (type: 'public' | 'vegas' | 'whale' | null): string => {
+    if (!type) return '-'
+    switch (type) {
+      case 'public': return 'PUBLIC'
+      case 'vegas': return 'VEGAS'
+      case 'whale': return 'WHALE'
+    }
+  }
+  
+  // Check if game has any signal on either side for the current market
+  const gameHasSignal = (game: GameOdds): boolean => {
+    const homeSignal = getGameSignal(game, true)
+    const awaySignal = getGameSignal(game, false)
+    return homeSignal.score > 0 || awaySignal.score > 0
+  }
+
   const handleSort = (field: SortField) => {
     setActiveSorts(prev => {
       // If signal is clicked, turn off all others and toggle signal
@@ -816,9 +885,14 @@ export default function PublicBettingPage() {
       }
       
       if (activeSorts.signal) {
-        // Has signal = higher score
-        aScore += (a.rlm !== '-' ? 100 : 0)
-        bScore += (b.rlm !== '-' ? 100 : 0)
+        // Score based on strongest signal for each game
+        const aHomeSignal = getGameSignal(a, true)
+        const aAwaySignal = getGameSignal(a, false)
+        const bHomeSignal = getGameSignal(b, true)
+        const bAwaySignal = getGameSignal(b, false)
+        
+        aScore += Math.max(aHomeSignal.score, aAwaySignal.score)
+        bScore += Math.max(bHomeSignal.score, bAwaySignal.score)
       }
       
       // Sort descending (highest score first)
@@ -1307,9 +1381,17 @@ export default function PublicBettingPage() {
                             {formatDiff(awayPcts.betPct, awayPcts.moneyPct)}
                           </td>
                           <td>
-                            <span className={`${styles.rlmBadge} ${game.rlm !== '-' ? styles.hasRlm : ''}`}>
-                              {game.rlm}
-                            </span>
+                            {(() => {
+                              const signal = getGameSignal(game, false)
+                              return signal.type ? (
+                                <span className={`${styles.signalBadge} ${getSignalBadgeClass(signal.type)}`}>
+                                  {getSignalLabel(signal.type)}
+                                  <span className={styles.signalScore}>{signal.score}</span>
+                                </span>
+                              ) : (
+                                <span className={styles.signalEmpty}>-</span>
+                              )
+                            })()}
                           </td>
                         </tr>
                         <tr 
@@ -1358,7 +1440,19 @@ export default function PublicBettingPage() {
                           <td className={getDiffClass(homePcts.betPct, homePcts.moneyPct)}>
                             {formatDiff(homePcts.betPct, homePcts.moneyPct)}
                           </td>
-                          <td></td>
+                          <td>
+                            {(() => {
+                              const signal = getGameSignal(game, true)
+                              return signal.type ? (
+                                <span className={`${styles.signalBadge} ${getSignalBadgeClass(signal.type)}`}>
+                                  {getSignalLabel(signal.type)}
+                                  <span className={styles.signalScore}>{signal.score}</span>
+                                </span>
+                              ) : (
+                                <span className={styles.signalEmpty}>-</span>
+                              )
+                            })()}
+                          </td>
                         </tr>
                         {isExpanded && (
                           <tr key={`${game.id}-details`} className={styles.detailsRow}>
@@ -1501,6 +1595,140 @@ export default function PublicBettingPage() {
                                     </div>
                                   </div>
                                 </div>
+                                
+                                {/* Signal Details Section */}
+                                {game.signals && (
+                                  <div className={styles.signalDetailsSection}>
+                                    <div className={styles.signalDetailsHeader}>
+                                      <span className={styles.signalDetailsTitle}>Market Signals</span>
+                                    </div>
+                                    <div className={styles.signalDetailsGrid}>
+                                      {/* Away/Over Side */}
+                                      <div className={styles.signalDetailsSide}>
+                                        <div className={styles.signalSideHeader}>
+                                          {selectedMarket === 'total' ? (
+                                            <span>Over</span>
+                                          ) : (
+                                            <>
+                                              {game.away_logo && <img src={game.away_logo} alt="" className={styles.signalSideLogo} />}
+                                              <span>{getTeamName(game.away_team, game.sport)}</span>
+                                            </>
+                                          )}
+                                        </div>
+                                        <div className={styles.signalBars}>
+                                          {(() => {
+                                            const signal = getGameSignal(game, false)
+                                            const signals = selectedMarket === 'spread' ? game.signals.spread.away
+                                              : selectedMarket === 'total' ? game.signals.total.over
+                                              : game.signals.ml.away
+                                            return (
+                                              <>
+                                                {signals.publicRespect > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalPublic}`}>PUBLIC</span>
+                                                      <span className={styles.signalBarValue}>{signals.publicRespect}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalPublic}`} style={{ width: `${signals.publicRespect}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.vegasBacked > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalVegas}`}>VEGAS</span>
+                                                      <span className={styles.signalBarValue}>{signals.vegasBacked}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalVegas}`} style={{ width: `${signals.vegasBacked}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.whaleRespect > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalWhale}`}>WHALE</span>
+                                                      <span className={styles.signalBarValue}>{signals.whaleRespect}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalWhale}`} style={{ width: `${signals.whaleRespect}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.publicRespect === 0 && signals.vegasBacked === 0 && signals.whaleRespect === 0 && (
+                                                  <div className={styles.noSignal}>No signals detected</div>
+                                                )}
+                                              </>
+                                            )
+                                          })()}
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Home/Under Side */}
+                                      <div className={styles.signalDetailsSide}>
+                                        <div className={styles.signalSideHeader}>
+                                          {selectedMarket === 'total' ? (
+                                            <span>Under</span>
+                                          ) : (
+                                            <>
+                                              {game.home_logo && <img src={game.home_logo} alt="" className={styles.signalSideLogo} />}
+                                              <span>{getTeamName(game.home_team, game.sport)}</span>
+                                            </>
+                                          )}
+                                        </div>
+                                        <div className={styles.signalBars}>
+                                          {(() => {
+                                            const signal = getGameSignal(game, true)
+                                            const signals = selectedMarket === 'spread' ? game.signals.spread.home
+                                              : selectedMarket === 'total' ? game.signals.total.under
+                                              : game.signals.ml.home
+                                            return (
+                                              <>
+                                                {signals.publicRespect > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalPublic}`}>PUBLIC</span>
+                                                      <span className={styles.signalBarValue}>{signals.publicRespect}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalPublic}`} style={{ width: `${signals.publicRespect}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.vegasBacked > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalVegas}`}>VEGAS</span>
+                                                      <span className={styles.signalBarValue}>{signals.vegasBacked}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalVegas}`} style={{ width: `${signals.vegasBacked}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.whaleRespect > 0 && (
+                                                  <div className={styles.signalBar}>
+                                                    <div className={styles.signalBarLabel}>
+                                                      <span className={`${styles.signalIndicator} ${styles.signalWhale}`}>WHALE</span>
+                                                      <span className={styles.signalBarValue}>{signals.whaleRespect}%</span>
+                                                    </div>
+                                                    <div className={styles.signalBarTrack}>
+                                                      <div className={`${styles.signalBarFill} ${styles.signalWhale}`} style={{ width: `${signals.whaleRespect}%` }} />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {signals.publicRespect === 0 && signals.vegasBacked === 0 && signals.whaleRespect === 0 && (
+                                                  <div className={styles.noSignal}>No signals detected</div>
+                                                )}
+                                              </>
+                                            )
+                                          })()}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                                 
                                 {/* Bottom Section: History + Sportsbooks (Collapsible) */}
                                 <div className={styles.bottomSection}>
@@ -1706,8 +1934,17 @@ export default function PublicBettingPage() {
                             <span style={{ color: '#696969' }}>N/A</span>
                           )}
                         </div>
-                        <div className={`${styles.mobileRlm} ${game.rlm !== '-' ? styles.hasRlmMobile : ''}`}>
-                          {game.rlm}
+                        <div className={styles.mobileSignal}>
+                          {(() => {
+                            const signal = getGameSignal(game, false)
+                            return signal.type ? (
+                              <span className={`${styles.signalBadgeMobile} ${getSignalBadgeClass(signal.type)}`}>
+                                {getSignalLabel(signal.type).slice(0, 3)}
+                              </span>
+                            ) : (
+                              <span className={styles.signalEmpty}>-</span>
+                            )
+                          })()}
                         </div>
                       </div>
                       <div className={styles.mobileRow}>
@@ -1739,7 +1976,18 @@ export default function PublicBettingPage() {
                             <span style={{ color: '#696969' }}>N/A</span>
                           )}
                         </div>
-                        <div className={styles.mobileRlm}></div>
+                        <div className={styles.mobileSignal}>
+                          {(() => {
+                            const signal = getGameSignal(game, true)
+                            return signal.type ? (
+                              <span className={`${styles.signalBadgeMobile} ${getSignalBadgeClass(signal.type)}`}>
+                                {getSignalLabel(signal.type).slice(0, 3)}
+                              </span>
+                            ) : (
+                              <span className={styles.signalEmpty}>-</span>
+                            )
+                          })()}
+                        </div>
                       </div>
                       
                       {isExpanded && (

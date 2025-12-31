@@ -1323,3 +1323,182 @@
   color: #22C55E !important;
   font-weight: 600;
 }
+
+/* Signal Badges */
+.signalBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.signalBadgeMobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.signalScore {
+  opacity: 0.7;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.signalPublic {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.signalVegas {
+  background: rgba(234, 179, 8, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.signalWhale {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.signalEmpty {
+  color: #444444;
+  font-size: 12px;
+}
+
+.mobileSignal {
+  flex: 0 0 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Signal Details Section in Expanded View */
+.signalDetailsSection {
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.signalDetailsHeader {
+  margin-bottom: 16px;
+}
+
+.signalDetailsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.signalDetailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.signalDetailsSide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signalSideHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.signalSideLogo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.signalBars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signalBar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.signalBarLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signalIndicator {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.signalBarValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.signalBarTrack {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.signalBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.signalBarFill.signalPublic {
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+}
+
+.signalBarFill.signalVegas {
+  background: linear-gradient(90deg, #EAB308, #FBBF24);
+}
+
+.signalBarFill.signalWhale {
+  background: linear-gradient(90deg, #A855F7, #C084FC);
+}
+
+.noSignal {
+  font-size: 12px;
+  color: #696969;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .signalDetailsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

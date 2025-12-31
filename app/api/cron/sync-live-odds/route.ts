@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
+import { calculateGameSignals } from '@/lib/signals'
 
 // Sport configurations
 const SPORTS_CONFIG = [
@@ -791,6 +792,42 @@ export async function GET(request: Request) {
               const mlHomeOpen = isOpening ? consensus.mlHome : (existingGame.data?.[0]?.home_ml_open || consensus.mlHome)
               const mlAwayOpen = isOpening ? consensus.mlAway : (existingGame.data?.[0]?.away_ml_open || consensus.mlAway)
               
+              // Get opening juice values
+              const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome : (existingGame.data?.[0]?.opening_home_spread_juice || -110)
+              const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway : (existingGame.data?.[0]?.opening_away_spread_juice || -110)
+              const overJuiceOpen = isOpening ? consensus.overJuice : (existingGame.data?.[0]?.opening_over_juice || -110)
+              const underJuiceOpen = isOpening ? consensus.underJuice : (existingGame.data?.[0]?.opening_under_juice || -110)
+              
+              // Calculate signals using opening vs current data
+              const signals = calculateGameSignals(
+                sportConfig.sport,
+                // Spread data
+                spreadOpen,
+                consensus.spread,
+                spreadJuiceHomeOpen,
+                consensus.spreadJuiceHome,
+                spreadJuiceAwayOpen,
+                consensus.spreadJuiceAway,
+                publicData?.spreadBet || 50,
+                publicData?.spreadMoney || 50,
+                // Total data
+                totalOpen,
+                consensus.total,
+                overJuiceOpen,
+                consensus.overJuice,
+                underJuiceOpen,
+                consensus.underJuice,
+                publicData?.totalBet || 50,
+                publicData?.totalMoney || 50,
+                // ML data
+                mlHomeOpen,
+                consensus.mlHome,
+                mlAwayOpen,
+                consensus.mlAway,
+                publicData?.mlBet || 50,
+                publicData?.mlMoney || 50
+              )
+              
               // Insert (will create or update due to ReplacingMergeTree)
               await clickhouseCommand(`
                 INSERT INTO games (
@@ -798,18 +835,32 @@ export async function GET(request: Request) {
                   spread_open, spread_close, total_open, total_close,
                   home_ml_open, away_ml_open, home_ml_close, away_ml_close,
                   home_spread_juice, away_spread_juice, over_juice, under_juice,
+                  opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
                   public_spread_home_bet_pct, public_spread_home_money_pct,
                   public_ml_home_bet_pct, public_ml_home_money_pct,
                   public_total_over_bet_pct, public_total_over_money_pct,
+                  spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+                  spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+                  total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+                  total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+                  ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+                  ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
                   status, sportsdata_io_score_id, updated_at
                 ) VALUES (
                   '${gameId}', '${sportConfig.sport}', '${gameTime}', ${homeTeamId}, ${awayTeamId},
                   ${spreadOpen}, ${consensus.spread}, ${totalOpen}, ${consensus.total},
                   ${mlHomeOpen}, ${mlAwayOpen}, ${consensus.mlHome}, ${consensus.mlAway},
                   ${consensus.spreadJuiceHome}, ${consensus.spreadJuiceAway}, ${consensus.overJuice}, ${consensus.underJuice},
+                  ${spreadJuiceHomeOpen}, ${spreadJuiceAwayOpen}, ${overJuiceOpen}, ${underJuiceOpen},
                   ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
                   ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
                   ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
+                  ${signals.spread_home_public_respect}, ${signals.spread_home_vegas_backed}, ${signals.spread_home_whale_respect},
+                  ${signals.spread_away_public_respect}, ${signals.spread_away_vegas_backed}, ${signals.spread_away_whale_respect},
+                  ${signals.total_over_public_respect}, ${signals.total_over_vegas_backed}, ${signals.total_over_whale_respect},
+                  ${signals.total_under_public_respect}, ${signals.total_under_vegas_backed}, ${signals.total_under_whale_respect},
+                  ${signals.ml_home_public_respect}, ${signals.ml_home_vegas_backed}, ${signals.ml_home_whale_respect},
+                  ${signals.ml_away_public_respect}, ${signals.ml_away_vegas_backed}, ${signals.ml_away_whale_respect},
                   'upcoming', ${existingGame.data?.[0]?.sportsdata_io_score_id || 0}, now()
                 )
               `)
@@ -885,9 +936,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             status, sportsdata_io_score_id, updated_at
           )
           SELECT 
@@ -895,9 +953,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             'closing_soon', sportsdata_io_score_id, now()
           FROM games FINAL
           WHERE game_id = '${game.game_id}'
@@ -959,9 +1024,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             status, sportsdata_io_score_id, updated_at
           )
           SELECT 
@@ -969,9 +1041,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             'completed', sportsdata_io_score_id, now()
           FROM games FINAL
           WHERE game_id = '${game.game_id}'
@@ -1002,9 +1081,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             status, sportsdata_io_score_id, updated_at
           )
           SELECT 
@@ -1012,9 +1098,16 @@ export async function GET(request: Request) {
             spread_open, spread_close, total_open, total_close,
             home_ml_open, away_ml_open, home_ml_close, away_ml_close,
             home_spread_juice, away_spread_juice, over_juice, under_juice,
+            opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
             public_spread_home_bet_pct, public_spread_home_money_pct,
             public_ml_home_bet_pct, public_ml_home_money_pct,
             public_total_over_bet_pct, public_total_over_money_pct,
+            spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+            spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+            total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+            total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+            ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+            ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
             'archived', sportsdata_io_score_id, now()
           FROM games FINAL
           WHERE game_id = '${game.game_id}'
