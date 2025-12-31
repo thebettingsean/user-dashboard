@@ -479,6 +479,7 @@ export default function PublicBettingPage() {
     signal: false
   })
   const [expandedGame, setExpandedGame] = useState<string | null>(null)
+  const [hoveredGame, setHoveredGame] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [sportDropdownOpen, setSportDropdownOpen] = useState(false)
   const [graphTimeFilter, setGraphTimeFilter] = useState<TimeFilter>('all')
@@ -1207,12 +1208,15 @@ export default function PublicBettingPage() {
                     const awayMove = getMarketMove(game, false)
                     const homeMove = getMarketMove(game, true)
                     const isExpanded = expandedGame === game.id
+                    const isHovered = hoveredGame === game.id
 
                     return (
                       <React.Fragment key={game.id}>
                         <tr 
-                          className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''}`}
+                          className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''}`}
                           onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                          onMouseEnter={() => setHoveredGame(game.id)}
+                          onMouseLeave={() => setHoveredGame(null)}
                         >
                           <td className={styles.teamCell}>
                             {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogo} />}
@@ -1261,8 +1265,10 @@ export default function PublicBettingPage() {
                           </td>
                         </tr>
                         <tr 
-                          className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''}`}
+                          className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''}`}
                           onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                          onMouseEnter={() => setHoveredGame(game.id)}
+                          onMouseLeave={() => setHoveredGame(null)}
                         >
                           <td className={styles.teamCell}>
                             {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogo} />}

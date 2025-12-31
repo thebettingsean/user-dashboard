@@ -277,10 +277,6 @@
   transition: background 0.15s ease;
 }
 
-.awayRow:hover {
-  background: rgba(41, 47, 63, 0.25);
-}
-
 .awayRow td {
   border-bottom: none;
   padding-top: 14px;
@@ -288,9 +284,12 @@
 
 .homeRow {
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.homeRow:hover {
+/* Hover state for entire game (both rows) */
+.awayRow.hovered,
+.homeRow.hovered {
   background: rgba(41, 47, 63, 0.25);
 }
 
