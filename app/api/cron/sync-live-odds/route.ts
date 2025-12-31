@@ -28,24 +28,24 @@ const TEAM_ABBREV_MAP: Record<string, string> = {
   'Atlanta Hawks': 'ATL', 'Boston Celtics': 'BOS', 'Brooklyn Nets': 'BKN',
   'Charlotte Hornets': 'CHA', 'Chicago Bulls': 'CHI', 'Cleveland Cavaliers': 'CLE',
   'Dallas Mavericks': 'DAL', 'Denver Nuggets': 'DEN', 'Detroit Pistons': 'DET',
-  'Golden State Warriors': 'GSW', 'Houston Rockets': 'HOU', 'Indiana Pacers': 'IND',
+  'Golden State Warriors': 'GS', 'Houston Rockets': 'HOU', 'Indiana Pacers': 'IND',
   'Los Angeles Clippers': 'LAC', 'Los Angeles Lakers': 'LAL', 'Memphis Grizzlies': 'MEM',
   'Miami Heat': 'MIA', 'Milwaukee Bucks': 'MIL', 'Minnesota Timberwolves': 'MIN',
-  'New Orleans Pelicans': 'NOP', 'New York Knicks': 'NYK', 'Oklahoma City Thunder': 'OKC',
-  'Orlando Magic': 'ORL', 'Philadelphia 76ers': 'PHI', 'Phoenix Suns': 'PHX',
-  'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SAS',
+  'New Orleans Pelicans': 'NO', 'New York Knicks': 'NY', 'Oklahoma City Thunder': 'OKC',
+  'Orlando Magic': 'ORL', 'Philadelphia 76ers': 'PHI', 'Phoenix Suns': 'PHO',
+  'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SA',
   'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Washington Wizards': 'WAS',
-  // NHL
+  // NHL - SportsDataIO abbreviations
   'Anaheim Ducks': 'ANA', 'Boston Bruins': 'BOS', 'Buffalo Sabres': 'BUF',
   'Calgary Flames': 'CGY', 'Carolina Hurricanes': 'CAR', 'Chicago Blackhawks': 'CHI',
-  'Colorado Avalanche': 'COL', 'Columbus Blue Jackets': 'CBJ', 'Dallas Stars': 'DAL',
+  'Colorado Avalanche': 'COL', 'Columbus Blue Jackets': 'CLB', 'Dallas Stars': 'DAL',
   'Detroit Red Wings': 'DET', 'Edmonton Oilers': 'EDM', 'Florida Panthers': 'FLA',
-  'Los Angeles Kings': 'LA', 'Minnesota Wild': 'MIN', 'Montréal Canadiens': 'MTL',
-  'Montreal Canadiens': 'MTL', 'Nashville Predators': 'NSH', 'New Jersey Devils': 'NJ',
+  'Los Angeles Kings': 'LA', 'Minnesota Wild': 'MIN', 'Montréal Canadiens': 'MON',
+  'Montreal Canadiens': 'MON', 'Nashville Predators': 'NAS', 'New Jersey Devils': 'NJ',
   'New York Islanders': 'NYI', 'New York Rangers': 'NYR', 'Ottawa Senators': 'OTT',
   'Philadelphia Flyers': 'PHI', 'Pittsburgh Penguins': 'PIT', 'San Jose Sharks': 'SJ',
   'Seattle Kraken': 'SEA', 'St Louis Blues': 'STL', 'St. Louis Blues': 'STL',
-  'Tampa Bay Lightning': 'TB', 'Toronto Maple Leafs': 'TOR', 'Utah Hockey Club': 'UTAH',
+  'Tampa Bay Lightning': 'TB', 'Toronto Maple Leafs': 'TOR', 'Utah Hockey Club': 'UTA',
   'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VGK', 'Washington Capitals': 'WAS',
   'Winnipeg Jets': 'WPG',
 }
@@ -317,59 +317,25 @@ export async function GET(request: Request) {
             gameTime?: string;
           }[] = []
           
-          // Clear the map for this sport (it's defined above)
+          // Clear the map for this sport
           sportsDataAbbrevMap.clear()
+          
+          // Helper: normalize team name for flexible matching
+          const normalizeTeam = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+          
           const today = new Date()
           const currentYear = today.getFullYear()
           const currentMonth = today.getMonth() // 0-11
           
-          if (sportConfig.sport === 'nba') {
-            // NBA: Use GamesByDate (API key has access)
-            for (let i = 0; i < 7; i++) {
-              const date = new Date(today)
-              date.setDate(date.getDate() + i)
-              const dateStr = date.toISOString().split('T')[0]
-              
-              try {
-                const scheduleUrl = `https://api.sportsdata.io/v3/nba/scores/json/GamesByDate/${dateStr}?key=${SPORTSDATA_API_KEY}`
-                const scheduleResp = await fetch(scheduleUrl)
-                
-                if (scheduleResp.ok) {
-                  const games = await scheduleResp.json()
-                  for (const game of games || []) {
-                    const gameId = game.GameID || game.GameId
-                    if (gameId && game.HomeTeam && game.AwayTeam) {
-                      const homeName = game.HomeTeamName || game.HomeTeam
-                      const awayName = game.AwayTeamName || game.AwayTeam
-                      
-                      gamesToFetch.push({ 
-                        gameId, 
-                        homeAbbr: game.HomeTeam, 
-                        awayAbbr: game.AwayTeam,
-                        homeName,
-                        awayName,
-                        gameTime: game.DateTime || game.Day
-                      })
-                      
-                      // Store abbreviations for matching (NBA/NHL only)
-                      if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
-                        sportsDataAbbrevMap.set(homeName, game.HomeTeam)
-                        sportsDataAbbrevMap.set(awayName, game.AwayTeam)
-                      }
-                    }
-                  }
-                }
-              } catch (e) {
-                // Continue if single date fails
-              }
-            }
-          } else {
-            // NHL, CFB, and CBB: Use Games/{season} (GamesByDate returns 401)
+          // ALL sports: Use Games/{season} endpoint (GamesByDate returns 401 for NBA)
+          {
+            // ALL sports: Use Games/{season} (GamesByDate returns 401 for some)
+            // NBA season: Oct 2025 - June 2026 = "2026 season"
             // NHL season: Oct 2025 - June 2026 = "2026 season"
             // CFB season: Aug 2025 - Jan 2026 = "2025 season"
             // CBB season: Nov 2025 - Apr 2026 = "2026 season"
             let season: number
-            if (sportConfig.sport === 'nhl') {
+            if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
               season = currentMonth >= 9 ? currentYear + 1 : currentYear // Oct+ = next year's season
             } else if (sportConfig.sport === 'cbb') {
               season = currentMonth >= 10 ? currentYear + 1 : currentYear // Nov+ = next year's season
@@ -451,18 +417,23 @@ export async function GET(request: Request) {
               
               const splits = await splitsResponse.json()
               if (splits?.BettingMarketSplits && splits.BettingMarketSplits.length > 0) {
-                // SIMPLE: Use normalized full team names as keys
-                // Normalize: lowercase, keep only alphanumeric
-                const normalize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+                // Store under MULTIPLE key formats for flexible matching:
+                // 1. Abbreviation keys (GS_CHA, CHA_GS)
+                // 2. Normalized short name keys (warriors_hornets)
+                // 3. Normalized full name if available
+                const keys: string[] = []
                 
-                const homeKey = normalize(game.homeName || game.homeAbbr)
-                const awayKey = normalize(game.awayName || game.awayAbbr)
+                // Abbreviation-based keys (most reliable for NBA/NHL)
+                const abbrevKey = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
+                const abbrevKeyReverse = `${game.awayAbbr}_${game.homeAbbr}`.toUpperCase()
+                keys.push(abbrevKey, abbrevKeyReverse)
                 
-                // Store with both orders for matching
-                const keys: string[] = [
-                  `${homeKey}_${awayKey}`,
-                  `${awayKey}_${homeKey}`
-                ]
+                // Normalized short name keys (from SportsDataIO team names)
+                if (game.homeName && game.awayName) {
+                  const homeNorm = normalizeTeam(game.homeName)
+                  const awayNorm = normalizeTeam(game.awayName)
+                  keys.push(`${homeNorm}_${awayNorm}`, `${awayNorm}_${homeNorm}`)
+                }
                 
                 let spreadBet = 50, spreadMoney = 50, mlBet = 50, mlMoney = 50, totalBet = 50, totalMoney = 50
                 
@@ -495,6 +466,13 @@ export async function GET(request: Request) {
                 const bettingData = { spreadBet, spreadMoney, mlBet, mlMoney, totalBet, totalMoney }
                 for (const key of keys) {
                   publicBettingMap.set(key, bettingData)
+                }
+                
+                // Debug: Log first few games' keys
+                if (gamesToFetch.indexOf(game) < 3) {
+                  console.log(`[${sportConfig.sport.toUpperCase()}] Stored splits for game ${game.gameId}:`)
+                  console.log(`  Keys: ${keys.join(', ')}`)
+                  console.log(`  Splits: spread=${spreadBet}%, ml=${mlBet}%, total=${totalBet}%`)
                 }
                 gamesWithSplits++
               }
@@ -543,25 +521,62 @@ export async function GET(request: Request) {
             console.log(`[${sportConfig.sport.toUpperCase()}] NEW GAME: ${game.away_team} @ ${game.home_team} - Opening: ${consensus.spread}`)
           }
           
-          // SIMPLE: Match by normalized full team names
-          // Same normalize function used when storing keys above
-          const normalize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+          // Try multiple matching strategies:
+          // 1. ABBREVIATION-BASED (most reliable for NBA/NHL)
+          // 2. Normalized full team names
+          // 3. Normalized short names (last word / mascot)
           
-          const homeKey = normalize(game.home_team)
-          const awayKey = normalize(game.away_team)
+          const normalizeTeam = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
           
-          // Try both orders
-          let publicData = publicBettingMap.get(`${homeKey}_${awayKey}`)
-          if (!publicData) {
-            publicData = publicBettingMap.get(`${awayKey}_${homeKey}`)
+          // Get abbreviations from our map
+          const homeAbbr = TEAM_ABBREV_MAP[game.home_team] || ''
+          const awayAbbr = TEAM_ABBREV_MAP[game.away_team] || ''
+          
+          let publicData = null
+          
+          // Strategy 1: Try abbreviation-based keys (works for NFL, NBA, NHL)
+          if (homeAbbr && awayAbbr) {
+            const abbrevKey = `${homeAbbr}_${awayAbbr}`.toUpperCase()
+            publicData = publicBettingMap.get(abbrevKey)
+            if (!publicData) {
+              publicData = publicBettingMap.get(`${awayAbbr}_${homeAbbr}`.toUpperCase())
+            }
           }
           
-          if (!publicData && gamesProcessed < 3) {
+          // Strategy 2: Try normalized full team names
+          if (!publicData) {
+            const homeKey = normalizeTeam(game.home_team)
+            const awayKey = normalizeTeam(game.away_team)
+            publicData = publicBettingMap.get(`${homeKey}_${awayKey}`)
+            if (!publicData) {
+              publicData = publicBettingMap.get(`${awayKey}_${homeKey}`)
+            }
+          }
+          
+          // Strategy 3: Try just the mascot/last word (e.g., "Warriors" from "Golden State Warriors")
+          if (!publicData) {
+            const homeMascot = normalizeTeam(game.home_team.split(' ').pop() || '')
+            const awayMascot = normalizeTeam(game.away_team.split(' ').pop() || '')
+            if (homeMascot && awayMascot) {
+              publicData = publicBettingMap.get(`${homeMascot}_${awayMascot}`)
+              if (!publicData) {
+                publicData = publicBettingMap.get(`${awayMascot}_${homeMascot}`)
+              }
+            }
+          }
+          
+          if (!publicData && gamesProcessed < 5) {
             console.log(`[${sportConfig.sport.toUpperCase()}] No betting splits for ${game.away_team} @ ${game.home_team}`)
-            console.log(`[${sportConfig.sport.toUpperCase()}]   Tried keys: ${homeKey}_${awayKey}`)
+            console.log(`[${sportConfig.sport.toUpperCase()}]   Tried abbrevs: ${homeAbbr}_${awayAbbr} and ${awayAbbr}_${homeAbbr}`)
+            const homeNorm = normalizeTeam(game.home_team)
+            const awayNorm = normalizeTeam(game.away_team)
+            console.log(`[${sportConfig.sport.toUpperCase()}]   Tried normalized: ${homeNorm}_${awayNorm}`)
+            const homeMascot = normalizeTeam(game.home_team.split(' ').pop() || '')
+            const awayMascot = normalizeTeam(game.away_team.split(' ').pop() || '')
+            console.log(`[${sportConfig.sport.toUpperCase()}]   Tried mascots: ${homeMascot}_${awayMascot}`)
             if (publicBettingMap.size > 0) {
-              const sampleKeys = Array.from(publicBettingMap.keys()).slice(0, 5)
-              console.log(`[${sportConfig.sport.toUpperCase()}]   Available keys (sample): ${sampleKeys.join(', ')}`)
+              const sampleKeys = Array.from(publicBettingMap.keys()).slice(0, 15)
+              console.log(`[${sportConfig.sport.toUpperCase()}]   Available keys (${publicBettingMap.size} total): ${sampleKeys.join(', ')}`)
             }
           }
           
