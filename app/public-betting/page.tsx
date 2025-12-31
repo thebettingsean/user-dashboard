@@ -877,8 +877,8 @@ export default function PublicBettingPage() {
       const date = parseGameTimeEST(game.game_time)
       if (!date) return
       
-      // Group by EST date (not UTC or local)
-      const dateKey = date.toLocaleDateString('en-US', { 
+      // Group by EST date in sortable YYYY-MM-DD format
+      const dateKey = date.toLocaleDateString('en-CA', { 
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -891,7 +891,13 @@ export default function PublicBettingPage() {
       grouped[dateKey].push(game)
     })
     
-    return grouped
+    // Sort keys (dates) chronologically
+    const sortedGrouped: { [date: string]: typeof sorted } = {}
+    Object.keys(grouped).sort().forEach(key => {
+      sortedGrouped[key] = grouped[key]
+    })
+    
+    return sortedGrouped
   }
 
   const getSportsbookOddsForMarket = (marketType: MarketType) => {
@@ -1184,7 +1190,7 @@ export default function PublicBettingPage() {
               Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
                 // Date separator row
                 <tr key={`date-${dateKey}`} className={styles.dateSeparator}>
-                  <td colSpan={8}>{formatGameDate(gamesOnDate[0].game_time)}</td>
+                  <td colSpan={8}>{formatGameDate(dateKey)}</td>
                 </tr>,
                 // Games for this date
                 ...gamesOnDate.flatMap(game => {
@@ -1593,7 +1599,7 @@ export default function PublicBettingPage() {
             Object.entries(getGamesByDate()).flatMap(([dateKey, gamesOnDate], dateIndex) => [
               // Date separator
               <div key={`mobile-date-${dateKey}`} className={styles.mobileDateSeparator}>
-                {formatGameDate(gamesOnDate[0].game_time)}
+                {formatGameDate(dateKey)}
               </div>,
               // Games for this date
               ...gamesOnDate.map(game => {

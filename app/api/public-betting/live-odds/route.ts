@@ -12,19 +12,18 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const sport = searchParams.get('sport') || 'all'
   
-  // Map frontend sport names to DB sport names
-  const sportMap: Record<string, string> = {
-    'cbb': 'ncaab',
-    'cfb': 'cfb',
-    'nfl': 'nfl',
-    'nba': 'nba',
-    'nhl': 'nhl'
+  const sportMap: Record<string, string[]> = {
+    'cbb': ['cbb', 'ncaab'],
+    'cfb': ['cfb'],
+    'nfl': ['nfl'],
+    'nba': ['nba'],
+    'nhl': ['nhl']
   }
-  const dbSport = sportMap[sport.toLowerCase()] || sport.toLowerCase()
+  const dbSports = sportMap[sport.toLowerCase()] || [sport.toLowerCase()]
   
   try {
     // Query universal games table with team info
-    const sportFilter = dbSport === 'all' ? '' : `AND g.sport = '${dbSport}'`
+    const sportFilter = sport === 'all' ? '' : `AND g.sport IN (${dbSports.map(s => `'${s}'`).join(',')})`
     
     const query = `
       SELECT 
@@ -67,8 +66,8 @@ export async function GET(request: Request) {
         g.updated_at
         
       FROM games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
-      LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (ht.sport = g.sport OR (ht.sport = 'ncaab' AND g.sport = 'cbb') OR (ht.sport = 'cbb' AND g.sport = 'ncaab'))
+      LEFT JOIN teams at ON g.away_team_id = at.team_id AND (at.sport = g.sport OR (at.sport = 'ncaab' AND g.sport = 'cbb') OR (at.sport = 'cbb' AND g.sport = 'ncaab'))
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${sportFilter}
       ORDER BY g.game_time ASC, g.updated_at DESC
@@ -128,10 +127,10 @@ export async function GET(request: Request) {
 
       // A row has "interesting" splits if they aren't exactly 50/50
       const rowHasInterestingSplits = (
-        row.public_spread_home_bet_pct !== null && row.public_spread_home_bet_pct !== 50 ||
-        row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== 50 ||
-        row.public_ml_home_bet_pct !== null && row.public_ml_home_bet_pct !== 50 ||
-        row.public_total_over_bet_pct !== null && row.public_total_over_bet_pct !== 50
+        (row.public_spread_home_bet_pct !== null && row.public_spread_home_bet_pct !== 50) ||
+        (row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== 50) ||
+        (row.public_ml_home_bet_pct !== null && row.public_ml_home_bet_pct !== 50) ||
+        (row.public_total_over_bet_pct !== null && row.public_total_over_bet_pct !== 50)
       )
 
       if (!existing) {
@@ -142,13 +141,13 @@ export async function GET(request: Request) {
         })
       } else {
         // Merge logic:
-        // 1. Always take latest odds from this row
+        // 1. Always take latest odds from this row (sorted ASC, so newer overwrite older)
         // 2. Take splits if they are "more interesting" or if existing is null
         const useNewSplits = rowHasInterestingSplits || (!existing.has_interesting_splits && rowHasSplits)
         
         const updated = {
           ...existing,
-          ...row,
+          ...row, // newer odds always overwrite
           public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
           public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
           public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
