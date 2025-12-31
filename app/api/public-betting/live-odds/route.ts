@@ -8,51 +8,53 @@ function mlToCents(ml: number): number {
   return -10000 / ml // Negative odds = convert to positive equivalent
 }
 
+// Map frontend sport names to ClickHouse database sport names for teams table
+const DB_SPORT_MAP: Record<string, string> = {
+  nfl: 'nfl',
+  nba: 'nba',
+  cfb: 'cfb',
+  cbb: 'ncaab', // Teams are stored as 'ncaab', games as 'cbb'
+  nhl: 'nhl',
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const sport = searchParams.get('sport') || 'all'
   
-  const sportMap: Record<string, string[]> = {
-    'cbb': ['cbb', 'ncaab'],
-    'cfb': ['cfb'],
-    'nfl': ['nfl'],
-    'nba': ['nba'],
-    'nhl': ['nhl']
-  }
-  const dbSports = sportMap[sport.toLowerCase()] || [sport.toLowerCase()]
+  // For games table, we query both 'cbb' and 'ncaab' for college basketball
+  const gamesSportFilter = sport === 'all' 
+    ? '' 
+    : sport.toLowerCase() === 'cbb' 
+      ? `AND g.sport IN ('cbb', 'ncaab')` 
+      : `AND g.sport = '${sport.toLowerCase()}'`
+  
+  // For teams table, use the mapped sport name
+  const teamsSport = DB_SPORT_MAP[sport.toLowerCase()] || sport.toLowerCase()
   
   try {
-    // Query universal games table with team info
-    const sportFilter = sport === 'all' ? '' : `AND g.sport IN (${dbSports.map(s => `'${s}'`).join(',')})`
-    
-    const query = `
+    // Step 1: Fetch games WITH team data via JOIN (games table only has team IDs)
+    // Join with game_first_seen to get true opening lines (matches what timeline shows)
+    const gamesQuery = `
       SELECT 
         g.game_id,
         g.sport,
         g.game_time,
+        g.home_team_id,
+        g.away_team_id,
+        ht.name as home_team_name,
+        at.name as away_team_name,
         
-        ht.name as home_team,
-        ht.abbreviation as home_abbrev,
-        ht.logo_url as home_logo,
-        ht.primary_color as home_primary_color,
-        ht.secondary_color as home_secondary_color,
-        
-        at.name as away_team,
-        at.abbreviation as away_abbrev,
-        at.logo_url as away_logo,
-        at.primary_color as away_primary_color,
-        at.secondary_color as away_secondary_color,
-        
-        g.spread_open as opening_spread,
+        -- Use true opening from game_first_seen (matches timeline), fallback to games table
+        COALESCE(gfs.opening_spread, g.spread_open) as opening_spread,
         g.spread_close as current_spread,
-        g.spread_close - g.spread_open as spread_movement,
+        g.spread_close - COALESCE(gfs.opening_spread, g.spread_open) as spread_movement,
         
-        g.total_open as opening_total,
+        COALESCE(gfs.opening_total, g.total_open) as opening_total,
         g.total_close as current_total,
-        g.total_close - g.total_open as total_movement,
+        g.total_close - COALESCE(gfs.opening_total, g.total_open) as total_movement,
         
-        g.home_ml_open as opening_ml_home,
-        g.away_ml_open as opening_ml_away,
+        COALESCE(gfs.opening_ml_home, g.home_ml_open) as opening_ml_home,
+        COALESCE(gfs.opening_ml_away, g.away_ml_open) as opening_ml_away,
         g.home_ml_close as current_ml_home,
         g.away_ml_close as current_ml_away,
         
@@ -63,32 +65,48 @@ export async function GET(request: Request) {
         g.public_total_over_bet_pct,
         g.public_total_over_money_pct,
         
-        g.updated_at
+        g.updated_at,
+        
+        ht.logo_url as home_logo,
+        at.logo_url as away_logo,
+        ht.abbreviation as home_abbrev,
+        at.abbreviation as away_abbrev,
+        ht.primary_color as home_primary_color,
+        at.primary_color as away_primary_color,
+        ht.secondary_color as home_secondary_color,
+        at.secondary_color as away_secondary_color
         
       FROM games g
-      LEFT JOIN teams ht ON g.home_team_id = ht.team_id 
-        AND (ht.sport = g.sport OR (g.sport = 'cbb' AND ht.sport = 'ncaab') OR (g.sport = 'ncaab' AND ht.sport = 'cbb'))
-      LEFT JOIN teams at ON g.away_team_id = at.team_id 
-        AND (at.sport = g.sport OR (g.sport = 'cbb' AND at.sport = 'ncaab') OR (g.sport = 'ncaab' AND at.sport = 'cbb'))
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (
+        (g.sport IN ('cbb', 'ncaab') AND ht.sport IN ('cbb', 'ncaab')) OR
+        (g.sport NOT IN ('cbb', 'ncaab') AND ht.sport = g.sport)
+      )
+      LEFT JOIN teams at ON g.away_team_id = at.team_id AND (
+        (g.sport IN ('cbb', 'ncaab') AND at.sport IN ('cbb', 'ncaab')) OR
+        (g.sport NOT IN ('cbb', 'ncaab') AND at.sport = g.sport)
+      )
+      LEFT JOIN game_first_seen gfs ON gfs.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
-        ${sportFilter}
+        ${gamesSportFilter}
       ORDER BY g.game_time ASC, g.updated_at DESC
     `
     
-    const result = await clickhouseQuery<{
+    const gamesResult = await clickhouseQuery<{
       game_id: string
       sport: string
       game_time: string
-      home_team: string
-      home_abbrev: string
-      home_logo: string
-      home_primary_color: string
-      home_secondary_color: string
-      away_team: string
-      away_abbrev: string
-      away_logo: string
-      away_primary_color: string
-      away_secondary_color: string
+      home_team_id: number
+      away_team_id: number
+      home_team_name: string | null
+      away_team_name: string | null
+      home_logo: string | null
+      away_logo: string | null
+      home_abbrev: string | null
+      away_abbrev: string | null
+      home_primary_color: string | null
+      away_primary_color: string | null
+      home_secondary_color: string | null
+      away_secondary_color: string | null
       opening_spread: number
       current_spread: number
       spread_movement: number
@@ -106,13 +124,14 @@ export async function GET(request: Request) {
       public_total_over_bet_pct: number | null
       public_total_over_money_pct: number | null
       updated_at: string
-    }>(query)
-    
+    }>(gamesQuery)
+
     // Smart Deduplication: Merge records to get latest odds AND latest available splits
+    // Team data comes from the JOIN in the query above
     const gameMap = new Map<string, any>()
     
     // Sort by updated_at ASC so we process older records first, newer records overwrite odds
-    const sortedData = [...(result.data || [])].sort((a, b) => 
+    const sortedData = [...(gamesResult.data || [])].sort((a, b) => 
       new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
     )
 
@@ -142,14 +161,11 @@ export async function GET(request: Request) {
           has_interesting_splits: rowHasInterestingSplits
         })
       } else {
-        // Merge logic:
-        // 1. Always take latest odds from this row (sorted ASC, so newer overwrite older)
-        // 2. Take splits if they are "more interesting" or if existing is null
         const useNewSplits = rowHasInterestingSplits || (!existing.has_interesting_splits && rowHasSplits)
         
         const updated = {
           ...existing,
-          ...row, // newer odds always overwrite
+          ...row,
           public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
           public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
           public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
@@ -165,7 +181,7 @@ export async function GET(request: Request) {
     
     const deduplicatedData = Array.from(gameMap.values())
     
-    // Calculate ML movement correctly (in cents from even)
+    // Build final games array - team info comes directly from the JOIN
     const games = deduplicatedData.map(game => {
       const ml_home_movement = mlToCents(game.current_ml_home) - mlToCents(game.opening_ml_home)
       const ml_away_movement = mlToCents(game.current_ml_away) - mlToCents(game.opening_ml_away)
@@ -173,16 +189,16 @@ export async function GET(request: Request) {
       return {
         id: game.game_id,
         sport: game.sport,
-        home_team: game.home_team,
-        away_team: game.away_team,
-        home_abbrev: game.home_abbrev,
-        away_abbrev: game.away_abbrev,
-        home_logo: game.home_logo,
-        away_logo: game.away_logo,
-        home_primary_color: game.home_primary_color,
-        away_primary_color: game.away_primary_color,
-        home_secondary_color: game.home_secondary_color,
-        away_secondary_color: game.away_secondary_color,
+        home_team: game.home_team_name || `Team ${game.home_team_id}`,
+        away_team: game.away_team_name || `Team ${game.away_team_id}`,
+        home_abbrev: game.home_abbrev || 'UNK',
+        away_abbrev: game.away_abbrev || 'UNK',
+        home_logo: game.home_logo || '',
+        away_logo: game.away_logo || '',
+        home_primary_color: game.home_primary_color || '',
+        away_primary_color: game.away_primary_color || '',
+        home_secondary_color: game.home_secondary_color || '',
+        away_secondary_color: game.away_secondary_color || '',
         game_time: game.game_time,
         
         opening_spread: game.opening_spread,

@@ -838,12 +838,13 @@ export default function PublicBettingPage() {
     return isHome ? '#98ADD1' : '#EF4444'
   }
 
-  // Helper to parse game time as UTC and return Date object
+  // Helper to parse game time - stored as UTC in database
   const parseGameTimeEST = (gameTime: string): Date | null => {
     if (!gameTime) return null
     
     try {
-      // Handle format "2025-12-14 18:00:00" from ClickHouse (stored as UTC)
+      // game_time from ClickHouse is in UTC format: "2025-12-31 17:00:00"
+      // Add Z to explicitly mark it as UTC
       const cleanTime = gameTime.replace(' ', 'T') + 'Z'
       const date = new Date(cleanTime)
       
@@ -860,6 +861,7 @@ export default function PublicBettingPage() {
   const formatGameDate = (dateStr: string) => {
     // If it's already a YYYY-MM-DD string from getGamesByDate
     if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Parse as local date and format
       const [year, month, day] = dateStr.split('-').map(Number)
       const date = new Date(year, month - 1, day)
       return date.toLocaleDateString('en-US', { 
@@ -888,13 +890,18 @@ export default function PublicBettingPage() {
       const date = parseGameTimeEST(game.game_time)
       if (!date) return
       
-      // Group by EST date in sortable YYYY-MM-DD format
-      const dateKey = date.toLocaleDateString('en-CA', { 
+      // Group by EST date - use formatToParts to get the actual EST date components
+      const formatter = new Intl.DateTimeFormat('en-CA', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         timeZone: 'America/New_York'
       })
+      const parts = formatter.formatToParts(date)
+      const year = parts.find(p => p.type === 'year')?.value
+      const month = parts.find(p => p.type === 'month')?.value
+      const day = parts.find(p => p.type === 'day')?.value
+      const dateKey = `${year}-${month}-${day}`
       
       if (!grouped[dateKey]) {
         grouped[dateKey] = []
