@@ -50,6 +50,68 @@
   margin: 0;
 }
 
+/* Info Icon and Tooltip */
+.infoIconWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.infoIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: #8B9199;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.infoIconBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.infoTooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  width: 320px;
+  padding: 16px;
+  background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.infoTooltipTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.infoTooltip p {
+  font-size: 13px;
+  color: #8B9199;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.infoTooltip p:last-child {
+  margin-bottom: 0;
+}
+
+.infoTooltip strong {
+  color: #FFFFFF;
+}
+
 /* Filters Row - Sports left, Markets right */
 .filtersRow {
   display: flex;
@@ -1658,6 +1720,30 @@
   letter-spacing: -0.02em;
 }
 
+/* Bet Type Label */
+.betTypeLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #5A5E66;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: auto;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.betTypeLabelMobile {
+  font-size: 10px;
+  font-weight: 500;
+  color: #5A5E66;
+  text-transform: uppercase;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
 /* Signal Card - Premium Styling with Segmented Bars */
 .signalCardV2 {
   background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%), linear-gradient(0deg, #0C0E12, #0C0E12);
@@ -1672,6 +1758,130 @@
   color: #FFFFFF;
   letter-spacing: -0.02em;
   margin-bottom: 16px;
+}
+
+.signalCardHeaderWithInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 400;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+/* Signal Info Icon and Tooltip */
+.signalInfoWrapper {
+  position: relative;
+}
+
+.signalInfoBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: #8B9199;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.signalInfoBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+.signalInfoTooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 280px;
+  padding: 14px;
+  background: linear-gradient(290.84deg, #1E242E 1.08%, #13161C 58.45%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.signalInfoTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+.signalInfoItem {
+  font-size: 11px;
+  color: #8B9199;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.signalInfoItem strong {
+  color: #FFFFFF;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.signalInfoNote {
+  font-size: 10px;
+  color: #5A5E66;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Splits Grid - Premium Styling */
+.splitsGridV2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.splitColumnV2 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.splitLabelV2 {
+  font-size: 11px;
+  font-weight: 500;
+  color: #5A5E66;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.splitValueV2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.splitBarV2 {
+  height: 4px;
+  background: #2B2D30;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.splitBarFillV2 {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.splitBarFillV2.moneyBar {
+  background: linear-gradient(90deg, #22C55E, #4ADE80);
 }
 
 .signalBarsV2 {

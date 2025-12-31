@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import styles from './public-betting.module.css'
-import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp } from 'react-icons/fi'
+import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp, FiInfo } from 'react-icons/fi'
 import { 
   LineChart, 
   Line, 
@@ -509,6 +509,8 @@ export default function PublicBettingPage() {
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
   const [mobileTeamOpen, setMobileTeamOpen] = useState<'away' | 'home' | null>(null)
+  const [showPageInfo, setShowPageInfo] = useState(false)
+  const [showSignalInfo, setShowSignalInfo] = useState(false)
   
   // Helper to generate segmented bars (20 segments for 0-100%)
   const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
@@ -1219,6 +1221,23 @@ export default function PublicBettingPage() {
               <h1 className={styles.title}>
                 {selectedSport === 'all' ? '' : `${selectedSport.toUpperCase()} `}Public Betting
               </h1>
+              <div className={styles.infoIconWrapper}>
+                <button 
+                  className={styles.infoIconBtn}
+                  onClick={() => setShowPageInfo(!showPageInfo)}
+                  onMouseEnter={() => setShowPageInfo(true)}
+                  onMouseLeave={() => setShowPageInfo(false)}
+                >
+                  <FiInfo />
+                </button>
+                {showPageInfo && (
+                  <div className={styles.infoTooltip}>
+                    <div className={styles.infoTooltipTitle}>About Public Betting Data</div>
+                    <p>We&apos;ve partnered with <strong>SportsDataIO</strong>, a leading sports data provider. They supply us with data aggregated from around <strong>150 sportsbooks</strong>.</p>
+                    <p>We use this data to bring you accurate public betting splits and market indicators across all bet types and major sports.</p>
+                  </div>
+                )}
+              </div>
             </div>
             <p className={styles.subtitle}>Public betting splits, movements & indicators from 150 sportsbooks.</p>
           </div>
@@ -1549,12 +1568,17 @@ export default function PublicBettingPage() {
 
                                 {/* Team Columns - Two Column Layout */}
                                 <div className={styles.teamColumnsV2}>
-                                  {/* Away Team Column */}
+                                  {/* Away Team / Over Column */}
                                   <div className={styles.teamColumnV2}>
                                     {/* Desktop Header */}
                                     <div className={styles.teamHeaderV2}>
-                                      {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogoV2} />}
-                                      <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</span>
+                                      {dropdownMarketType !== 'total' && game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogoV2} />}
+                                      <span className={styles.teamNameV2}>
+                                        {dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}
+                                      </span>
+                                      {dropdownMarketType !== 'total' && (
+                                        <span className={styles.betTypeLabel}>{dropdownMarketType === 'spread' ? 'Spread' : 'Moneyline'}</span>
+                                      )}
                                     </div>
                                     
                                     {/* Mobile Toggle */}
@@ -1563,17 +1587,100 @@ export default function PublicBettingPage() {
                                       onClick={(e) => { e.stopPropagation(); setMobileTeamOpen(mobileTeamOpen === 'away' ? null : 'away') }}
                                     >
                                       <div className={styles.teamToggleLeft}>
-                                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamToggleLogo} />}
-                                        <span className={styles.teamToggleName}>{dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</span>
+                                        {dropdownMarketType !== 'total' && game.away_logo && <img src={game.away_logo} alt="" className={styles.teamToggleLogo} />}
+                                        <span className={styles.teamToggleName}>
+                                          {dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}
+                                          {dropdownMarketType !== 'total' && <span className={styles.betTypeLabelMobile}>{dropdownMarketType === 'spread' ? 'Spread' : 'ML'}</span>}
+                                        </span>
                                       </div>
                                       <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'away' ? styles.open : ''}`} />
                                     </button>
                                     
                                     {/* Content - Desktop always visible, Mobile collapsible */}
                                     <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'away' ? styles.open : ''}`}>
+                                      {/* Splits Card */}
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>Splits</div>
+                                        <div className={styles.splitsGridV2}>
+                                          <div className={styles.splitColumnV2}>
+                                            <div className={styles.splitLabelV2}>Bets</div>
+                                            <div className={styles.splitValueV2}>
+                                              {(() => {
+                                                const pct = dropdownMarketType === 'spread' ? game.public_spread_away_bet_pct
+                                                  : dropdownMarketType === 'total' ? game.public_total_over_bet_pct
+                                                  : game.public_ml_away_bet_pct
+                                                return pct !== null ? `${Math.round(pct)}%` : 'N/A'
+                                              })()}
+                                            </div>
+                                            <div className={styles.splitBarV2}>
+                                              <div 
+                                                className={styles.splitBarFillV2} 
+                                                style={{ 
+                                                  width: `${(() => {
+                                                    const pct = dropdownMarketType === 'spread' ? game.public_spread_away_bet_pct
+                                                      : dropdownMarketType === 'total' ? game.public_total_over_bet_pct
+                                                      : game.public_ml_away_bet_pct
+                                                    return pct !== null ? pct : 0
+                                                  })()}%` 
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+                                          <div className={styles.splitColumnV2}>
+                                            <div className={styles.splitLabelV2}>Money</div>
+                                            <div className={styles.splitValueV2}>
+                                              {(() => {
+                                                const pct = dropdownMarketType === 'spread' ? game.public_spread_away_money_pct
+                                                  : dropdownMarketType === 'total' ? game.public_total_over_money_pct
+                                                  : game.public_ml_away_money_pct
+                                                return pct !== null ? `${Math.round(pct)}%` : 'N/A'
+                                              })()}
+                                            </div>
+                                            <div className={styles.splitBarV2}>
+                                              <div 
+                                                className={`${styles.splitBarFillV2} ${styles.moneyBar}`}
+                                                style={{ 
+                                                  width: `${(() => {
+                                                    const pct = dropdownMarketType === 'spread' ? game.public_spread_away_money_pct
+                                                      : dropdownMarketType === 'total' ? game.public_total_over_money_pct
+                                                      : game.public_ml_away_money_pct
+                                                    return pct !== null ? pct : 0
+                                                  })()}%` 
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+
                                       {/* Signals Card */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>Signals</div>
+                                        <div className={styles.signalCardHeaderWithInfo}>
+                                          <span>Signals</span>
+                                          <div className={styles.signalInfoWrapper}>
+                                            <button 
+                                              className={styles.signalInfoBtn}
+                                              onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
+                                            >
+                                              <FiInfo size={12} />
+                                            </button>
+                                            {showSignalInfo && (
+                                              <div className={styles.signalInfoTooltip}>
+                                                <div className={styles.signalInfoTitle}>Signal Indicators</div>
+                                                <div className={styles.signalInfoItem}>
+                                                  <strong>Public Respect:</strong> Majority of bets AND money on this side, with favorable line movement.
+                                                </div>
+                                                <div className={styles.signalInfoItem}>
+                                                  <strong>Vegas Backed:</strong> Minority of bets AND money, but line moves IN their favor (sharp action).
+                                                </div>
+                                                <div className={styles.signalInfoItem}>
+                                                  <strong>Whale Respect:</strong> Money % significantly exceeds Bet % (big bettors), with favorable movement.
+                                                </div>
+                                                <div className={styles.signalInfoNote}>Scores are 0-100% based on split strength and line/odds movement.</div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                                         <div className={styles.signalBarsV2}>
                                           {game.signals && (() => {
                                             const signals = dropdownMarketType === 'spread' ? game.signals.spread.away
@@ -1612,8 +1719,8 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* History */}
-                                      <div className={styles.historyCardV2}>
-                                        <div className={styles.historyCardHeader}>History</div>
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>History</div>
                                         <div className={styles.historyListV2}>
                                           {timelineData.slice(-5).map((point: any, idx) => {
                                             let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
@@ -1630,8 +1737,8 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* Books */}
-                                      <div className={styles.booksCardV2}>
-                                        <div className={styles.booksCardHeader}>All Books</div>
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>All Books</div>
                                         <div className={styles.booksListV2}>
                                           {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
                                             let val = dropdownMarketType === 'ml' 
@@ -1651,12 +1758,17 @@ export default function PublicBettingPage() {
                                     </div>
                                   </div>
 
-                                  {/* Home Team Column */}
+                                  {/* Home Team / Under Column */}
                                   <div className={styles.teamColumnV2}>
                                     {/* Desktop Header */}
                                     <div className={styles.teamHeaderV2}>
-                                      {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogoV2} />}
-                                      <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</span>
+                                      {dropdownMarketType !== 'total' && game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogoV2} />}
+                                      <span className={styles.teamNameV2}>
+                                        {dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}
+                                      </span>
+                                      {dropdownMarketType !== 'total' && (
+                                        <span className={styles.betTypeLabel}>{dropdownMarketType === 'spread' ? 'Spread' : 'Moneyline'}</span>
+                                      )}
                                     </div>
                                     
                                     {/* Mobile Toggle */}
@@ -1665,17 +1777,85 @@ export default function PublicBettingPage() {
                                       onClick={(e) => { e.stopPropagation(); setMobileTeamOpen(mobileTeamOpen === 'home' ? null : 'home') }}
                                     >
                                       <div className={styles.teamToggleLeft}>
-                                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamToggleLogo} />}
-                                        <span className={styles.teamToggleName}>{dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</span>
+                                        {dropdownMarketType !== 'total' && game.home_logo && <img src={game.home_logo} alt="" className={styles.teamToggleLogo} />}
+                                        <span className={styles.teamToggleName}>
+                                          {dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}
+                                          {dropdownMarketType !== 'total' && <span className={styles.betTypeLabelMobile}>{dropdownMarketType === 'spread' ? 'Spread' : 'ML'}</span>}
+                                        </span>
                                       </div>
                                       <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'home' ? styles.open : ''}`} />
                                     </button>
                                     
                                     {/* Content - Desktop always visible, Mobile collapsible */}
                                     <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'home' ? styles.open : ''}`}>
+                                      {/* Splits Card */}
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>Splits</div>
+                                        <div className={styles.splitsGridV2}>
+                                          <div className={styles.splitColumnV2}>
+                                            <div className={styles.splitLabelV2}>Bets</div>
+                                            <div className={styles.splitValueV2}>
+                                              {(() => {
+                                                const pct = dropdownMarketType === 'spread' ? game.public_spread_home_bet_pct
+                                                  : dropdownMarketType === 'total' ? game.public_total_under_bet_pct
+                                                  : game.public_ml_home_bet_pct
+                                                return pct !== null ? `${Math.round(pct)}%` : 'N/A'
+                                              })()}
+                                            </div>
+                                            <div className={styles.splitBarV2}>
+                                              <div 
+                                                className={styles.splitBarFillV2} 
+                                                style={{ 
+                                                  width: `${(() => {
+                                                    const pct = dropdownMarketType === 'spread' ? game.public_spread_home_bet_pct
+                                                      : dropdownMarketType === 'total' ? game.public_total_under_bet_pct
+                                                      : game.public_ml_home_bet_pct
+                                                    return pct !== null ? pct : 0
+                                                  })()}%` 
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+                                          <div className={styles.splitColumnV2}>
+                                            <div className={styles.splitLabelV2}>Money</div>
+                                            <div className={styles.splitValueV2}>
+                                              {(() => {
+                                                const pct = dropdownMarketType === 'spread' ? game.public_spread_home_money_pct
+                                                  : dropdownMarketType === 'total' ? game.public_total_under_money_pct
+                                                  : game.public_ml_home_money_pct
+                                                return pct !== null ? `${Math.round(pct)}%` : 'N/A'
+                                              })()}
+                                            </div>
+                                            <div className={styles.splitBarV2}>
+                                              <div 
+                                                className={`${styles.splitBarFillV2} ${styles.moneyBar}`}
+                                                style={{ 
+                                                  width: `${(() => {
+                                                    const pct = dropdownMarketType === 'spread' ? game.public_spread_home_money_pct
+                                                      : dropdownMarketType === 'total' ? game.public_total_under_money_pct
+                                                      : game.public_ml_home_money_pct
+                                                    return pct !== null ? pct : 0
+                                                  })()}%` 
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+
                                       {/* Signals Card */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>Signals</div>
+                                        <div className={styles.signalCardHeaderWithInfo}>
+                                          <span>Signals</span>
+                                          <div className={styles.signalInfoWrapper}>
+                                            <button 
+                                              className={styles.signalInfoBtn}
+                                              onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
+                                            >
+                                              <FiInfo size={12} />
+                                            </button>
+                                          </div>
+                                        </div>
                                         <div className={styles.signalBarsV2}>
                                           {game.signals && (() => {
                                             const signals = dropdownMarketType === 'spread' ? game.signals.spread.home
@@ -1714,8 +1894,8 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* History */}
-                                      <div className={styles.historyCardV2}>
-                                        <div className={styles.historyCardHeader}>History</div>
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>History</div>
                                         <div className={styles.historyListV2}>
                                           {timelineData.slice(-5).map((point: any, idx) => {
                                             let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
@@ -1732,8 +1912,8 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* Books */}
-                                      <div className={styles.booksCardV2}>
-                                        <div className={styles.booksCardHeader}>All Books</div>
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>All Books</div>
                                         <div className={styles.booksListV2}>
                                           {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
                                             let val = dropdownMarketType === 'ml' 
