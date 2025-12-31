@@ -92,7 +92,8 @@ export async function GET(request: Request) {
       LEFT JOIN game_first_seen gfs ON gfs.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${gamesSportFilter}
-      ORDER BY g.game_time ASC, g.updated_at DESC
+      ORDER BY g.updated_at DESC
+      LIMIT 1 BY g.game_id
     `
     
     const gamesResult = await clickhouseQuery<{
@@ -132,60 +133,17 @@ export async function GET(request: Request) {
       updated_at: string
     }>(gamesQuery)
 
-    // Smart Deduplication: Merge records to get latest odds AND latest available splits
-    // Team data comes from the JOIN in the query above
-    const gameMap = new Map<string, any>()
-    
-    // Sort by updated_at ASC so we process older records first, newer records overwrite odds
-    const sortedData = [...(gamesResult.data || [])].sort((a, b) => 
-      new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
-    )
-
-    for (const row of sortedData) {
-      const existing = gameMap.get(row.game_id)
-      
-      // A row has splits if they aren't NULL
-      const rowHasSplits = (
+    // Deduplication is now handled in SQL with LIMIT 1 BY game_id
+    // Each game_id appears only once with the most recently updated record
+    const deduplicatedData = (gamesResult.data || []).map(row => {
+      const hasSplits = (
         row.public_spread_home_bet_pct !== null ||
         row.public_spread_home_money_pct !== null ||
         row.public_ml_home_bet_pct !== null ||
         row.public_total_over_bet_pct !== null
       )
-
-      // A row has "interesting" splits if they aren't exactly 50/50
-      const rowHasInterestingSplits = (
-        (row.public_spread_home_bet_pct !== null && row.public_spread_home_bet_pct !== 50) ||
-        (row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== 50) ||
-        (row.public_ml_home_bet_pct !== null && row.public_ml_home_bet_pct !== 50) ||
-        (row.public_total_over_bet_pct !== null && row.public_total_over_bet_pct !== 50)
-      )
-
-      if (!existing) {
-        gameMap.set(row.game_id, { 
-          ...row, 
-          has_real_splits: rowHasSplits,
-          has_interesting_splits: rowHasInterestingSplits
-        })
-      } else {
-        const useNewSplits = rowHasInterestingSplits || (!existing.has_interesting_splits && rowHasSplits)
-        
-        const updated = {
-          ...existing,
-          ...row,
-          public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
-          public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
-          public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
-          public_ml_home_money_pct: useNewSplits ? row.public_ml_home_money_pct : existing.public_ml_home_money_pct,
-          public_total_over_bet_pct: useNewSplits ? row.public_total_over_bet_pct : existing.public_total_over_bet_pct,
-          public_total_over_money_pct: useNewSplits ? row.public_total_over_money_pct : existing.public_total_over_money_pct,
-          has_real_splits: existing.has_real_splits || rowHasSplits,
-          has_interesting_splits: existing.has_interesting_splits || rowHasInterestingSplits
-        }
-        gameMap.set(row.game_id, updated)
-      }
-    }
-    
-    const deduplicatedData = Array.from(gameMap.values())
+      return { ...row, has_real_splits: hasSplits }
+    })
     
     // Build final games array - team info comes directly from the JOIN
     const games = deduplicatedData.map(game => {
