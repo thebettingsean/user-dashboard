@@ -185,6 +185,15 @@
   min-width: 120px;
 }
 
+.consensusColumn {
+  min-width: 120px;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.consensusCell {
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+}
+
 .sportsbookColumn {
   min-width: 140px;
 }
@@ -258,7 +267,7 @@
 }
 
 .gameTime {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(148, 163, 184, 0.6);
   margin-top: 8px;
   font-weight: 500;

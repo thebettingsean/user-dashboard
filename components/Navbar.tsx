@@ -25,6 +25,7 @@ export default function Navbar() {
     { href: '/sports/picks', label: "Today's Picks" },
     { href: '/sports/public-betting', label: 'Public Betting' },
     { href: '/sports/ai-scripts', label: 'Game Scripts' },
+    { href: '/odds', label: 'Odds' },
     { href: '/builder', label: 'Builder' },
   ]
 
@@ -384,6 +385,10 @@ export default function Navbar() {
             
             <Link href="/sports/ai-scripts" style={styles.mobileLink} onClick={closeMobileMenu}>
               Game Scripts
+            </Link>
+            
+            <Link href="/odds" style={styles.mobileLink} onClick={closeMobileMenu}>
+              Odds
             </Link>
             
             <Link href="/builder" style={styles.mobileLink} onClick={closeMobileMenu}>

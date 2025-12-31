@@ -93,6 +93,139 @@ function getBestSpread(spreads: any[], type: 'favorite' | 'underdog') {
   }, null)
 }
 
+// Calculate consensus odds for a team
+// Logic: Find most common line (with stable tie-breaker), convert all odds to that line (20 points per half point), then average
+// Example: +3 at -105 converts to +2.5 at -125 (20 point penalty for worse line)
+function getConsensusOdds(spreads: any[], team: 'away' | 'home') {
+  const teamSpreads = spreads.filter(s => s.side === team)
+  if (teamSpreads.length === 0) return null
+
+  // Step 1: Determine team type from ALL spreads (not filtered)
+  const positiveCount = teamSpreads.filter(s => s.point > 0).length
+  const negativeCount = teamSpreads.filter(s => s.point < 0).length
+  const isUnderdog = positiveCount > negativeCount
+
+  // Step 2: Filter spreads that match team type (for consensus line calculation)
+  // Only filter by point sign here - we'll filter odds later
+  const typeMatchingSpreads = teamSpreads.filter(spread => {
+    if (isUnderdog && spread.point <= 0) return false
+    if (!isUnderdog && spread.point >= 0) return false
+    return true
+  })
+
+  if (typeMatchingSpreads.length === 0) return null
+
+  // Step 3: Find the MOST COMMON line from type-matching spreads
+  // This gives us the TRUE consensus line based on actual market data
+  const lineFrequency = new Map<number, number>()
+  typeMatchingSpreads.forEach(spread => {
+    lineFrequency.set(spread.point, (lineFrequency.get(spread.point) || 0) + 1)
+  })
+
+  let consensusLine = typeMatchingSpreads[0].point
+  let maxFrequency = 0
+  
+  lineFrequency.forEach((frequency, line) => {
+    if (frequency > maxFrequency) {
+      maxFrequency = frequency
+      consensusLine = line
+    }
+  })
+
+  // Step 4: NOW filter aggressively for odds quality (for consensus odds calculation)
+  const validSpreads = typeMatchingSpreads.filter(spread => {
+    // Strict odds validation
+    if (!isUnderdog) {
+      // FAVORITES: Must be at least -101
+      if (spread.odds > -101) return false
+      if (spread.odds < -300) return false
+    } else {
+      // UNDERDOGS: If negative, must be -110 or worse (more negative)
+      if (spread.odds < 0 && spread.odds > -110) return false
+      if (spread.odds < -150) return false
+    }
+    return true
+  })
+
+  if (validSpreads.length === 0) return null
+
+  // Step 4: Convert all odds to the consensus line and apply strict bounds
+  // Conversion rule: 20 points per half-point difference
+  const convertedOdds: number[] = []
+  
+  validSpreads.forEach(spread => {
+    let adjustedOdds = spread.odds
+    
+    // If already at consensus line, just apply bounds
+    if (spread.point !== consensusLine) {
+      const lineDiff = spread.point - consensusLine
+      const halfPoints = Math.abs(lineDiff) * 2
+      
+      if (isUnderdog) {
+        // Underdog: higher line is better (+3 > +2.5)
+        if (spread.point > consensusLine) {
+          // Better line to worse: odds get WORSE (more negative)
+          adjustedOdds = spread.odds - (halfPoints * 20)
+        } else {
+          // Worse line to better: odds get BETTER (less negative/more positive)
+          adjustedOdds = spread.odds + (halfPoints * 20)
+        }
+      } else {
+        // Favorite: less negative is better (-2.5 > -3)
+        if (spread.point > consensusLine) {
+          // Better line to worse: odds get WORSE (more negative)
+          adjustedOdds = spread.odds - (halfPoints * 20)
+        } else {
+          // Worse line to better: odds get BETTER (less negative)
+          adjustedOdds = spread.odds + (halfPoints * 20)
+        }
+      }
+    }
+    
+    // Apply STRICT bounds to each converted odd
+    if (!isUnderdog) {
+      // Favorites: cap at -101 minimum
+      adjustedOdds = Math.min(-101, adjustedOdds)
+      adjustedOdds = Math.max(-200, adjustedOdds)
+    } else {
+      // Underdogs: cap negative odds at -110 maximum
+      if (adjustedOdds < 0) {
+        adjustedOdds = Math.min(-110, adjustedOdds)
+      }
+      // Positive odds are fine (no cap)
+    }
+    
+    convertedOdds.push(adjustedOdds)
+  })
+
+  // Step 5: Calculate average
+  if (convertedOdds.length === 0) return null
+  
+  let averageOdds = convertedOdds.reduce((sum, odds) => sum + odds, 0) / convertedOdds.length
+  
+  // Step 6: Apply final bounds
+  if (!isUnderdog) {
+    averageOdds = Math.min(-101, averageOdds)
+    averageOdds = Math.max(-200, averageOdds)
+  } else {
+    if (averageOdds < 0) {
+      averageOdds = Math.min(-110, averageOdds)
+    }
+  }
+
+  // Step 7: Round and final validation
+  let finalOdds = Math.round(averageOdds)
+  
+  // Absolute final check
+  if (!isUnderdog && finalOdds > -101) finalOdds = -101
+  if (isUnderdog && finalOdds < 0 && finalOdds > -110) finalOdds = -110
+
+  return {
+    line: consensusLine,
+    odds: finalOdds
+  }
+}
+
 const SPORT_MAP: Record<string, string> = {
   nfl: 'nfl',
   nba: 'nba',
@@ -379,6 +512,7 @@ export default function OddsPage() {
                 <tr>
                   <th className={styles.teamColumn}>SCHEDULED</th>
                   <th className={styles.oddsColumn}>OPEN</th>
+                  <th className={styles.consensusColumn}>CONSENSUS</th>
                   {allBooks.map(book => (
                     <th key={book} className={styles.sportsbookColumn}>
                       {book}
@@ -395,6 +529,10 @@ export default function OddsPage() {
                   // Get best odds for each team using same logic as submit page
                   const bestAway = getBestOddsForTeam(allSpreads, 'away')
                   const bestHome = getBestOddsForTeam(allSpreads, 'home')
+                  
+                  // Get consensus odds for each team
+                  const consensusAway = getConsensusOdds(allSpreads, 'away')
+                  const consensusHome = getConsensusOdds(allSpreads, 'home')
                   
                   // Get open odds from game spread
                   const openAway = game.spread?.awayLine !== null && game.spread?.awayOdds !== null ? {
@@ -425,6 +563,16 @@ export default function OddsPage() {
                             <div className={styles.oddsBox}>
                               <span className={styles.oddsLine}>{formatLine(openAway.line)}</span>
                               <span className={styles.oddsValue}>{formatOdds(openAway.odds)}</span>
+                            </div>
+                          ) : (
+                            <span className={styles.naText}>N/A</span>
+                          )}
+                        </td>
+                        <td className={`${styles.oddsCell} ${styles.consensusCell}`}>
+                          {consensusAway ? (
+                            <div className={styles.oddsBox}>
+                              <span className={styles.oddsLine}>{formatLine(consensusAway.line)}</span>
+                              <span className={styles.oddsValue}>{formatOdds(consensusAway.odds)}</span>
                             </div>
                           ) : (
                             <span className={styles.naText}>N/A</span>
@@ -472,6 +620,16 @@ export default function OddsPage() {
                             <div className={styles.oddsBox}>
                               <span className={styles.oddsLine}>{formatLine(openHome.line)}</span>
                               <span className={styles.oddsValue}>{formatOdds(openHome.odds)}</span>
+                            </div>
+                          ) : (
+                            <span className={styles.naText}>N/A</span>
+                          )}
+                        </td>
+                        <td className={`${styles.oddsCell} ${styles.consensusCell}`}>
+                          {consensusHome ? (
+                            <div className={styles.oddsBox}>
+                              <span className={styles.oddsLine}>{formatLine(consensusHome.line)}</span>
+                              <span className={styles.oddsValue}>{formatOdds(consensusHome.odds)}</span>
                             </div>
                           ) : (
                             <span className={styles.naText}>N/A</span>
