@@ -610,7 +610,9 @@ export default function PublicBettingPage() {
       // Common two-word mascots
       const twoWordMascots = ['crimson tide', 'tar heels', 'blue devils', 'fighting irish', 'golden gophers', 
                              'orange crush', 'green wave', 'blue raiders', 'golden eagles', 'red raiders',
-                             'blue demons', 'golden hurricanes']
+                             'blue demons', 'golden hurricanes', 'sun devils', 'demon deacons', 'horned frogs',
+                             'scarlet knights', 'yellow jackets', 'mean green', 'red wolves', 'black bears',
+                             'golden bears', 'grizzly bears', 'polar bears', 'bruin bears']
       
       if (words.length >= 2) {
         const lastTwo = `${words[words.length - 2]} ${words[words.length - 1]}`.toLowerCase()
@@ -675,15 +677,10 @@ export default function PublicBettingPage() {
         'Alabama Birmingham': 'UAB',
       }
       
-      // Check for exact match
-      if (abbrevMap[schoolName]) {
-        return abbrevMap[schoolName]
-      }
-      
-      // Check for partial match (case-insensitive)
+      // Check for exact match (case-insensitive)
       const schoolNameLower = schoolName.toLowerCase()
       for (const [key, abbrev] of Object.entries(abbrevMap)) {
-        if (schoolNameLower.includes(key.toLowerCase()) || key.toLowerCase().includes(schoolNameLower)) {
+        if (schoolNameLower === key.toLowerCase()) {
           return abbrev
         }
       }
