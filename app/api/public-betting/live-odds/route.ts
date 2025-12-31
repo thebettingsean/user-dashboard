@@ -96,6 +96,20 @@ export async function GET(request: Request) {
       public_total_over_money_pct: number
     }>(query)
     
+    // Debug: Log first game of each sport to see what data we're getting
+    const sportsSeen = new Set<string>()
+    for (const game of result.data || []) {
+      if (!sportsSeen.has(game.sport)) {
+        sportsSeen.add(game.sport)
+        console.log(`[${game.sport.toUpperCase()}] Sample game ${game.game_id}:`, {
+          spread_bet: game.public_spread_home_bet_pct,
+          spread_money: game.public_spread_home_money_pct,
+          ml_bet: game.public_ml_home_bet_pct,
+          total_over: game.public_total_over_bet_pct
+        })
+      }
+    }
+    
     // Deduplication: ALWAYS prefer rows with actual splits (non-50, non-null values)
     // Process ALL rows and keep the one with the most splits, regardless of updated_at order
     const hasSplits = (game: typeof result.data[0]) => {
