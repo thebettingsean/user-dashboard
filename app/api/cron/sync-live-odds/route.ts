@@ -679,8 +679,8 @@ export async function GET(request: Request) {
             ) VALUES (
               '${game.id}', 0, '${sportConfig.sport}', '${snapshotTime}',
               '${game.home_team.replace(/'/g, "''")}', '${game.away_team.replace(/'/g, "''")}', '${gameTime}',
-              ${consensus.spread}, ${consensus.spreadJuice}, ${consensus.spreadJuice},
-              ${consensus.total}, ${consensus.totalJuice}, ${consensus.totalJuice},
+              ${consensus.spread}, ${consensus.spreadJuiceHome}, ${consensus.spreadJuiceAway},
+              ${consensus.total}, ${consensus.overJuice}, ${consensus.underJuice},
               ${consensus.mlHome}, ${consensus.mlAway},
               ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
               ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
