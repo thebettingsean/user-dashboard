@@ -90,6 +90,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .filterBtn:hover:not(:disabled) {
@@ -205,6 +206,16 @@
   height: auto;
 }
 
+.oddsTable tbody tr.awayRow .teamCell,
+.oddsTable tbody tr.awayRow .oddsCell {
+  padding-bottom: 6px;
+}
+
+.oddsTable tbody tr:not(.awayRow) .teamCell,
+.oddsTable tbody tr:not(.awayRow) .oddsCell {
+  padding-top: 6px;
+}
+
 .teamCell {
   padding: 12px 16px;
   position: sticky;
@@ -249,7 +260,7 @@
 .gameTime {
   font-size: 11px;
   color: rgba(148, 163, 184, 0.6);
-  margin-top: 4px;
+  margin-top: 8px;
   font-weight: 500;
 }
 
