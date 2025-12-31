@@ -1658,50 +1658,100 @@
   letter-spacing: -0.02em;
 }
 
-/* Signal Card - Premium Styling */
+/* Signal Card - Premium Styling with Segmented Bars */
 .signalCardV2 {
-  background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%);
+  background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%), linear-gradient(0deg, #0C0E12, #0C0E12);
   border-radius: 12px;
-  padding: 14px;
+  padding: 16px 14px;
   box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
 }
 
 .signalCardHeader {
-  font-size: 12px;
-  font-weight: 500;
-  color: #8B9199;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
 }
 
 .signalBarsV2 {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .signalRowV2 {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
 }
 
+.signalRowHeaderV2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .signalLabelV2 {
-  width: 100px;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 400;
   color: #8B9199;
+  letter-spacing: -0.02em;
+}
+
+.signalValueV2 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #5A5E66;
+  letter-spacing: -0.02em;
+}
+
+.signalValueV2.activePublic {
+  color: #73F97C;
+}
+
+.signalValueV2.activeVegas {
+  color: #FBBF24;
+}
+
+.signalValueV2.activeWhale {
+  color: #C084FC;
+}
+
+/* Segmented Bar Graph Container */
+.signalBarContainerV2 {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 8px;
+}
+
+/* Individual Bar Segments */
+.signalBarSegment {
+  width: 4px;
+  height: 8px;
+  border-radius: 2px;
+  background: #2B2D30;
   flex-shrink: 0;
 }
 
-.signalBarContainerV2 {
-  flex: 1;
-  height: 6px;
+.signalBarSegment.filled {
   background: #2B2D30;
-  border-radius: 3px;
-  overflow: hidden;
 }
 
+.signalBarSegment.filled.publicBar {
+  background: linear-gradient(180deg, #3B82F6, #60A5FA);
+}
+
+.signalBarSegment.filled.vegasBar {
+  background: linear-gradient(180deg, #EAB308, #FBBF24);
+}
+
+.signalBarSegment.filled.whaleBar {
+  background: linear-gradient(180deg, #A855F7, #C084FC);
+}
+
+/* Continuous bar fallback (simpler) */
 .signalBarV2 {
   height: 100%;
   border-radius: 3px;
@@ -1720,32 +1770,12 @@
   background: linear-gradient(90deg, #A855F7, #C084FC);
 }
 
-.signalValueV2 {
-  width: 36px;
-  text-align: right;
-  font-size: 13px;
-  font-weight: 500;
-  color: #5A5E66;
-  flex-shrink: 0;
-}
-
-.signalValueV2.activePublic {
-  color: #60A5FA;
-}
-
-.signalValueV2.activeVegas {
-  color: #FBBF24;
-}
-
-.signalValueV2.activeWhale {
-  color: #C084FC;
-}
-
 .noSignalV2 {
-  font-size: 12px;
+  font-size: 13px;
   color: #5A5E66;
   text-align: center;
-  padding: 8px 0;
+  padding: 12px 0;
+  letter-spacing: -0.02em;
 }
 
 /* History Card */
@@ -1837,24 +1867,132 @@
   color: #FFFFFF;
 }
 
+/* Mobile Team Section Dropdown */
+.teamColumnToggle {
+  display: none;
+}
+
+.teamColumnContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .teamColumnsV2 {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .teamColumnV2 {
+    gap: 0;
+  }
+  
+  .teamHeaderV2 {
+    display: none;
+  }
+  
+  .teamColumnToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 14px;
+    background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+  }
+  
+  .teamToggleLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .teamToggleLogo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: contain;
+  }
+  
+  .teamToggleName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+  }
+  
+  .teamToggleIcon {
+    color: #8B9199;
+    transition: transform 0.2s ease;
+  }
+  
+  .teamToggleIcon.open {
+    transform: rotate(180deg);
+  }
+  
+  .teamColumnContent {
+    display: none;
+    padding-top: 8px;
+  }
+  
+  .teamColumnContent.open {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
   
   .graphHeaderV2 {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .graphFiltersV2 {
+    width: 100%;
+  }
+  
+  .marketTabsV2 {
+    flex: 1;
+  }
+  
+  .marketTabV2 {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .signalCardV2,
+  .historyCardV2,
+  .booksCardV2 {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .signalCardHeader,
+  .historyCardHeader,
+  .booksCardHeader {
+    font-size: 11px;
+    margin-bottom: 10px;
   }
   
   .signalLabelV2 {
-    width: 80px;
-    font-size: 11px;
+    font-size: 12px;
   }
   
   .signalValueV2 {
-    width: 32px;
-    font-size: 12px;
+    font-size: 14px;
+  }
+  
+  .signalBarContainerV2 {
+    gap: 2px;
+  }
+  
+  .signalBarSegment {
+    width: 3px;
+    height: 6px;
   }
 }

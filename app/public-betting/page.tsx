@@ -508,6 +508,25 @@ export default function PublicBettingPage() {
   const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
+  const [mobileTeamOpen, setMobileTeamOpen] = useState<'away' | 'home' | null>(null)
+  
+  // Helper to generate segmented bars (20 segments for 0-100%)
+  const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
+    const totalSegments = 20
+    const filledSegments = Math.round((value / 100) * totalSegments)
+    const barClass = type === 'public' ? styles.publicBar : type === 'vegas' ? styles.vegasBar : styles.whaleBar
+    
+    return (
+      <div className={styles.signalBarContainerV2}>
+        {Array.from({ length: totalSegments }, (_, i) => (
+          <div 
+            key={i} 
+            className={`${styles.signalBarSegment} ${i < filledSegments ? `${styles.filled} ${barClass}` : ''}`}
+          />
+        ))}
+      </div>
+    )
+  }
 
   useEffect(() => {
     fetchGames()
@@ -1532,172 +1551,204 @@ export default function PublicBettingPage() {
                                 <div className={styles.teamColumnsV2}>
                                   {/* Away Team Column */}
                                   <div className={styles.teamColumnV2}>
+                                    {/* Desktop Header */}
                                     <div className={styles.teamHeaderV2}>
                                       {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogoV2} />}
                                       <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</span>
                                     </div>
                                     
-                                    {/* Signals Card */}
-                                    <div className={styles.signalCardV2}>
-                                      <div className={styles.signalCardHeader}>Signals</div>
-                                      <div className={styles.signalBarsV2}>
-                                        {game.signals && (() => {
-                                          const signals = dropdownMarketType === 'spread' ? game.signals.spread.away
-                                            : dropdownMarketType === 'total' ? game.signals.total.over
-                                            : game.signals.ml.away
-                                          const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
-                                          return hasSignal ? (
-                                            <>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Public Respect</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.publicBar}`} style={{ width: `${signals.publicRespect}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
-                                              </div>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Vegas Backed</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.vegasBar}`} style={{ width: `${signals.vegasBacked}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
-                                              </div>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Whale Respect</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.whaleBar}`} style={{ width: `${signals.whaleRespect}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
-                                              </div>
-                                            </>
-                                          ) : (
-                                            <div className={styles.noSignalV2}>No signals</div>
-                                          )
-                                        })()}
+                                    {/* Mobile Toggle */}
+                                    <button 
+                                      className={styles.teamColumnToggle}
+                                      onClick={(e) => { e.stopPropagation(); setMobileTeamOpen(mobileTeamOpen === 'away' ? null : 'away') }}
+                                    >
+                                      <div className={styles.teamToggleLeft}>
+                                        {game.away_logo && <img src={game.away_logo} alt="" className={styles.teamToggleLogo} />}
+                                        <span className={styles.teamToggleName}>{dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</span>
                                       </div>
-                                    </div>
-
-                                    {/* History */}
-                                    <div className={styles.historyCardV2}>
-                                      <div className={styles.historyCardHeader}>History</div>
-                                      <div className={styles.historyListV2}>
-                                        {timelineData.slice(-5).map((point: any, idx) => {
-                                          let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
-                                            : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
-                                            : `O ${point.total}`
-                                          return (
-                                            <div key={idx} className={styles.historyItemV2}>
-                                              <span className={styles.historyTimeV2}>{point.time}</span>
-                                              <span className={styles.historyValV2}>{val}</span>
-                                            </div>
-                                          )
-                                        })}
+                                      <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'away' ? styles.open : ''}`} />
+                                    </button>
+                                    
+                                    {/* Content - Desktop always visible, Mobile collapsible */}
+                                    <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'away' ? styles.open : ''}`}>
+                                      {/* Signals Card */}
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>Signals</div>
+                                        <div className={styles.signalBarsV2}>
+                                          {game.signals && (() => {
+                                            const signals = dropdownMarketType === 'spread' ? game.signals.spread.away
+                                              : dropdownMarketType === 'total' ? game.signals.total.over
+                                              : game.signals.ml.away
+                                            const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                                            return hasSignal ? (
+                                              <>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Public Respect</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.publicRespect, 'public')}
+                                                </div>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.vegasBacked, 'vegas')}
+                                                </div>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.whaleRespect, 'whale')}
+                                                </div>
+                                              </>
+                                            ) : (
+                                              <div className={styles.noSignalV2}>No signals detected</div>
+                                            )
+                                          })()}
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    {/* Books */}
-                                    <div className={styles.booksCardV2}>
-                                      <div className={styles.booksCardHeader}>All Books</div>
-                                      <div className={styles.booksListV2}>
-                                        {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
-                                          let val = dropdownMarketType === 'ml' 
-                                            ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
-                                            : dropdownMarketType === 'spread'
-                                            ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
-                                            : `O ${bookOdds.value}`
-                                          return (
-                                            <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                              <span className={styles.bookNameV2}>{bookOdds.book}</span>
-                                              <span className={styles.bookValV2}>{val}</span>
-                                            </div>
-                                          )
-                                        })}
+                                      {/* History */}
+                                      <div className={styles.historyCardV2}>
+                                        <div className={styles.historyCardHeader}>History</div>
+                                        <div className={styles.historyListV2}>
+                                          {timelineData.slice(-5).map((point: any, idx) => {
+                                            let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
+                                              : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
+                                              : `O ${point.total}`
+                                            return (
+                                              <div key={idx} className={styles.historyItemV2}>
+                                                <span className={styles.historyTimeV2}>{point.time}</span>
+                                                <span className={styles.historyValV2}>{val}</span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+
+                                      {/* Books */}
+                                      <div className={styles.booksCardV2}>
+                                        <div className={styles.booksCardHeader}>All Books</div>
+                                        <div className={styles.booksListV2}>
+                                          {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
+                                            let val = dropdownMarketType === 'ml' 
+                                              ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
+                                              : dropdownMarketType === 'spread'
+                                              ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
+                                              : `O ${bookOdds.value}`
+                                            return (
+                                              <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                                <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                <span className={styles.bookValV2}>{val}</span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
 
                                   {/* Home Team Column */}
                                   <div className={styles.teamColumnV2}>
+                                    {/* Desktop Header */}
                                     <div className={styles.teamHeaderV2}>
                                       {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogoV2} />}
                                       <span className={styles.teamNameV2}>{dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</span>
                                     </div>
                                     
-                                    {/* Signals Card */}
-                                    <div className={styles.signalCardV2}>
-                                      <div className={styles.signalCardHeader}>Signals</div>
-                                      <div className={styles.signalBarsV2}>
-                                        {game.signals && (() => {
-                                          const signals = dropdownMarketType === 'spread' ? game.signals.spread.home
-                                            : dropdownMarketType === 'total' ? game.signals.total.under
-                                            : game.signals.ml.home
-                                          const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
-                                          return hasSignal ? (
-                                            <>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Public Respect</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.publicBar}`} style={{ width: `${signals.publicRespect}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
-                                              </div>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Vegas Backed</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.vegasBar}`} style={{ width: `${signals.vegasBacked}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
-                                              </div>
-                                              <div className={styles.signalRowV2}>
-                                                <span className={styles.signalLabelV2}>Whale Respect</span>
-                                                <div className={styles.signalBarContainerV2}>
-                                                  <div className={`${styles.signalBarV2} ${styles.whaleBar}`} style={{ width: `${signals.whaleRespect}%` }}></div>
-                                                </div>
-                                                <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
-                                              </div>
-                                            </>
-                                          ) : (
-                                            <div className={styles.noSignalV2}>No signals</div>
-                                          )
-                                        })()}
+                                    {/* Mobile Toggle */}
+                                    <button 
+                                      className={styles.teamColumnToggle}
+                                      onClick={(e) => { e.stopPropagation(); setMobileTeamOpen(mobileTeamOpen === 'home' ? null : 'home') }}
+                                    >
+                                      <div className={styles.teamToggleLeft}>
+                                        {game.home_logo && <img src={game.home_logo} alt="" className={styles.teamToggleLogo} />}
+                                        <span className={styles.teamToggleName}>{dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</span>
                                       </div>
-                                    </div>
-
-                                    {/* History */}
-                                    <div className={styles.historyCardV2}>
-                                      <div className={styles.historyCardHeader}>History</div>
-                                      <div className={styles.historyListV2}>
-                                        {timelineData.slice(-5).map((point: any, idx) => {
-                                          let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
-                                            : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
-                                            : `U ${point.total}`
-                                          return (
-                                            <div key={idx} className={styles.historyItemV2}>
-                                              <span className={styles.historyTimeV2}>{point.time}</span>
-                                              <span className={styles.historyValV2}>{val}</span>
-                                            </div>
-                                          )
-                                        })}
+                                      <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'home' ? styles.open : ''}`} />
+                                    </button>
+                                    
+                                    {/* Content - Desktop always visible, Mobile collapsible */}
+                                    <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'home' ? styles.open : ''}`}>
+                                      {/* Signals Card */}
+                                      <div className={styles.signalCardV2}>
+                                        <div className={styles.signalCardHeader}>Signals</div>
+                                        <div className={styles.signalBarsV2}>
+                                          {game.signals && (() => {
+                                            const signals = dropdownMarketType === 'spread' ? game.signals.spread.home
+                                              : dropdownMarketType === 'total' ? game.signals.total.under
+                                              : game.signals.ml.home
+                                            const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                                            return hasSignal ? (
+                                              <>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Public Respect</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.publicRespect, 'public')}
+                                                </div>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.vegasBacked, 'vegas')}
+                                                </div>
+                                                <div className={styles.signalRowV2}>
+                                                  <div className={styles.signalRowHeaderV2}>
+                                                    <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                    <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                                  </div>
+                                                  {renderSegmentedBar(signals.whaleRespect, 'whale')}
+                                                </div>
+                                              </>
+                                            ) : (
+                                              <div className={styles.noSignalV2}>No signals detected</div>
+                                            )
+                                          })()}
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    {/* Books */}
-                                    <div className={styles.booksCardV2}>
-                                      <div className={styles.booksCardHeader}>All Books</div>
-                                      <div className={styles.booksListV2}>
-                                        {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
-                                          let val = dropdownMarketType === 'ml' 
-                                            ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
-                                            : dropdownMarketType === 'spread'
-                                            ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
-                                            : `U ${bookOdds.value}`
-                                          return (
-                                            <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                              <span className={styles.bookNameV2}>{bookOdds.book}</span>
-                                              <span className={styles.bookValV2}>{val}</span>
-                                            </div>
-                                          )
-                                        })}
+                                      {/* History */}
+                                      <div className={styles.historyCardV2}>
+                                        <div className={styles.historyCardHeader}>History</div>
+                                        <div className={styles.historyListV2}>
+                                          {timelineData.slice(-5).map((point: any, idx) => {
+                                            let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
+                                              : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
+                                              : `U ${point.total}`
+                                            return (
+                                              <div key={idx} className={styles.historyItemV2}>
+                                                <span className={styles.historyTimeV2}>{point.time}</span>
+                                                <span className={styles.historyValV2}>{val}</span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+
+                                      {/* Books */}
+                                      <div className={styles.booksCardV2}>
+                                        <div className={styles.booksCardHeader}>All Books</div>
+                                        <div className={styles.booksListV2}>
+                                          {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
+                                            let val = dropdownMarketType === 'ml' 
+                                              ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
+                                              : dropdownMarketType === 'spread'
+                                              ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
+                                              : `U ${bookOdds.value}`
+                                            return (
+                                              <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                                <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                <span className={styles.bookValV2}>{val}</span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
