@@ -277,27 +277,38 @@
   margin-top: 2px;
 }
 
-/* Best Odds Section */
-.featuredBestOdds {
+/* Best Odds and Public Betting Side by Side Container */
+.featuredOddsAndBetting {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   padding-top: 12px;
   border-top: 1px solid rgba(148, 163, 184, 0.1);
+  align-items: start;
+}
+
+/* Best Odds Section */
+.featuredBestOdds {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .bestOddsGrid {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
 }
 
 .bestOddsMarket {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 10px;
 }
 
 .bestOddsMarketLabel {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: rgba(226, 232, 240, 0.7);
   text-transform: uppercase;
@@ -306,6 +317,7 @@
 
 .bestOddsRow {
   display: flex;
+  flex-direction: row;
   gap: 8px;
 }
 
@@ -315,14 +327,15 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   background: rgba(29, 37, 48, 0.3);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 6px;
+  min-width: 0;
 }
 
 .bestOddsTeam {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: rgba(226, 232, 240, 0.9);
   text-transform: uppercase;
@@ -335,21 +348,21 @@
 }
 
 .bestOddsLine {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: #FFFFFF;
   white-space: nowrap;
 }
 
 .bestOddsValue {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: rgba(148, 163, 184, 0.8);
   white-space: nowrap;
 }
 
 .bestOddsBook {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 500;
   color: rgba(148, 163, 184, 0.6);
   text-transform: uppercase;
@@ -463,8 +476,9 @@
 
 /* Public Betting Section (Enhanced) */
 .featuredPublicBetting {
-  padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .publicBettingGrid {
@@ -508,7 +522,7 @@
 }
 
 .publicBettingBar {
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.15);
   overflow: hidden;
@@ -523,7 +537,7 @@
 .publicBettingPercents {
   display: flex;
   gap: 8px;
-  font-size: 9px;
+  font-size: 10px;
   color: rgba(226, 232, 240, 0.6);
   font-weight: 500;
 }
@@ -581,9 +595,10 @@
 
 /* Games Grid */
 .gamesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
 /* Game Card */
@@ -593,11 +608,17 @@
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 10px;
   padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
   gap: 2px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  min-height: 90px;
+  position: relative;
 }
 
 .gameCard:hover {
@@ -611,7 +632,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  padding: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .gameCardTeamRow {
@@ -619,6 +642,9 @@
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  height: 100%;
 }
 
 .gameCardLogo {
@@ -657,8 +683,11 @@
 
 .gameCardRight {
   display: flex;
+  flex-direction: column;
   gap: 6px;
-  align-items: center;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
 }
 
 .gameCardPill {
@@ -674,6 +703,9 @@
 }
 
 .gameCardTime {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
   font-size: 10px;
   color: rgba(226, 232, 240, 0.6);
   font-weight: 500;
@@ -723,8 +755,7 @@
   }
 
   .gamesGrid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   .gameCard {
@@ -745,13 +776,16 @@
     gap: 20px;
   }
 
+  .featuredOddsAndBetting {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
   .bestOddsGrid {
-    flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
   .bestOddsRow {
-    flex-direction: column;
     gap: 6px;
   }
 

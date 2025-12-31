@@ -524,14 +524,17 @@ export default function GamesPage() {
                   )}
                 </div>
 
-                {/* Best Odds Section */}
-                {renderBestOdds(featuredGame)}
-
                 {/* Active Bets Section */}
                 {renderActiveBets(featuredGame)}
 
-                {/* Public Betting Section */}
-                {renderPublicBetting(featuredGame)}
+                {/* Best Odds and Public Betting Side by Side */}
+                <div className={styles.featuredOddsAndBetting}>
+                  {/* Best Odds Section */}
+                  {renderBestOdds(featuredGame)}
+
+                  {/* Public Betting Section */}
+                  {renderPublicBetting(featuredGame)}
+                </div>
 
                 {/* Game Scripts Section */}
                 {renderGameScripts(featuredGame)}
@@ -566,23 +569,23 @@ export default function GamesPage() {
                         <div className={styles.gameCardRight}>
                           <span 
                             className={styles.gameCardPill}
-                            style={game.picks.total > 0 ? {
-                              background: 'rgba(234, 88, 12, 0.25)',
-                              borderColor: 'rgba(251, 146, 60, 0.5)',
-                              color: 'rgba(251, 146, 60, 0.95)'
-                            } : {}}
-                          >
-                            Picks {game.picks.total}
-                          </span>
-                          <span 
-                            className={styles.gameCardPill}
                             style={dataCount === 4 ? {
                               background: 'rgba(30, 58, 138, 0.35)',
                               borderColor: 'rgba(96, 165, 250, 0.5)',
                               color: 'rgba(147, 197, 253, 0.95)'
                             } : {}}
                           >
-                            Data {dataCount}/4
+                            Indicator active
+                          </span>
+                          <span 
+                            className={styles.gameCardPill}
+                            style={game.picks.total > 0 ? {
+                              background: 'rgba(234, 88, 12, 0.25)',
+                              borderColor: 'rgba(251, 146, 60, 0.5)',
+                              color: 'rgba(251, 146, 60, 0.95)'
+                            } : {}}
+                          >
+                            {game.picks.total} picks active
                           </span>
                         </div>
                       </div>
@@ -598,12 +601,10 @@ export default function GamesPage() {
                             )}
                           </div>
                         </div>
-                        <div className={styles.gameCardRight}>
-                          <span className={styles.gameCardTime}>
-                            {formatKickoffDate(game.kickoff)} · {game.kickoffLabel}
-                          </span>
-                        </div>
                       </div>
+                      <span className={styles.gameCardTime}>
+                        {formatKickoffDate(game.kickoff)} · {game.kickoffLabel}
+                      </span>
                     </div>
                   )
                 })}
