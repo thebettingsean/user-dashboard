@@ -787,16 +787,40 @@ export async function GET(request: Request) {
                 SELECT * FROM games WHERE game_id = '${gameId}' ORDER BY updated_at DESC LIMIT 1
               `)
               
-              const spreadOpen = isOpening ? consensus.spread : (existingGame.data?.[0]?.spread_open || consensus.spread)
-              const totalOpen = isOpening ? consensus.total : (existingGame.data?.[0]?.total_open || consensus.total)
-              const mlHomeOpen = isOpening ? consensus.mlHome : (existingGame.data?.[0]?.home_ml_open || consensus.mlHome)
-              const mlAwayOpen = isOpening ? consensus.mlAway : (existingGame.data?.[0]?.away_ml_open || consensus.mlAway)
+              // Get TRUE opening lines from game_first_seen (same source as frontend)
+              const firstSeenData = await clickhouseQuery<any>(`
+                SELECT opening_spread, opening_total, opening_ml_home, opening_ml_away
+                FROM game_first_seen 
+                WHERE odds_api_game_id = '${game.id}'
+                LIMIT 1
+              `)
+              const gfs = firstSeenData.data?.[0]
+              
+              // Use game_first_seen for true opening, fallback to games table, then current
+              const spreadOpen = isOpening ? consensus.spread 
+                : (gfs?.opening_spread ?? existingGame.data?.[0]?.spread_open ?? consensus.spread)
+              const totalOpen = isOpening ? consensus.total 
+                : (gfs?.opening_total ?? existingGame.data?.[0]?.total_open ?? consensus.total)
+              const mlHomeOpen = isOpening ? consensus.mlHome 
+                : (gfs?.opening_ml_home ?? existingGame.data?.[0]?.home_ml_open ?? consensus.mlHome)
+              const mlAwayOpen = isOpening ? consensus.mlAway 
+                : (gfs?.opening_ml_away ?? existingGame.data?.[0]?.away_ml_open ?? consensus.mlAway)
               
               // Get opening juice values
-              const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome : (existingGame.data?.[0]?.opening_home_spread_juice || -110)
-              const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway : (existingGame.data?.[0]?.opening_away_spread_juice || -110)
-              const overJuiceOpen = isOpening ? consensus.overJuice : (existingGame.data?.[0]?.opening_over_juice || -110)
-              const underJuiceOpen = isOpening ? consensus.underJuice : (existingGame.data?.[0]?.opening_under_juice || -110)
+              // If existing game has default -110, treat as "not yet recorded" and use current
+              const existingSpreadJuiceHome = existingGame.data?.[0]?.opening_home_spread_juice
+              const existingSpreadJuiceAway = existingGame.data?.[0]?.opening_away_spread_juice
+              const existingOverJuice = existingGame.data?.[0]?.opening_over_juice
+              const existingUnderJuice = existingGame.data?.[0]?.opening_under_juice
+              
+              const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome 
+                : (existingSpreadJuiceHome && existingSpreadJuiceHome !== -110 ? existingSpreadJuiceHome : consensus.spreadJuiceHome)
+              const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway 
+                : (existingSpreadJuiceAway && existingSpreadJuiceAway !== -110 ? existingSpreadJuiceAway : consensus.spreadJuiceAway)
+              const overJuiceOpen = isOpening ? consensus.overJuice 
+                : (existingOverJuice && existingOverJuice !== -110 ? existingOverJuice : consensus.overJuice)
+              const underJuiceOpen = isOpening ? consensus.underJuice 
+                : (existingUnderJuice && existingUnderJuice !== -110 ? existingUnderJuice : consensus.underJuice)
               
               // Calculate signals using opening vs current data
               const signals = calculateGameSignals(
@@ -827,6 +851,23 @@ export async function GET(request: Request) {
                 publicData?.mlBet || 50,
                 publicData?.mlMoney || 50
               )
+              
+              // Debug log for signal calculation
+              const hasAnySignal = signals.spread_home_public_respect > 0 || signals.spread_away_public_respect > 0 ||
+                signals.spread_home_vegas_backed > 0 || signals.spread_away_vegas_backed > 0 ||
+                signals.spread_home_whale_respect > 0 || signals.spread_away_whale_respect > 0
+              if (hasAnySignal) {
+                console.log(`[${sportConfig.sport}] SIGNAL DETECTED for ${game.away_team} @ ${game.home_team}:`, {
+                  spreadOpen, spreadCurrent: consensus.spread,
+                  betPct: publicData?.spreadBet || 50, moneyPct: publicData?.spreadMoney || 50,
+                  signals: {
+                    spreadHomePublic: signals.spread_home_public_respect,
+                    spreadAwayPublic: signals.spread_away_public_respect,
+                    spreadHomeVegas: signals.spread_home_vegas_backed,
+                    spreadAwayVegas: signals.spread_away_vegas_backed,
+                  }
+                })
+              }
               
               // Insert (will create or update due to ReplacingMergeTree)
               await clickhouseCommand(`
