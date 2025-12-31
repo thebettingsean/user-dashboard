@@ -1194,6 +1194,17 @@ export async function GET(request: Request) {
   const totalGames = results.reduce((sum, r) => sum + r.gamesProcessed, 0)
   const totalNewGames = results.reduce((sum, r) => sum + r.newGames, 0)
   
+  // Force ClickHouse to merge ReplacingMergeTree rows immediately
+  // This ensures the latest values are visible to subsequent queries
+  try {
+    console.log('[SYNC-LIVE-ODDS] Running OPTIMIZE TABLE to merge updated rows...')
+    await clickhouseCommand('OPTIMIZE TABLE games FINAL')
+    console.log('[SYNC-LIVE-ODDS] OPTIMIZE completed')
+  } catch (optimizeError: any) {
+    // OPTIMIZE can timeout on large tables but still complete in background
+    console.log('[SYNC-LIVE-ODDS] OPTIMIZE may still be running:', optimizeError.message?.substring(0, 100))
+  }
+  
   console.log(`[SYNC-LIVE-ODDS] Completed in ${duration}ms. Processed ${totalGames} games (${totalNewGames} new).`)
   
   return NextResponse.json({

@@ -106,7 +106,7 @@ export async function GET(request: Request) {
         g.ml_away_vegas_backed,
         g.ml_away_whale_respect
         
-      FROM games g
+      FROM games g FINAL
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (
         (g.sport IN ('cbb', 'ncaab') AND ht.sport IN ('cbb', 'ncaab')) OR
         (g.sport NOT IN ('cbb', 'ncaab') AND ht.sport = g.sport)
