@@ -12,9 +12,19 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const sport = searchParams.get('sport') || 'all'
   
+  // Map frontend sport names to DB sport names
+  const sportMap: Record<string, string> = {
+    'cbb': 'ncaab',
+    'cfb': 'cfb',
+    'nfl': 'nfl',
+    'nba': 'nba',
+    'nhl': 'nhl'
+  }
+  const dbSport = sportMap[sport.toLowerCase()] || sport.toLowerCase()
+  
   try {
     // Query universal games table with team info
-    const sportFilter = sport === 'all' ? '' : `AND g.sport = '${sport}'`
+    const sportFilter = dbSport === 'all' ? '' : `AND g.sport = '${dbSport}'`
     
     const query = `
       SELECT 
@@ -61,7 +71,7 @@ export async function GET(request: Request) {
       LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${sportFilter}
-      ORDER BY g.game_time, g.updated_at DESC
+      ORDER BY g.game_time ASC, g.updated_at DESC
     `
     
     const result = await clickhouseQuery<{
@@ -88,88 +98,76 @@ export async function GET(request: Request) {
       opening_ml_away: number
       current_ml_home: number
       current_ml_away: number
-      public_spread_home_bet_pct: number
-      public_spread_home_money_pct: number
-      public_ml_home_bet_pct: number
-      public_ml_home_money_pct: number
-      public_total_over_bet_pct: number
-      public_total_over_money_pct: number
+      public_spread_home_bet_pct: number | null
+      public_spread_home_money_pct: number | null
+      public_ml_home_bet_pct: number | null
+      public_ml_home_money_pct: number | null
+      public_total_over_bet_pct: number | null
+      public_total_over_money_pct: number | null
+      updated_at: string
     }>(query)
     
-    // Deduplication: ALWAYS prefer rows with actual splits (non-50, non-null values)
-    // Process ALL rows and keep the one with the most splits, regardless of updated_at order
-    const hasSplits = (game: typeof result.data[0]) => {
-      return (
-        (game.public_spread_home_bet_pct !== 50 && game.public_spread_home_bet_pct !== null) ||
-        (game.public_spread_home_money_pct !== 50 && game.public_spread_home_money_pct !== null) ||
-        (game.public_ml_home_bet_pct !== 50 && game.public_ml_home_bet_pct !== null) ||
-        (game.public_ml_home_money_pct !== 50 && game.public_ml_home_money_pct !== null) ||
-        (game.public_total_over_bet_pct !== 50 && game.public_total_over_bet_pct !== null) ||
-        (game.public_total_over_money_pct !== 50 && game.public_total_over_money_pct !== null)
-      )
-    }
+    // Smart Deduplication: Merge records to get latest odds AND latest available splits
+    const gameMap = new Map<string, any>()
     
-    const countSplits = (game: typeof result.data[0]) => {
-      let count = 0
-      if (game.public_spread_home_bet_pct !== 50 && game.public_spread_home_bet_pct !== null) count++
-      if (game.public_spread_home_money_pct !== 50 && game.public_spread_home_money_pct !== null) count++
-      if (game.public_ml_home_bet_pct !== 50 && game.public_ml_home_bet_pct !== null) count++
-      if (game.public_ml_home_money_pct !== 50 && game.public_ml_home_money_pct !== null) count++
-      if (game.public_total_over_bet_pct !== 50 && game.public_total_over_bet_pct !== null) count++
-      if (game.public_total_over_money_pct !== 50 && game.public_total_over_money_pct !== null) count++
-      return count
-    }
-    
-    const gameMap = new Map<string, typeof result.data[0]>()
-    for (const game of result.data || []) {
-      const existing = gameMap.get(game.game_id)
+    // Sort by updated_at ASC so we process older records first, newer records overwrite odds
+    const sortedData = [...(result.data || [])].sort((a, b) => 
+      new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
+    )
+
+    for (const row of sortedData) {
+      const existing = gameMap.get(row.game_id)
       
+      // A row has splits if they aren't NULL
+      const rowHasSplits = (
+        row.public_spread_home_bet_pct !== null ||
+        row.public_spread_home_money_pct !== null ||
+        row.public_ml_home_bet_pct !== null ||
+        row.public_total_over_bet_pct !== null
+      )
+
+      // A row has "interesting" splits if they aren't exactly 50/50
+      const rowHasInterestingSplits = (
+        row.public_spread_home_bet_pct !== null && row.public_spread_home_bet_pct !== 50 ||
+        row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== null && row.public_spread_home_money_pct !== 50 ||
+        row.public_ml_home_bet_pct !== null && row.public_ml_home_bet_pct !== 50 ||
+        row.public_total_over_bet_pct !== null && row.public_total_over_bet_pct !== 50
+      )
+
       if (!existing) {
-        gameMap.set(game.game_id, game)
+        gameMap.set(row.game_id, { 
+          ...row, 
+          has_real_splits: rowHasSplits,
+          has_interesting_splits: rowHasInterestingSplits
+        })
       } else {
-        const existingHasSplits = hasSplits(existing)
-        const currentHasSplits = hasSplits(game)
+        // Merge logic:
+        // 1. Always take latest odds from this row
+        // 2. Take splits if they are "more interesting" or if existing is null
+        const useNewSplits = rowHasInterestingSplits || (!existing.has_interesting_splits && rowHasSplits)
         
-        if (currentHasSplits && !existingHasSplits) {
-          // Current has splits, existing doesn't - use current
-          gameMap.set(game.game_id, game)
-        } else if (!currentHasSplits && existingHasSplits) {
-          // Existing has splits, current doesn't - keep existing
-          // (don't update)
-        } else if (currentHasSplits && existingHasSplits) {
-          // Both have splits - prefer the one with MORE splits
-          const currentCount = countSplits(game)
-          const existingCount = countSplits(existing)
-          if (currentCount > existingCount) {
-            gameMap.set(game.game_id, game)
-          } else if (currentCount === existingCount && new Date(game.updated_at) > new Date(existing.updated_at)) {
-            // Same number of splits, use more recent
-            gameMap.set(game.game_id, game)
-          }
-        } else {
-          // Neither has splits - use more recent
-          if (new Date(game.updated_at) > new Date(existing.updated_at)) {
-            gameMap.set(game.game_id, game)
-          }
+        const updated = {
+          ...existing,
+          ...row,
+          public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
+          public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
+          public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
+          public_ml_home_money_pct: useNewSplits ? row.public_ml_home_money_pct : existing.public_ml_home_money_pct,
+          public_total_over_bet_pct: useNewSplits ? row.public_total_over_bet_pct : existing.public_total_over_bet_pct,
+          public_total_over_money_pct: useNewSplits ? row.public_total_over_money_pct : existing.public_total_over_money_pct,
+          has_real_splits: existing.has_real_splits || rowHasSplits,
+          has_interesting_splits: existing.has_interesting_splits || rowHasInterestingSplits
         }
+        gameMap.set(row.game_id, updated)
       }
     }
+    
     const deduplicatedData = Array.from(gameMap.values())
     
     // Calculate ML movement correctly (in cents from even)
     const games = deduplicatedData.map(game => {
       const ml_home_movement = mlToCents(game.current_ml_home) - mlToCents(game.opening_ml_home)
       const ml_away_movement = mlToCents(game.current_ml_away) - mlToCents(game.opening_ml_away)
-      
-      // Check if this game has actual splits (not default 50% values)
-      const hasSplits = (
-        (game.public_spread_home_bet_pct !== 50 && game.public_spread_home_bet_pct !== null) ||
-        (game.public_spread_home_money_pct !== 50 && game.public_spread_home_money_pct !== null) ||
-        (game.public_ml_home_bet_pct !== 50 && game.public_ml_home_bet_pct !== null) ||
-        (game.public_ml_home_money_pct !== 50 && game.public_ml_home_money_pct !== null) ||
-        (game.public_total_over_bet_pct !== 50 && game.public_total_over_bet_pct !== null) ||
-        (game.public_total_over_money_pct !== 50 && game.public_total_over_money_pct !== null)
-      )
       
       return {
         id: game.game_id,
@@ -208,7 +206,7 @@ export async function GET(request: Request) {
         public_total_over_bet_pct: game.public_total_over_bet_pct,
         public_total_over_money_pct: game.public_total_over_money_pct,
         
-        has_splits: hasSplits
+        has_splits: game.has_real_splits
       }
     })
     
