@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       FROM games g
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
       LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
-      WHERE g.game_time > now()
+      WHERE toDate(g.game_time, 'America/New_York') >= today('America/New_York')
         ${sportFilter}
       ORDER BY g.game_time, g.updated_at DESC
     `
