@@ -67,6 +67,10 @@ export async function GET(request: Request) {
         
         g.updated_at,
         
+        -- Return EST date directly so frontend doesn't need timezone conversion
+        formatDateTime(toTimeZone(g.game_time, 'America/New_York'), '%Y-%m-%d') as est_date,
+        formatDateTime(toTimeZone(g.game_time, 'America/New_York'), '%H:%i') as est_time,
+        
         ht.logo_url as home_logo,
         at.logo_url as away_logo,
         ht.abbreviation as home_abbrev,
@@ -107,6 +111,8 @@ export async function GET(request: Request) {
       away_primary_color: string | null
       home_secondary_color: string | null
       away_secondary_color: string | null
+      est_date: string
+      est_time: string
       opening_spread: number
       current_spread: number
       spread_movement: number
@@ -200,6 +206,8 @@ export async function GET(request: Request) {
         home_secondary_color: game.home_secondary_color || '',
         away_secondary_color: game.away_secondary_color || '',
         game_time: game.game_time,
+        est_date: game.est_date,
+        est_time: game.est_time,
         
         opening_spread: game.opening_spread,
         current_spread: game.current_spread,

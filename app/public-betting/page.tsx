@@ -29,6 +29,8 @@ interface GameOdds {
   home_secondary_color?: string
   away_secondary_color?: string
   game_time: string
+  est_date: string
+  est_time: string
   opening_spread: number
   current_spread: number
   spread_movement: number
@@ -887,21 +889,9 @@ export default function PublicBettingPage() {
     const grouped: { [date: string]: typeof sorted } = {}
     
     sorted.forEach(game => {
-      const date = parseGameTimeEST(game.game_time)
-      if (!date) return
-      
-      // Group by EST date - use formatToParts to get the actual EST date components
-      const formatter = new Intl.DateTimeFormat('en-CA', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        timeZone: 'America/New_York'
-      })
-      const parts = formatter.formatToParts(date)
-      const year = parts.find(p => p.type === 'year')?.value
-      const month = parts.find(p => p.type === 'month')?.value
-      const day = parts.find(p => p.type === 'day')?.value
-      const dateKey = `${year}-${month}-${day}`
+      // Use pre-computed EST date from API (avoids timezone conversion issues)
+      const dateKey = game.est_date || ''
+      if (!dateKey) return
       
       if (!grouped[dateKey]) {
         grouped[dateKey] = []
@@ -1051,24 +1041,24 @@ export default function PublicBettingPage() {
     }
   }
 
-  // Format game date/time for display in EST
-  const formatGameTime = (gameTime: string) => {
-    const date = parseGameTimeEST(gameTime)
-    if (!date) return { date: '', time: '' }
-    
-    return {
-      date: date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric',
-        timeZone: 'America/New_York'
-      }),
-      time: date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        timeZone: 'America/New_York'
-      })
+  // Format game time for display - use pre-computed EST values from API
+  const formatGameTimeDisplay = (game: GameOdds) => {
+    // Use pre-computed EST time from API (HH:mm format)
+    if (game.est_time) {
+      const [hours, minutes] = game.est_time.split(':').map(Number)
+      const period = hours >= 12 ? 'PM' : 'AM'
+      const displayHour = hours % 12 || 12
+      return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`
     }
+    
+    // Fallback to old method if est_time not available
+    const date = parseGameTimeEST(game.game_time)
+    if (!date) return ''
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      timeZone: 'America/New_York'
+    })
   }
 
   const sortedGames = getSortedGames()
@@ -1333,7 +1323,7 @@ export default function PublicBettingPage() {
                                         {game.away_logo && <img src={game.away_logo} alt="" className={styles.expandedLogoSmall} />}
                                         <span className={styles.expandedTeamText}>{getTeamName(game.away_team, game.sport)} @ {getTeamName(game.home_team, game.sport)}</span>
                                         {game.home_logo && <img src={game.home_logo} alt="" className={styles.expandedLogoSmall} />}
-                                        <span className={styles.expandedGameTime}>{formatGameTime(game.game_time).date} • {formatGameTime(game.game_time).time}</span>
+                                        <span className={styles.expandedGameTime}>{formatGameDate(game.est_date)} • {formatGameTimeDisplay(game)}</span>
                                       </div>
                                       {/* Line Movement Title */}
                                       <div className={styles.graphTitleRow}>
