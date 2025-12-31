@@ -601,13 +601,9 @@
   width: 20px;
   height: 3px;
   border-radius: 2px;
-  background: repeating-linear-gradient(
-    90deg,
-    #EF4444,
-    #EF4444 4px,
-    transparent 4px,
-    transparent 6px
-  ) !important;
+  /* Dashed pattern will be created via inline style with actual team color */
+  position: relative;
+  overflow: hidden;
 }
 
 /* Graph Tooltip */

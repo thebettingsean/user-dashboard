@@ -209,6 +209,7 @@ const MobileExpandedView = ({
   setGraphMarketType,
   formatSpread,
   getTeamName,
+  getTeamColor,
   timelineData,
   timelineLoading,
   sportsbookOdds,
@@ -221,6 +222,7 @@ const MobileExpandedView = ({
   setGraphMarketType: (m: MarketType) => void
   formatSpread: (s: number, isHome: boolean) => string
   getTeamName: (name: string) => string
+  getTeamColor: (game: GameOdds, isHome: boolean) => string
   timelineData: LineMovementPoint[]
   timelineLoading: boolean
   sportsbookOdds: any
@@ -319,16 +321,16 @@ const MobileExpandedView = ({
             <Line 
               type="monotone" 
               dataKey="homeLine" 
-              stroke="#98ADD1" 
+              stroke={getTeamColor(game, true)} 
               strokeWidth={2.5}
-              dot={{ r: 4, fill: '#98ADD1', stroke: '#FFFFFF', strokeWidth: 2 }}
+              dot={{ r: 4, fill: getTeamColor(game, true), stroke: '#FFFFFF', strokeWidth: 2 }}
             />
             <Line 
               type="monotone" 
               dataKey="awayLine" 
-              stroke="#EF4444" 
+              stroke={getTeamColor(game, false)} 
               strokeWidth={2.5}
-              dot={{ r: 4, fill: '#EF4444', stroke: '#FFFFFF', strokeWidth: 2 }}
+              dot={{ r: 4, fill: getTeamColor(game, false), stroke: '#FFFFFF', strokeWidth: 2 }}
               strokeDasharray="4 4"
             />
           </ComposedChart>
@@ -1420,7 +1422,12 @@ export default function PublicBettingPage() {
                                   </div>
                                   {graphMarketType !== 'total' && (
                                     <div className={styles.legendItem}>
-                                      <span className={styles.legendLineDashed} style={{ background: getTeamColor(game, false) }}></span>
+                                      <span 
+                                        className={styles.legendLineDashed} 
+                                        style={{ 
+                                          background: `repeating-linear-gradient(90deg, ${getTeamColor(game, false)}, ${getTeamColor(game, false)} 4px, transparent 4px, transparent 6px)`
+                                        }}
+                                      ></span>
                                       <span>{getTeamName(game.away_team, game.sport)}</span>
                                     </div>
                                   )}
@@ -1674,6 +1681,7 @@ export default function PublicBettingPage() {
                       setGraphMarketType={setGraphMarketType}
                       formatSpread={formatSpread}
                       getTeamName={getTeamName}
+                      getTeamColor={getTeamColor}
                       timelineData={timelineData}
                       timelineLoading={timelineLoading}
                       sportsbookOdds={sportsbookOdds}
