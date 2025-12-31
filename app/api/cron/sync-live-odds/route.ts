@@ -35,10 +35,10 @@ const TEAM_ABBREV_MAP: Record<string, string> = {
   'Orlando Magic': 'ORL', 'Philadelphia 76ers': 'PHI', 'Phoenix Suns': 'PHO',
   'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SA',
   'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Washington Wizards': 'WAS',
-  // NHL - SportsDataIO abbreviations
+  // NHL - SportsDataIO abbreviations (exactly matching their API)
   'Anaheim Ducks': 'ANA', 'Boston Bruins': 'BOS', 'Buffalo Sabres': 'BUF',
   'Calgary Flames': 'CGY', 'Carolina Hurricanes': 'CAR', 'Chicago Blackhawks': 'CHI',
-  'Colorado Avalanche': 'COL', 'Columbus Blue Jackets': 'CLB', 'Dallas Stars': 'DAL',
+  'Colorado Avalanche': 'COL', 'Columbus Blue Jackets': 'CBJ', 'Dallas Stars': 'DAL',
   'Detroit Red Wings': 'DET', 'Edmonton Oilers': 'EDM', 'Florida Panthers': 'FLA',
   'Los Angeles Kings': 'LA', 'Minnesota Wild': 'MIN', 'Montréal Canadiens': 'MON',
   'Montreal Canadiens': 'MON', 'Nashville Predators': 'NAS', 'New Jersey Devils': 'NJ',
@@ -46,7 +46,7 @@ const TEAM_ABBREV_MAP: Record<string, string> = {
   'Philadelphia Flyers': 'PHI', 'Pittsburgh Penguins': 'PIT', 'San Jose Sharks': 'SJ',
   'Seattle Kraken': 'SEA', 'St Louis Blues': 'STL', 'St. Louis Blues': 'STL',
   'Tampa Bay Lightning': 'TB', 'Toronto Maple Leafs': 'TOR', 'Utah Hockey Club': 'UTA',
-  'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VGK', 'Washington Capitals': 'WAS',
+  'Vancouver Canucks': 'VAN', 'Vegas Golden Knights': 'VEG', 'Washington Capitals': 'WAS',
   'Winnipeg Jets': 'WPG',
 }
 
@@ -323,6 +323,28 @@ export async function GET(request: Request) {
           // Helper: normalize team name for flexible matching
           const normalizeTeam = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
           
+          // CBB: Fetch teams list to get full team names from abbreviations
+          const cbbTeamMap = new Map<string, string>() // Key (abbrev) -> Full Name
+          if (sportConfig.sport === 'cbb') {
+            try {
+              const teamsUrl = `https://api.sportsdata.io/v3/cbb/scores/json/Teams?key=${SPORTSDATA_API_KEY}`
+              const teamsResp = await fetch(teamsUrl)
+              if (teamsResp.ok) {
+                const teams = await teamsResp.json()
+                for (const team of teams) {
+                  // Key is the abbreviation (e.g., "TULANE"), School + Name is full name (e.g., "Tulane Green Wave")
+                  const fullName = `${team.School || ''} ${team.Name || ''}`.trim()
+                  if (team.Key && fullName) {
+                    cbbTeamMap.set(team.Key, fullName)
+                  }
+                }
+                console.log(`[CBB] Loaded ${cbbTeamMap.size} team mappings`)
+              }
+            } catch (e) {
+              console.error('[CBB] Failed to fetch teams list:', e)
+            }
+          }
+          
           const today = new Date()
           const currentYear = today.getFullYear()
           const currentMonth = today.getMonth() // 0-11
@@ -367,9 +389,14 @@ export async function GET(request: Request) {
                     if (gameDate >= todayStr && gameDate <= futureDateStr) {
                       const gameId = game.GameID || game.GameId
                       if (gameId && game.HomeTeam && game.AwayTeam) {
-                        // Store both abbreviations and full names for better matching
-                        const homeName = game.HomeTeamName || game.HomeTeam
-                        const awayName = game.AwayTeamName || game.AwayTeam
+                        // For CBB, look up full team names from the teams map
+                        let homeName = game.HomeTeamName || game.HomeTeam
+                        let awayName = game.AwayTeamName || game.AwayTeam
+                        
+                        if (sportConfig.sport === 'cbb') {
+                          homeName = cbbTeamMap.get(game.HomeTeam) || game.HomeTeam
+                          awayName = cbbTeamMap.get(game.AwayTeam) || game.AwayTeam
+                        }
                         
                         gamesToFetch.push({ 
                           gameId, 
@@ -450,14 +477,20 @@ export async function GET(request: Request) {
                   const betType = (market.BettingBetType || '').toLowerCase()
                   
                   // Handle different bet type names: Spread, Point Spread, Puck Line
-                  if ((betType.includes('spread') || betType.includes('puck line')) && homeSplit) {
-                    spreadBet = homeSplit.BetPercentage || 50
+                  // Only use data if BetPercentage is not null
+                  if ((betType.includes('spread') || betType.includes('puck line')) && homeSplit && homeSplit.BetPercentage !== null) {
+                    spreadBet = homeSplit.BetPercentage
                     spreadMoney = homeSplit.MoneyPercentage || 50
-                  } else if (betType.includes('money') && homeSplit) {
-                    mlBet = homeSplit.BetPercentage || 50
+                  } else if (betType.includes('money') && homeSplit && homeSplit.BetPercentage !== null) {
+                    mlBet = homeSplit.BetPercentage
                     mlMoney = homeSplit.MoneyPercentage || 50
-                  } else if ((betType.includes('total') || betType.includes('over')) && overSplit) {
-                    totalBet = overSplit.BetPercentage || 50
+                    // For NHL, Puck Line often has null - use Moneyline for spread if we have no spread data yet
+                    if (spreadBet === 50 && sportConfig.sport === 'nhl') {
+                      spreadBet = homeSplit.BetPercentage
+                      spreadMoney = homeSplit.MoneyPercentage || 50
+                    }
+                  } else if ((betType.includes('total') || betType.includes('over')) && overSplit && overSplit.BetPercentage !== null) {
+                    totalBet = overSplit.BetPercentage
                     totalMoney = overSplit.MoneyPercentage || 50
                   }
                 }
