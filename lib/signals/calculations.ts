@@ -188,15 +188,10 @@ export function isMovementFavorable(
   }
   
   if (market === 'ml') {
-    // ML: Just odds movement
-    // Higher implied prob = more favored
-    const oddsImproved = impliedProbability(currentOdds) > impliedProbability(openOdds)
-    
-    if (side === 'home' || side === 'over') {
-      return oddsImproved
-    } else {
-      return !oddsImproved
-    }
+    // ML: Each side has its own odds - just check if they improved
+    // We already pass each side's own odds, so no need to flip for away
+    // Higher implied prob = more favored for THAT side
+    return impliedProbability(currentOdds) > impliedProbability(openOdds)
   }
   
   return false
