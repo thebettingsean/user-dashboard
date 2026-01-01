@@ -181,8 +181,18 @@ export async function GET(request: Request) {
       ml_away_whale_respect: number
     }>(gamesQuery)
 
-    // Smart Deduplication: Get the latest game_time but preserve interesting splits
+    // Smart Deduplication: Get the latest game_time but preserve the BEST splits
+    // Key insight: ALWAYS keep the split value that's furthest from 50 (most interesting)
     const gameMap = new Map<string, any>()
+    
+    // Helper: pick the value furthest from 50
+    const pickBestSplit = (a: number | null, b: number | null): number => {
+      const aVal = a ?? 50
+      const bVal = b ?? 50
+      const aDist = Math.abs(aVal - 50)
+      const bDist = Math.abs(bVal - 50)
+      return aDist >= bDist ? aVal : bVal
+    }
     
     for (const row of gamesResult.data || []) {
       const existing = gameMap.get(row.game_id)
@@ -214,20 +224,17 @@ export async function GET(request: Request) {
         const rowTime = row.updated_at ? new Date(row.updated_at.replace(' ', 'T') + 'Z').getTime() : 0
         const rowIsNewer = rowTime > existingTime
         
-        // If the new row has interesting splits, use its splits
-        // Otherwise, keep existing interesting splits
-        const useNewSplits = hasInterestingSplits || (!existing.has_interesting_splits && hasSplits)
-        
+        // For each split field, pick the value furthest from 50% (most interesting)
         const updated = {
-          // Take game_time from the NEWER record (more accurate)
+          // Take base fields from the NEWER record (more accurate game_time, odds, etc.)
           ...(rowIsNewer ? row : existing),
-          // Take splits from whichever has interesting data
-          public_spread_home_bet_pct: useNewSplits ? row.public_spread_home_bet_pct : existing.public_spread_home_bet_pct,
-          public_spread_home_money_pct: useNewSplits ? row.public_spread_home_money_pct : existing.public_spread_home_money_pct,
-          public_ml_home_bet_pct: useNewSplits ? row.public_ml_home_bet_pct : existing.public_ml_home_bet_pct,
-          public_ml_home_money_pct: useNewSplits ? row.public_ml_home_money_pct : existing.public_ml_home_money_pct,
-          public_total_over_bet_pct: useNewSplits ? row.public_total_over_bet_pct : existing.public_total_over_bet_pct,
-          public_total_over_money_pct: useNewSplits ? row.public_total_over_money_pct : existing.public_total_over_money_pct,
+          // For EACH split, pick the most interesting value (furthest from 50)
+          public_spread_home_bet_pct: pickBestSplit(row.public_spread_home_bet_pct, existing.public_spread_home_bet_pct),
+          public_spread_home_money_pct: pickBestSplit(row.public_spread_home_money_pct, existing.public_spread_home_money_pct),
+          public_ml_home_bet_pct: pickBestSplit(row.public_ml_home_bet_pct, existing.public_ml_home_bet_pct),
+          public_ml_home_money_pct: pickBestSplit(row.public_ml_home_money_pct, existing.public_ml_home_money_pct),
+          public_total_over_bet_pct: pickBestSplit(row.public_total_over_bet_pct, existing.public_total_over_bet_pct),
+          public_total_over_money_pct: pickBestSplit(row.public_total_over_money_pct, existing.public_total_over_money_pct),
           has_real_splits: existing.has_real_splits || hasSplits,
           has_interesting_splits: existing.has_interesting_splits || hasInterestingSplits
         }
@@ -244,6 +251,14 @@ export async function GET(request: Request) {
       // Then sort by EST time (HH:MM format sorts correctly as string)
       return a.est_time.localeCompare(b.est_time)
     })
+    
+    // DEBUG: Log what we're returning
+    console.log(`[live-odds] Sport: ${sport}, Total rows from DB: ${gamesResult.data?.length || 0}, After dedup: ${deduplicatedData.length}`)
+    
+    // Log first 3 games with splits info
+    for (const game of deduplicatedData.slice(0, 3)) {
+      console.log(`[live-odds] Game ${game.game_id}: spread_bet=${game.public_spread_home_bet_pct} (type: ${typeof game.public_spread_home_bet_pct}), ml_bet=${game.public_ml_home_bet_pct}, total_bet=${game.public_total_over_bet_pct}, has_interesting=${game.has_interesting_splits}`)
+    }
     
     // Build final games array - team info comes directly from the JOIN
     const games = deduplicatedData.map(game => {
