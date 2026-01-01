@@ -2,8 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { GiSupersonicArrow } from 'react-icons/gi'
-import { VscGraphLeft } from 'react-icons/vsc'
+import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 
 function SubscriptionSuccessContent() {
   const router = useRouter()
@@ -15,7 +14,7 @@ function SubscriptionSuccessContent() {
   // Determine redirect based on product
   const redirectPath = product === 'publicBetting' ? '/public-betting' : '/picks'
   const productName = product === 'publicBetting' ? 'Public Betting' : 'Analyst Picks'
-  const ProductIcon = product === 'publicBetting' ? VscGraphLeft : GiSupersonicArrow
+  const ProductIcon = product === 'publicBetting' ? GiCash : GiSupersonicArrow
 
   return (
     <div style={{

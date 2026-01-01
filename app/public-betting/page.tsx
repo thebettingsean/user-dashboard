@@ -6,7 +6,7 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import styles from './public-betting.module.css'
 import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp, FiInfo, FiChevronRight } from 'react-icons/fi'
-import { VscGraphLeft } from 'react-icons/vsc'
+import { GiCash } from 'react-icons/gi'
 import { 
   LineChart, 
   Line, 
@@ -1434,7 +1434,7 @@ export default function PublicBettingPage() {
         {(!isSignedIn || !hasAccess) && !isLoadingEntitlements && (
           <div className={styles.lockedBanner}>
             <div className={styles.lockedBannerContent}>
-              <VscGraphLeft className={styles.lockedBannerIcon} />
+              <GiCash className={styles.lockedBannerIcon} />
               <div className={styles.lockedBannerText}>
                 <span className={styles.lockedBannerTitle}>Unlock Public Betting Data</span>
                 <span className={styles.lockedBannerSubtitle}>Get instant access with a 3-day free trial</span>

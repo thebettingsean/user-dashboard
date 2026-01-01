@@ -5,8 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { FiChevronRight, FiCheck } from 'react-icons/fi'
 import { IoShieldCheckmark } from 'react-icons/io5'
-import { GiSupersonicArrow } from 'react-icons/gi'
-import { VscGraphLeft } from 'react-icons/vsc'
+import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { PRODUCTS, getUpsellForProduct, calculateTotal } from '@/lib/config/subscriptions'
 import styles from './subscribe.module.css'
 
@@ -127,7 +126,7 @@ export default function SubscribePage() {
             <div className={styles.productItem}>
               <div className={styles.productItemLeft}>
                 <div className={styles.productIcon}>
-                  {productId === 'picks' ? <GiSupersonicArrow /> : <VscGraphLeft />}
+                  {productId === 'picks' ? <GiSupersonicArrow /> : <GiCash />}
                 </div>
                 <div className={styles.productInfo}>
                   <span className={styles.productName}>{product.name}</span>
