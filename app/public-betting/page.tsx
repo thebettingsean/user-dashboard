@@ -1396,7 +1396,7 @@ export default function PublicBettingPage() {
                   onMouseEnter={() => setShowPageInfo(true)}
                   onMouseLeave={() => setShowPageInfo(false)}
                 >
-                  <FiInfo size={16} />
+                  <FiInfo />
                 </button>
                 {showPageInfo && (
                   <>
@@ -1833,7 +1833,7 @@ export default function PublicBettingPage() {
                                               className={styles.signalInfoBtn}
                                               onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
                                             >
-                                              <FiInfo size={14} />
+                                              <FiInfo />
                                             </button>
                                             {showSignalInfo && (
                                               <>
@@ -2035,7 +2035,7 @@ export default function PublicBettingPage() {
                                               className={styles.signalInfoBtn}
                                               onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
                                             >
-                                              <FiInfo size={14} />
+                                              <FiInfo />
                                             </button>
                                           </div>
                                         </div>
