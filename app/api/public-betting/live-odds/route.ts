@@ -252,14 +252,6 @@ export async function GET(request: Request) {
       return a.est_time.localeCompare(b.est_time)
     })
     
-    // DEBUG: Log what we're returning
-    console.log(`[live-odds] Sport: ${sport}, Total rows from DB: ${gamesResult.data?.length || 0}, After dedup: ${deduplicatedData.length}`)
-    
-    // Log first 3 games with splits info
-    for (const game of deduplicatedData.slice(0, 3)) {
-      console.log(`[live-odds] Game ${game.game_id}: spread_bet=${game.public_spread_home_bet_pct} (type: ${typeof game.public_spread_home_bet_pct}), ml_bet=${game.public_ml_home_bet_pct}, total_bet=${game.public_total_over_bet_pct}, has_interesting=${game.has_interesting_splits}`)
-    }
-    
     // Build final games array - team info comes directly from the JOIN
     const games = deduplicatedData.map(game => {
       const ml_home_movement = mlToCents(game.current_ml_home) - mlToCents(game.opening_ml_home)
