@@ -2131,7 +2131,6 @@ export default function PublicBettingPage() {
           {/* Mobile Header */}
           <div className={styles.mobileHeader}>
             <div className={styles.mobileHeaderCell}>Team</div>
-            <div className={styles.mobileHeaderCell}>Odds</div>
             <div 
               className={`${styles.mobileHeaderCell} ${styles.sortableHeader} ${activeSorts.bet_pct ? styles.sorted : ''}`}
               onClick={() => handleSort('bet_pct')}
@@ -2183,7 +2182,6 @@ export default function PublicBettingPage() {
                             <span>{game.away_abbrev}</span>
                           )}
                         </div>
-                        <div className={styles.mobileOdds}>{getMarketOdds(game, false, false)}</div>
                         <div className={styles.mobilePct}>
                           {awayPcts.betPct !== null ? (
                             <>
@@ -2225,7 +2223,6 @@ export default function PublicBettingPage() {
                             <span>{game.home_abbrev}</span>
                           )}
                         </div>
-                        <div className={styles.mobileOdds}>{getMarketOdds(game, true, false)}</div>
                         <div className={styles.mobilePct}>
                           {homePcts.betPct !== null ? (
                             <>

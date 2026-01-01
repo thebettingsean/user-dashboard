@@ -798,7 +798,7 @@
 
 .mobileHeader {
   display: grid;
-  grid-template-columns: 50px 50px 1fr 1fr 50px;
+  grid-template-columns: 50px 1fr 1fr 50px;
   gap: 6px;
   padding: 10px 12px;
   background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1C2632 100%);
@@ -843,7 +843,7 @@
 
 .mobileRow {
   display: grid;
-  grid-template-columns: 50px 50px 1fr 1fr 50px;
+  grid-template-columns: 50px 1fr 1fr 50px;
   gap: 6px;
   align-items: center;
   padding: 4px 0;
