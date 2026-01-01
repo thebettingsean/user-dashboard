@@ -679,6 +679,10 @@ export default function PublicBettingPage() {
   const [mobileTeamOpen, setMobileTeamOpen] = useState<'away' | 'home' | null>(null)
   const [showPageInfo, setShowPageInfo] = useState(false)
   const [showSignalInfo, setShowSignalInfo] = useState(false)
+  const [showAwayHistory, setShowAwayHistory] = useState(false)
+  const [showAwayBooks, setShowAwayBooks] = useState(false)
+  const [showHomeHistory, setShowHomeHistory] = useState(false)
+  const [showHomeBooks, setShowHomeBooks] = useState(false)
   
   // Helper to generate segmented bars (20 segments for 0-100%)
   const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
@@ -1745,11 +1749,26 @@ export default function PublicBettingPage() {
                                     <div className={styles.teamHeaderV2}>
                                       {dropdownMarketType !== 'total' && game.away_logo && <img src={game.away_logo} alt="" className={styles.teamLogoV2} />}
                                       <span className={styles.teamNameV2}>
-                                        {dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}
+                                        {dropdownMarketType === 'total' ? (
+                                          <>Over {game.current_total}</>
+                                        ) : (
+                                          getTeamName(game.away_team, game.sport)
+                                        )}
                                       </span>
-                                      {dropdownMarketType !== 'total' && (
-                                        <span className={styles.betTypeLabel}>{dropdownMarketType === 'spread' ? 'Spread' : 'Moneyline'}</span>
-                                      )}
+                                      <span className={styles.betTypeLabel}>
+                                        {dropdownMarketType === 'spread' ? (
+                                          <>
+                                            {game.current_spread !== null && game.current_spread !== undefined ? (
+                                              (-game.current_spread) > 0 ? `+${(-game.current_spread).toFixed(1)}` : (-game.current_spread).toFixed(1)
+                                            ) : '-'}
+                                            {game.away_spread_juice && ` (${game.away_spread_juice > 0 ? '+' : ''}${game.away_spread_juice})`}
+                                          </>
+                                        ) : dropdownMarketType === 'ml' ? (
+                                          game.current_ml_away !== null && game.current_ml_away !== undefined ? (
+                                            game.current_ml_away > 0 ? `+${game.current_ml_away}` : game.current_ml_away
+                                          ) : '-'
+                                        ) : null}
+                                      </span>
                                     </div>
                                     
                                     {/* Mobile Toggle */}
@@ -1760,8 +1779,20 @@ export default function PublicBettingPage() {
                                       <div className={styles.teamToggleLeft}>
                                         {dropdownMarketType !== 'total' && game.away_logo && <img src={game.away_logo} alt="" className={styles.teamToggleLogo} />}
                                         <span className={styles.teamToggleName}>
-                                          {dropdownMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}
-                                          {dropdownMarketType !== 'total' && <span className={styles.betTypeLabelMobile}>{dropdownMarketType === 'spread' ? 'Spread' : 'ML'}</span>}
+                                          {dropdownMarketType === 'total' ? (
+                                            <>Over {game.current_total}</>
+                                          ) : (
+                                            <>
+                                              {getTeamName(game.away_team, game.sport)}
+                                              <span className={styles.betTypeLabelMobile}>
+                                                {dropdownMarketType === 'spread' ? (
+                                                  game.current_spread !== null ? ((-game.current_spread) > 0 ? `+${(-game.current_spread).toFixed(1)}` : (-game.current_spread).toFixed(1)) : '-'
+                                                ) : (
+                                                  game.current_ml_away !== null ? (game.current_ml_away > 0 ? `+${game.current_ml_away}` : game.current_ml_away) : '-'
+                                                )}
+                                              </span>
+                                            </>
+                                          )}
                                         </span>
                                       </div>
                                       <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'away' ? styles.open : ''}`} />
@@ -1901,42 +1932,58 @@ export default function PublicBettingPage() {
                                         </div>
                                       </div>
 
-                                      {/* History */}
+                                      {/* History - Collapsible */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>History</div>
-                                        <div className={styles.historyListV2}>
-                                          {timelineData.slice(-5).map((point: any, idx) => {
-                                            let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
-                                              : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
-                                              : `O ${point.total}`
-                                            return (
-                                              <div key={idx} className={styles.historyItemV2}>
-                                                <span className={styles.historyTimeV2}>{point.time}</span>
-                                                <span className={styles.historyValV2}>{val}</span>
-                                              </div>
-                                            )
-                                          })}
-                                        </div>
+                                        <button 
+                                          className={styles.collapsibleHeader}
+                                          onClick={(e) => { e.stopPropagation(); setShowAwayHistory(!showAwayHistory) }}
+                                        >
+                                          <span>History</span>
+                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showAwayHistory ? styles.open : ''}`} />
+                                        </button>
+                                        {showAwayHistory && (
+                                          <div className={styles.historyListV2}>
+                                            {timelineData.map((point: any, idx) => {
+                                              let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
+                                                : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
+                                                : `O ${point.total}`
+                                              return (
+                                                <div key={idx} className={styles.historyItemV2}>
+                                                  <span className={styles.historyTimeV2}>{point.time}</span>
+                                                  <span className={styles.historyValV2}>{val}</span>
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
                                       </div>
 
-                                      {/* Books */}
+                                      {/* Books - Collapsible */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>All Books</div>
-                                        <div className={styles.booksListV2}>
-                                          {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
-                                            let val = dropdownMarketType === 'ml' 
-                                              ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
-                                              : dropdownMarketType === 'spread'
-                                              ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
-                                              : `O ${bookOdds.value}`
-                                            return (
-                                              <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                                <span className={styles.bookNameV2}>{bookOdds.book}</span>
-                                                <span className={styles.bookValV2}>{val}</span>
-                                              </div>
-                                            )
-                                          })}
-                                        </div>
+                                        <button 
+                                          className={styles.collapsibleHeader}
+                                          onClick={(e) => { e.stopPropagation(); setShowAwayBooks(!showAwayBooks) }}
+                                        >
+                                          <span>All Books</span>
+                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showAwayBooks ? styles.open : ''}`} />
+                                        </button>
+                                        {showAwayBooks && (
+                                          <div className={styles.booksListV2}>
+                                            {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
+                                              let val = dropdownMarketType === 'ml' 
+                                                ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
+                                                : dropdownMarketType === 'spread'
+                                                ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
+                                                : `O ${bookOdds.value}`
+                                              return (
+                                                <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                                  <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                  <span className={styles.bookValV2}>{val}</span>
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -1947,11 +1994,26 @@ export default function PublicBettingPage() {
                                     <div className={styles.teamHeaderV2}>
                                       {dropdownMarketType !== 'total' && game.home_logo && <img src={game.home_logo} alt="" className={styles.teamLogoV2} />}
                                       <span className={styles.teamNameV2}>
-                                        {dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}
+                                        {dropdownMarketType === 'total' ? (
+                                          <>Under {game.current_total}</>
+                                        ) : (
+                                          getTeamName(game.home_team, game.sport)
+                                        )}
                                       </span>
-                                      {dropdownMarketType !== 'total' && (
-                                        <span className={styles.betTypeLabel}>{dropdownMarketType === 'spread' ? 'Spread' : 'Moneyline'}</span>
-                                      )}
+                                      <span className={styles.betTypeLabel}>
+                                        {dropdownMarketType === 'spread' ? (
+                                          <>
+                                            {game.current_spread !== null && game.current_spread !== undefined ? (
+                                              game.current_spread > 0 ? `+${game.current_spread.toFixed(1)}` : game.current_spread.toFixed(1)
+                                            ) : '-'}
+                                            {game.home_spread_juice && ` (${game.home_spread_juice > 0 ? '+' : ''}${game.home_spread_juice})`}
+                                          </>
+                                        ) : dropdownMarketType === 'ml' ? (
+                                          game.current_ml_home !== null && game.current_ml_home !== undefined ? (
+                                            game.current_ml_home > 0 ? `+${game.current_ml_home}` : game.current_ml_home
+                                          ) : '-'
+                                        ) : null}
+                                      </span>
                                     </div>
                                     
                                     {/* Mobile Toggle */}
@@ -1962,8 +2024,20 @@ export default function PublicBettingPage() {
                                       <div className={styles.teamToggleLeft}>
                                         {dropdownMarketType !== 'total' && game.home_logo && <img src={game.home_logo} alt="" className={styles.teamToggleLogo} />}
                                         <span className={styles.teamToggleName}>
-                                          {dropdownMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}
-                                          {dropdownMarketType !== 'total' && <span className={styles.betTypeLabelMobile}>{dropdownMarketType === 'spread' ? 'Spread' : 'ML'}</span>}
+                                          {dropdownMarketType === 'total' ? (
+                                            <>Under {game.current_total}</>
+                                          ) : (
+                                            <>
+                                              {getTeamName(game.home_team, game.sport)}
+                                              <span className={styles.betTypeLabelMobile}>
+                                                {dropdownMarketType === 'spread' ? (
+                                                  game.current_spread !== null ? (game.current_spread > 0 ? `+${game.current_spread.toFixed(1)}` : game.current_spread.toFixed(1)) : '-'
+                                                ) : (
+                                                  game.current_ml_home !== null ? (game.current_ml_home > 0 ? `+${game.current_ml_home}` : game.current_ml_home) : '-'
+                                                )}
+                                              </span>
+                                            </>
+                                          )}
                                         </span>
                                       </div>
                                       <FiChevronDown className={`${styles.teamToggleIcon} ${mobileTeamOpen === 'home' ? styles.open : ''}`} />
@@ -2082,42 +2156,58 @@ export default function PublicBettingPage() {
                                         </div>
                                       </div>
 
-                                      {/* History */}
+                                      {/* History - Collapsible */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>History</div>
-                                        <div className={styles.historyListV2}>
-                                          {timelineData.slice(-5).map((point: any, idx) => {
-                                            let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
-                                              : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
-                                              : `U ${point.total}`
-                                            return (
-                                              <div key={idx} className={styles.historyItemV2}>
-                                                <span className={styles.historyTimeV2}>{point.time}</span>
-                                                <span className={styles.historyValV2}>{val}</span>
-                                              </div>
-                                            )
-                                          })}
-                                        </div>
+                                        <button 
+                                          className={styles.collapsibleHeader}
+                                          onClick={(e) => { e.stopPropagation(); setShowHomeHistory(!showHomeHistory) }}
+                                        >
+                                          <span>History</span>
+                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showHomeHistory ? styles.open : ''}`} />
+                                        </button>
+                                        {showHomeHistory && (
+                                          <div className={styles.historyListV2}>
+                                            {timelineData.map((point: any, idx) => {
+                                              let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
+                                                : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
+                                                : `U ${point.total}`
+                                              return (
+                                                <div key={idx} className={styles.historyItemV2}>
+                                                  <span className={styles.historyTimeV2}>{point.time}</span>
+                                                  <span className={styles.historyValV2}>{val}</span>
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
                                       </div>
 
-                                      {/* Books */}
+                                      {/* Books - Collapsible */}
                                       <div className={styles.signalCardV2}>
-                                        <div className={styles.signalCardHeader}>All Books</div>
-                                        <div className={styles.booksListV2}>
-                                          {getSportsbookOddsForMarket(dropdownMarketType).slice(0, 6).map((bookOdds, idx) => {
-                                            let val = dropdownMarketType === 'ml' 
-                                              ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
-                                              : dropdownMarketType === 'spread'
-                                              ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
-                                              : `U ${bookOdds.value}`
-                                            return (
-                                              <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                                <span className={styles.bookNameV2}>{bookOdds.book}</span>
-                                                <span className={styles.bookValV2}>{val}</span>
-                                              </div>
-                                            )
-                                          })}
-                                        </div>
+                                        <button 
+                                          className={styles.collapsibleHeader}
+                                          onClick={(e) => { e.stopPropagation(); setShowHomeBooks(!showHomeBooks) }}
+                                        >
+                                          <span>All Books</span>
+                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showHomeBooks ? styles.open : ''}`} />
+                                        </button>
+                                        {showHomeBooks && (
+                                          <div className={styles.booksListV2}>
+                                            {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
+                                              let val = dropdownMarketType === 'ml' 
+                                                ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
+                                                : dropdownMarketType === 'spread'
+                                                ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
+                                                : `U ${bookOdds.value}`
+                                              return (
+                                                <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
+                                                  <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                  <span className={styles.bookValV2}>{val}</span>
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>

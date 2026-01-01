@@ -2390,10 +2390,82 @@
   margin-bottom: 10px;
 }
 
+/* Collapsible Headers for History/Books */
+.collapsibleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8B9199;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.15s ease;
+}
+
+.collapsibleHeader:hover {
+  color: #FFFFFF;
+}
+
+.collapsibleIcon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.collapsibleIcon.open {
+  transform: rotate(180deg);
+}
+
 .historyListV2 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding-top: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.historyListV2::-webkit-scrollbar {
+  width: 4px;
+}
+
+.historyListV2::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.historyListV2::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.booksListV2 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.booksListV2::-webkit-scrollbar {
+  width: 4px;
+}
+
+.booksListV2::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.booksListV2::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
 }
 
 .historyItemV2 {
@@ -2429,12 +2501,6 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
-}
-
-.booksListV2 {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .bookItemV2 {
