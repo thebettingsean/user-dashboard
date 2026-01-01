@@ -250,9 +250,8 @@ const MobileExpandedView = ({
   sportsbookOdds: any
   getSportsbookOddsForMarket: (marketType: MarketType) => any[]
 }) => {
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [historyTeam, setHistoryTeam] = useState<'home' | 'away'>('home')
-  const [sportsbooksOpen, setSportsbooksOpen] = useState(false)
+  const [awayTeamOpen, setAwayTeamOpen] = useState(false)
+  const [homeTeamOpen, setHomeTeamOpen] = useState(false)
   const [marketDropdownOpen, setMarketDropdownOpen] = useState(false)
   
   // Use real timeline data, or fallback to simple 2-point view if not available
@@ -261,16 +260,66 @@ const MobileExpandedView = ({
     : [{ time: 'Open', homeLine: game.opening_spread, awayLine: -game.opening_spread, homeBetPct: 50, awayBetPct: 50, homeMoneyPct: 50, awayMoneyPct: 50 },
        { time: 'Current', homeLine: game.current_spread, awayLine: -game.current_spread, homeBetPct: game.public_spread_home_bet_pct, awayBetPct: game.public_spread_away_bet_pct, homeMoneyPct: game.public_spread_home_money_pct, awayMoneyPct: game.public_spread_away_money_pct }]
   
+  // Helper for mobile segmented bar
+  const renderMobileBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
+    const totalSegments = 15
+    const filledSegments = Math.round((value / 100) * totalSegments)
+    return (
+      <div className={styles.mobileSignalBarContainer}>
+        {Array.from({ length: totalSegments }, (_, i) => (
+          <div 
+            key={i} 
+            className={`${styles.mobileSignalBarSegment} ${i < filledSegments ? styles[`${type}Filled`] : ''}`}
+          />
+        ))}
+      </div>
+    )
+  }
+  
+  // Get signals for away/over side
+  const getAwaySignals = () => {
+    if (!game.signals) return null
+    return graphMarketType === 'spread' ? game.signals.spread.away
+      : graphMarketType === 'total' ? game.signals.total.over
+      : game.signals.ml.away
+  }
+  
+  // Get signals for home/under side
+  const getHomeSignals = () => {
+    if (!game.signals) return null
+    return graphMarketType === 'spread' ? game.signals.spread.home
+      : graphMarketType === 'total' ? game.signals.total.under
+      : game.signals.ml.home
+  }
+  
+  // Get splits for a side
+  const getSplits = (isHome: boolean) => {
+    if (graphMarketType === 'spread') {
+      return {
+        bet: isHome ? game.public_spread_home_bet_pct : game.public_spread_away_bet_pct,
+        money: isHome ? game.public_spread_home_money_pct : game.public_spread_away_money_pct
+      }
+    } else if (graphMarketType === 'total') {
+      return {
+        bet: isHome ? game.public_total_under_bet_pct : game.public_total_over_bet_pct,
+        money: isHome ? game.public_total_under_money_pct : game.public_total_over_money_pct
+      }
+    } else {
+      return {
+        bet: isHome ? game.public_ml_home_bet_pct : game.public_ml_away_bet_pct,
+        money: isHome ? game.public_ml_home_money_pct : game.public_ml_away_money_pct
+      }
+    }
+  }
+  
   return (
     <div className={styles.mobileExpandedPanel} onClick={(e) => e.stopPropagation()}>
       {/* Mobile Graph */}
       <div className={styles.mobileGraphContainer}>
         <div className={styles.mobileGraphHeader}>
-          {/* Icon only on mobile */}
           <FiTrendingUp className={styles.mobileGraphIcon} />
           
           <div className={styles.mobileGraphControls}>
-            {/* Bet Type Dropdown */}
             <div className={styles.mobileMarketDropdown}>
               <button 
                 className={styles.mobileMarketBtn}
@@ -297,7 +346,6 @@ const MobileExpandedView = ({
               )}
             </div>
             
-            {/* Time Filter */}
             <div className={styles.mobileGraphFilters}>
               <button
                 className={`${styles.mobileGraphFilterBtn} ${graphTimeFilter === 'all' ? styles.active : ''}`}
@@ -359,126 +407,246 @@ const MobileExpandedView = ({
         </ResponsiveContainer>
       </div>
       
-      {/* Collapsible History Section */}
-      <div className={styles.mobileHistorySection}>
+      {/* Away Team / Over Section */}
+      <div className={styles.mobileTeamSection}>
         <button 
-          className={styles.mobileHistoryToggle}
-          onClick={() => setHistoryOpen(!historyOpen)}
+          className={styles.mobileTeamToggle}
+          onClick={() => setAwayTeamOpen(!awayTeamOpen)}
         >
-          <span>History</span>
-          <FiChevronDown className={historyOpen ? styles.rotated : ''} />
+          <div className={styles.mobileTeamToggleLeft}>
+            {graphMarketType !== 'total' && game.away_logo && (
+              <img src={game.away_logo} alt="" className={styles.mobileTeamLogo} />
+            )}
+            <span className={styles.mobileTeamName}>
+              {graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}
+            </span>
+            {graphMarketType !== 'total' && (
+              <span className={styles.mobileBetTypeLabel}>
+                {graphMarketType === 'spread' ? 'Spread' : 'ML'}
+              </span>
+            )}
+          </div>
+          <FiChevronDown className={awayTeamOpen ? styles.rotated : ''} />
         </button>
         
-        {historyOpen && (
-          <div className={styles.mobileHistoryContent}>
-            {/* Home/Away Toggle */}
-            <div className={styles.mobileHistoryTeamToggle}>
-              <button
-                className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'away' ? styles.active : ''}`}
-                onClick={() => setHistoryTeam('away')}
-              >
-                {getTeamName(game.away_team, game.sport)}
-              </button>
-              <button
-                className={`${styles.mobileHistoryTeamBtn} ${historyTeam === 'home' ? styles.active : ''}`}
-                onClick={() => setHistoryTeam('home')}
-              >
-                {getTeamName(game.home_team, game.sport)}
-              </button>
+        {awayTeamOpen && (
+          <div className={styles.mobileTeamContent}>
+            {/* Splits */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>Splits</div>
+              <div className={styles.mobileSplitsGrid}>
+                <div className={styles.mobileSplitCol}>
+                  <span className={styles.mobileSplitLabel}>Bets</span>
+                  <span className={styles.mobileSplitValue}>{getSplits(false).bet !== null ? `${Math.round(getSplits(false).bet!)}%` : 'N/A'}</span>
+                  <div className={styles.mobileSplitBar}>
+                    <div className={styles.mobileSplitBarFill} style={{ width: `${getSplits(false).bet || 0}%` }} />
+                  </div>
+                </div>
+                <div className={styles.mobileSplitCol}>
+                  <span className={styles.mobileSplitLabel}>Money</span>
+                  <span className={styles.mobileSplitValue}>{getSplits(false).money !== null ? `${Math.round(getSplits(false).money!)}%` : 'N/A'}</span>
+                  <div className={styles.mobileSplitBar}>
+                    <div className={`${styles.mobileSplitBarFill} ${styles.moneyBar}`} style={{ width: `${getSplits(false).money || 0}%` }} />
+                  </div>
+                </div>
+              </div>
             </div>
             
-            {/* History Table */}
-            <table className={styles.mobileHistoryTable}>
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Odds</th>
-                </tr>
-              </thead>
-              <tbody>
-                {timelineData.length === 0 ? (
-                  <tr><td colSpan={2}>No history</td></tr>
-                ) : (
-                  timelineData.map((point, idx) => {
-                    let oddVal: string
-                    if (graphMarketType === 'spread') {
-                      oddVal = historyTeam === 'home' 
-                        ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
-                        : (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
-                    } else if (graphMarketType === 'ml') {
-                      oddVal = historyTeam === 'home'
-                        ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
-                        : (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
-                    } else {
-                      oddVal = historyTeam === 'home' ? `U ${point.total}` : `O ${point.total}`
-                    }
-                    
-                    return (
-                      <tr key={idx}>
-                        <td>{point.time}</td>
-                        <td>{oddVal}</td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+            {/* Signals - only active ones */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>Signals</div>
+              {(() => {
+                const signals = getAwaySignals()
+                if (!signals) return <div className={styles.mobileNoSignal}>No signals</div>
+                const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                if (!hasSignal) return <div className={styles.mobileNoSignal}>No signals detected</div>
+                return (
+                  <div className={styles.mobileSignalsList}>
+                    {signals.publicRespect > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Public Respect</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.publicColor}`}>{signals.publicRespect}%</span>
+                        {renderMobileBar(signals.publicRespect, 'public')}
+                      </div>
+                    )}
+                    {signals.vegasBacked > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Vegas Backed</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.vegasColor}`}>{signals.vegasBacked}%</span>
+                        {renderMobileBar(signals.vegasBacked, 'vegas')}
+                      </div>
+                    )}
+                    {signals.whaleRespect > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Whale Respect</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.whaleColor}`}>{signals.whaleRespect}%</span>
+                        {renderMobileBar(signals.whaleRespect, 'whale')}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
+            
+            {/* History */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>History</div>
+              <div className={styles.mobileHistoryList}>
+                {timelineData.slice(-5).map((point, idx) => {
+                  let val = graphMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
+                    : graphMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
+                    : `O ${point.total}`
+                  return (
+                    <div key={idx} className={styles.mobileHistoryItem}>
+                      <span className={styles.mobileHistoryTime}>{point.time}</span>
+                      <span className={styles.mobileHistoryVal}>{val}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            
+            {/* Books */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>All Books</div>
+              <div className={styles.mobileBooksList}>
+                {getSportsbookOddsForMarket(graphMarketType).slice(0, 6).map((bookOdds, idx) => {
+                  let val = graphMarketType === 'ml' 
+                    ? ((bookOdds.value as any).away > 0 ? `+${(bookOdds.value as any).away}` : (bookOdds.value as any).away.toString())
+                    : graphMarketType === 'spread'
+                    ? (-(bookOdds.value as number) > 0 ? `+${-(bookOdds.value as number)}` : (-(bookOdds.value as number)).toString())
+                    : `O ${bookOdds.value}`
+                  return (
+                    <div key={idx} className={styles.mobileBookItem}>
+                      <span className={styles.mobileBookName}>{bookOdds.book}</span>
+                      <span className={styles.mobileBookVal}>{val}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
       </div>
       
-      {/* Sportsbooks Section */}
-      <div className={styles.mobileHistorySection}>
+      {/* Home Team / Under Section */}
+      <div className={styles.mobileTeamSection}>
         <button 
-          className={styles.mobileHistoryToggle}
-          onClick={() => setSportsbooksOpen(!sportsbooksOpen)}
+          className={styles.mobileTeamToggle}
+          onClick={() => setHomeTeamOpen(!homeTeamOpen)}
         >
-          <span>Sportsbooks</span>
-          <FiChevronDown className={sportsbooksOpen ? styles.rotated : ''} />
+          <div className={styles.mobileTeamToggleLeft}>
+            {graphMarketType !== 'total' && game.home_logo && (
+              <img src={game.home_logo} alt="" className={styles.mobileTeamLogo} />
+            )}
+            <span className={styles.mobileTeamName}>
+              {graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}
+            </span>
+            {graphMarketType !== 'total' && (
+              <span className={styles.mobileBetTypeLabel}>
+                {graphMarketType === 'spread' ? 'Spread' : 'ML'}
+              </span>
+            )}
+          </div>
+          <FiChevronDown className={homeTeamOpen ? styles.rotated : ''} />
         </button>
         
-        {sportsbooksOpen && (
-          <div className={styles.mobileHistoryContent}>
-            <table className={styles.mobileHistoryTable}>
-              <thead>
-                <tr>
-                  <th>Book</th>
-                  <th>{graphMarketType === 'total' ? 'Over' : getTeamName(game.away_team, game.sport)}</th>
-                  <th>{graphMarketType === 'total' ? 'Under' : getTeamName(game.home_team, game.sport)}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {!sportsbookOdds ? (
-                  <tr><td colSpan={3}>Loading...</td></tr>
-                ) : (
-                  getSportsbookOddsForMarket(graphMarketType).map((bookOdds, idx) => {
-                    let awayVal: string, homeVal: string
-                    
-                    if (graphMarketType === 'ml') {
-                      const ml = bookOdds.value as { home: number, away: number }
-                      awayVal = ml.away > 0 ? `+${ml.away}` : ml.away.toString()
-                      homeVal = ml.home > 0 ? `+${ml.home}` : ml.home.toString()
-                    } else if (graphMarketType === 'spread') {
-                      const spread = bookOdds.value as number
-                      awayVal = -spread > 0 ? `+${-spread}` : (-spread).toString()
-                      homeVal = spread > 0 ? `+${spread}` : spread.toString()
-                    } else {
-                      const total = bookOdds.value as number
-                      awayVal = `O ${total}`
-                      homeVal = `U ${total}`
-                    }
-                    
-                    return (
-                      <tr key={idx} className={bookOdds.isConsensus ? styles.consensusRow : ''}>
-                        <td className={styles.bookName}>{bookOdds.book}</td>
-                        <td>{awayVal}</td>
-                        <td>{homeVal}</td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+        {homeTeamOpen && (
+          <div className={styles.mobileTeamContent}>
+            {/* Splits */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>Splits</div>
+              <div className={styles.mobileSplitsGrid}>
+                <div className={styles.mobileSplitCol}>
+                  <span className={styles.mobileSplitLabel}>Bets</span>
+                  <span className={styles.mobileSplitValue}>{getSplits(true).bet !== null ? `${Math.round(getSplits(true).bet!)}%` : 'N/A'}</span>
+                  <div className={styles.mobileSplitBar}>
+                    <div className={styles.mobileSplitBarFill} style={{ width: `${getSplits(true).bet || 0}%` }} />
+                  </div>
+                </div>
+                <div className={styles.mobileSplitCol}>
+                  <span className={styles.mobileSplitLabel}>Money</span>
+                  <span className={styles.mobileSplitValue}>{getSplits(true).money !== null ? `${Math.round(getSplits(true).money!)}%` : 'N/A'}</span>
+                  <div className={styles.mobileSplitBar}>
+                    <div className={`${styles.mobileSplitBarFill} ${styles.moneyBar}`} style={{ width: `${getSplits(true).money || 0}%` }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Signals - only active ones */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>Signals</div>
+              {(() => {
+                const signals = getHomeSignals()
+                if (!signals) return <div className={styles.mobileNoSignal}>No signals</div>
+                const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
+                if (!hasSignal) return <div className={styles.mobileNoSignal}>No signals detected</div>
+                return (
+                  <div className={styles.mobileSignalsList}>
+                    {signals.publicRespect > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Public Respect</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.publicColor}`}>{signals.publicRespect}%</span>
+                        {renderMobileBar(signals.publicRespect, 'public')}
+                      </div>
+                    )}
+                    {signals.vegasBacked > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Vegas Backed</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.vegasColor}`}>{signals.vegasBacked}%</span>
+                        {renderMobileBar(signals.vegasBacked, 'vegas')}
+                      </div>
+                    )}
+                    {signals.whaleRespect > 0 && (
+                      <div className={styles.mobileSignalRow}>
+                        <span className={styles.mobileSignalLabel}>Whale Respect</span>
+                        <span className={`${styles.mobileSignalValue} ${styles.whaleColor}`}>{signals.whaleRespect}%</span>
+                        {renderMobileBar(signals.whaleRespect, 'whale')}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
+            
+            {/* History */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>History</div>
+              <div className={styles.mobileHistoryList}>
+                {timelineData.slice(-5).map((point, idx) => {
+                  let val = graphMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
+                    : graphMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
+                    : `U ${point.total}`
+                  return (
+                    <div key={idx} className={styles.mobileHistoryItem}>
+                      <span className={styles.mobileHistoryTime}>{point.time}</span>
+                      <span className={styles.mobileHistoryVal}>{val}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            
+            {/* Books */}
+            <div className={styles.mobileCard}>
+              <div className={styles.mobileCardHeader}>All Books</div>
+              <div className={styles.mobileBooksList}>
+                {getSportsbookOddsForMarket(graphMarketType).slice(0, 6).map((bookOdds, idx) => {
+                  let val = graphMarketType === 'ml' 
+                    ? ((bookOdds.value as any).home > 0 ? `+${(bookOdds.value as any).home}` : (bookOdds.value as any).home.toString())
+                    : graphMarketType === 'spread'
+                    ? ((bookOdds.value as number) > 0 ? `+${bookOdds.value}` : (bookOdds.value as number).toString())
+                    : `U ${bookOdds.value}`
+                  return (
+                    <div key={idx} className={styles.mobileBookItem}>
+                      <span className={styles.mobileBookName}>{bookOdds.book}</span>
+                      <span className={styles.mobileBookVal}>{val}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1689,27 +1857,33 @@ export default function PublicBettingPage() {
                                             const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
                                             return hasSignal ? (
                                               <>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Public Respect</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                                {signals.publicRespect > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Public Respect</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activePublic}`}>{signals.publicRespect}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.publicRespect, 'public')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.publicRespect, 'public')}
-                                                </div>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Vegas Backed</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                                )}
+                                                {signals.vegasBacked > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activeVegas}`}>{signals.vegasBacked}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.vegasBacked, 'vegas')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.vegasBacked, 'vegas')}
-                                                </div>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Whale Respect</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                                )}
+                                                {signals.whaleRespect > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activeWhale}`}>{signals.whaleRespect}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.whaleRespect, 'whale')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.whaleRespect, 'whale')}
-                                                </div>
+                                                )}
                                               </>
                                             ) : (
                                               <div className={styles.noSignalV2}>No signals detected</div>
@@ -1864,27 +2038,33 @@ export default function PublicBettingPage() {
                                             const hasSignal = signals.publicRespect > 0 || signals.vegasBacked > 0 || signals.whaleRespect > 0
                                             return hasSignal ? (
                                               <>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Public Respect</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.publicRespect > 0 ? styles.activePublic : ''}`}>{signals.publicRespect}%</span>
+                                                {signals.publicRespect > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Public Respect</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activePublic}`}>{signals.publicRespect}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.publicRespect, 'public')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.publicRespect, 'public')}
-                                                </div>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Vegas Backed</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.vegasBacked > 0 ? styles.activeVegas : ''}`}>{signals.vegasBacked}%</span>
+                                                )}
+                                                {signals.vegasBacked > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activeVegas}`}>{signals.vegasBacked}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.vegasBacked, 'vegas')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.vegasBacked, 'vegas')}
-                                                </div>
-                                                <div className={styles.signalRowV2}>
-                                                  <div className={styles.signalRowHeaderV2}>
-                                                    <span className={styles.signalLabelV2}>Whale Respect</span>
-                                                    <span className={`${styles.signalValueV2} ${signals.whaleRespect > 0 ? styles.activeWhale : ''}`}>{signals.whaleRespect}%</span>
+                                                )}
+                                                {signals.whaleRespect > 0 && (
+                                                  <div className={styles.signalRowV2}>
+                                                    <div className={styles.signalRowHeaderV2}>
+                                                      <span className={styles.signalLabelV2}>Whale Respect</span>
+                                                      <span className={`${styles.signalValueV2} ${styles.activeWhale}`}>{signals.whaleRespect}%</span>
+                                                    </div>
+                                                    {renderSegmentedBar(signals.whaleRespect, 'whale')}
                                                   </div>
-                                                  {renderSegmentedBar(signals.whaleRespect, 'whale')}
-                                                </div>
+                                                )}
                                               </>
                                             ) : (
                                               <div className={styles.noSignalV2}>No signals detected</div>

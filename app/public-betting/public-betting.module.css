@@ -1097,6 +1097,258 @@
   border-bottom: none;
 }
 
+/* Mobile Team Section - New V2 Design */
+.mobileTeamSection {
+  margin-top: 8px;
+}
+
+.mobileTeamToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%);
+  border: none;
+  border-radius: 10px;
+  color: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+}
+
+.mobileTeamToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobileTeamLogo {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: contain;
+}
+
+.mobileTeamName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.mobileBetTypeLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: #5A5E66;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.mobileTeamContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.mobileCard {
+  background: linear-gradient(290.84deg, #171C24 1.08%, #0D0F13 58.45%);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+}
+
+.mobileCardHeader {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8B9199;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+
+/* Mobile Splits */
+.mobileSplitsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mobileSplitCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobileSplitLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: #5A5E66;
+  text-transform: uppercase;
+}
+
+.mobileSplitValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.mobileSplitBar {
+  height: 4px;
+  background: #2B2D30;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mobileSplitBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  border-radius: 2px;
+}
+
+.mobileSplitBarFill.moneyBar {
+  background: linear-gradient(90deg, #22C55E, #4ADE80);
+}
+
+/* Mobile Signals */
+.mobileSignalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobileSignalRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobileSignalRow > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobileSignalLabel {
+  font-size: 12px;
+  color: #8B9199;
+}
+
+.mobileSignalValue {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mobileSignalValue.publicColor {
+  color: #73F97C;
+}
+
+.mobileSignalValue.vegasColor {
+  color: #FBBF24;
+}
+
+.mobileSignalValue.whaleColor {
+  color: #C084FC;
+}
+
+.mobileSignalBarContainer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 6px;
+}
+
+.mobileSignalBarSegment {
+  width: 4px;
+  height: 6px;
+  border-radius: 1px;
+  background: #2B2D30;
+  flex-shrink: 0;
+}
+
+.mobileSignalBarSegment.publicFilled {
+  background: linear-gradient(180deg, #3B82F6, #60A5FA);
+}
+
+.mobileSignalBarSegment.vegasFilled {
+  background: linear-gradient(180deg, #EAB308, #FBBF24);
+}
+
+.mobileSignalBarSegment.whaleFilled {
+  background: linear-gradient(180deg, #A855F7, #C084FC);
+}
+
+.mobileNoSignal {
+  font-size: 12px;
+  color: #5A5E66;
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* Mobile History List */
+.mobileHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobileHistoryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobileHistoryItem:last-child {
+  border-bottom: none;
+}
+
+.mobileHistoryTime {
+  font-size: 11px;
+  color: #5A5E66;
+}
+
+.mobileHistoryVal {
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+/* Mobile Books List */
+.mobileBooksList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobileBookItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobileBookItem:last-child {
+  border-bottom: none;
+}
+
+.mobileBookName {
+  font-size: 12px;
+  color: #8B9199;
+}
+
+.mobileBookVal {
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .desktopTable {
