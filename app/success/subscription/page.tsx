@@ -1,14 +1,21 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { Infinity } from 'lucide-react'
-import { FaWandMagicSparkles } from 'react-icons/fa6'
-import { HiOutlineTrophy } from 'react-icons/hi2'
-import { TbLayoutGridFilled } from 'react-icons/tb'
-import { BiStats } from 'react-icons/bi'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+import { GiSupersonicArrow } from 'react-icons/gi'
+import { VscGraphLeft } from 'react-icons/vsc'
 
-export default function SubscriptionSuccessPage() {
+function SubscriptionSuccessContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Get the primary product that was purchased
+  const product = searchParams.get('product') || 'picks'
+  
+  // Determine redirect based on product
+  const redirectPath = product === 'publicBetting' ? '/public-betting' : '/picks'
+  const productName = product === 'publicBetting' ? 'Public Betting' : 'Analyst Picks'
+  const ProductIcon = product === 'publicBetting' ? VscGraphLeft : GiSupersonicArrow
 
   return (
     <div style={{
@@ -67,7 +74,7 @@ export default function SubscriptionSuccessPage() {
           marginBottom: '0.5rem',
           lineHeight: 1.2
         }}>
-          You Now Have Unlimited Access!
+          Welcome to {productName}!
         </h1>
 
         {/* Tagline */}
@@ -76,10 +83,10 @@ export default function SubscriptionSuccessPage() {
           color: 'rgba(255, 255, 255, 0.5)',
           marginBottom: '1.5rem'
         }}>
-          Thank you for your purchase
+          Your 3-day free trial has started
         </p>
 
-        {/* Features List */}
+        {/* Product Access Card */}
         <div style={{
           background: 'rgba(255, 255, 255, 0.02)',
           border: '1px solid rgba(59, 130, 246, 0.2)',
@@ -97,37 +104,62 @@ export default function SubscriptionSuccessPage() {
             letterSpacing: '0.5px',
             textAlign: 'center'
           }}>
-            Enjoy Your Premium Suite Of:
+            You Now Have Access To:
           </p>
           
           <div style={{ display: 'grid', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
-              <span style={{ fontSize: '0.875rem', color: '#fff', fontWeight: '500' }}>
-                Insider Picks
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <ProductIcon style={{ color: '#3b82f6', fontSize: '1.25rem' }} />
+              <span style={{ fontSize: '1rem', color: '#fff', fontWeight: '600' }}>
+                {productName}
               </span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
-              <span style={{ fontSize: '0.875rem', color: '#fff', fontWeight: '500' }}>
-                AI Game Scripts
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
-              <span style={{ fontSize: '0.875rem', color: '#fff', fontWeight: '500' }}>
-                Public Betting Data
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
-              <span style={{ fontSize: '0.875rem', color: '#fff', fontWeight: '500' }}>
-                ALL Premium Tools
-              </span>
-            </div>
+            
+            {product === 'picks' && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Daily expert picks across all sports
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Detailed analysis and write-ups
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Full analyst history and stats
+                  </span>
+                </div>
+              </>
+            )}
+            
+            {product === 'publicBetting' && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Public betting splits from 150+ sportsbooks
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Line movement tracking
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '2rem' }}>
+                  <span style={{ color: '#3b82f6', fontSize: '0.75rem' }}>✓</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Market indicators (Public/Vegas/Whale)
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -144,7 +176,7 @@ export default function SubscriptionSuccessPage() {
 
         {/* CTA Button */}
         <button
-          onClick={() => router.push('/sports')}
+          onClick={() => router.push(redirectPath)}
           style={{
             width: '100%',
             padding: '0.875rem',
@@ -156,7 +188,11 @@ export default function SubscriptionSuccessPage() {
             color: '#fff',
             cursor: 'pointer',
             transition: 'all 0.3s',
-            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)'
+            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)'
@@ -167,10 +203,29 @@ export default function SubscriptionSuccessPage() {
             e.currentTarget.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.3)'
           }}
         >
-          Go to Dashboard
+          <ProductIcon style={{ fontSize: '1.25rem' }} />
+          Go to {productName}
         </button>
       </div>
     </div>
   )
 }
 
+export default function SubscriptionSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #000000 0%, #0a1628 60%, #1a2642 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff'
+      }}>
+        Loading...
+      </div>
+    }>
+      <SubscriptionSuccessContent />
+    </Suspense>
+  )
+}

@@ -63,6 +63,7 @@ export default function SubscribePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceIds,
+          primaryProduct: productId, // For redirect after purchase
           clerkUserId: user?.id,
         }),
       })

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { priceIds } = await request.json()
+    const { priceIds, primaryProduct } = await request.json()
 
     // Validate input
     if (!priceIds || !Array.isArray(priceIds) || priceIds.length === 0) {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           is_subscription_setup: 'true',
         },
       },
-      success_url: `${origin}/success/subscription?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/success/subscription?session_id={CHECKOUT_SESSION_ID}&product=${primaryProduct || 'picks'}`,
       cancel_url: `${origin}/pricing?cancelled=true`,
       customer_email: userEmail,
       metadata: {

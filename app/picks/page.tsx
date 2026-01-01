@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
-import { useSubscription } from '@/lib/hooks/useSubscription'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { IoTicketOutline } from 'react-icons/io5'
 import { FaLock, FaFireAlt } from 'react-icons/fa'
-import { FiChevronDown } from 'react-icons/fi'
+import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
+import { GiSupersonicArrow } from 'react-icons/gi'
 import styles from './picks.module.css'
 
 type Pick = {
@@ -199,7 +200,10 @@ export default function PicksPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
-  const { hasAccess } = useSubscription()
+  const { hasPicks, hasAny, isLoading: isLoadingEntitlements } = useEntitlements()
+  
+  // User has access if they have picks entitlement OR any legacy entitlement (hasAny covers legacy users)
+  const hasAccess = hasPicks || hasAny
   
   const [allPicks, setAllPicks] = useState<Pick[]>([])
   const [isLoadingPicks, setIsLoadingPicks] = useState(false)
@@ -251,9 +255,9 @@ export default function PicksPage() {
     // Only allow expanding if user is signed in and has access
     if (!isSignedIn || !hasAccess) {
       if (!isSignedIn) {
-        openSignUp()
+        openSignUp({ redirectUrl: '/subscribe/picks' })
       } else if (!hasAccess) {
-        router.push('/pricing')
+        router.push('/subscribe/picks')
       }
       return
     }
@@ -526,6 +530,32 @@ export default function PicksPage() {
           </div>
         </div>
         
+        {/* Locked View CTA Banner - Only show if not signed in OR signed in without access */}
+        {(!isSignedIn || !hasAccess) && !isLoadingEntitlements && (
+          <div className={styles.lockedBanner}>
+            <div className={styles.lockedBannerContent}>
+              <GiSupersonicArrow className={styles.lockedBannerIcon} />
+              <div className={styles.lockedBannerText}>
+                <span className={styles.lockedBannerTitle}>Unlock Today's Expert Picks</span>
+                <span className={styles.lockedBannerSubtitle}>Get instant access with a 3-day free trial</span>
+              </div>
+            </div>
+            <button 
+              className={styles.lockedBannerBtn}
+              onClick={() => {
+                if (!isSignedIn) {
+                  openSignUp({ redirectUrl: '/subscribe/picks' })
+                } else {
+                  router.push('/subscribe/picks')
+                }
+              }}
+            >
+              Sign up now to view today's picks
+              <FiChevronRight size={18} />
+            </button>
+          </div>
+        )}
+        
         <div className={styles.filtersRow}>
           {/* Left side: Sport Filters */}
           <div className={styles.leftFilters}>
@@ -751,9 +781,9 @@ export default function PicksPage() {
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       if (!isSignedIn) {
-                                        openSignUp()
+                                        openSignUp({ redirectUrl: '/subscribe/picks' })
                                       } else if (!hasAccess) {
-                                        router.push('/pricing')
+                                        router.push('/subscribe/picks')
                                       }
                                     }}
                                     style={{ 

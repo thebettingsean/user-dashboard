@@ -1,8 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import styles from './public-betting.module.css'
-import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp, FiInfo } from 'react-icons/fi'
+import { FiChevronDown, FiChevronUp, FiSearch, FiTrendingUp, FiInfo, FiChevronRight } from 'react-icons/fi'
+import { VscGraphLeft } from 'react-icons/vsc'
 import { 
   LineChart, 
   Line, 
@@ -655,6 +659,14 @@ const MobileExpandedView = ({
 }
 
 export default function PublicBettingPage() {
+  const router = useRouter()
+  const { isSignedIn } = useUser()
+  const { openSignUp } = useClerk()
+  const { hasPublicBetting, hasAny, isLoading: isLoadingEntitlements } = useEntitlements()
+  
+  // User has access if they have publicBetting entitlement OR any legacy entitlement (hasAny covers legacy users)
+  const hasAccess = hasPublicBetting || hasAny
+  
   const [games, setGames] = useState<GameOdds[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSport, setSelectedSport] = useState<string>('nfl')
@@ -1418,6 +1430,32 @@ export default function PublicBettingPage() {
           </div>
         </div>
         
+        {/* Locked View CTA Banner - Only show if not signed in OR signed in without access */}
+        {(!isSignedIn || !hasAccess) && !isLoadingEntitlements && (
+          <div className={styles.lockedBanner}>
+            <div className={styles.lockedBannerContent}>
+              <VscGraphLeft className={styles.lockedBannerIcon} />
+              <div className={styles.lockedBannerText}>
+                <span className={styles.lockedBannerTitle}>Unlock Public Betting Data</span>
+                <span className={styles.lockedBannerSubtitle}>Get instant access with a 3-day free trial</span>
+              </div>
+            </div>
+            <button 
+              className={styles.lockedBannerBtn}
+              onClick={() => {
+                if (!isSignedIn) {
+                  openSignUp({ redirectUrl: '/subscribe/publicBetting' })
+                } else {
+                  router.push('/subscribe/publicBetting')
+                }
+              }}
+            >
+              Sign up now to view public betting data
+              <FiChevronRight size={18} />
+            </button>
+          </div>
+        )}
+        
         <div className={styles.filtersRow}>
           {/* Left side: Sports + Search */}
           <div className={styles.leftFilters}>
@@ -1530,7 +1568,7 @@ export default function PublicBettingPage() {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={(!isSignedIn || !hasAccess) && !isLoadingEntitlements ? styles.blurredContent : ''}>
             {loading ? (
               <tr><td colSpan={8} className={styles.loadingCell}>Loading...</td></tr>
             ) : sortedGames.length === 0 ? (
@@ -2226,7 +2264,7 @@ export default function PublicBettingPage() {
         </table>
 
         {/* Mobile Table */}
-        <div className={styles.mobileTable}>
+        <div className={`${styles.mobileTable} ${(!isSignedIn || !hasAccess) && !isLoadingEntitlements ? styles.blurredContent : ''}`}>
           {/* Mobile Header */}
           <div className={styles.mobileHeader}>
             <div className={styles.mobileHeaderCell}>Team</div>
