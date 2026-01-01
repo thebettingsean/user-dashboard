@@ -12,9 +12,10 @@ const VERIFICATION_PRICE_ID = 'price_1SksHI07WIhZOuSI2NXWVsRd'
 
 /**
  * POST /api/checkout/create-subscription
- * Creates a Stripe Checkout session with:
- * - Subscription line items (3-day free trial)
- * - $0.01 one-time verification charge
+ * Creates a Stripe Checkout session that:
+ * 1. Charges $0.01 IMMEDIATELY for card verification
+ * 2. Saves card for future subscription charges
+ * 3. Passes subscription price IDs in metadata for webhook to create subscription with trial
  */
 export async function POST(request: NextRequest) {
   try {
@@ -58,44 +59,41 @@ export async function POST(request: NextRequest) {
     console.log(`   Price IDs: ${priceIds.join(', ')}`)
     console.log(`   Entitlements: ${JSON.stringify(entitlements)}`)
 
-    // Build line items - subscription prices + verification charge
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      // Add the $0.01 verification charge first
-      {
-        price: VERIFICATION_PRICE_ID,
-        quantity: 1,
-      },
-      // Then add subscription prices
-      ...priceIds.map((priceId: string) => ({
-        price: priceId,
-        quantity: 1,
-      }))
-    ]
-
-    // Create checkout session with subscription mode
+    // Use PAYMENT mode to charge $0.01 immediately
+    // Save card for future subscription charges
+    // Subscription will be created in webhook after payment succeeds
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: 'payment',
       payment_method_types: ['card'],
-      line_items: lineItems,
-      success_url: `${origin}/success/subscription`,
+      line_items: [
+        {
+          price: VERIFICATION_PRICE_ID, // $0.01 verification charge
+          quantity: 1,
+        }
+      ],
+      // Save the payment method for future subscription charges
+      payment_intent_data: {
+        setup_future_usage: 'off_session',
+        metadata: {
+          clerk_user_id: user.id,
+          subscription_price_ids: priceIds.join(','), // Subscription prices to create after payment
+          is_subscription_setup: 'true',
+        },
+      },
+      success_url: `${origin}/success/subscription?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=true`,
       customer_email: userEmail,
       metadata: {
         clerk_user_id: user.id,
-        price_ids: priceIds.join(','), // Store for webhook reference
-      },
-      subscription_data: {
-        trial_period_days: 3, // 3-day free trial
-        metadata: {
-          clerk_user_id: user.id,
-          price_ids: priceIds.join(','),
-        },
+        subscription_price_ids: priceIds.join(','), // Subscription prices to create after payment
+        is_subscription_setup: 'true',
       },
       // Allow promo codes
       allow_promotion_codes: true,
     })
 
-    console.log(`✅ Subscription checkout created: ${session.id}`)
+    console.log(`✅ Verification checkout created: ${session.id}`)
+    console.log(`   After payment, webhook will create subscription with trial`)
 
     return NextResponse.json({
       url: session.url,
@@ -103,11 +101,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('❌ Error creating subscription checkout:', error)
+    console.error('❌ Error creating checkout:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
     )
   }
 }
-

@@ -49,24 +49,9 @@ export async function POST(request: NextRequest) {
 
     console.log(`📥 Subscription webhook received: ${event.type}`)
 
-    // Handle checkout.session.completed (subscription purchase)
+    // Handle checkout.session.completed
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
-
-      // Only process subscription sessions
-      if (session.mode !== 'subscription') {
-        console.log('⏭️  Skipping non-subscription session')
-        return NextResponse.json({ received: true })
-      }
-
-      console.log(`💳 Subscription checkout completed:`, {
-        customer_email: session.customer_details?.email,
-        customer_id: session.customer,
-        metadata: session.metadata,
-        subscription_id: session.subscription
-      })
-
-      // Get Clerk user ID from metadata
       const clerkUserId = session.metadata?.clerk_user_id
 
       if (!clerkUserId) {
@@ -77,62 +62,186 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Fetch the subscription details
-      const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-      const priceIds = getPriceIdsFromSubscription(subscription)
-      const entitlements = getEntitlementsFromPriceIds(priceIds)
-
-      console.log(`🔔 Activating subscription for user ${clerkUserId}`, {
-        subscription_id: subscription.id,
-        price_ids: priceIds,
-        entitlements,
-        status: subscription.status
-      })
-
-      // Update Clerk metadata (fetch current user first to preserve other fields)
-      const clerk = await clerkClient()
-      const currentClerkUser = await clerk.users.getUser(clerkUserId)
-      const existingPrivateMeta = currentClerkUser.privateMetadata || {}
-      
-      await clerk.users.updateUserMetadata(clerkUserId, {
-        privateMetadata: {
-          ...existingPrivateMeta, // Preserve existing fields
-          stripeCustomerId: session.customer as string,
-          plan: priceIds[0], // Keep for backward compat
-          priceIds: priceIds, // NEW: Store all price IDs
-          entitlements: entitlements, // NEW: Store entitlements object
-          subscriptionId: subscription.id,
-          subscriptionStatus: subscription.status,
-          currentPeriodEnd: (subscription as any).current_period_end,
-          cancelAtPeriodEnd: (subscription as any).cancel_at_period_end
+      // Handle PAYMENT mode checkout (card verification for subscription setup)
+      if (session.mode === 'payment' && session.metadata?.is_subscription_setup === 'true') {
+        console.log(`💳 Card verification payment completed - creating subscription with trial`)
+        
+        const subscriptionPriceIds = session.metadata?.subscription_price_ids?.split(',') || []
+        
+        if (subscriptionPriceIds.length === 0) {
+          console.error('❌ No subscription_price_ids in metadata')
+          return NextResponse.json({ error: 'No subscription price IDs' }, { status: 400 })
         }
-      })
 
-      console.log(`✅ Clerk metadata updated for user ${clerkUserId}`)
+        // Get the payment intent to get payment method
+        const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string)
+        const paymentMethodId = paymentIntent.payment_method as string
 
-      // Update Supabase for tracking
-      const { data: existingUser } = await supabaseUsers
-        .from('users')
-        .select('*')
-        .eq('clerk_user_id', clerkUserId)
-        .single()
-
-      if (existingUser) {
-        await supabaseUsers
-          .from('users')
-          .update({
-            stripe_customer_id: session.customer as string,
-            access_level: 'full',
-            subscription_status: subscription.status,
-            subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
-            is_premium: true
+        // Create or get customer
+        let customerId = session.customer as string
+        
+        if (!customerId) {
+          // Create a new customer
+          const customer = await stripe.customers.create({
+            email: session.customer_details?.email || undefined,
+            metadata: { clerk_user_id: clerkUserId },
           })
-          .eq('clerk_user_id', clerkUserId)
+          customerId = customer.id
+          console.log(`👤 Created new customer: ${customerId}`)
+        }
 
-        console.log(`✅ Supabase updated for user ${clerkUserId}`)
+        // Attach payment method to customer if not already
+        try {
+          await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId })
+        } catch (e: any) {
+          // Already attached is fine
+          if (!e.message?.includes('already been attached')) {
+            console.log(`⚠️ Payment method attachment note: ${e.message}`)
+          }
+        }
+
+        // Set as default payment method
+        await stripe.customers.update(customerId, {
+          invoice_settings: { default_payment_method: paymentMethodId },
+        })
+
+        // Create subscription with 3-day trial
+        const subscription = await stripe.subscriptions.create({
+          customer: customerId,
+          items: subscriptionPriceIds.map((priceId: string) => ({ price: priceId })),
+          trial_period_days: 3,
+          default_payment_method: paymentMethodId,
+          metadata: {
+            clerk_user_id: clerkUserId,
+            price_ids: subscriptionPriceIds.join(','),
+          },
+        })
+
+        const priceIds = getPriceIdsFromSubscription(subscription)
+        const entitlements = getEntitlementsFromPriceIds(priceIds)
+
+        console.log(`🔔 Subscription created with trial for user ${clerkUserId}`, {
+          subscription_id: subscription.id,
+          price_ids: priceIds,
+          entitlements,
+          status: subscription.status,
+          trial_end: subscription.trial_end
+        })
+
+        // Update Clerk metadata
+        const clerk = await clerkClient()
+        const currentClerkUser = await clerk.users.getUser(clerkUserId)
+        const existingPrivateMeta = currentClerkUser.privateMetadata || {}
+        
+        await clerk.users.updateUserMetadata(clerkUserId, {
+          privateMetadata: {
+            ...existingPrivateMeta,
+            stripeCustomerId: customerId,
+            plan: priceIds[0],
+            priceIds: priceIds,
+            entitlements: entitlements,
+            subscriptionId: subscription.id,
+            subscriptionStatus: subscription.status,
+            currentPeriodEnd: subscription.current_period_end,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end
+          }
+        })
+
+        console.log(`✅ Clerk metadata updated for user ${clerkUserId}`)
+
+        // Update Supabase
+        const { data: existingUser } = await supabaseUsers
+          .from('users')
+          .select('*')
+          .eq('clerk_user_id', clerkUserId)
+          .single()
+
+        if (existingUser) {
+          await supabaseUsers
+            .from('users')
+            .update({
+              stripe_customer_id: customerId,
+              access_level: 'full',
+              subscription_status: subscription.status,
+              subscription_end_date: subscription.trial_end 
+                ? new Date(subscription.trial_end * 1000).toISOString()
+                : new Date(subscription.current_period_end * 1000).toISOString(),
+              is_premium: true
+            })
+            .eq('clerk_user_id', clerkUserId)
+
+          console.log(`✅ Supabase updated for user ${clerkUserId}`)
+        }
+
+        console.log(`🎉 Subscription with trial activated for ${clerkUserId}`)
+        return NextResponse.json({ received: true })
       }
 
-      console.log(`🎉 Subscription activated successfully for ${clerkUserId}`)
+      // Handle SUBSCRIPTION mode checkout (legacy/direct subscription)
+      if (session.mode === 'subscription') {
+        console.log(`💳 Subscription checkout completed:`, {
+          customer_email: session.customer_details?.email,
+          customer_id: session.customer,
+          subscription_id: session.subscription
+        })
+
+        // Fetch the subscription details
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
+        const priceIds = getPriceIdsFromSubscription(subscription)
+        const entitlements = getEntitlementsFromPriceIds(priceIds)
+
+        console.log(`🔔 Activating subscription for user ${clerkUserId}`, {
+          subscription_id: subscription.id,
+          price_ids: priceIds,
+          entitlements,
+          status: subscription.status
+        })
+
+        // Update Clerk metadata
+        const clerk = await clerkClient()
+        const currentClerkUser = await clerk.users.getUser(clerkUserId)
+        const existingPrivateMeta = currentClerkUser.privateMetadata || {}
+        
+        await clerk.users.updateUserMetadata(clerkUserId, {
+          privateMetadata: {
+            ...existingPrivateMeta,
+            stripeCustomerId: session.customer as string,
+            plan: priceIds[0],
+            priceIds: priceIds,
+            entitlements: entitlements,
+            subscriptionId: subscription.id,
+            subscriptionStatus: subscription.status,
+            currentPeriodEnd: (subscription as any).current_period_end,
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end
+          }
+        })
+
+        console.log(`✅ Clerk metadata updated for user ${clerkUserId}`)
+
+        // Update Supabase
+        const { data: existingUser } = await supabaseUsers
+          .from('users')
+          .select('*')
+          .eq('clerk_user_id', clerkUserId)
+          .single()
+
+        if (existingUser) {
+          await supabaseUsers
+            .from('users')
+            .update({
+              stripe_customer_id: session.customer as string,
+              access_level: 'full',
+              subscription_status: subscription.status,
+              subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
+              is_premium: true
+            })
+            .eq('clerk_user_id', clerkUserId)
+
+          console.log(`✅ Supabase updated for user ${clerkUserId}`)
+        }
+
+        console.log(`🎉 Subscription activated successfully for ${clerkUserId}`)
+      }
     }
 
     // Handle subscription created

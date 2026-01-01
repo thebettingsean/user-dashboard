@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { FiChevronRight, FiCheck } from 'react-icons/fi'
 import { IoShieldCheckmark } from 'react-icons/io5'
+import { GiSupersonicArrow } from 'react-icons/gi'
+import { LiaBalanceScaleRightSolid } from 'react-icons/lia'
 import { PRODUCTS, getUpsellForProduct, calculateTotal } from '@/lib/config/subscriptions'
 import styles from './subscribe.module.css'
 
@@ -124,7 +126,7 @@ export default function SubscribePage() {
             <div className={styles.productItem}>
               <div className={styles.productItemLeft}>
                 <div className={styles.productIcon}>
-                  {productId === 'picks' ? '🎯' : '📊'}
+                  {productId === 'picks' ? <GiSupersonicArrow /> : <LiaBalanceScaleRightSolid />}
                 </div>
                 <div className={styles.productInfo}>
                   <span className={styles.productName}>{product.name}</span>
@@ -193,7 +195,7 @@ export default function SubscribePage() {
             {/* Trial Info */}
             <div className={styles.trialBox}>
               <div className={styles.trialRow}>
-                <span>Due today</span>
+                <span>Card verification</span>
                 <span className={styles.trialFree}>$0.01</span>
               </div>
               <div className={styles.trialRowMain}>
