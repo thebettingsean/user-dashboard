@@ -7,8 +7,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover'
 })
 
-// $0.01 card verification charge price ID
-const VERIFICATION_PRICE_ID = 'price_1SksHI07WIhZOuSI2NXWVsRd'
+// $1.00 card verification charge price ID
+const VERIFICATION_PRICE_ID = 'price_1SksvQ07WIhZOuSIETT6jXhg'
 
 /**
  * POST /api/checkout/create-subscription

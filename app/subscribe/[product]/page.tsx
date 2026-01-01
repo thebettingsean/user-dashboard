@@ -6,7 +6,7 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { FiChevronRight, FiCheck } from 'react-icons/fi'
 import { IoShieldCheckmark } from 'react-icons/io5'
 import { GiSupersonicArrow } from 'react-icons/gi'
-import { LiaBalanceScaleRightSolid } from 'react-icons/lia'
+import { VscGraphLeft } from 'react-icons/vsc'
 import { PRODUCTS, getUpsellForProduct, calculateTotal } from '@/lib/config/subscriptions'
 import styles from './subscribe.module.css'
 
@@ -126,7 +126,7 @@ export default function SubscribePage() {
             <div className={styles.productItem}>
               <div className={styles.productItemLeft}>
                 <div className={styles.productIcon}>
-                  {productId === 'picks' ? <GiSupersonicArrow /> : <LiaBalanceScaleRightSolid />}
+                  {productId === 'picks' ? <GiSupersonicArrow /> : <VscGraphLeft />}
                 </div>
                 <div className={styles.productInfo}>
                   <span className={styles.productName}>{product.name}</span>
@@ -196,7 +196,7 @@ export default function SubscribePage() {
             <div className={styles.trialBox}>
               <div className={styles.trialRow}>
                 <span>Card verification</span>
-                <span className={styles.trialFree}>$0.01</span>
+                <span className={styles.trialFree}>$1.00</span>
               </div>
               <div className={styles.trialRowMain}>
                 <span>After 3-day trial</span>
