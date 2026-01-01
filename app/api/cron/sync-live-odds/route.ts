@@ -790,7 +790,7 @@ export async function GET(request: Request) {
               `)
               
               // ALSO find any row with real splits (non-50/50) to preserve valuable data
-              // This is important because the newest row might have 50/50 defaults
+              // Check BOTH games table AND live_odds_snapshots (snapshots may have more historical data)
               const gameWithRealSplits = await clickhouseQuery<any>(`
                 SELECT * FROM games 
                 WHERE game_id = '${gameId}' 
@@ -800,6 +800,27 @@ export async function GET(request: Request) {
                     (public_total_over_bet_pct != 50 AND public_total_over_bet_pct IS NOT NULL)
                   )
                 ORDER BY updated_at DESC 
+                LIMIT 1
+              `)
+              
+              // CRITICAL: Also check live_odds_snapshots for historical splits
+              // SportsDataIO may have stopped returning data, but we captured it earlier
+              const snapshotWithRealSplits = await clickhouseQuery<any>(`
+                SELECT 
+                  public_spread_home_bet_pct,
+                  public_spread_home_money_pct,
+                  public_ml_home_bet_pct,
+                  public_ml_home_money_pct,
+                  public_total_over_bet_pct,
+                  public_total_over_money_pct
+                FROM live_odds_snapshots 
+                WHERE odds_api_game_id = '${game.id}'
+                  AND (
+                    public_spread_home_bet_pct != 50 OR
+                    public_ml_home_bet_pct != 50 OR
+                    public_total_over_bet_pct != 50
+                  )
+                ORDER BY snapshot_time DESC 
                 LIMIT 1
               `)
               
@@ -844,21 +865,28 @@ export async function GET(request: Request) {
                     : consensus.underJuice)
               
               // CRITICAL: Preserve existing splits if we have real data (not 50/50)
-              // and the new data is just defaults (no splits from SportsDataIO)
-              // Use gameWithRealSplits which specifically searches for rows with real data
-              const realSplitsRow = gameWithRealSplits.data?.[0]
+              // Check: 1) New data from SportsDataIO, 2) games table, 3) live_odds_snapshots
+              const realSplitsFromGames = gameWithRealSplits.data?.[0]
+              const realSplitsFromSnapshots = snapshotWithRealSplits.data?.[0]
               const hasNewSplits = publicData && (publicData.spreadBet !== 50 || publicData.mlBet !== 50 || publicData.totalBet !== 50)
               
-              // Use new splits if available, otherwise preserve splits from any previous row with real data
-              const finalSpreadBet = hasNewSplits ? publicData!.spreadBet : (realSplitsRow?.public_spread_home_bet_pct ?? 50)
-              const finalSpreadMoney = hasNewSplits ? publicData!.spreadMoney : (realSplitsRow?.public_spread_home_money_pct ?? 50)
-              const finalMlBet = hasNewSplits ? publicData!.mlBet : (realSplitsRow?.public_ml_home_bet_pct ?? 50)
-              const finalMlMoney = hasNewSplits ? publicData!.mlMoney : (realSplitsRow?.public_ml_home_money_pct ?? 50)
-              const finalTotalBet = hasNewSplits ? publicData!.totalBet : (realSplitsRow?.public_total_over_bet_pct ?? 50)
-              const finalTotalMoney = hasNewSplits ? publicData!.totalMoney : (realSplitsRow?.public_total_over_money_pct ?? 50)
+              // Priority: 1) New splits from API, 2) Games table, 3) Snapshots, 4) Default 50
+              const finalSpreadBet = hasNewSplits ? publicData!.spreadBet 
+                : (realSplitsFromGames?.public_spread_home_bet_pct ?? realSplitsFromSnapshots?.public_spread_home_bet_pct ?? 50)
+              const finalSpreadMoney = hasNewSplits ? publicData!.spreadMoney 
+                : (realSplitsFromGames?.public_spread_home_money_pct ?? realSplitsFromSnapshots?.public_spread_home_money_pct ?? 50)
+              const finalMlBet = hasNewSplits ? publicData!.mlBet 
+                : (realSplitsFromGames?.public_ml_home_bet_pct ?? realSplitsFromSnapshots?.public_ml_home_bet_pct ?? 50)
+              const finalMlMoney = hasNewSplits ? publicData!.mlMoney 
+                : (realSplitsFromGames?.public_ml_home_money_pct ?? realSplitsFromSnapshots?.public_ml_home_money_pct ?? 50)
+              const finalTotalBet = hasNewSplits ? publicData!.totalBet 
+                : (realSplitsFromGames?.public_total_over_bet_pct ?? realSplitsFromSnapshots?.public_total_over_bet_pct ?? 50)
+              const finalTotalMoney = hasNewSplits ? publicData!.totalMoney 
+                : (realSplitsFromGames?.public_total_over_money_pct ?? realSplitsFromSnapshots?.public_total_over_money_pct ?? 50)
               
-              if (realSplitsRow && !hasNewSplits) {
-                console.log(`[${sportConfig.sport}] Preserving existing splits for ${game.away_team} @ ${game.home_team}: spread=${finalSpreadBet}%, ml=${finalMlBet}%`)
+              const source = hasNewSplits ? 'NEW' : (realSplitsFromGames ? 'GAMES' : (realSplitsFromSnapshots ? 'SNAPSHOTS' : 'DEFAULT'))
+              if (!hasNewSplits && (realSplitsFromGames || realSplitsFromSnapshots)) {
+                console.log(`[${sportConfig.sport}] Preserving splits from ${source} for ${game.away_team} @ ${game.home_team}: spread=${finalSpreadBet}%, ml=${finalMlBet}%`)
               }
               
               // Calculate signals using opening vs current data (with preserved splits if needed)
