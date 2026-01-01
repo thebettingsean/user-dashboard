@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { supabaseUsers } from '@/lib/supabase-users'
 import Stripe from 'stripe'
+import { getEntitlementsFromPriceIds, UserEntitlements, DEFAULT_ENTITLEMENTS } from '@/lib/config/subscriptions'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover'
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_SUBSCRIPTIONS!
+
+/**
+ * Extract all price IDs from a subscription
+ */
+function getPriceIdsFromSubscription(subscription: Stripe.Subscription): string[] {
+  return subscription.items.data.map(item => item.price.id)
+}
 
 /**
  * POST /api/webhooks/stripe-subscriptions
@@ -71,11 +79,13 @@ export async function POST(request: NextRequest) {
 
       // Fetch the subscription details
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-      const priceId = subscription.items.data[0].price.id
+      const priceIds = getPriceIdsFromSubscription(subscription)
+      const entitlements = getEntitlementsFromPriceIds(priceIds)
 
       console.log(`🔔 Activating subscription for user ${clerkUserId}`, {
         subscription_id: subscription.id,
-        price_id: priceId,
+        price_ids: priceIds,
+        entitlements,
         status: subscription.status
       })
 
@@ -88,7 +98,9 @@ export async function POST(request: NextRequest) {
         privateMetadata: {
           ...existingPrivateMeta, // Preserve existing fields
           stripeCustomerId: session.customer as string,
-          plan: priceId,
+          plan: priceIds[0], // Keep for backward compat
+          priceIds: priceIds, // NEW: Store all price IDs
+          entitlements: entitlements, // NEW: Store entitlements object
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
           currentPeriodEnd: (subscription as any).current_period_end,
@@ -127,9 +139,13 @@ export async function POST(request: NextRequest) {
     if (event.type === 'customer.subscription.created') {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
-      const priceId = subscription.items.data[0].price.id
+      const priceIds = getPriceIdsFromSubscription(subscription)
+      const entitlements = getEntitlementsFromPriceIds(priceIds)
 
-      console.log(`🔔 Subscription created: ${subscription.id}`)
+      console.log(`🔔 Subscription created: ${subscription.id}`, {
+        price_ids: priceIds,
+        entitlements
+      })
 
       // Find user by Stripe customer ID in Supabase
       const { data: user } = await supabaseUsers
@@ -147,7 +163,9 @@ export async function POST(request: NextRequest) {
           privateMetadata: {
             ...existingPrivateMeta,
             stripeCustomerId: customerId,
-            plan: priceId,
+            plan: priceIds[0], // Keep for backward compat
+            priceIds: priceIds, // NEW
+            entitlements: entitlements, // NEW
             subscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
             currentPeriodEnd: (subscription as any).current_period_end,
@@ -175,10 +193,13 @@ export async function POST(request: NextRequest) {
     if (event.type === 'customer.subscription.updated') {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
-      const priceId = subscription.items.data[0].price.id
+      const priceIds = getPriceIdsFromSubscription(subscription)
+      const entitlements = getEntitlementsFromPriceIds(priceIds)
 
       console.log(`🔄 Subscription updated: ${subscription.id}`, {
         status: subscription.status,
+        price_ids: priceIds,
+        entitlements,
         cancel_at_period_end: (subscription as any).cancel_at_period_end
       })
 
@@ -199,7 +220,9 @@ export async function POST(request: NextRequest) {
           privateMetadata: {
             ...existingPrivateMeta,
             stripeCustomerId: customerId,
-            plan: priceId,
+            plan: priceIds[0], // Keep for backward compat
+            priceIds: priceIds, // NEW
+            entitlements: entitlements, // NEW
             subscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
             currentPeriodEnd: (subscription as any).current_period_end,
@@ -208,7 +231,7 @@ export async function POST(request: NextRequest) {
         })
 
         // Update Supabase
-        const isActive = subscription.status === 'active'
+        const isActive = subscription.status === 'active' || subscription.status === 'trialing'
         await supabaseUsers
           .from('users')
           .update({
@@ -250,6 +273,8 @@ export async function POST(request: NextRequest) {
             ...existingPrivateMeta,
             stripeCustomerId: customerId,
             plan: null,
+            priceIds: [], // NEW: Clear price IDs
+            entitlements: DEFAULT_ENTITLEMENTS, // NEW: Reset entitlements
             subscriptionId: null,
             subscriptionStatus: 'canceled',
             currentPeriodEnd: null,
