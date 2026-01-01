@@ -3,6 +3,8 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
+import styles from './manage-subscription.module.css'
 
 interface SubscriptionData {
   id: string
@@ -78,11 +80,20 @@ export default function ManageSubscriptionPage() {
     setExpandedId(expandedId === id ? null : id)
   }
 
-  const getStatusColor = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean) => {
-    if (cancelAtPeriodEnd) return '#ef4444' // red - canceling
-    if (isPaused) return '#f59e0b' // orange - paused
-    if (status === 'active' || status === 'trialing') return '#10b981' // green - active
-    return '#f59e0b' // orange - other
+  const getStatusDotClass = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean) => {
+    if (cancelAtPeriodEnd) return styles.statusDotCanceling
+    if (isPaused) return styles.statusDotPaused
+    if (status === 'trialing') return styles.statusDotTrialing
+    if (status === 'active') return styles.statusDotActive
+    return styles.statusDotPaused
+  }
+
+  const getStatusBadgeClass = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean) => {
+    if (cancelAtPeriodEnd) return styles.statusBadgeCanceling
+    if (isPaused) return styles.statusBadgePaused
+    if (status === 'trialing') return styles.statusBadgeTrialing
+    if (status === 'active') return styles.statusBadgeActive
+    return styles.statusBadgePaused
   }
 
   const getStatusLabel = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean, cancelAt: number | null) => {
@@ -90,10 +101,9 @@ export default function ManageSubscriptionPage() {
     if (cancelAtPeriodEnd && cancelAt) {
       const cancelDate = new Date(cancelAt * 1000).toLocaleDateString('en-US', {
         month: 'short',
-        day: 'numeric',
-        year: 'numeric'
+        day: 'numeric'
       })
-      return `Expires ${cancelDate}`
+      return `Cancels ${cancelDate}`
     }
     if (status === 'active') return 'Active'
     if (status === 'trialing') return 'Trial'
@@ -115,7 +125,6 @@ export default function ManageSubscriptionPage() {
         throw new Error('Failed to reactivate subscription')
       }
 
-      // Reload subscriptions
       await loadSubscriptions()
       alert('✅ Subscription reactivated successfully!')
     } catch (err: any) {
@@ -138,7 +147,6 @@ export default function ManageSubscriptionPage() {
         throw new Error('Failed to unpause subscription')
       }
 
-      // Reload subscriptions
       await loadSubscriptions()
       alert('✅ Subscription resumed successfully!')
     } catch (err: any) {
@@ -146,116 +154,111 @@ export default function ManageSubscriptionPage() {
     }
   }
 
+  // Loading state
   if (!isLoaded || loading) {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <div style={styles.loading}>
-            <div style={styles.spinner}></div>
-            <p style={{fontSize: '0.85rem'}}>Loading your subscriptions...</p>
-          </div>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner} />
+          <div className={styles.loadingText}>Loading your subscriptions...</div>
         </div>
       </div>
     )
   }
 
+  // Error state
   if (error) {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <div style={styles.error}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '0 auto 1rem'}}>
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <h1 style={{fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: '700'}}>No Subscriptions Found</h1>
-            <p style={{fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem'}}>
-              If you believe this is an error, please contact support.
-            </p>
-            <button 
-              style={styles.contactButton}
-              onClick={() => window.location.href = 'https://www.thebettinginsider.com/contact'}
-            >
-              Contact Support
-            </button>
-            <button 
-              style={{...styles.backButton, marginTop: '0.75rem'}}
-              onClick={() => router.push('https://dashboard.thebettinginsider.com')}
-            >
-              ← Back to Dashboard
-            </button>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.emptyState}>
+          <FiAlertCircle className={styles.emptyIcon} />
+          <div className={styles.emptyTitle}>No Subscriptions Found</div>
+          <div className={styles.emptySubtitle}>
+            If you believe this is an error, please contact support.
           </div>
+          <button 
+            className={styles.primaryBtn}
+            onClick={() => window.location.href = 'https://www.thebettinginsider.com/contact'}
+          >
+            Contact Support
+          </button>
+          <button 
+            className={styles.backButton}
+            onClick={() => router.push('/')}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>Manage Subscriptions</h1>
-          <p style={styles.subtitle}>Upgrade, pause, or manage your plans</p>
-        </header>
+    <div className={styles.container}>
+      <div className={styles.headerSpacer} />
+      
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Manage Subscriptions</h1>
+            </div>
+            <p className={styles.subtitle}>Upgrade, pause, or manage your plans</p>
+          </div>
+        </div>
+      </header>
 
-        {/* Subscription Cards */}
-        <div style={styles.subscriptionsContainer}>
+      {/* Content */}
+      <div className={styles.contentSection}>
+        <div className={styles.subscriptionsGrid}>
           {subscriptions.map((sub) => {
             const isExpanded = expandedId === sub.id
-            const statusColor = getStatusColor(sub.status, sub.cancel_at_period_end, sub.is_paused)
+            const statusDotClass = getStatusDotClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
+            const statusBadgeClass = getStatusBadgeClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
             const statusLabel = getStatusLabel(sub.status, sub.cancel_at_period_end, sub.is_paused, sub.cancel_at)
             
             return (
-              <div key={sub.id} style={styles.subCard}>
+              <div key={sub.id} className={styles.subCard}>
                 {/* Header - Always Visible */}
                 <div 
-                  style={{...styles.subHeader, cursor: 'pointer'}}
+                  className={styles.subHeader}
                   onClick={() => toggleExpand(sub.id)}
                 >
-                  <div style={styles.subHeaderLeft}>
-                    <div style={{...styles.statusDot, background: statusColor}} />
-                    <span style={styles.subName}>{sub.product_name}</span>
-                    <span style={{...styles.statusBadge, color: statusColor, borderColor: statusColor}}>
+                  <div className={styles.subHeaderLeft}>
+                    <div className={`${styles.statusDot} ${statusDotClass}`} />
+                    <span className={styles.subName}>{sub.product_name}</span>
+                    <span className={`${styles.statusBadge} ${statusBadgeClass}`}>
                       {statusLabel}
                     </span>
                     {sub.is_legacy && (
-                      <span style={styles.legacyBadge}>Grandfathered</span>
+                      <span className={styles.legacyBadge}>Grandfathered</span>
                     )}
                   </div>
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                    style={{
-                      transition: 'transform 0.3s',
-                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
-                    }}
-                  >
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <FiChevronDown 
+                    className={`${styles.expandIcon} ${isExpanded ? styles.expandIconRotated : ''}`}
+                    size={18}
+                  />
                 </div>
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                  <div style={styles.subDetails}>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Plan:</span>
-                      <span style={styles.detailValue}>{sub.tier.charAt(0).toUpperCase() + sub.tier.slice(1)}</span>
+                  <div className={styles.subDetails}>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Plan</span>
+                      <span className={styles.detailValue}>
+                        {sub.tier.charAt(0).toUpperCase() + sub.tier.slice(1)}
+                      </span>
                     </div>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Price:</span>
-                      <span style={styles.detailValue}>{sub.price}</span>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Price</span>
+                      <span className={styles.detailValue}>{sub.price}</span>
                     </div>
-                    <div style={styles.detailRow}>
-                      <span style={styles.detailLabel}>Renews:</span>
-                      <span style={styles.detailValue}>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>Renews</span>
+                      <span className={styles.detailValue}>
                         {sub.current_period_end ? 
                           new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', {
                             month: 'long',
@@ -264,12 +267,13 @@ export default function ManageSubscriptionPage() {
                           }) : 'N/A'}
                       </span>
                     </div>
+
                     {/* Quick Actions - Conditional based on state */}
-                    <div style={styles.quickActions}>
+                    <div className={styles.quickActions}>
                       {/* CANCELING STATE: Show Reactivate Only */}
                       {sub.cancel_at_period_end && !sub.is_paused && (
                         <>
-                          <div style={styles.cancelNotice}>
+                          <div className={styles.cancelNotice}>
                             Your subscription will expire on {sub.cancel_at ? 
                               new Date(sub.cancel_at * 1000).toLocaleDateString('en-US', {
                                 month: 'long',
@@ -278,16 +282,13 @@ export default function ManageSubscriptionPage() {
                               }) : 'N/A'}
                           </div>
                           <button
-                            style={{...styles.actionBtn, ...styles.actionBtnReactivate}}
+                            className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               handleReactivate(sub.id)
                             }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="23 4 23 10 17 10"/>
-                              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                            </svg>
+                            <FiRefreshCw size={14} />
                             Reactivate Subscription
                           </button>
                         </>
@@ -296,19 +297,17 @@ export default function ManageSubscriptionPage() {
                       {/* PAUSED STATE: Show Unpause Only */}
                       {sub.is_paused && (
                         <>
-                          <div style={styles.pauseNotice}>
+                          <div className={styles.pauseNotice}>
                             Your subscription is currently paused
                           </div>
                           <button
-                            style={{...styles.actionBtn, ...styles.actionBtnUnpause}}
+                            className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               handleUnpause(sub.id)
                             }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="5 3 19 12 5 21 5 3"/>
-                            </svg>
+                            <FiPlay size={14} />
                             Resume Subscription
                           </button>
                         </>
@@ -316,47 +315,38 @@ export default function ManageSubscriptionPage() {
 
                       {/* ACTIVE STATE: Show All Options */}
                       {!sub.cancel_at_period_end && !sub.is_paused && (
-                        <>
+                        <div className={styles.quickActionsRow}>
                           <button
-                            style={styles.actionBtn}
+                            className={`${styles.actionBtn} ${styles.actionBtnUpgrade}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               router.push(`/manage-subscription/upgrade?sub=${sub.id}`)
                             }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 19V5M5 12l7-7 7 7"/>
-                            </svg>
+                            <FiArrowUp size={14} />
                             Upgrade
                           </button>
                           <button
-                            style={{...styles.actionBtn, ...styles.actionBtnCancel}}
+                            className={`${styles.actionBtn} ${styles.actionBtnCancel}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               router.push(`/manage-subscription/cancel?sub=${sub.id}`)
                             }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="12" r="10"/>
-                              <line x1="15" y1="9" x2="9" y2="15"/>
-                              <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
+                            <FiX size={14} />
                             Cancel
                           </button>
                           <button
-                            style={{...styles.actionBtn, ...styles.actionBtnPause}}
+                            className={`${styles.actionBtn} ${styles.actionBtnPause}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               router.push(`/manage-subscription/pause?sub=${sub.id}`)
                             }}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="6" y="4" width="4" height="16"/>
-                              <rect x="14" y="4" width="4" height="16"/>
-                            </svg>
+                            <FiPause size={14} />
                             Pause
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -368,232 +358,12 @@ export default function ManageSubscriptionPage() {
 
         {/* Back to Dashboard */}
         <button 
-          style={styles.backButton}
-          onClick={() => router.push('https://dashboard.thebettinginsider.com')}
+          className={styles.backButton}
+          onClick={() => router.push('/')}
         >
           ← Back to Dashboard
         </button>
       </div>
     </div>
   )
-}
-
-const styles = {
-  page: {
-    minHeight: '100vh',
-    padding: '10rem 2rem 4rem',
-    background: 'transparent',
-    color: '#ffffff'
-  },
-  container: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    width: '100%'
-  },
-  loading: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-    gap: '1rem'
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '3px solid rgba(255, 255, 255, 0.1)',
-    borderTopColor: '#3b82f6',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  error: {
-    textAlign: 'center' as const,
-    padding: '2rem',
-    background: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '12px'
-  },
-  header: {
-    textAlign: 'center' as const,
-    marginBottom: '2.5rem'
-  },
-  title: {
-    fontSize: '1.75rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem'
-  },
-  subtitle: {
-    fontSize: '0.9rem',
-    color: 'rgba(255, 255, 255, 0.7)'
-  },
-  subscriptionsContainer: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1rem',
-    marginBottom: '2.5rem'
-  },
-  subCard: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    transition: 'all 0.3s ease'
-  },
-  subHeader: {
-    padding: '1.25rem 1.5rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    transition: 'background 0.2s'
-  },
-  subHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    flexWrap: 'wrap' as const
-  },
-  statusDot: {
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-    flexShrink: 0
-  },
-  subName: {
-    fontSize: '1rem',
-    fontWeight: '700'
-  },
-  statusBadge: {
-    padding: '0.2rem 0.5rem',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: '600',
-    border: '1px solid',
-    background: 'transparent'
-  },
-  legacyBadge: {
-    background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
-    color: '#fff',
-    padding: '0.25rem 0.5rem',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: '600'
-  },
-  subDetails: {
-    padding: '0 1.5rem 1.25rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem'
-  },
-  detailRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: '0.75rem',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-  },
-  detailLabel: {
-    fontSize: '0.85rem',
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontWeight: '500'
-  },
-  detailValue: {
-    fontSize: '0.85rem',
-    color: '#fff',
-    fontWeight: '600'
-  },
-  cancelNotice: {
-    background: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    padding: '0.75rem',
-    borderRadius: '6px',
-    textAlign: 'center' as const,
-    color: '#fca5a5',
-    fontWeight: '600',
-    fontSize: '0.8rem',
-    marginBottom: '0.75rem'
-  },
-  pauseNotice: {
-    background: 'rgba(245, 158, 11, 0.1)',
-    border: '1px solid rgba(245, 158, 11, 0.3)',
-    padding: '0.75rem',
-    borderRadius: '6px',
-    textAlign: 'center' as const,
-    color: '#fbbf24',
-    fontWeight: '600',
-    fontSize: '0.8rem',
-    marginBottom: '0.75rem'
-  },
-  quickActions: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem',
-    marginTop: '0.5rem'
-  },
-  actionBtn: {
-    background: 'rgba(59, 130, 246, 0.2)',
-    border: '1px solid rgba(59, 130, 246, 0.4)',
-    color: '#60a5fa',
-    padding: '0.6rem 1rem',
-    borderRadius: '8px',
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.4rem'
-  },
-  actionBtnCancel: {
-    background: 'rgba(239, 68, 68, 0.2)',
-    border: '1px solid rgba(239, 68, 68, 0.4)',
-    color: '#f87171'
-  },
-  actionBtnPause: {
-    background: 'rgba(245, 158, 11, 0.2)',
-    border: '1px solid rgba(245, 158, 11, 0.4)',
-    color: '#fbbf24'
-  },
-  actionBtnReactivate: {
-    background: 'rgba(16, 185, 129, 0.2)',
-    border: '1px solid rgba(16, 185, 129, 0.4)',
-    color: '#10b981',
-    width: '100%'
-  },
-  actionBtnUnpause: {
-    background: 'rgba(16, 185, 129, 0.2)',
-    border: '1px solid rgba(16, 185, 129, 0.4)',
-    color: '#10b981',
-    width: '100%'
-  },
-  backButton: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    color: '#fff',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    display: 'block',
-    margin: '0 auto',
-    width: 'fit-content'
-  },
-  contactButton: {
-    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-    border: 'none',
-    color: '#fff',
-    padding: '0.85rem 2rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    display: 'block',
-    margin: '0 auto',
-    width: 'fit-content',
-    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)'
-  }
 }
