@@ -7,7 +7,7 @@ export default function OddsRedirectPage() {
   const router = useRouter()
   
   useEffect(() => {
-    router.replace('/odds/nfl')
+    router.replace('/odds/nfl/spreads')
   }, [router])
   
   return null
