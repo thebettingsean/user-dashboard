@@ -662,10 +662,11 @@ export default function PublicBettingPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
-  const { hasPublicBetting, hasAny, isLoading: isLoadingEntitlements } = useEntitlements()
+  const { hasPublicBetting, isLoading: isLoadingEntitlements } = useEntitlements()
   
-  // User has access if they have publicBetting entitlement OR any legacy entitlement (hasAny covers legacy users)
-  const hasAccess = hasPublicBetting || hasAny
+  // User has access if they have publicBetting entitlement
+  // Legacy users already have publicBetting: true set by webhook
+  const hasAccess = hasPublicBetting
   
   const [games, setGames] = useState<GameOdds[]>([])
   const [loading, setLoading] = useState(true)

@@ -200,10 +200,11 @@ export default function PicksPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
-  const { hasPicks, hasAny, isLoading: isLoadingEntitlements } = useEntitlements()
+  const { hasPicks, isLoading: isLoadingEntitlements } = useEntitlements()
   
-  // User has access if they have picks entitlement OR any legacy entitlement (hasAny covers legacy users)
-  const hasAccess = hasPicks || hasAny
+  // User has access if they have picks entitlement
+  // Legacy users already have picks: true set by webhook
+  const hasAccess = hasPicks
   
   const [allPicks, setAllPicks] = useState<Pick[]>([])
   const [isLoadingPicks, setIsLoadingPicks] = useState(false)
