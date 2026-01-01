@@ -1396,14 +1396,17 @@ export default function PublicBettingPage() {
                   onMouseEnter={() => setShowPageInfo(true)}
                   onMouseLeave={() => setShowPageInfo(false)}
                 >
-                  <FiInfo />
+                  <FiInfo size={16} />
                 </button>
                 {showPageInfo && (
-                  <div className={styles.infoTooltip}>
-                    <div className={styles.infoTooltipTitle}>About Public Betting Data</div>
-                    <p>We&apos;ve partnered with <strong>SportsDataIO</strong>, a leading sports data provider. They supply us with data aggregated from around <strong>150 sportsbooks</strong>.</p>
-                    <p>We use this data to bring you accurate public betting splits and market indicators across all bet types and major sports.</p>
-                  </div>
+                  <>
+                    <div className={styles.tooltipOverlay} onClick={() => setShowPageInfo(false)} />
+                    <div className={styles.infoTooltip}>
+                      <div className={styles.infoTooltipTitle}>About Our Data</div>
+                      <p>We&apos;ve partnered with <strong>SportsDataIO</strong>, a premier sports analytics provider, to aggregate betting data from over <strong>150 licensed sportsbooks</strong> worldwide.</p>
+                      <p>This comprehensive dataset powers our real-time public betting splits, line movement tracking, and proprietary market indicators across all major sports and bet types.</p>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -1830,22 +1833,28 @@ export default function PublicBettingPage() {
                                               className={styles.signalInfoBtn}
                                               onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
                                             >
-                                              <FiInfo size={12} />
+                                              <FiInfo size={14} />
                                             </button>
                                             {showSignalInfo && (
-                                              <div className={styles.signalInfoTooltip}>
-                                                <div className={styles.signalInfoTitle}>Signal Indicators</div>
-                                                <div className={styles.signalInfoItem}>
-                                                  <strong>Public Respect:</strong> Majority of bets AND money on this side, with favorable line movement.
+                                              <>
+                                                <div className={styles.tooltipOverlay} onClick={() => setShowSignalInfo(false)} />
+                                                <div className={styles.signalInfoTooltip}>
+                                                  <div className={styles.signalInfoTitle}>Market Indicators</div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.publicLabel}>Public Respect</strong>
+                                                    Majority of bets AND money backing this side, with line movement confirming the public lean.
+                                                  </div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.vegasLabel}>Vegas Backed</strong>
+                                                    Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.
+                                                  </div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.whaleLabel}>Whale Respect</strong>
+                                                    Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.
+                                                  </div>
+                                                  <div className={styles.signalInfoNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</div>
                                                 </div>
-                                                <div className={styles.signalInfoItem}>
-                                                  <strong>Vegas Backed:</strong> Minority of bets AND money, but line moves IN their favor (sharp action).
-                                                </div>
-                                                <div className={styles.signalInfoItem}>
-                                                  <strong>Whale Respect:</strong> Money % significantly exceeds Bet % (big bettors), with favorable movement.
-                                                </div>
-                                                <div className={styles.signalInfoNote}>Scores are 0-100% based on split strength and line/odds movement.</div>
-                                              </div>
+                                              </>
                                             )}
                                           </div>
                                         </div>
@@ -2026,7 +2035,7 @@ export default function PublicBettingPage() {
                                               className={styles.signalInfoBtn}
                                               onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
                                             >
-                                              <FiInfo size={12} />
+                                              <FiInfo size={14} />
                                             </button>
                                           </div>
                                         </div>
