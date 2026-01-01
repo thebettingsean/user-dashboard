@@ -784,9 +784,23 @@ export async function GET(request: Request) {
             
             if (homeTeamId && awayTeamId) {
               
-              // Check if game exists to preserve opening lines
+              // Check if game exists to preserve opening lines (newest row)
               const existingGame = await clickhouseQuery<any>(`
                 SELECT * FROM games WHERE game_id = '${gameId}' ORDER BY updated_at DESC LIMIT 1
+              `)
+              
+              // ALSO find any row with real splits (non-50/50) to preserve valuable data
+              // This is important because the newest row might have 50/50 defaults
+              const gameWithRealSplits = await clickhouseQuery<any>(`
+                SELECT * FROM games 
+                WHERE game_id = '${gameId}' 
+                  AND (
+                    (public_spread_home_bet_pct != 50 AND public_spread_home_bet_pct IS NOT NULL) OR
+                    (public_ml_home_bet_pct != 50 AND public_ml_home_bet_pct IS NOT NULL) OR
+                    (public_total_over_bet_pct != 50 AND public_total_over_bet_pct IS NOT NULL)
+                  )
+                ORDER BY updated_at DESC 
+                LIMIT 1
               `)
               
               // Get TRUE opening lines AND juice from game_first_seen (same source as frontend)
@@ -831,23 +845,19 @@ export async function GET(request: Request) {
               
               // CRITICAL: Preserve existing splits if we have real data (not 50/50)
               // and the new data is just defaults (no splits from SportsDataIO)
-              const existing = existingGame.data?.[0]
+              // Use gameWithRealSplits which specifically searches for rows with real data
+              const realSplitsRow = gameWithRealSplits.data?.[0]
               const hasNewSplits = publicData && (publicData.spreadBet !== 50 || publicData.mlBet !== 50 || publicData.totalBet !== 50)
-              const existingHasRealSplits = existing && (
-                (existing.public_spread_home_bet_pct !== 50 && existing.public_spread_home_bet_pct !== null) ||
-                (existing.public_ml_home_bet_pct !== 50 && existing.public_ml_home_bet_pct !== null) ||
-                (existing.public_total_over_bet_pct !== 50 && existing.public_total_over_bet_pct !== null)
-              )
               
-              // Use new splits if available, otherwise preserve existing splits, otherwise default to 50
-              const finalSpreadBet = hasNewSplits ? publicData!.spreadBet : (existingHasRealSplits ? existing.public_spread_home_bet_pct : 50)
-              const finalSpreadMoney = hasNewSplits ? publicData!.spreadMoney : (existingHasRealSplits ? existing.public_spread_home_money_pct : 50)
-              const finalMlBet = hasNewSplits ? publicData!.mlBet : (existingHasRealSplits ? existing.public_ml_home_bet_pct : 50)
-              const finalMlMoney = hasNewSplits ? publicData!.mlMoney : (existingHasRealSplits ? existing.public_ml_home_money_pct : 50)
-              const finalTotalBet = hasNewSplits ? publicData!.totalBet : (existingHasRealSplits ? existing.public_total_over_bet_pct : 50)
-              const finalTotalMoney = hasNewSplits ? publicData!.totalMoney : (existingHasRealSplits ? existing.public_total_over_money_pct : 50)
+              // Use new splits if available, otherwise preserve splits from any previous row with real data
+              const finalSpreadBet = hasNewSplits ? publicData!.spreadBet : (realSplitsRow?.public_spread_home_bet_pct ?? 50)
+              const finalSpreadMoney = hasNewSplits ? publicData!.spreadMoney : (realSplitsRow?.public_spread_home_money_pct ?? 50)
+              const finalMlBet = hasNewSplits ? publicData!.mlBet : (realSplitsRow?.public_ml_home_bet_pct ?? 50)
+              const finalMlMoney = hasNewSplits ? publicData!.mlMoney : (realSplitsRow?.public_ml_home_money_pct ?? 50)
+              const finalTotalBet = hasNewSplits ? publicData!.totalBet : (realSplitsRow?.public_total_over_bet_pct ?? 50)
+              const finalTotalMoney = hasNewSplits ? publicData!.totalMoney : (realSplitsRow?.public_total_over_money_pct ?? 50)
               
-              if (existingHasRealSplits && !hasNewSplits) {
+              if (realSplitsRow && !hasNewSplits) {
                 console.log(`[${sportConfig.sport}] Preserving existing splits for ${game.away_team} @ ${game.home_team}: spread=${finalSpreadBet}%, ml=${finalMlBet}%`)
               }
               
