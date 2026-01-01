@@ -829,7 +829,29 @@ export async function GET(request: Request) {
                     ? gfs.opening_under_juice 
                     : consensus.underJuice)
               
-              // Calculate signals using opening vs current data
+              // CRITICAL: Preserve existing splits if we have real data (not 50/50)
+              // and the new data is just defaults (no splits from SportsDataIO)
+              const existing = existingGame.data?.[0]
+              const hasNewSplits = publicData && (publicData.spreadBet !== 50 || publicData.mlBet !== 50 || publicData.totalBet !== 50)
+              const existingHasRealSplits = existing && (
+                (existing.public_spread_home_bet_pct !== 50 && existing.public_spread_home_bet_pct !== null) ||
+                (existing.public_ml_home_bet_pct !== 50 && existing.public_ml_home_bet_pct !== null) ||
+                (existing.public_total_over_bet_pct !== 50 && existing.public_total_over_bet_pct !== null)
+              )
+              
+              // Use new splits if available, otherwise preserve existing splits, otherwise default to 50
+              const finalSpreadBet = hasNewSplits ? publicData!.spreadBet : (existingHasRealSplits ? existing.public_spread_home_bet_pct : 50)
+              const finalSpreadMoney = hasNewSplits ? publicData!.spreadMoney : (existingHasRealSplits ? existing.public_spread_home_money_pct : 50)
+              const finalMlBet = hasNewSplits ? publicData!.mlBet : (existingHasRealSplits ? existing.public_ml_home_bet_pct : 50)
+              const finalMlMoney = hasNewSplits ? publicData!.mlMoney : (existingHasRealSplits ? existing.public_ml_home_money_pct : 50)
+              const finalTotalBet = hasNewSplits ? publicData!.totalBet : (existingHasRealSplits ? existing.public_total_over_bet_pct : 50)
+              const finalTotalMoney = hasNewSplits ? publicData!.totalMoney : (existingHasRealSplits ? existing.public_total_over_money_pct : 50)
+              
+              if (existingHasRealSplits && !hasNewSplits) {
+                console.log(`[${sportConfig.sport}] Preserving existing splits for ${game.away_team} @ ${game.home_team}: spread=${finalSpreadBet}%, ml=${finalMlBet}%`)
+              }
+              
+              // Calculate signals using opening vs current data (with preserved splits if needed)
               const signals = calculateGameSignals(
                 sportConfig.sport,
                 // Spread data
@@ -839,8 +861,8 @@ export async function GET(request: Request) {
                 consensus.spreadJuiceHome,
                 spreadJuiceAwayOpen,
                 consensus.spreadJuiceAway,
-                publicData?.spreadBet || 50,
-                publicData?.spreadMoney || 50,
+                finalSpreadBet,
+                finalSpreadMoney,
                 // Total data
                 totalOpen,
                 consensus.total,
@@ -848,15 +870,15 @@ export async function GET(request: Request) {
                 consensus.overJuice,
                 underJuiceOpen,
                 consensus.underJuice,
-                publicData?.totalBet || 50,
-                publicData?.totalMoney || 50,
+                finalTotalBet,
+                finalTotalMoney,
                 // ML data
                 mlHomeOpen,
                 consensus.mlHome,
                 mlAwayOpen,
                 consensus.mlAway,
-                publicData?.mlBet || 50,
-                publicData?.mlMoney || 50
+                finalMlBet,
+                finalMlMoney
               )
               
               // Debug log for signal calculation - ALWAYS log first game of each sport
@@ -881,7 +903,7 @@ export async function GET(request: Request) {
                 console.log(`[${sportConfig.sport}] SIGNAL DETECTED for ${game.away_team} @ ${game.home_team}:`, {
                   spreadOpen, spreadCurrent: consensus.spread, movement: consensus.spread - spreadOpen,
                   juiceOpen: spreadJuiceHomeOpen, juiceCurrent: consensus.spreadJuiceHome,
-                  betPct: publicData?.spreadBet || 50, moneyPct: publicData?.spreadMoney || 50,
+                  betPct: finalSpreadBet, moneyPct: finalSpreadMoney,
                   signals: {
                     spreadHomePublic: signals.spread_home_public_respect,
                     spreadAwayPublic: signals.spread_away_public_respect,
@@ -915,9 +937,9 @@ export async function GET(request: Request) {
                   ${mlHomeOpen}, ${mlAwayOpen}, ${consensus.mlHome}, ${consensus.mlAway},
                   ${consensus.spreadJuiceHome}, ${consensus.spreadJuiceAway}, ${consensus.overJuice}, ${consensus.underJuice},
                   ${spreadJuiceHomeOpen}, ${spreadJuiceAwayOpen}, ${overJuiceOpen}, ${underJuiceOpen},
-                  ${publicData?.spreadBet || 50}, ${publicData?.spreadMoney || 50},
-                  ${publicData?.mlBet || 50}, ${publicData?.mlMoney || 50},
-                  ${publicData?.totalBet || 50}, ${publicData?.totalMoney || 50},
+                  ${finalSpreadBet}, ${finalSpreadMoney},
+                  ${finalMlBet}, ${finalMlMoney},
+                  ${finalTotalBet}, ${finalTotalMoney},
                   ${signals.spread_home_public_respect}, ${signals.spread_home_vegas_backed}, ${signals.spread_home_whale_respect},
                   ${signals.spread_away_public_respect}, ${signals.spread_away_vegas_backed}, ${signals.spread_away_whale_respect},
                   ${signals.total_over_public_respect}, ${signals.total_over_vegas_backed}, ${signals.total_over_whale_respect},
