@@ -230,7 +230,7 @@ export default function SubscribePage() {
                 </>
               ) : (
                 <>
-                  Start Free Trial
+                  Start 3 Day Free Trial
                   <FiChevronRight size={18} />
                 </>
               )}
