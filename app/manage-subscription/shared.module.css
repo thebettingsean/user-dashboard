@@ -1,0 +1,612 @@
+/* Shared styles for manage-subscription subpages */
+/* Design System - Dark Theme */
+
+.container {
+  min-height: 100vh;
+  background: #0C0E12 !important;
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.headerSpacer {
+  height: 40px;
+}
+
+.innerContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+
+/* Loading State */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 13px;
+  color: #696969;
+}
+
+/* Cards */
+.card {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cardHighlight {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cardOffer {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.cardFinalOffer {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.cardWarning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cardSuccess {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.cardError {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Card Headers */
+.cardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardTitleGold {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fbbf24;
+  margin: 0 0 12px 0;
+}
+
+.cardTitlePurple {
+  font-size: 20px;
+  font-weight: 700;
+  color: #a78bfa;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.cardTitleGreen {
+  font-size: 18px;
+  font-weight: 600;
+  color: #10b981;
+  margin: 0 0 12px 0;
+}
+
+.cardTitleRed {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ef4444;
+  margin: 0 0 12px 0;
+}
+
+/* Card Content */
+.cardText {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.cardTextStrong {
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+/* Icon containers */
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.icon {
+  font-size: 40px;
+}
+
+.iconGold {
+  color: #fbbf24;
+}
+
+.iconPurple {
+  color: #a78bfa;
+}
+
+.iconGreen {
+  color: #10b981;
+}
+
+.iconRed {
+  color: #ef4444;
+}
+
+.iconOrange {
+  color: #f59e0b;
+}
+
+/* Info Box */
+.infoBox {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Lists */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listItem {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.listItem::before {
+  content: '•';
+  color: #696969;
+}
+
+.listItemCheck {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.listItemCheck::before {
+  content: '✓';
+  color: #10b981;
+}
+
+.listItemWarning {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Reason Selection */
+.reasonsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.reasonLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.reasonLabel:hover {
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+.reasonLabelSelected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.reasonCheckbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+}
+
+/* Textarea */
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.textarea::placeholder {
+  color: #696969;
+}
+
+/* Buttons */
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.btnPrimary:hover {
+  background: #2563eb;
+}
+
+.btnPrimary:disabled {
+  background: rgba(59, 130, 246, 0.3);
+  cursor: not-allowed;
+}
+
+.btnSuccess {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.btnSuccess:hover {
+  background: #059669;
+}
+
+.btnSuccess:disabled {
+  background: rgba(16, 185, 129, 0.3);
+  cursor: not-allowed;
+}
+
+.btnWarning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f59e0b;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.btnWarning:hover {
+  background: #d97706;
+}
+
+.btnWarning:disabled {
+  background: rgba(245, 158, 11, 0.3);
+  cursor: not-allowed;
+}
+
+.btnDanger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f87171;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.btnDanger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.btnSecondary:hover {
+  border-color: rgba(71, 85, 105, 0.5);
+  color: #fff;
+}
+
+.btnBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  margin-top: 24px;
+  background: transparent;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btnBack:hover {
+  border-color: rgba(71, 85, 105, 0.5);
+  color: #fff;
+}
+
+/* Upgrade Cards */
+.upgradesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .upgradesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.upgradeCard {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.15s ease;
+}
+
+.upgradeCard:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.upgradeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.upgradeName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #10b981;
+  margin: 0;
+}
+
+.savingsBadge {
+  background: #10b981;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.upgradePrice {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.upgradePeriod {
+  font-size: 13px;
+  font-weight: 400;
+  color: #696969;
+}
+
+/* Legacy badge */
+.legacyBadge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Notice boxes */
+.noticeBox {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #fbbf24;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Current plan info */
+.currentPlanRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.currentPlanName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.currentPlanPrice {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3b82f6;
+}
+
