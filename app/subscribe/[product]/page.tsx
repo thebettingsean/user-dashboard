@@ -7,6 +7,7 @@ import { FiChevronRight, FiCheck } from 'react-icons/fi'
 import { IoShieldCheckmark } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { PRODUCTS, getUpsellForProduct, calculateTotal } from '@/lib/config/subscriptions'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import styles from './subscribe.module.css'
 
 export default function SubscribePage() {
@@ -18,6 +19,13 @@ export default function SubscribePage() {
   const productId = params.product as string
   const product = PRODUCTS[productId]
   const upsell = getUpsellForProduct(productId)
+  
+  // Check if user already has the upsell entitlement
+  const { has } = useEntitlements()
+  const userAlreadyHasUpsell = upsell ? has(upsell.entitlement) : false
+  
+  // Only show upsell if user doesn't already have it
+  const showUpsell = upsell && !userAlreadyHasUpsell
   
   const [includeUpsell, setIncludeUpsell] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -149,8 +157,8 @@ export default function SubscribePage() {
               ))}
             </div>
             
-            {/* Upsell Option */}
-            {upsell && (
+            {/* Upsell Option - Only show if user doesn't already have it */}
+            {showUpsell && (
               <div 
                 className={`${styles.upsellCard} ${includeUpsell ? styles.upsellActive : ''}`}
                 onClick={() => setIncludeUpsell(!includeUpsell)}
