@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
-import { Loader2, Check, ChevronRight, Sparkles, Shield, Zap } from 'lucide-react'
-import { PRODUCTS, getUpsellForProduct, calculateTotal, ProductConfig } from '@/lib/config/subscriptions'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { FiChevronRight, FiCheck } from 'react-icons/fi'
+import { IoShieldCheckmark } from 'react-icons/io5'
+import { PRODUCTS, getUpsellForProduct, calculateTotal } from '@/lib/config/subscriptions'
 import styles from './subscribe.module.css'
 
 export default function SubscribePage() {
   const router = useRouter()
   const params = useParams()
   const { isSignedIn, user, isLoaded } = useUser()
+  const { openSignIn } = useClerk()
   
   const productId = params.product as string
   const product = PRODUCTS[productId]
@@ -24,21 +26,22 @@ export default function SubscribePage() {
   const { items, total } = calculateTotal(productId, includeUpsell)
   const savings = upsell ? (upsell.standalone.price - upsell.addon.price).toFixed(2) : '0'
   
+  // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push(`/sign-in?redirect_url=/subscribe/${productId}`)
+      openSignIn({ redirectUrl: `/subscribe/${productId}` })
     }
-  }, [isLoaded, isSignedIn, productId, router])
+  }, [isLoaded, isSignedIn, productId, openSignIn])
   
   // Invalid product
   if (!product) {
     return (
       <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.errorIcon}>!</div>
-          <h2 className={styles.title}>Product Not Found</h2>
-          <p className={styles.subtitle}>The requested product doesn&apos;t exist.</p>
-          <button onClick={() => router.push('/pricing')} className={styles.primaryButton}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.emptyState}>
+          <div className={styles.emptyTitle}>Product Not Found</div>
+          <div className={styles.emptySubtitle}>The requested product doesn&apos;t exist.</div>
+          <button onClick={() => router.push('/pricing')} className={styles.primaryBtn}>
             View Pricing
           </button>
         </div>
@@ -77,12 +80,14 @@ export default function SubscribePage() {
     }
   }
   
+  // Loading state
   if (!isLoaded || !isSignedIn) {
     return (
       <div className={styles.container}>
-        <div className={styles.card}>
-          <Loader2 className={styles.spinner} />
-          <p className={styles.subtitle}>Loading...</p>
+        <div className={styles.headerSpacer} />
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner} />
+          <div className={styles.loadingText}>Loading...</div>
         </div>
       </div>
     )
@@ -90,146 +95,146 @@ export default function SubscribePage() {
   
   return (
     <div className={styles.container}>
-      {/* Background elements */}
-      <div className={styles.bgOrb1} />
-      <div className={styles.bgOrb2} />
-      <div className={styles.bgGrid} />
+      <div className={styles.headerSpacer} />
       
-      <div className={styles.content}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.badge}>
-            <Sparkles size={14} />
-            <span>3-Day Free Trial</span>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Complete Your Subscription</h1>
+            </div>
+            <p className={styles.subtitle}>
+              Start your 3-day free trial. Cancel anytime before it ends.
+            </p>
           </div>
-          <h1 className={styles.mainTitle}>Complete Your Subscription</h1>
-          <p className={styles.mainSubtitle}>
-            Cancel anytime during your trial. No charge until day 4.
-          </p>
         </div>
-        
-        <div className={styles.grid}>
-          {/* Left: Product Selection */}
-          <div className={styles.selectionCard}>
-            <h2 className={styles.sectionTitle}>Your Plan</h2>
-            
-            {/* Primary Product */}
-            <div className={styles.productCard}>
-              <div className={styles.productHeader}>
-                <div className={styles.productIcon}>
-                  {productId === 'picks' ? <Zap size={24} /> : <Shield size={24} />}
-                </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productName}>{product.name}</h3>
-                  <p className={styles.productDesc}>{product.description}</p>
-                </div>
-                <div className={styles.productPrice}>
-                  <span className={styles.priceAmount}>${product.standalone.price.toFixed(2)}</span>
-                  <span className={styles.pricePeriod}>/month</span>
-                </div>
-              </div>
-              
-              <ul className={styles.featureList}>
-                {product.features.map((feature, i) => (
-                  <li key={i} className={styles.featureItem}>
-                    <Check size={16} className={styles.featureCheck} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+      </header>
+      
+      {/* Content */}
+      <div className={styles.contentSection}>
+        <div className={styles.checkoutGrid}>
+          {/* Left Column - Plan Selection */}
+          <div className={styles.planCard}>
+            <div className={styles.planCardHeader}>
+              <span className={styles.planCardLabel}>Your Plan</span>
             </div>
             
-            {/* Upsell */}
+            {/* Primary Product */}
+            <div className={styles.productItem}>
+              <div className={styles.productItemLeft}>
+                <div className={styles.productIcon}>
+                  {productId === 'picks' ? '🎯' : '📊'}
+                </div>
+                <div className={styles.productInfo}>
+                  <span className={styles.productName}>{product.name}</span>
+                  <span className={styles.productDesc}>{product.description}</span>
+                </div>
+              </div>
+              <div className={styles.productPrice}>
+                <span className={styles.priceAmount}>${product.standalone.price.toFixed(2)}</span>
+                <span className={styles.pricePeriod}>/mo</span>
+              </div>
+            </div>
+            
+            {/* Features List */}
+            <div className={styles.featuresList}>
+              {product.features.map((feature, i) => (
+                <div key={i} className={styles.featureItem}>
+                  <FiCheck className={styles.featureCheck} />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Upsell Option */}
             {upsell && (
               <div 
                 className={`${styles.upsellCard} ${includeUpsell ? styles.upsellActive : ''}`}
                 onClick={() => setIncludeUpsell(!includeUpsell)}
               >
                 <div className={styles.upsellCheckbox}>
-                  {includeUpsell && <Check size={16} />}
+                  {includeUpsell && <FiCheck size={14} />}
                 </div>
-                
                 <div className={styles.upsellContent}>
                   <div className={styles.upsellHeader}>
-                    <h4 className={styles.upsellName}>
-                      Add {upsell.name}
-                    </h4>
-                    <div className={styles.upsellSavings}>
-                      Save ${savings}
-                    </div>
+                    <span className={styles.upsellName}>Add {upsell.name}</span>
+                    <span className={styles.upsellSavings}>Save ${savings}</span>
                   </div>
-                  <p className={styles.upsellDesc}>{upsell.description}</p>
-                  
+                  <span className={styles.upsellDesc}>{upsell.description}</span>
                   <div className={styles.upsellPricing}>
-                    <span className={styles.upsellOriginal}>
-                      ${upsell.standalone.price.toFixed(2)}
-                    </span>
-                    <ChevronRight size={14} className={styles.upsellArrow} />
-                    <span className={styles.upsellDiscounted}>
-                      ${upsell.addon.price.toFixed(2)}/mo
-                    </span>
+                    <span className={styles.upsellOriginal}>${upsell.standalone.price.toFixed(2)}</span>
+                    <FiChevronRight size={12} className={styles.upsellArrow} />
+                    <span className={styles.upsellDiscounted}>${upsell.addon.price.toFixed(2)}/mo</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
           
-          {/* Right: Summary & Checkout */}
+          {/* Right Column - Summary & Checkout */}
           <div className={styles.summaryCard}>
-            <h2 className={styles.sectionTitle}>Order Summary</h2>
+            <div className={styles.summaryCardHeader}>
+              <span className={styles.summaryCardLabel}>Order Summary</span>
+            </div>
             
+            {/* Line Items */}
             <div className={styles.summaryItems}>
               {items.map((item, i) => (
                 <div key={i} className={styles.summaryItem}>
                   <span className={styles.itemName}>{item.name}</span>
-                  <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
+                  <span className={styles.itemPrice}>${item.price.toFixed(2)}/mo</span>
                 </div>
               ))}
             </div>
             
             <div className={styles.summaryDivider} />
             
-            <div className={styles.summaryTotal}>
-              <div className={styles.totalRow}>
+            {/* Trial Info */}
+            <div className={styles.trialBox}>
+              <div className={styles.trialRow}>
                 <span>Due today</span>
-                <span className={styles.freeText}>$0.00</span>
+                <span className={styles.trialFree}>$0.01</span>
               </div>
-              <div className={styles.totalRowMain}>
-                <span>After trial</span>
-                <span className={styles.totalAmount}>${total.toFixed(2)}/mo</span>
+              <div className={styles.trialRowMain}>
+                <span>After 3-day trial</span>
+                <span className={styles.trialAmount}>${total.toFixed(2)}/mo</span>
               </div>
             </div>
             
-            <div className={styles.trialNote}>
-              <Shield size={16} />
-              <span>Your card will be charged ${total.toFixed(2)} on day 4 unless you cancel</span>
+            {/* Trust Badge */}
+            <div className={styles.trustBadge}>
+              <IoShieldCheckmark className={styles.trustIcon} />
+              <span>Card charged ${total.toFixed(2)} on day 4 unless cancelled</span>
             </div>
             
+            {/* Error */}
             {error && (
               <div className={styles.errorBox}>
                 {error}
               </div>
             )}
             
+            {/* CTA Button */}
             <button 
-              className={styles.checkoutButton}
+              className={styles.ctaButton}
               onClick={handleSubscribe}
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Loader2 className={styles.btnSpinner} />
+                  <div className={styles.btnSpinner} />
                   Creating checkout...
                 </>
               ) : (
                 <>
                   Start Free Trial
-                  <ChevronRight size={20} />
+                  <FiChevronRight size={18} />
                 </>
               )}
             </button>
             
-            <p className={styles.guarantee}>
+            <p className={styles.ctaNote}>
               Cancel anytime • No hidden fees • Secure checkout
             </p>
           </div>
@@ -238,4 +243,3 @@ export default function SubscribePage() {
     </div>
   )
 }
-

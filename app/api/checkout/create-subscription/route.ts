@@ -7,10 +7,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover'
 })
 
+// $0.01 card verification charge price ID
+const VERIFICATION_PRICE_ID = 'price_1SksHI07WIhZOuSI2NXWVsRd'
+
 /**
  * POST /api/checkout/create-subscription
- * Creates a Stripe Checkout session with multiple line items (for bundles)
- * Supports 3-day free trial
+ * Creates a Stripe Checkout session with:
+ * - Subscription line items (3-day free trial)
+ * - $0.01 one-time verification charge
  */
 export async function POST(request: NextRequest) {
   try {
@@ -54,13 +58,19 @@ export async function POST(request: NextRequest) {
     console.log(`   Price IDs: ${priceIds.join(', ')}`)
     console.log(`   Entitlements: ${JSON.stringify(entitlements)}`)
 
-    // Build line items - one for each price
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceIds.map(
-      (priceId: string) => ({
+    // Build line items - subscription prices + verification charge
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      // Add the $0.01 verification charge first
+      {
+        price: VERIFICATION_PRICE_ID,
+        quantity: 1,
+      },
+      // Then add subscription prices
+      ...priceIds.map((priceId: string) => ({
         price: priceId,
         quantity: 1,
-      })
-    )
+      }))
+    ]
 
     // Create checkout session with subscription mode
     const session = await stripe.checkout.sessions.create({
