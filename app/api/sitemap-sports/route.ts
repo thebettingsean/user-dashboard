@@ -11,7 +11,7 @@ export async function GET() {
   // Main sports aggregator pages
   pages.push(
     { url: `${baseUrl}/sports`, lastmod: today, changefreq: 'hourly', priority: '0.9' },
-    { url: `${baseUrl}/sports/picks`, lastmod: today, changefreq: 'hourly', priority: '0.9' },
+    { url: `${baseUrl}/picks`, lastmod: today, changefreq: 'hourly', priority: '0.9' },
     { url: `${baseUrl}/sports/ai-scripts`, lastmod: today, changefreq: 'hourly', priority: '0.9' },
     { url: `${baseUrl}/sports/public-betting`, lastmod: today, changefreq: 'hourly', priority: '0.9' }
   )

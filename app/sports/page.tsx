@@ -307,7 +307,7 @@ function SportsSelectorPageContent() {
   
   // Determine active tab from URL
   const activeTab: TabKey = useMemo(() => {
-    if (pathname === '/sports/picks') return 'picks'
+    if (pathname === '/picks' || pathname === '/sports/picks') return 'picks'
     if (pathname === '/sports/ai-scripts') return 'scripts'
     if (pathname === '/sports/public-betting') return 'public'
     return 'games'
@@ -356,7 +356,7 @@ function SportsSelectorPageContent() {
   const handleTabSelect = (tab: TabKey) => {
     const routes: Record<TabKey, string> = {
       games: '/sports',
-      picks: '/sports/picks',
+      picks: '/picks',
       scripts: '/sports/ai-scripts',
       public: '/sports/public-betting'
     }

@@ -662,7 +662,9 @@ export default function PicksPage() {
                               <div className={styles.pickBodyLeft}>
                                 {/* Line 1: Bet Title with Logo */}
                                 <div className={styles.pickTitleRow}>
-                                  <BetLogo pick={pick} />
+                                  <div style={(!isSignedIn || !hasAccess) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
+                                    <BetLogo pick={pick} />
+                                  </div>
                                   {!isSignedIn || !hasAccess ? (
                                     <div className={styles.pickAnalysisLocked}>
                                       <FaLock className={styles.lockIcon} />
@@ -678,7 +680,10 @@ export default function PicksPage() {
                                 </div>
                                 
                                 {/* Line 2: Game Time Only */}
-                                <div className={styles.pickGameTime}>
+                                <div 
+                                  className={styles.pickGameTime}
+                                  style={(!isSignedIn || !hasAccess) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                                >
                                   {new Date(pick.game_time).toLocaleString('en-US', {
                                     timeZone: 'America/New_York',
                                     month: 'short',
