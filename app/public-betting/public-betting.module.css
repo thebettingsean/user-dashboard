@@ -1309,15 +1309,15 @@
 }
 
 .mobileSignalValue.publicColor {
-  color: #73F97C;
+  color: rgba(96, 165, 250, 0.9);
 }
 
 .mobileSignalValue.vegasColor {
-  color: #FBBF24;
+  color: rgba(251, 191, 36, 0.9);
 }
 
 .mobileSignalValue.whaleColor {
-  color: #C084FC;
+  color: rgba(196, 181, 253, 0.9);
 }
 
 .mobileSignalBarContainer {
@@ -1336,15 +1336,15 @@
 }
 
 .mobileSignalBarSegment.publicFilled {
-  background: linear-gradient(180deg, #3B82F6, #60A5FA);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.8));
 }
 
 .mobileSignalBarSegment.vegasFilled {
-  background: linear-gradient(180deg, #EAB308, #FBBF24);
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.8), rgba(251, 191, 36, 0.8));
 }
 
 .mobileSignalBarSegment.whaleFilled {
-  background: linear-gradient(180deg, #A855F7, #C084FC);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.8), rgba(196, 181, 253, 0.8));
 }
 
 .mobileNoSignal {
@@ -1729,21 +1729,21 @@
 }
 
 .signalPublic {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60A5FA;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  color: rgba(96, 165, 250, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .signalVegas {
-  background: rgba(234, 179, 8, 0.15);
-  color: #FBBF24;
-  border: 1px solid rgba(234, 179, 8, 0.3);
+  background: rgba(217, 119, 6, 0.1);
+  color: rgba(251, 191, 36, 0.9);
+  border: 1px solid rgba(217, 119, 6, 0.2);
 }
 
 .signalWhale {
-  background: rgba(168, 85, 247, 0.15);
-  color: #C084FC;
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.1);
+  color: rgba(196, 181, 253, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
 .signalEmpty {
@@ -1852,15 +1852,15 @@
 }
 
 .signalBarFill.signalPublic {
-  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.8));
 }
 
 .signalBarFill.signalVegas {
-  background: linear-gradient(90deg, #EAB308, #FBBF24);
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.8), rgba(251, 191, 36, 0.8));
 }
 
 .signalBarFill.signalWhale {
-  background: linear-gradient(90deg, #A855F7, #C084FC);
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.8), rgba(196, 181, 253, 0.8));
 }
 
 .noSignal {
@@ -2306,15 +2306,15 @@
 }
 
 .signalValueV2.activePublic {
-  color: #73F97C;
+  color: rgba(96, 165, 250, 0.9);
 }
 
 .signalValueV2.activeVegas {
-  color: #FBBF24;
+  color: rgba(251, 191, 36, 0.9);
 }
 
 .signalValueV2.activeWhale {
-  color: #C084FC;
+  color: rgba(196, 181, 253, 0.9);
 }
 
 /* Segmented Bar Graph Container */
@@ -2339,15 +2339,15 @@
 }
 
 .signalBarSegment.filled.publicBar {
-  background: linear-gradient(180deg, #3B82F6, #60A5FA);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.8));
 }
 
 .signalBarSegment.filled.vegasBar {
-  background: linear-gradient(180deg, #EAB308, #FBBF24);
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.8), rgba(251, 191, 36, 0.8));
 }
 
 .signalBarSegment.filled.whaleBar {
-  background: linear-gradient(180deg, #A855F7, #C084FC);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.8), rgba(196, 181, 253, 0.8));
 }
 
 /* Continuous bar fallback (simpler) */
@@ -2358,15 +2358,15 @@
 }
 
 .signalBarV2.publicBar {
-  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.8));
 }
 
 .signalBarV2.vegasBar {
-  background: linear-gradient(90deg, #EAB308, #FBBF24);
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.8), rgba(251, 191, 36, 0.8));
 }
 
 .signalBarV2.whaleBar {
-  background: linear-gradient(90deg, #A855F7, #C084FC);
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.8), rgba(196, 181, 253, 0.8));
 }
 
 .noSignalV2 {

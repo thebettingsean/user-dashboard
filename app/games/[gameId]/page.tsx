@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
-import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw } from 'react-icons/fi'
+import { supabase } from '@/lib/supabase'
+import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight } from 'react-icons/fi'
 import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { MdLockOutline } from 'react-icons/md'
@@ -79,6 +80,125 @@ function getTeamName(fullName: string): string {
   return words[words.length - 1] || fullName
 }
 
+// Bet Logo Component - determines which logo to show based on bet type
+function BetLogo({ pick, gameData }: { pick: any; gameData: GameData | null }) {
+  // If prop_image exists, show player image
+  if (pick.prop_image) {
+    return (
+      <img
+        src={pick.prop_image}
+        alt="Player"
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  if (!gameData) return null
+
+  // Check if it's a total (O/U) - both logos
+  const isTotal = pick.bet_title?.includes(' O') || pick.bet_title?.includes(' U') || 
+                   pick.bet_title?.includes('/')
+  
+  if (isTotal && gameData.awayTeamLogo && gameData.homeTeamLogo) {
+    return (
+      <div style={{ position: 'relative', width: 36, height: 28, flexShrink: 0 }}>
+        <img
+          src={gameData.awayTeamLogo}
+          alt=""
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 0,
+            zIndex: 1,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+        <img
+          src={gameData.homeTeamLogo}
+          alt=""
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 14,
+            zIndex: 2,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+      </div>
+    )
+  }
+
+  // For spreads/MLs, try to determine which team is being bet
+  const betTitleLower = (pick.bet_title || '').toLowerCase()
+  const awayTeam = gameData.awayTeam.toLowerCase()
+  const homeTeam = gameData.homeTeam.toLowerCase()
+  
+  if (homeTeam && betTitleLower.includes(homeTeam) && gameData.homeTeamLogo) {
+    return (
+      <img
+        src={gameData.homeTeamLogo}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+  
+  if (awayTeam && betTitleLower.includes(awayTeam) && gameData.awayTeamLogo) {
+    return (
+      <img
+        src={gameData.awayTeamLogo}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  // Default to home team logo
+  if (gameData.homeTeamLogo) {
+    return (
+      <img
+        src={gameData.homeTeamLogo}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  return null
+}
+
 // Custom Tooltip for the graph
 const CustomTooltip = ({ active, payload, marketType }: any) => {
   if (active && payload && payload.length) {
@@ -129,6 +249,11 @@ export default function GameDetailPage() {
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
   const [showAllOdds, setShowAllOdds] = useState(false)
+  
+  // Picks tab state
+  const [gamePicks, setGamePicks] = useState<any[]>([])
+  const [picksLoading, setPicksLoading] = useState(false)
+  const [expandedPicks, setExpandedPicks] = useState<Set<string>>(new Set())
   
   // Access checks
   const canViewPicks = hasPicks || hasAny
@@ -181,6 +306,20 @@ export default function GameDetailPage() {
     }
   }, [activeTab, gameId])
   
+  // Fetch picks when picks tab is active
+  useEffect(() => {
+    if (activeTab === 'picks' && gameId && canViewPicks && gameData) {
+      fetchGamePicks()
+    }
+  }, [activeTab, gameId, canViewPicks])
+  
+  // Reset expanded picks when switching away from picks tab
+  useEffect(() => {
+    if (activeTab !== 'picks') {
+      setExpandedPicks(new Set())
+    }
+  }, [activeTab])
+  
   const fetchTimelineData = async () => {
     setTimelineLoading(true)
     try {
@@ -201,6 +340,93 @@ export default function GameDetailPage() {
     } finally {
       setTimelineLoading(false)
     }
+  }
+  
+  const fetchGamePicks = async () => {
+    setPicksLoading(true)
+    try {
+      if (!gameData) {
+        setGamePicks([])
+        setPicksLoading(false)
+        return
+      }
+
+      // First try to match by game_id
+      let { data, error } = await supabase
+        .from('picks')
+        .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
+        .eq('game_id', gameId)
+        .order('posted_at', { ascending: false })
+
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      // If no picks found by game_id, try matching by game time (same day)
+      if ((data || []).length === 0 && gameData.kickoff) {
+        const gameTime = new Date(gameData.kickoff)
+        const startTime = new Date(gameTime)
+        startTime.setHours(0, 0, 0, 0)
+        const endTime = new Date(gameTime)
+        endTime.setHours(23, 59, 59, 999)
+
+        const { data: timeData, error: timeError } = await supabase
+          .from('picks')
+          .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
+          .gte('game_time', startTime.toISOString())
+          .lte('game_time', endTime.toISOString())
+          .order('posted_at', { ascending: false })
+
+        if (!timeError && timeData && timeData.length > 0) {
+          const awayTeamName = gameData.awayTeam.toLowerCase()
+          const homeTeamName = gameData.homeTeam.toLowerCase()
+          
+          const filtered = timeData.filter((p: any) => {
+            const title = (p.game_title || p.bet_title || '').toLowerCase()
+            const hasAwayTeam = awayTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
+            const hasHomeTeam = homeTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
+            return hasAwayTeam || hasHomeTeam
+          })
+          
+          data = filtered.length > 0 ? filtered : timeData
+        }
+      }
+
+      const picks = (data || []).map((p: any) => ({
+        ...p,
+        bettor_name: p.bettors?.name || 'Unknown',
+        bettor_record: p.bettors?.record || '',
+        bettor_win_streak: p.bettors?.win_streak || 0,
+        bettor_profile_initials: p.bettors?.profile_initials || '??',
+        bettor_profile_image: p.bettors?.profile_image || null,
+        // Use gameData team logos if available
+        away_team_image: gameData?.awayTeamLogo || p.away_team_image || null,
+        home_team_image: gameData?.homeTeamLogo || p.home_team_image || null,
+        prop_image: p.prop_image || null,
+        game_title: gameData ? `${gameData.awayTeam} @ ${gameData.homeTeam}` : p.game_title || '',
+        analysis: p.analysis || null,
+      }))
+
+      setGamePicks(picks)
+    } catch (error) {
+      console.error('Error fetching game picks:', error)
+      setGamePicks([])
+    } finally {
+      setPicksLoading(false)
+    }
+  }
+  
+  const togglePickAnalysis = (pickId: string) => {
+    setExpandedPicks((prev) => {
+      const next = new Set(prev)
+      if (next.has(pickId)) {
+        next.delete(pickId)
+      } else {
+        next.add(pickId)
+      }
+      return next
+    })
   }
   
   const handleSubscribe = (type: 'picks' | 'publicBetting') => {
@@ -534,16 +760,100 @@ export default function GameDetailPage() {
                 <h2 className={styles.sectionTitle}>Analyst Picks</h2>
                 <p className={styles.sectionSubtitle}>Expert picks for this game</p>
                 
-                <div className={styles.viewFullCta}>
-                  <GiSupersonicArrow size={24} />
-                  <span>View picks for this game on the Picks page</span>
-                  <button 
-                    className={styles.ctaBtn}
-                    onClick={() => router.push('/picks')}
-                  >
-                    Go to Picks
-                  </button>
-                </div>
+                {picksLoading ? (
+                  <div className={styles.loading}>Loading picks...</div>
+                ) : gamePicks.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <p>No picks available for this game yet.</p>
+                  </div>
+                ) : (
+                  <div className={styles.picksList}>
+                    {gamePicks.map((pick: any) => {
+                      const isExpanded = expandedPicks.has(pick.id)
+                      return (
+                        <div 
+                          key={pick.id} 
+                          className={styles.pickCard}
+                        >
+                          <div 
+                            className={styles.pickCardMain}
+                            onClick={() => togglePickAnalysis(pick.id)}
+                          >
+                            <div className={styles.pickBodyLeft}>
+                              {/* Line 1: Bet Title with Logo */}
+                              <div className={styles.pickTitleRow}>
+                                <div style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
+                                  <BetLogo pick={pick} gameData={gameData} />
+                                </div>
+                                <span 
+                                  className={styles.pickTitle}
+                                  style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                                >
+                                  {pick.bet_title || 'Pick'}
+                                </span>
+                              </div>
+                              
+                              {/* Line 2: Game Time Only */}
+                              <div 
+                                className={styles.pickGameTime}
+                                style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                              >
+                                {new Date(pick.game_time).toLocaleString('en-US', {
+                                  timeZone: 'America/New_York',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                              </div>
+                            </div>
+                            <div className={styles.pickRightSide}>
+                              <div className={styles.pickHeaderMeta}>
+                                {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
+                                {pick.odds} | {(pick.units_at_risk || pick.units || 0).toFixed(1)}u
+                              </div>
+                              <div className={styles.pickExpandIconWrapper}>
+                                <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
+                              </div>
+                            </div>
+                          </div>
+                          {pick.analysis && (
+                            <>
+                              {!isSignedIn || !canViewPicks ? (
+                                <div
+                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (!isSignedIn) {
+                                      openSignUp({ redirectUrl: '/subscribe/picks' })
+                                    } else if (!canViewPicks) {
+                                      router.push('/subscribe/picks')
+                                    }
+                                  }}
+                                  style={{ 
+                                    filter: 'blur(6px)', 
+                                    userSelect: 'none',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                </div>
+                              ) : (
+                                <div
+                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </>
             ) : (
               <div className={styles.lockedSection}>

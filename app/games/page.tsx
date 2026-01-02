@@ -116,10 +116,8 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
       
       <div className={styles.featuredMeta}>
         <div className={styles.featuredTime}>
-          <FiClock size={14} />
           <span>{formatGameTime(game.kickoff)}</span>
         </div>
-        <span className={styles.sportBadge}>{game.sport}</span>
       </div>
       
       {/* Odds Summary Row */}

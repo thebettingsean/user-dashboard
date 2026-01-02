@@ -7,6 +7,20 @@ export default function Footer() {
       <div className={styles.footerContent}>
         {/* Links Grid */}
         <div className={styles.linksGrid}>
+          {/* Company Section */}
+          <div className={styles.footerSection}>
+            <h4 className={styles.footerHeading}>About Us</h4>
+            <Link href="/company" className={styles.footerLink}>
+              Company
+            </Link>
+            <Link href="/contact" className={styles.footerLink}>
+              Contact
+            </Link>
+            <Link href="/faq" className={styles.footerLink}>
+              FAQ
+            </Link>
+          </div>
+
           {/* Tools Section */}
           <div className={styles.footerSection}>
             <h4 className={styles.footerHeading}>Our Tools</h4>
@@ -41,20 +55,6 @@ export default function Footer() {
             </Link>
           </div>
 
-          {/* Company Section */}
-          <div className={styles.footerSection}>
-            <h4 className={styles.footerHeading}>Company</h4>
-            <Link href="/company" className={styles.footerLink}>
-              Company
-            </Link>
-            <Link href="/contact" className={styles.footerLink}>
-              Contact
-            </Link>
-            <Link href="/faq" className={styles.footerLink}>
-              FAQ
-            </Link>
-          </div>
-
           {/* Legal Section */}
           <div className={styles.footerSection}>
             <h4 className={styles.footerHeading}>Legal</h4>
@@ -79,9 +79,6 @@ export default function Footer() {
           />
           <p className={styles.tagline}>
             © {new Date().getFullYear()} The Betting Insider. All rights reserved.
-          </p>
-          <p className={styles.tagline}>
-            All data provided by Trendline Labs
           </p>
         </div>
 
