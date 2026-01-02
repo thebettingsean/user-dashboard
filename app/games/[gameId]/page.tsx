@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
-import { FiChevronLeft, FiClock, FiTrendingUp, FiArrowRight, FiExternalLink } from 'react-icons/fi'
+import { FiChevronLeft, FiClock, FiTrendingUp, FiArrowRight, FiExternalLink, FiRefreshCw } from 'react-icons/fi'
+import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { MdLockOutline } from 'react-icons/md'
 import styles from './gameDetail.module.css'
@@ -63,6 +64,8 @@ export default function GameDetailPage() {
   
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [script, setScript] = useState<string | null>(null)
+  const [scriptLoading, setScriptLoading] = useState(false)
+  const [scriptError, setScriptError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'script' | 'odds' | 'picks' | 'betting'>('script')
   
@@ -87,9 +90,9 @@ export default function GameDetailPage() {
           }
         }
         
-        // Fetch script for this game (if available)
+        // Fetch FREE script for this game (if available)
         try {
-          const scriptRes = await fetch(`/api/scripts/${gameId}?sport=${sport}`)
+          const scriptRes = await fetch(`/api/game-scripts/free?gameId=${gameId}&sport=${sport.toUpperCase()}`)
           const scriptData = await scriptRes.json()
           if (scriptData.script) {
             setScript(scriptData.script)
@@ -113,6 +116,29 @@ export default function GameDetailPage() {
       openSignUp({ redirectUrl: `/subscribe/${type}` })
     } else {
       router.push(`/subscribe/${type}`)
+    }
+  }
+  
+  // Generate FREE script on demand
+  const generateScript = async () => {
+    if (!gameData) return
+    
+    setScriptLoading(true)
+    setScriptError(null)
+    
+    try {
+      const res = await fetch(`/api/game-scripts/free?gameId=${gameId}&sport=${gameData.sport}&force=true`)
+      const data = await res.json()
+      
+      if (data.error) {
+        setScriptError(data.error)
+      } else if (data.script) {
+        setScript(data.script)
+      }
+    } catch (error) {
+      setScriptError('Failed to generate script. Please try again.')
+    } finally {
+      setScriptLoading(false)
     }
   }
   
@@ -250,21 +276,52 @@ export default function GameDetailPage() {
         {activeTab === 'script' && (
           <div className={styles.scriptSection}>
             <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Game Script Analysis</h2>
+              <h2 className={styles.sectionTitle}>Game Preview & Analysis</h2>
               <p className={styles.sectionSubtitle}>AI-powered breakdown based on team stats & rankings</p>
             </div>
             
-            {script ? (
+            {scriptLoading ? (
+              <div className={styles.scriptLoading}>
+                <div className={styles.loadingSpinner}>
+                  <FiRefreshCw size={24} className={styles.spinIcon} />
+                </div>
+                <p>Generating your game analysis...</p>
+                <p className={styles.loadingSubtext}>This usually takes 10-15 seconds</p>
+              </div>
+            ) : script ? (
               <div className={styles.scriptContent}>
-                <div 
-                  className={styles.scriptText}
-                  dangerouslySetInnerHTML={{ __html: script }}
-                />
+                <div className={styles.scriptText}>
+                  {script.split('\n').map((paragraph, idx) => (
+                    paragraph.trim() ? <p key={idx}>{paragraph}</p> : null
+                  ))}
+                </div>
+                <button 
+                  className={styles.regenerateBtn}
+                  onClick={generateScript}
+                  disabled={scriptLoading}
+                >
+                  <FiRefreshCw size={14} />
+                  Regenerate Analysis
+                </button>
               </div>
             ) : (
-              <div className={styles.noContent}>
-                <p>Game script not available yet.</p>
-                <p className={styles.noContentSub}>Check back closer to game time!</p>
+              <div className={styles.generatePrompt}>
+                <div className={styles.generateIcon}>
+                  <IoSparkles size={32} />
+                </div>
+                <h3>Generate Game Analysis</h3>
+                <p>Get an AI-powered preview of this matchup based on team statistics and rankings.</p>
+                {scriptError && (
+                  <p className={styles.scriptError}>{scriptError}</p>
+                )}
+                <button 
+                  className={styles.generateBtn}
+                  onClick={generateScript}
+                  disabled={scriptLoading}
+                >
+                  <IoSparkles size={16} />
+                  Generate Free Analysis
+                </button>
               </div>
             )}
           </div>
