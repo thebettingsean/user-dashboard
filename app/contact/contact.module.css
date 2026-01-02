@@ -62,8 +62,8 @@
 /* Contact Card */
 .contactCard {
   display: flex;
-  gap: 16px;
-  padding: 20px;
+  gap: 14px;
+  padding: 16px 18px;
   background: rgba(30, 41, 59, 0.3);
   border: 1px solid rgba(71, 85, 105, 0.3);
   border-radius: 10px;
@@ -75,9 +75,9 @@
 }
 
 .cardIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,52 +94,44 @@
 }
 
 .cardTitle {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
 .cardDescription {
-  font-size: 13px;
+  font-size: 12px;
   color: #696969;
-  margin: 0 0 14px 0;
-  line-height: 1.5;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .textAction {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .textLabel {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #696969;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .phoneLink {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
   color: #60a5fa;
   text-decoration: none;
   transition: all 0.2s ease;
-  width: fit-content;
 }
 
 .phoneLink:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
   color: #93c5fd;
 }
 
@@ -214,23 +206,13 @@
   }
   
   .contactCard {
-    padding: 24px;
+    padding: 20px 24px;
     gap: 20px;
   }
   
   .cardIcon {
     width: 48px;
     height: 48px;
-  }
-  
-  .textAction {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .textLabel {
-    font-size: 12px;
   }
 }
 

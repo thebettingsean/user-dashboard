@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { FiMessageCircle, FiHelpCircle, FiUsers, FiZap } from 'react-icons/fi'
-import { IoPhonePortraitOutline } from 'react-icons/io5'
 import styles from './contact.module.css'
 
 const PHONE_NUMBER = '(470) 751-8564'
@@ -32,7 +31,7 @@ export default function ContactPage() {
         {/* Support */}
         <div className={styles.contactCard}>
           <div className={styles.cardIcon}>
-            <FiHelpCircle size={22} />
+            <FiHelpCircle size={18} />
           </div>
           <div className={styles.cardContent}>
             <h2 className={styles.cardTitle}>Support</h2>
@@ -40,9 +39,8 @@ export default function ContactPage() {
               Product questions, subscription help, or technical issues.
             </p>
             <div className={styles.textAction}>
-              <span className={styles.textLabel}>Text "Support" to:</span>
+              <span className={styles.textLabel}>Text "Support" to</span>
               <a href={`sms:+14707518564?body=Support`} className={styles.phoneLink}>
-                <IoPhonePortraitOutline size={16} />
                 {PHONE_NUMBER}
               </a>
             </div>
@@ -52,7 +50,7 @@ export default function ContactPage() {
         {/* Partner */}
         <div className={styles.contactCard}>
           <div className={styles.cardIcon}>
-            <FiUsers size={22} />
+            <FiUsers size={18} />
           </div>
           <div className={styles.cardContent}>
             <h2 className={styles.cardTitle}>Partner</h2>
@@ -60,9 +58,8 @@ export default function ContactPage() {
               Interested in collaborating? Let us know if you want to work together!
             </p>
             <div className={styles.textAction}>
-              <span className={styles.textLabel}>Text "Partner" to:</span>
+              <span className={styles.textLabel}>Text "Partner" to</span>
               <a href={`sms:+14707518564?body=Partner`} className={styles.phoneLink}>
-                <IoPhonePortraitOutline size={16} />
                 {PHONE_NUMBER}
               </a>
             </div>
@@ -72,7 +69,7 @@ export default function ContactPage() {
         {/* Ideas */}
         <div className={styles.contactCard}>
           <div className={styles.cardIcon}>
-            <FiZap size={22} />
+            <FiZap size={18} />
           </div>
           <div className={styles.cardContent}>
             <h2 className={styles.cardTitle}>Ideas</h2>
@@ -80,9 +77,8 @@ export default function ContactPage() {
               Help us build cool stuff! Share feature requests or suggestions.
             </p>
             <div className={styles.textAction}>
-              <span className={styles.textLabel}>Text "Ideas" to:</span>
+              <span className={styles.textLabel}>Text "Ideas" to</span>
               <a href={`sms:+14707518564?body=Ideas`} className={styles.phoneLink}>
-                <IoPhonePortraitOutline size={16} />
                 {PHONE_NUMBER}
               </a>
             </div>
