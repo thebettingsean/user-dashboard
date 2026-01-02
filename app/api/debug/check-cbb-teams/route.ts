@@ -3,7 +3,7 @@ import { clickhouseQuery } from '@/lib/clickhouse'
 
 export async function GET() {
   try {
-    // Sample CBB games from games table (main source)
+    // Sample CBB games from games table (main source) - use FINAL to dedupe
     const gamesQuery = await clickhouseQuery(`
       SELECT 
         g.game_id,
@@ -15,25 +15,28 @@ export async function GET() {
         g.total_close,
         g.public_spread_home_bet_pct,
         g.public_ml_home_bet_pct,
+        g.public_total_over_bet_pct,
         ht.name as home_team,
-        at.name as away_team
-      FROM games g FINAL
+        at.name as away_team,
+        ht.logo_url as home_logo,
+        at.logo_url as away_logo
+      FROM games FINAL AS g
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id
       LEFT JOIN teams at ON g.away_team_id = at.team_id
       WHERE g.sport IN ('cbb', 'ncaab')
         AND g.game_time >= now() - INTERVAL 1 HOUR
         AND g.game_time <= now() + INTERVAL 7 DAY
       ORDER BY g.game_time ASC
-      LIMIT 20
+      LIMIT 30
     `)
     
-    // Count games with real data vs missing data
+    // Count games with real data vs missing data - use FINAL to dedupe
     const statsQuery = await clickhouseQuery(`
       SELECT 
         COUNT(*) as total_games,
         SUM(CASE WHEN spread_open != 0 THEN 1 ELSE 0 END) as with_opening_spread,
         SUM(CASE WHEN total_open != 0 THEN 1 ELSE 0 END) as with_opening_total,
-        SUM(CASE WHEN public_spread_home_bet_pct != 50 THEN 1 ELSE 0 END) as with_real_splits
+        SUM(CASE WHEN public_spread_home_bet_pct != 50 OR public_ml_home_bet_pct != 50 OR public_total_over_bet_pct != 50 THEN 1 ELSE 0 END) as with_real_splits
       FROM games FINAL
       WHERE sport IN ('cbb', 'ncaab')
         AND game_time >= now() - INTERVAL 1 HOUR
