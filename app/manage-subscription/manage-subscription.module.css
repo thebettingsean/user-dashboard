@@ -284,6 +284,39 @@
   flex-shrink: 0;
 }
 
+.linkItemDisabled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: default;
+}
+
+.linkItemDisabled svg {
+  color: #4a4a4a;
+  flex-shrink: 0;
+}
+
+.linkItemDisabled span:first-of-type {
+  flex: 1;
+}
+
+.comingSoonBadge {
+  padding: 2px 6px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 /* ===== SUBSCRIPTION CARDS (inside section) ===== */
 .subscriptionsGrid {
   display: flex;

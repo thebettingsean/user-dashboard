@@ -260,20 +260,20 @@ export default function ManageSubscriptionPage() {
           {expandedSections.includes('free-access') && (
             <div className={styles.sectionContent}>
               <div className={styles.infoBox}>
-                <FiShare2 size={16} />
-                <span>Refer a friend and get 1 free month when they subscribe!</span>
+                <FiGift size={16} />
+                <span>Join a top rated book and get 1 month free!</span>
               </div>
               <div className={styles.linksList}>
-                <a href="https://www.thebettinginsider.com/referral" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                <a href="/sportsbooks" className={styles.linkItem}>
+                  <FiDollarSign size={16} />
+                  <span>View Books & Bonuses</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+                <div className={styles.linkItemDisabled}>
                   <FiUsers size={16} />
-                  <span>Referral Program</span>
-                  <FiExternalLink size={14} className={styles.linkExternal} />
-                </a>
-                <a href="https://www.thebettinginsider.com/giveaway" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
-                  <FiGift size={16} />
-                  <span>Current Giveaways</span>
-                  <FiExternalLink size={14} className={styles.linkExternal} />
-                </a>
+                  <span>Refer a friend and get 1 free month</span>
+                  <span className={styles.comingSoonBadge}>Coming Soon</span>
+                </div>
               </div>
             </div>
           )}
@@ -303,6 +303,11 @@ export default function ManageSubscriptionPage() {
           {expandedSections.includes('maximize-profit') && (
             <div className={styles.sectionContent}>
               <div className={styles.linksList}>
+                <a href="/simulator" className={styles.linkItem}>
+                  <FiTrendingUp size={16} />
+                  <span>Simulator</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
                 <a href="/betting-guide" className={styles.linkItem}>
                   <FiBook size={16} />
                   <span>Betting Guide</span>

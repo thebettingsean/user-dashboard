@@ -100,8 +100,10 @@ export default function SportsbooksPage() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.headerSpacer} />
+      
       {/* Back Button */}
-      <button onClick={() => router.push('/sports')} className={styles.backButton}>
+      <button onClick={() => router.push('/')} className={styles.backButton}>
         <FaArrowLeft /> Back to Dashboard
       </button>
 
@@ -109,7 +111,7 @@ export default function SportsbooksPage() {
         {/* Hero Section */}
         <div className={styles.hero}>
           <div className={styles.badge}>Top Rated Sportsbooks</div>
-          <h1 className={styles.title}>Join & Get Free Access</h1>
+          <h1 className={styles.heroTitle}>Join & Get Free Access</h1>
 
           {/* State Selector */}
           <div className={styles.selectorWrapper}>
