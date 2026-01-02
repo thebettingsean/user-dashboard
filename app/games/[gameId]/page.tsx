@@ -4,10 +4,21 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
-import { FiChevronLeft, FiClock, FiChevronRight, FiRefreshCw } from 'react-icons/fi'
+import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw } from 'react-icons/fi'
 import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { MdLockOutline } from 'react-icons/md'
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer,
+  ReferenceLine,
+  Area,
+  ComposedChart
+} from 'recharts'
 import styles from './gameDetail.module.css'
 
 interface GameData {
@@ -27,22 +38,24 @@ interface GameData {
   totals: { number: number | null } | null
   moneyline: { home: number | null; away: number | null } | null
   sportsbook: string | null
-  publicBetting: {
-    spreadHomeBetPct: number | null
-    spreadHomeMoneyPct: number | null
-    mlHomeBetPct: number | null
-    mlHomeMoneyPct: number | null
-    totalOverBetPct: number | null
-    totalOverMoneyPct: number | null
-  } | null
-  hasPublicBetting: boolean
 }
+
+interface LineMovementPoint {
+  time: string
+  homeLine: number
+  awayLine: number
+  total: number
+  mlHome: number
+  mlAway: number
+}
+
+type MarketType = 'spread' | 'total' | 'ml'
 
 function formatGameTime(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
@@ -51,20 +64,39 @@ function formatGameTime(dateString: string): string {
 }
 
 function formatSpread(spread: number | null | undefined): string {
-  if (spread === null || spread === undefined) return 'N/A'
+  if (spread === null || spread === undefined) return '-'
   return spread > 0 ? `+${spread}` : `${spread}`
 }
 
 function formatML(ml: number | null | undefined): string {
-  if (ml === null || ml === undefined) return 'N/A'
+  if (ml === null || ml === undefined) return '-'
   return ml > 0 ? `+${ml}` : `${ml}`
 }
 
-// Team gradient for full page background
-function getPageGradient(awayColor: string | null, homeColor: string | null): string {
-  const away = awayColor || '#3b82f6'
-  const home = homeColor || '#6366f1'
-  return `linear-gradient(180deg, ${away}12 0%, ${away}06 15%, transparent 35%, transparent 65%, ${home}06 85%, ${home}12 100%)`
+// Custom Tooltip for the graph
+const CustomTooltip = ({ active, payload, marketType }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload
+    return (
+      <div className={styles.graphTooltip}>
+        <p className={styles.tooltipTime}>{data.time}</p>
+        {marketType === 'spread' && (
+          <>
+            <p>Away: {formatSpread(data.awayLine)}</p>
+            <p>Home: {formatSpread(data.homeLine)}</p>
+          </>
+        )}
+        {marketType === 'total' && <p>Total: {data.total}</p>}
+        {marketType === 'ml' && (
+          <>
+            <p>Away ML: {formatML(data.mlAway)}</p>
+            <p>Home ML: {formatML(data.mlHome)}</p>
+          </>
+        )}
+      </div>
+    )
+  }
+  return null
 }
 
 export default function GameDetailPage() {
@@ -73,7 +105,7 @@ export default function GameDetailPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
-  const { hasPicks, hasPublicBetting, hasAny, isLoading: entitlementsLoading } = useEntitlements()
+  const { hasPicks, hasPublicBetting, hasAny } = useEntitlements()
   
   const gameId = params.gameId as string
   const sport = searchParams.get('sport') || 'nfl'
@@ -85,16 +117,26 @@ export default function GameDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'script' | 'odds' | 'picks' | 'betting'>('script')
   
+  // Odds tab state
+  const [marketType, setMarketType] = useState<MarketType>('spread')
+  const [timelineData, setTimelineData] = useState<LineMovementPoint[]>([])
+  const [timelineLoading, setTimelineLoading] = useState(false)
+  const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
+  const [showAllOdds, setShowAllOdds] = useState(false)
+  
   // Access checks
   const canViewPicks = hasPicks || hasAny
   const canViewPublicBetting = hasPublicBetting || hasAny
+  
+  // Team colors for gradient
+  const awayColor = gameData?.awayTeamColor || '#3b82f6'
+  const homeColor = gameData?.homeTeamColor || '#6366f1'
   
   useEffect(() => {
     async function fetchGameData() {
       try {
         setIsLoading(true)
         
-        // Fetch game data from unified games API
         const gamesRes = await fetch(`/api/games/upcoming?sport=${sport}`)
         const gamesData = await gamesRes.json()
         
@@ -105,7 +147,7 @@ export default function GameDetailPage() {
           }
         }
         
-        // Fetch FREE script for this game (if available)
+        // Fetch FREE script
         try {
           const scriptRes = await fetch(`/api/game-scripts/free?gameId=${gameId}&sport=${sport.toUpperCase()}`)
           const scriptData = await scriptRes.json()
@@ -113,7 +155,7 @@ export default function GameDetailPage() {
             setScript(scriptData.script)
           }
         } catch (e) {
-          console.log('No script available for this game')
+          console.log('No script available')
         }
         
       } catch (error) {
@@ -126,6 +168,35 @@ export default function GameDetailPage() {
     fetchGameData()
   }, [gameId, sport])
   
+  // Fetch timeline data when odds tab is active
+  useEffect(() => {
+    if (activeTab === 'odds' && gameId) {
+      fetchTimelineData()
+    }
+  }, [activeTab, gameId])
+  
+  const fetchTimelineData = async () => {
+    setTimelineLoading(true)
+    try {
+      const response = await fetch(`/api/public-betting/game-timeline/${gameId}?timeFilter=all`)
+      const data = await response.json()
+      
+      if (data.success && data.timeline) {
+        setTimelineData(data.timeline)
+        setSportsbookOdds(data.sportsbookOdds || null)
+      } else {
+        setTimelineData([])
+        setSportsbookOdds(null)
+      }
+    } catch (error) {
+      console.error('Error fetching timeline:', error)
+      setTimelineData([])
+      setSportsbookOdds(null)
+    } finally {
+      setTimelineLoading(false)
+    }
+  }
+  
   const handleSubscribe = (type: 'picks' | 'publicBetting') => {
     if (!isSignedIn) {
       openSignUp({ redirectUrl: `/subscribe/${type}` })
@@ -134,7 +205,6 @@ export default function GameDetailPage() {
     }
   }
   
-  // Generate FREE script on demand
   const generateScript = async () => {
     if (!gameData) return
     
@@ -157,6 +227,25 @@ export default function GameDetailPage() {
     } finally {
       setScriptLoading(false)
     }
+  }
+  
+  // Get sportsbook odds for table
+  const getOddsForMarket = () => {
+    if (!sportsbookOdds) return []
+    
+    let oddsData: { [key: string]: any } = {}
+    if (marketType === 'spread') {
+      oddsData = sportsbookOdds.spreads || {}
+    } else if (marketType === 'total') {
+      oddsData = sportsbookOdds.totals || {}
+    } else {
+      oddsData = sportsbookOdds.moneylines || {}
+    }
+    
+    return Object.entries(oddsData).map(([book, value]) => ({
+      book,
+      value: typeof value === 'object' ? value : value
+    })).slice(0, showAllOdds ? 20 : 5)
   }
   
   if (isLoading) {
@@ -182,10 +271,11 @@ export default function GameDetailPage() {
     )
   }
   
-  const pageGradient = getPageGradient(gameData.awayTeamColor, gameData.homeTeamColor)
+  const tabGradient = `linear-gradient(90deg, ${awayColor} 0%, ${homeColor} 100%)`
+  const headerGradient = `linear-gradient(180deg, ${awayColor}18 0%, ${awayColor}08 30%, transparent 60%, ${homeColor}08 80%, ${homeColor}18 100%)`
   
   return (
-    <div className={styles.container} style={{ background: pageGradient }}>
+    <div className={styles.container}>
       <div className={styles.headerSpacer} />
       
       {/* Back Button */}
@@ -194,66 +284,85 @@ export default function GameDetailPage() {
         All Games
       </button>
       
-      {/* Game Header - Seamless with page */}
-      <div className={styles.gameHeader}>
+      {/* Header Section with Gradient */}
+      <div className={styles.headerSection} style={{ background: headerGradient }}>
+        {/* Matchup */}
         <div className={styles.matchup}>
           <div className={styles.teamSide}>
             {gameData.awayTeamLogo && (
-              <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogoLarge} />
+              <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogo} />
             )}
-            <span className={styles.teamNameLarge}>{gameData.awayTeam}</span>
           </div>
           <span className={styles.vsText}>@</span>
           <div className={styles.teamSide}>
             {gameData.homeTeamLogo && (
-              <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogoLarge} />
+              <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogo} />
             )}
-            <span className={styles.teamNameLarge}>{gameData.homeTeam}</span>
           </div>
         </div>
         
-        <div className={styles.gameMetaRow}>
-          <div className={styles.gameMeta}>
-            <FiClock size={14} />
-            <span>{formatGameTime(gameData.kickoff)}</span>
+        {/* Team Names */}
+        <div className={styles.teamNames}>
+          <span>{gameData.awayTeam}</span>
+          <span className={styles.teamNamesAt}>@</span>
+          <span>{gameData.homeTeam}</span>
+        </div>
+        
+        {/* Odds Row */}
+        <div className={styles.oddsRow}>
+          <div className={styles.oddsItem}>
+            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.awayLine)}</span>
           </div>
+          <div className={styles.oddsItem}>
+            <span className={styles.oddsLabel}>O/U</span>
+            <span className={styles.oddsValue}>{gameData.totals?.number || '-'}</span>
+          </div>
+          <div className={styles.oddsItem}>
+            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.homeLine)}</span>
+          </div>
+        </div>
+        
+        {/* Game Time */}
+        <div className={styles.gameMeta}>
+          <FiClock size={14} />
+          <span>{formatGameTime(gameData.kickoff)}</span>
           <span className={styles.sportBadge}>{gameData.sport}</span>
         </div>
-      </div>
-      
-      {/* Content Tabs - Pill Style */}
-      <div className={styles.tabsContainer}>
-        <div className={styles.tabs}>
-          <button 
-            className={`${styles.tab} ${activeTab === 'script' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('script')}
-          >
-            Script
-          </button>
-          <button 
-            className={`${styles.tab} ${activeTab === 'odds' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('odds')}
-          >
-            Odds
-          </button>
-          <button 
-            className={`${styles.tab} ${activeTab === 'picks' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('picks')}
-          >
-            Analyst Picks
-            {!canViewPicks && <MdLockOutline size={12} className={styles.lockIcon} />}
-          </button>
-          <button 
-            className={`${styles.tab} ${activeTab === 'betting' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('betting')}
-          >
-            Public Betting
-            {!canViewPublicBetting && <MdLockOutline size={12} className={styles.lockIcon} />}
-          </button>
+        
+        {/* Tabs */}
+        <div className={styles.tabsRow}>
+          {(['script', 'odds', 'picks', 'betting'] as const).map((tab) => (
+            <button
+              key={tab}
+              className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === 'script' && 'Script'}
+              {tab === 'odds' && 'Odds'}
+              {tab === 'picks' && (
+                <>
+                  Analyst Picks
+                  {!canViewPicks && <MdLockOutline size={12} className={styles.lockIcon} />}
+                </>
+              )}
+              {tab === 'betting' && (
+                <>
+                  Public Betting
+                  {!canViewPublicBetting && <MdLockOutline size={12} className={styles.lockIcon} />}
+                </>
+              )}
+              {activeTab === tab && (
+                <div className={styles.tabUnderline} style={{ background: tabGradient }} />
+              )}
+            </button>
+          ))}
         </div>
+        
+        {/* Separator */}
+        <div className={styles.separator} />
       </div>
       
-      {/* Tab Content - Free Flowing */}
+      {/* Content Section */}
       <div className={styles.content}>
         
         {/* ========== SCRIPT TAB ========== */}
@@ -311,9 +420,14 @@ export default function GameDetailPage() {
             <h2 className={styles.sectionTitle}>Odds & Line Movement</h2>
             <p className={styles.sectionSubtitle}>Current odds & history</p>
             
-            {/* Best Lines Table */}
+            {/* Best Lines */}
             <div className={styles.bestLinesCard}>
-              <h3 className={styles.cardLabel}>Best Lines</h3>
+              <div className={styles.bestLinesHeader}>
+                <span className={styles.cardLabel}>Best Lines</span>
+                {gameData.sportsbook && (
+                  <span className={styles.sportsbookNote}>via {gameData.sportsbook}</span>
+                )}
+              </div>
               <div className={styles.bestLinesGrid}>
                 <div className={styles.bestLineItem}>
                   <span className={styles.bestLineLabel}>Spread</span>
@@ -330,25 +444,124 @@ export default function GameDetailPage() {
                 <div className={styles.bestLineItem}>
                   <span className={styles.bestLineLabel}>Total</span>
                   <span className={styles.bestLineValue}>
-                    {gameData.totals?.number ? `O/U ${gameData.totals.number}` : 'N/A'}
+                    {gameData.totals?.number ? `O/U ${gameData.totals.number}` : '-'}
                   </span>
                 </div>
               </div>
-              {gameData.sportsbook && (
-                <p className={styles.sportsbookNote}>via {gameData.sportsbook}</p>
-              )}
             </div>
             
-            {/* Expandable Links */}
-            <button className={styles.expandLink} onClick={() => router.push('/public-betting')}>
-              <span>More available odds</span>
-              <FiChevronRight size={16} />
-            </button>
+            {/* Line History Section */}
+            <div className={styles.lineHistorySection}>
+              <div className={styles.lineHistoryHeader}>
+                <h3 className={styles.subsectionTitle}>Line History</h3>
+                <div className={styles.marketTabs}>
+                  {(['spread', 'total', 'ml'] as const).map(m => (
+                    <button
+                      key={m}
+                      className={`${styles.marketTab} ${marketType === m ? styles.marketTabActive : ''}`}
+                      onClick={() => setMarketType(m)}
+                    >
+                      {m === 'ml' ? 'ML' : m === 'total' ? 'O/U' : 'Spread'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Graph */}
+              <div className={styles.graphContainer}>
+                {timelineLoading ? (
+                  <div className={styles.graphLoading}>Loading...</div>
+                ) : timelineData.length === 0 ? (
+                  <div className={styles.graphLoading}>No historical data available</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <ComposedChart data={timelineData} margin={{ top: 15, right: 20, left: 5, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id={`areaGrad-${gameId}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2A3442" stopOpacity={0.6} />
+                          <stop offset="100%" stopColor="#0F1319" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(val) => val > 0 ? `+${val}` : val} />
+                      <Tooltip content={<CustomTooltip marketType={marketType} />} />
+                      {marketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
+                      <Area 
+                        type="monotone" 
+                        dataKey={marketType === 'spread' ? 'homeLine' : marketType === 'ml' ? 'mlHome' : 'total'} 
+                        fill={`url(#areaGrad-${gameId})`} 
+                        stroke="none" 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey={marketType === 'spread' ? 'homeLine' : marketType === 'ml' ? 'mlHome' : 'total'} 
+                        stroke={marketType === 'total' ? '#98ADD1' : homeColor} 
+                        strokeWidth={2} 
+                        dot={{ r: 3, fill: marketType === 'total' ? '#98ADD1' : homeColor }} 
+                        isAnimationActive={false} 
+                      />
+                      {marketType !== 'total' && (
+                        <Line 
+                          type="monotone" 
+                          dataKey={marketType === 'spread' ? 'awayLine' : 'mlAway'} 
+                          stroke={awayColor} 
+                          strokeWidth={2} 
+                          strokeDasharray="4 4" 
+                          dot={{ r: 3, fill: awayColor }} 
+                          isAnimationActive={false} 
+                        />
+                      )}
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+                
+                {/* Legend */}
+                {timelineData.length > 0 && marketType !== 'total' && (
+                  <div className={styles.graphLegend}>
+                    <span className={styles.legendItem}>
+                      <span className={styles.legendDash} style={{ background: `repeating-linear-gradient(90deg, ${awayColor}, ${awayColor} 3px, transparent 3px, transparent 5px)` }} />
+                      {gameData.awayTeam}
+                    </span>
+                    <span className={styles.legendItem}>
+                      <span className={styles.legendSolid} style={{ background: homeColor }} />
+                      {gameData.homeTeam}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
             
-            <button className={styles.expandLink} onClick={() => router.push('/public-betting')}>
-              <span>Line history</span>
-              <FiChevronRight size={16} />
-            </button>
+            {/* All Available Odds */}
+            <div className={styles.allOddsSection}>
+              <button 
+                className={styles.allOddsToggle}
+                onClick={() => setShowAllOdds(!showAllOdds)}
+              >
+                <span>All Available Odds</span>
+                {showAllOdds ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
+              </button>
+              
+              {showAllOdds && (
+                <div className={styles.oddsTable}>
+                  <div className={styles.oddsTableHeader}>
+                    <span>Sportsbook</span>
+                    <span>{gameData.awayTeamAbbr || 'Away'}</span>
+                    <span>{gameData.homeTeamAbbr || 'Home'}</span>
+                  </div>
+                  {getOddsForMarket().length > 0 ? (
+                    getOddsForMarket().map((odd, idx) => (
+                      <div key={idx} className={styles.oddsTableRow}>
+                        <span className={styles.bookName}>{odd.book}</span>
+                        <span>{typeof odd.value === 'object' ? formatSpread(odd.value.away) : formatSpread(-odd.value)}</span>
+                        <span>{typeof odd.value === 'object' ? formatSpread(odd.value.home) : formatSpread(odd.value)}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className={styles.noOdds}>No odds data available from sportsbooks</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
         
@@ -368,7 +581,6 @@ export default function GameDetailPage() {
                     onClick={() => router.push('/picks')}
                   >
                     Go to Picks
-                    <FiChevronRight size={14} />
                   </button>
                 </div>
               </>
@@ -409,7 +621,6 @@ export default function GameDetailPage() {
                     onClick={() => router.push('/public-betting')}
                   >
                     Go to Public Betting
-                    <FiChevronRight size={14} />
                   </button>
                 </div>
               </>
