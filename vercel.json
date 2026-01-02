@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/sync-live-odds",
-      "schedule": "5,35 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/sync-free-users",

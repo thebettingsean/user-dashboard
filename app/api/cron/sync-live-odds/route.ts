@@ -450,8 +450,10 @@ export async function GET(request: Request) {
             console.log(`[${sportConfig.sport.toUpperCase()}] Sample games:`, gamesToFetch.map(g => `${g.awayAbbr}@${g.homeAbbr}`).join(', '))
           }
           
-          // Fetch betting splits for each game (limit to 30 to avoid rate limits)
-          for (const game of gamesToFetch.slice(0, 30)) {
+          // Fetch betting splits for each game
+          // CBB/CFB can have 50+ games, so use higher limit for college sports
+          const gamesLimit = (sportConfig.sport === 'cbb' || sportConfig.sport === 'cfb') ? 60 : 30
+          for (const game of gamesToFetch.slice(0, gamesLimit)) {
             try {
               const splitsUrl = `https://api.sportsdata.io/v3/${sportConfig.sportsdataPath}/odds/json/BettingSplitsByGameId/${game.gameId}?key=${SPORTSDATA_API_KEY}`
               
