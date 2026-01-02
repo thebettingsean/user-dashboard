@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
+import { scrapeTeamRankings, TeamRankingsData } from '@/lib/team-rankings-scraper'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY
 })
 
-// Supabase client for game_snapshots (TeamRankings data)
-const supabaseSnapshots = createClient(
-  process.env.SNAPSHOTS_SUPABASE_URL || '',
-  process.env.SNAPSHOTS_SUPABASE_SERVICE_KEY || ''
-)
-
-// Supabase client for storing generated scripts
+// Supabase client for storing generated scripts (main project)
 const supabaseMain = createClient(
   process.env.SUPABASE_URL || '',
   process.env.SUPABASE_KEY || ''
@@ -29,16 +24,26 @@ interface FreeScriptResponse {
 }
 
 /**
- * FREE Game Script Generation
- * Uses ONLY TeamRankings data - no betting picks, no props
+ * FREE Game Script Generation - 100% INDEPENDENT
  * 
- * GET /api/game-scripts/free?gameId=xxx&sport=NFL
+ * NO TRENDLINE LABS DEPENDENCY - Uses:
+ * 1. Odds API for game data (passed via query params)
+ * 2. TeamRankings.com scraper for team stats
+ * 3. Claude for script generation
+ * 4. Supabase for storage
+ * 
+ * GET /api/game-scripts/free?gameId=xxx&sport=nfl&homeTeam=Chiefs&awayTeam=Bills
+ * 
+ * For cron jobs, all params are passed. For individual lookups, uses cached script.
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const gameId = searchParams.get('gameId')
-    const sport = searchParams.get('sport')?.toUpperCase()
+    const sport = searchParams.get('sport')?.toLowerCase()
+    const homeTeam = searchParams.get('homeTeam')
+    const awayTeam = searchParams.get('awayTeam')
+    const gameTime = searchParams.get('gameTime')
     const forceRegenerate = searchParams.get('force') === 'true'
 
     if (!gameId || !sport) {
@@ -48,77 +53,81 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log(`\n=== FREE GAME SCRIPT: ${gameId} (${sport}) ===`)
+    console.log(`\n=== FREE GAME SCRIPT: ${gameId} (${sport.toUpperCase()}) ===`)
 
-    // Check for cached script first (unless force regenerate)
+    // 1. Check for cached script first (unless force regenerate)
     if (!forceRegenerate) {
-      const { data: cachedScript } = await supabaseMain
-        .from('free_game_scripts')
-        .select('*')
-        .eq('game_id', gameId)
-        .eq('sport', sport)
-        .single()
+      try {
+        const { data: cachedScript, error: cacheError } = await supabaseMain
+          .from('free_game_scripts')
+          .select('*')
+          .eq('game_id', gameId)
+          .eq('sport', sport.toUpperCase())
+          .single()
 
-      if (cachedScript && cachedScript.script_content) {
-        // Check if script is still valid (less than 6 hours old)
-        const generatedAt = new Date(cachedScript.generated_at)
-        const hoursSinceGeneration = (Date.now() - generatedAt.getTime()) / (1000 * 60 * 60)
-        
-        if (hoursSinceGeneration < 6) {
-          console.log(`✅ Using cached script (${hoursSinceGeneration.toFixed(1)}h old)`)
-          return NextResponse.json({
-            gameId,
-            sport,
-            homeTeam: cachedScript.home_team,
-            awayTeam: cachedScript.away_team,
-            script: cachedScript.script_content,
-            generatedAt: cachedScript.generated_at,
-            cached: true
-          } as FreeScriptResponse)
+        if (!cacheError && cachedScript && cachedScript.script_content) {
+          // Check if script is still valid (less than 12 hours old)
+          const generatedAt = new Date(cachedScript.generated_at)
+          const hoursSinceGeneration = (Date.now() - generatedAt.getTime()) / (1000 * 60 * 60)
+          
+          if (hoursSinceGeneration < 12) {
+            console.log(`✅ Using cached script (${hoursSinceGeneration.toFixed(1)}h old)`)
+            return NextResponse.json({
+              gameId,
+              sport: sport.toUpperCase(),
+              homeTeam: cachedScript.home_team,
+              awayTeam: cachedScript.away_team,
+              script: cachedScript.script_content,
+              generatedAt: cachedScript.generated_at,
+              cached: true
+            } as FreeScriptResponse)
+          }
+          console.log(`⚠️ Cached script expired (${hoursSinceGeneration.toFixed(1)}h old) - regenerating`)
         }
+      } catch (cacheErr) {
+        console.log('📝 No cached script found - generating new one')
       }
     }
 
-    // Fetch TeamRankings data from game_snapshots
-    // CFB and CBB use college tables, NFL/NBA/NHL use regular game_snapshots
-    const tableName = (sport === 'CFB' || sport === 'CBB') ? 'college_game_snapshots' : 'game_snapshots'
-    const { data: snapshot, error: snapshotError } = await supabaseSnapshots
-      .from(tableName)
-      .select('game_id, sport, home_team, away_team, start_time_utc, team_rankings')
-      .eq('game_id', gameId)
-      .single()
-
-    if (snapshotError || !snapshot) {
-      console.log(`❌ Game snapshot not found: ${snapshotError?.message}`)
+    // 2. For generation, we need team names
+    if (!homeTeam || !awayTeam) {
       return NextResponse.json(
-        { error: 'Game not found or TeamRankings data not available' },
-        { status: 404 }
+        { error: 'homeTeam and awayTeam are required for script generation (no cached script found)' },
+        { status: 400 }
       )
     }
 
-    if (!snapshot.team_rankings) {
-      console.log(`❌ No TeamRankings data for ${gameId}`)
-      return NextResponse.json(
-        { error: 'TeamRankings data not yet scraped for this game' },
-        { status: 404 }
-      )
-    }
+    console.log(`📊 Scraping TeamRankings for: ${awayTeam} @ ${homeTeam}`)
 
-    const { home_team, away_team, team_rankings, start_time_utc } = snapshot
-    const homeRankings = team_rankings.home_team
-    const awayRankings = team_rankings.away_team
+    // 3. Scrape TeamRankings.com directly for both teams
+    const [homeRankings, awayRankings] = await Promise.all([
+      scrapeTeamRankings(sport, homeTeam),
+      scrapeTeamRankings(sport, awayTeam)
+    ])
 
     if (!homeRankings || !awayRankings) {
-      return NextResponse.json(
-        { error: 'Incomplete team rankings data' },
-        { status: 404 }
-      )
+      console.log(`⚠️ TeamRankings scrape incomplete - home: ${!!homeRankings}, away: ${!!awayRankings}`)
+      
+      // If we can't scrape both, try to return a basic script
+      if (!homeRankings && !awayRankings) {
+        return NextResponse.json(
+          { error: 'Unable to scrape TeamRankings data for either team' },
+          { status: 404 }
+        )
+      }
     }
 
-    console.log(`📊 TeamRankings data found for: ${away_team} @ ${home_team}`)
+    console.log(`✅ TeamRankings scraped - Home: ${Object.keys(homeRankings?.offense || {}).length} stats, Away: ${Object.keys(awayRankings?.offense || {}).length} stats`)
 
-    // Build the prompt using ONLY TeamRankings data
-    const prompt = buildFreeScriptPrompt(sport, home_team, away_team, homeRankings, awayRankings, start_time_utc)
+    // 4. Build the prompt using scraped data
+    const prompt = buildFreeScriptPrompt(
+      sport.toUpperCase(),
+      homeTeam,
+      awayTeam,
+      homeRankings,
+      awayRankings,
+      gameTime || new Date().toISOString()
+    )
 
     console.log('🤖 Generating FREE game script with Claude...')
     
@@ -135,34 +144,38 @@ export async function GET(request: NextRequest) {
     
     console.log(`✅ Script generated (${script.length} characters)`)
 
-    // Save to database
+    // 5. Save to database
     const now = new Date().toISOString()
-    const { error: saveError } = await supabaseMain
-      .from('free_game_scripts')
-      .upsert({
-        game_id: gameId,
-        sport,
-        home_team,
-        away_team,
-        game_time: start_time_utc,
-        script_content: script,
-        generated_at: now,
-        updated_at: now
-      }, {
-        onConflict: 'game_id,sport'
-      })
+    try {
+      const { error: saveError } = await supabaseMain
+        .from('free_game_scripts')
+        .upsert({
+          game_id: gameId,
+          sport: sport.toUpperCase(),
+          home_team: homeTeam,
+          away_team: awayTeam,
+          game_time: gameTime || now,
+          script_content: script,
+          generated_at: now,
+          updated_at: now
+        }, {
+          onConflict: 'game_id,sport'
+        })
 
-    if (saveError) {
-      console.error('⚠️ Failed to save script:', saveError)
-    } else {
-      console.log('💾 Script saved to database')
+      if (saveError) {
+        console.error('⚠️ Failed to save script:', saveError)
+      } else {
+        console.log('💾 Script saved to database')
+      }
+    } catch (saveErr) {
+      console.error('⚠️ Database save error:', saveErr)
     }
 
     return NextResponse.json({
       gameId,
-      sport,
-      homeTeam: home_team,
-      awayTeam: away_team,
+      sport: sport.toUpperCase(),
+      homeTeam,
+      awayTeam,
       script,
       generatedAt: now,
       cached: false
@@ -213,14 +226,14 @@ Write 400-500 words in 4-5 flowing paragraphs. No section headers - just natural
 Start with the most compelling storyline of the matchup, then dig into the statistical breakdown, and close with what fans should watch for.`
 
 /**
- * Build the prompt using TeamRankings data
+ * Build the prompt using scraped TeamRankings data
  */
 function buildFreeScriptPrompt(
   sport: string,
   homeTeam: string,
   awayTeam: string,
-  homeRankings: any,
-  awayRankings: any,
+  homeRankings: TeamRankingsData | null,
+  awayRankings: TeamRankingsData | null,
   gameTime: string
 ): string {
   const gameTimeFormatted = new Date(gameTime).toLocaleString('en-US', {
@@ -237,13 +250,16 @@ function buildFreeScriptPrompt(
   prompt += `**${gameTimeFormatted} ET**\n\n`
   prompt += `Use the following team statistics to create an engaging matchup analysis:\n\n`
 
-  // Add sport-specific stats
+  // Add team stats based on sport
   if (sport === 'NFL' || sport === 'CFB') {
-    prompt += buildFootballPrompt(homeTeam, awayTeam, homeRankings, awayRankings)
+    prompt += buildFootballStats(homeTeam, awayTeam, homeRankings, awayRankings)
   } else if (sport === 'NBA' || sport === 'CBB') {
-    prompt += buildBasketballPrompt(homeTeam, awayTeam, homeRankings, awayRankings)
+    prompt += buildBasketballStats(homeTeam, awayTeam, homeRankings, awayRankings)
   } else if (sport === 'NHL') {
-    prompt += buildHockeyPrompt(homeTeam, awayTeam, homeRankings, awayRankings)
+    prompt += buildHockeyStats(homeTeam, awayTeam, homeRankings, awayRankings)
+  } else {
+    // Generic fallback
+    prompt += buildGenericStats(homeTeam, awayTeam, homeRankings, awayRankings)
   }
 
   prompt += `\n\n---\n\n`
@@ -252,157 +268,225 @@ function buildFreeScriptPrompt(
   return prompt
 }
 
-function buildFootballPrompt(homeTeam: string, awayTeam: string, homeRankings: any, awayRankings: any): string {
-  let prompt = `## ${homeTeam.toUpperCase()} (HOME)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Points/Game', homeRankings.offense?.['points_game'])
-  prompt += formatStat('Yards/Play', homeRankings.offense?.['yards_play'])
-  prompt += formatStat('Rush Yards/Game', homeRankings.offense?.['rush_yards_game'])
-  prompt += formatStat('Pass Yards/Game', homeRankings.offense?.['pass_yards_game'])
-  prompt += formatStat('3rd Down %', homeRankings.offense?.['3d_conversion'])
-  prompt += formatStat('Red Zone TD %', homeRankings.offense?.['rz_scoring_td'])
-  prompt += formatStat('Yards/Rush', homeRankings.offense?.['yards_rush'])
-  prompt += formatStat('Yards/Pass', homeRankings.offense?.['yards_pass'])
-  prompt += formatStat('Turnover Margin', homeRankings.offense?.['to_margin_per_game'])
+function buildFootballStats(homeTeam: string, awayTeam: string, homeRankings: TeamRankingsData | null, awayRankings: TeamRankingsData | null): string {
+  let stats = ''
+  
+  // Home team
+  stats += `## ${homeTeam.toUpperCase()} (HOME)\n\n`
+  if (homeRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.offense, 'points_game', 'Points/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'yards_play', 'Yards/Play')
+    stats += formatStatFromRankings(homeRankings.offense, 'rush_yards_game', 'Rush Yards/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'pass_yards_game', 'Pass Yards/Game')
+    stats += formatStatFromRankings(homeRankings.offense, '3rd_down_conversion', '3rd Down %')
+    stats += formatStatFromRankings(homeRankings.offense, 'red_zone_scoring', 'Red Zone %')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_points_game', 'Points Allowed/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_yards_play', 'Yards Allowed/Play')
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_rush_yards_game', 'Rush Yards Allowed/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_pass_yards_game', 'Pass Yards Allowed/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'sacks_game', 'Sacks/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'takeaways_game', 'Takeaways/Game')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  // Away team  
+  stats += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
+  if (awayRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.offense, 'points_game', 'Points/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'yards_play', 'Yards/Play')
+    stats += formatStatFromRankings(awayRankings.offense, 'rush_yards_game', 'Rush Yards/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'pass_yards_game', 'Pass Yards/Game')
+    stats += formatStatFromRankings(awayRankings.offense, '3rd_down_conversion', '3rd Down %')
+    stats += formatStatFromRankings(awayRankings.offense, 'red_zone_scoring', 'Red Zone %')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_points_game', 'Points Allowed/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_yards_play', 'Yards Allowed/Play')
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_rush_yards_game', 'Rush Yards Allowed/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_pass_yards_game', 'Pass Yards Allowed/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'sacks_game', 'Sacks/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'takeaways_game', 'Takeaways/Game')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  // Key matchups
+  stats += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
+  stats += `1. **${awayTeam} Offense vs ${homeTeam} Defense** - Where can they exploit weaknesses?\n`
+  stats += `2. **${homeTeam} Offense vs ${awayTeam} Defense** - What's the home team's path to success?\n`
+  stats += `3. **Third Down Battle** - Who sustains drives better?\n`
+  stats += `4. **Turnover Potential** - Which team is more likely to create turnovers?\n`
 
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Points Allowed/Game', homeRankings.defense?.['opp_points_game'])
-  prompt += formatStat('Yards Allowed/Play', homeRankings.defense?.['opp_yards_play'])
-  prompt += formatStat('Rush Yards Allowed/Game', homeRankings.defense?.['opp_rush_yards_game'])
-  prompt += formatStat('Pass Yards Allowed/Game', homeRankings.defense?.['opp_pass_yards_game'])
-  prompt += formatStat('Opp 3rd Down %', homeRankings.defense?.['opp_3d_conv'])
-  prompt += formatStat('Sack %', homeRankings.defense?.['sack'])
-
-  prompt += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Points/Game', awayRankings.offense?.['points_game'])
-  prompt += formatStat('Yards/Play', awayRankings.offense?.['yards_play'])
-  prompt += formatStat('Rush Yards/Game', awayRankings.offense?.['rush_yards_game'])
-  prompt += formatStat('Pass Yards/Game', awayRankings.offense?.['pass_yards_game'])
-  prompt += formatStat('3rd Down %', awayRankings.offense?.['3d_conversion'])
-  prompt += formatStat('Red Zone TD %', awayRankings.offense?.['rz_scoring_td'])
-  prompt += formatStat('Yards/Rush', awayRankings.offense?.['yards_rush'])
-  prompt += formatStat('Yards/Pass', awayRankings.offense?.['yards_pass'])
-  prompt += formatStat('Turnover Margin', awayRankings.offense?.['to_margin_per_game'])
-
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Points Allowed/Game', awayRankings.defense?.['opp_points_game'])
-  prompt += formatStat('Yards Allowed/Play', awayRankings.defense?.['opp_yards_play'])
-  prompt += formatStat('Rush Yards Allowed/Game', awayRankings.defense?.['opp_rush_yards_game'])
-  prompt += formatStat('Pass Yards Allowed/Game', awayRankings.defense?.['opp_pass_yards_game'])
-  prompt += formatStat('Opp 3rd Down %', awayRankings.defense?.['opp_3d_conv'])
-  prompt += formatStat('Sack %', awayRankings.defense?.['sack'])
-
-  // Add matchup analysis section
-  prompt += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
-  prompt += `1. **${awayTeam} Offense vs ${homeTeam} Defense**\n`
-  prompt += `   - Compare their offensive strengths against the defensive weaknesses\n`
-  prompt += `2. **${homeTeam} Offense vs ${awayTeam} Defense**\n`
-  prompt += `   - Identify where each team can exploit the other\n`
-  prompt += `3. **Efficiency Battle**\n`
-  prompt += `   - Compare yards/play, 3rd down conversion rates, red zone efficiency\n`
-  prompt += `4. **Turnover Implications**\n`
-  prompt += `   - Which team protects the ball better?\n`
-
-  return prompt
+  return stats
 }
 
-function buildBasketballPrompt(homeTeam: string, awayTeam: string, homeRankings: any, awayRankings: any): string {
-  let prompt = `## ${homeTeam.toUpperCase()} (HOME)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Points/Game', homeRankings.offense?.['points_game'])
-  prompt += formatStat('Effective FG%', homeRankings.offense?.['effective_fg_pct'])
-  prompt += formatStat('3PT%', homeRankings.offense?.['three_point_pct'])
-  prompt += formatStat('3PM/Game', homeRankings.offense?.['three_pm_game'])
-  prompt += formatStat('Points in Paint/Game', homeRankings.offense?.['points_in_paint_game'])
-  prompt += formatStat('Assists/Game', homeRankings.offense?.['assists_game'])
-  prompt += formatStat('Fastbreak Pts/Game', homeRankings.offense?.['fastbreak_points_game'])
-  prompt += formatStat('Offensive Reb %', homeRankings.offense?.['offensive_rebound_pct'])
-  prompt += formatStat('Turnovers/Game', homeRankings.offense?.['turnovers_game'])
+function buildBasketballStats(homeTeam: string, awayTeam: string, homeRankings: TeamRankingsData | null, awayRankings: TeamRankingsData | null): string {
+  let stats = ''
+  
+  stats += `## ${homeTeam.toUpperCase()} (HOME)\n\n`
+  if (homeRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.offense, 'points_game', 'Points/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'effective_fg_pct', 'Effective FG%')
+    stats += formatStatFromRankings(homeRankings.offense, 'three_point_pct', '3PT%')
+    stats += formatStatFromRankings(homeRankings.offense, 'assists_game', 'Assists/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'turnovers_game', 'Turnovers/Game')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_points_game', 'Points Allowed/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'opp_effective_fg_pct', 'Opp Effective FG%')
+    stats += formatStatFromRankings(homeRankings.defense, 'steals_game', 'Steals/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'blocks_game', 'Blocks/Game')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  stats += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
+  if (awayRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.offense, 'points_game', 'Points/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'effective_fg_pct', 'Effective FG%')
+    stats += formatStatFromRankings(awayRankings.offense, 'three_point_pct', '3PT%')
+    stats += formatStatFromRankings(awayRankings.offense, 'assists_game', 'Assists/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'turnovers_game', 'Turnovers/Game')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_points_game', 'Points Allowed/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'opp_effective_fg_pct', 'Opp Effective FG%')
+    stats += formatStatFromRankings(awayRankings.defense, 'steals_game', 'Steals/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'blocks_game', 'Blocks/Game')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  stats += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
+  stats += `1. **Perimeter Shooting** - 3PT shooting vs perimeter defense\n`
+  stats += `2. **Pace and Tempo** - How will game flow affect each team?\n`
+  stats += `3. **Ball Security** - Turnover margin and steal potential\n`
+  stats += `4. **Interior Play** - Paint scoring and rim protection\n`
 
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Points Allowed/Game', homeRankings.defense?.['opp_points_game'])
-  prompt += formatStat('Opp Effective FG%', homeRankings.defense?.['opp_effective_fg_pct'])
-  prompt += formatStat('Opp 3PT%', homeRankings.defense?.['opp_three_point_pct'])
-  prompt += formatStat('Opp 3PM/Game', homeRankings.defense?.['opp_three_pm_game'])
-  prompt += formatStat('Opp Points in Paint/Game', homeRankings.defense?.['opp_points_in_paint_game'])
-  prompt += formatStat('Steals/Game', homeRankings.defense?.['steals_game'])
-  prompt += formatStat('Blocks/Game', homeRankings.defense?.['blocks_game'])
-
-  prompt += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Points/Game', awayRankings.offense?.['points_game'])
-  prompt += formatStat('Effective FG%', awayRankings.offense?.['effective_fg_pct'])
-  prompt += formatStat('3PT%', awayRankings.offense?.['three_point_pct'])
-  prompt += formatStat('3PM/Game', awayRankings.offense?.['three_pm_game'])
-  prompt += formatStat('Points in Paint/Game', awayRankings.offense?.['points_in_paint_game'])
-  prompt += formatStat('Assists/Game', awayRankings.offense?.['assists_game'])
-  prompt += formatStat('Fastbreak Pts/Game', awayRankings.offense?.['fastbreak_points_game'])
-  prompt += formatStat('Offensive Reb %', awayRankings.offense?.['offensive_rebound_pct'])
-  prompt += formatStat('Turnovers/Game', awayRankings.offense?.['turnovers_game'])
-
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Points Allowed/Game', awayRankings.defense?.['opp_points_game'])
-  prompt += formatStat('Opp Effective FG%', awayRankings.defense?.['opp_effective_fg_pct'])
-  prompt += formatStat('Opp 3PT%', awayRankings.defense?.['opp_three_point_pct'])
-  prompt += formatStat('Opp 3PM/Game', awayRankings.defense?.['opp_three_pm_game'])
-  prompt += formatStat('Opp Points in Paint/Game', awayRankings.defense?.['opp_points_in_paint_game'])
-  prompt += formatStat('Steals/Game', awayRankings.defense?.['steals_game'])
-  prompt += formatStat('Blocks/Game', awayRankings.defense?.['blocks_game'])
-
-  prompt += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
-  prompt += `1. **Perimeter Battle** - Compare 3PT shooting vs perimeter defense\n`
-  prompt += `2. **Paint Presence** - Points in paint vs interior defense\n`
-  prompt += `3. **Pace & Style** - Fastbreak points, turnovers, overall tempo\n`
-  prompt += `4. **Ball Movement** - Assists, sharing, offensive efficiency\n`
-
-  return prompt
+  return stats
 }
 
-function buildHockeyPrompt(homeTeam: string, awayTeam: string, homeRankings: any, awayRankings: any): string {
-  // For NHL we use MoneyPuck data which has different structure
-  let prompt = `## ${homeTeam.toUpperCase()} (HOME)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Goals/Game', homeRankings.offense?.['goals_game'])
-  prompt += formatStat('Shots/Game', homeRankings.offense?.['shots_game'])
-  prompt += formatStat('Shooting %', homeRankings.offense?.['shooting_pct'])
-  prompt += formatStat('Power Play %', homeRankings.offense?.['power_play_pct'])
-  prompt += formatStat('xGoals/60', homeRankings.offense?.['xgoals_60'])
+function buildHockeyStats(homeTeam: string, awayTeam: string, homeRankings: TeamRankingsData | null, awayRankings: TeamRankingsData | null): string {
+  let stats = ''
+  
+  stats += `## ${homeTeam.toUpperCase()} (HOME)\n\n`
+  if (homeRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.offense, 'goals_game', 'Goals/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'shots_game', 'Shots/Game')
+    stats += formatStatFromRankings(homeRankings.offense, 'shooting_pct', 'Shooting %')
+    stats += formatStatFromRankings(homeRankings.offense, 'power_play_pct', 'Power Play %')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(homeRankings.defense, 'goals_against_game', 'Goals Against/Game')
+    stats += formatStatFromRankings(homeRankings.defense, 'save_pct', 'Save %')
+    stats += formatStatFromRankings(homeRankings.defense, 'penalty_kill_pct', 'Penalty Kill %')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  stats += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
+  if (awayRankings) {
+    stats += `**OFFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.offense, 'goals_game', 'Goals/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'shots_game', 'Shots/Game')
+    stats += formatStatFromRankings(awayRankings.offense, 'shooting_pct', 'Shooting %')
+    stats += formatStatFromRankings(awayRankings.offense, 'power_play_pct', 'Power Play %')
+    
+    stats += `\n**DEFENSE:**\n`
+    stats += formatStatFromRankings(awayRankings.defense, 'goals_against_game', 'Goals Against/Game')
+    stats += formatStatFromRankings(awayRankings.defense, 'save_pct', 'Save %')
+    stats += formatStatFromRankings(awayRankings.defense, 'penalty_kill_pct', 'Penalty Kill %')
+  } else {
+    stats += `(No stats available)\n`
+  }
+  
+  stats += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
+  stats += `1. **Goaltending Duel** - Save percentages and hot streaks\n`
+  stats += `2. **Special Teams** - Power play vs penalty kill\n`
+  stats += `3. **Shot Generation** - Volume and quality\n`
+  stats += `4. **5v5 Play** - Even strength effectiveness\n`
 
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Goals Allowed/Game', homeRankings.defense?.['goals_against_game'])
-  prompt += formatStat('Shots Allowed/Game', homeRankings.defense?.['shots_against_game'])
-  prompt += formatStat('Save %', homeRankings.defense?.['save_pct'])
-  prompt += formatStat('Penalty Kill %', homeRankings.defense?.['penalty_kill_pct'])
-
-  prompt += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
-  prompt += `**OFFENSE:**\n`
-  prompt += formatStat('Goals/Game', awayRankings.offense?.['goals_game'])
-  prompt += formatStat('Shots/Game', awayRankings.offense?.['shots_game'])
-  prompt += formatStat('Shooting %', awayRankings.offense?.['shooting_pct'])
-  prompt += formatStat('Power Play %', awayRankings.offense?.['power_play_pct'])
-  prompt += formatStat('xGoals/60', awayRankings.offense?.['xgoals_60'])
-
-  prompt += `\n**DEFENSE:**\n`
-  prompt += formatStat('Goals Allowed/Game', awayRankings.defense?.['goals_against_game'])
-  prompt += formatStat('Shots Allowed/Game', awayRankings.defense?.['shots_against_game'])
-  prompt += formatStat('Save %', awayRankings.defense?.['save_pct'])
-  prompt += formatStat('Penalty Kill %', awayRankings.defense?.['penalty_kill_pct'])
-
-  prompt += `\n---\n\n## KEY MATCHUPS TO ANALYZE:\n\n`
-  prompt += `1. **Goaltending** - Compare save percentages and goals allowed\n`
-  prompt += `2. **Special Teams** - Power play vs penalty kill matchups\n`
-  prompt += `3. **Shot Volume** - Who generates more chances?\n`
-  prompt += `4. **Expected Goals** - Which team creates quality opportunities?\n`
-
-  return prompt
+  return stats
 }
 
-function formatStat(label: string, stat: { value: number; rank: number } | undefined): string {
-  if (!stat || stat.rank === 999) return ''
-  const value = typeof stat.value === 'number' ? stat.value.toFixed(1) : stat.value
-  return `- ${label}: ${value} (#${stat.rank})\n`
+function buildGenericStats(homeTeam: string, awayTeam: string, homeRankings: TeamRankingsData | null, awayRankings: TeamRankingsData | null): string {
+  let stats = ''
+  
+  stats += `## ${homeTeam.toUpperCase()} (HOME)\n\n`
+  if (homeRankings) {
+    stats += `**OFFENSE:**\n`
+    Object.entries(homeRankings.offense).slice(0, 8).forEach(([key, val]) => {
+      if (val.rank < 999) {
+        stats += `- ${key.replace(/_/g, ' ')}: ${val.value} (#${val.rank})\n`
+      }
+    })
+    stats += `\n**DEFENSE:**\n`
+    Object.entries(homeRankings.defense).slice(0, 6).forEach(([key, val]) => {
+      if (val.rank < 999) {
+        stats += `- ${key.replace(/_/g, ' ')}: ${val.value} (#${val.rank})\n`
+      }
+    })
+  }
+  
+  stats += `\n---\n\n## ${awayTeam.toUpperCase()} (AWAY)\n\n`
+  if (awayRankings) {
+    stats += `**OFFENSE:**\n`
+    Object.entries(awayRankings.offense).slice(0, 8).forEach(([key, val]) => {
+      if (val.rank < 999) {
+        stats += `- ${key.replace(/_/g, ' ')}: ${val.value} (#${val.rank})\n`
+      }
+    })
+    stats += `\n**DEFENSE:**\n`
+    Object.entries(awayRankings.defense).slice(0, 6).forEach(([key, val]) => {
+      if (val.rank < 999) {
+        stats += `- ${key.replace(/_/g, ' ')}: ${val.value} (#${val.rank})\n`
+      }
+    })
+  }
+
+  return stats
+}
+
+function formatStatFromRankings(
+  stats: Record<string, { value: number; rank: number }> | undefined,
+  key: string,
+  label: string
+): string {
+  if (!stats) return ''
+  
+  // Try multiple key variations (TeamRankings format varies)
+  const variations = [
+    key,
+    key.replace(/_/g, ''),
+    key.replace(/game/g, 'per_game'),
+    key.replace(/per_game/g, 'game')
+  ]
+  
+  for (const k of variations) {
+    const stat = stats[k]
+    if (stat && stat.rank < 999) {
+      const value = typeof stat.value === 'number' ? stat.value.toFixed(1) : stat.value
+      return `- ${label}: ${value} (#${stat.rank})\n`
+    }
+  }
+  
+  // Try to find any stat that contains the key
+  for (const [statKey, stat] of Object.entries(stats)) {
+    if (statKey.includes(key.split('_')[0]) && stat.rank < 999) {
+      const value = typeof stat.value === 'number' ? stat.value.toFixed(1) : stat.value
+      return `- ${label}: ${value} (#${stat.rank})\n`
+    }
+  }
+  
+  return ''
 }
 
 export const dynamic = 'force-dynamic'
-

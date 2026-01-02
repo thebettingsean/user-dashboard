@@ -40,7 +40,14 @@ export async function scrapeTeamRankings(sport: string, teamName: string): Promi
   }
 
   // Map sport to TeamRankings URL format
-  const sportUrl = sport === 'cfb' ? 'college-football' : sport
+  const sportUrlMap: Record<string, string> = {
+    'cfb': 'college-football',
+    'cbb': 'ncaa-basketball',
+    'nfl': 'nfl',
+    'nba': 'nba',
+    'nhl': 'nhl'
+  }
+  const sportUrl = sportUrlMap[sport.toLowerCase()] || sport
   const url = `https://www.teamrankings.com/${sportUrl}/team/${teamSlug}/stats`
   console.log(`🔍 Scraping TeamRankings: ${url}`)
 
@@ -184,6 +191,41 @@ function normalizeTeamName(teamName: string): string {
     'Toronto Raptors': 'toronto-raptors', 'Raptors': 'toronto-raptors',
     'Utah Jazz': 'utah-jazz', 'Jazz': 'utah-jazz',
     'Washington Wizards': 'washington-wizards', 'Wizards': 'washington-wizards',
+    
+    // NHL
+    'Anaheim Ducks': 'anaheim-ducks', 'Ducks': 'anaheim-ducks',
+    'Arizona Coyotes': 'arizona-coyotes', 'Coyotes': 'arizona-coyotes',
+    'Boston Bruins': 'boston-bruins', 'Bruins': 'boston-bruins',
+    'Buffalo Sabres': 'buffalo-sabres', 'Sabres': 'buffalo-sabres',
+    'Calgary Flames': 'calgary-flames', 'Flames': 'calgary-flames',
+    'Carolina Hurricanes': 'carolina-hurricanes', 'Hurricanes': 'carolina-hurricanes',
+    'Chicago Blackhawks': 'chicago-blackhawks', 'Blackhawks': 'chicago-blackhawks',
+    'Colorado Avalanche': 'colorado-avalanche', 'Avalanche': 'colorado-avalanche',
+    'Columbus Blue Jackets': 'columbus-blue-jackets', 'Blue Jackets': 'columbus-blue-jackets',
+    'Dallas Stars': 'dallas-stars', 'Stars': 'dallas-stars',
+    'Detroit Red Wings': 'detroit-red-wings', 'Red Wings': 'detroit-red-wings',
+    'Edmonton Oilers': 'edmonton-oilers', 'Oilers': 'edmonton-oilers',
+    'Florida Panthers': 'florida-panthers',
+    'Los Angeles Kings': 'los-angeles-kings',
+    'Minnesota Wild': 'minnesota-wild', 'Wild': 'minnesota-wild',
+    'Montreal Canadiens': 'montreal-canadiens', 'Canadiens': 'montreal-canadiens',
+    'Nashville Predators': 'nashville-predators', 'Predators': 'nashville-predators',
+    'New Jersey Devils': 'new-jersey-devils', 'Devils': 'new-jersey-devils',
+    'New York Islanders': 'new-york-islanders', 'Islanders': 'new-york-islanders',
+    'New York Rangers': 'new-york-rangers', 'Rangers': 'new-york-rangers',
+    'Ottawa Senators': 'ottawa-senators', 'Senators': 'ottawa-senators',
+    'Philadelphia Flyers': 'philadelphia-flyers', 'Flyers': 'philadelphia-flyers',
+    'Pittsburgh Penguins': 'pittsburgh-penguins', 'Penguins': 'pittsburgh-penguins',
+    'San Jose Sharks': 'san-jose-sharks', 'Sharks': 'san-jose-sharks',
+    'Seattle Kraken': 'seattle-kraken', 'Kraken': 'seattle-kraken',
+    'St. Louis Blues': 'st-louis-blues', 'Blues': 'st-louis-blues',
+    'Tampa Bay Lightning': 'tampa-bay-lightning', 'Lightning': 'tampa-bay-lightning',
+    'Toronto Maple Leafs': 'toronto-maple-leafs', 'Maple Leafs': 'toronto-maple-leafs',
+    'Utah Hockey Club': 'utah-hockey-club',
+    'Vancouver Canucks': 'vancouver-canucks', 'Canucks': 'vancouver-canucks',
+    'Vegas Golden Knights': 'vegas-golden-knights', 'Golden Knights': 'vegas-golden-knights',
+    'Washington Capitals': 'washington-capitals', 'Capitals': 'washington-capitals',
+    'Winnipeg Jets': 'winnipeg-jets',
   }
 
   // Direct lookup
@@ -191,7 +233,8 @@ function normalizeTeamName(teamName: string): string {
     return TEAM_NAME_MAP[teamName]
   }
 
-  // Fallback: normalize manually
+  // Fallback: normalize manually (works well for college teams)
+  // This handles names like "Ohio State Buckeyes" -> "ohio-state-buckeyes"
   return teamName
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')

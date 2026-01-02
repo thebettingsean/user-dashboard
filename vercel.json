@@ -54,7 +54,7 @@
     },
     {
       "path": "/api/cron/generate-free-scripts",
-      "schedule": "0 12 * * *"
+      "schedule": "0 14 * * *"
     }
   ]
 }
