@@ -32,7 +32,7 @@ interface Game {
   hasPublicBetting: boolean
 }
 
-const SPORTS = ['all', 'nfl', 'nba', 'nhl', 'cfb']
+const SPORTS = ['all', 'nfl', 'nba', 'nhl', 'cfb', 'cbb']
 
 function formatGameTime(dateString: string): string {
   const date = new Date(dateString)
@@ -206,7 +206,7 @@ export default function GamesPage() {
       const games: Game[] = []
       
       // Fetch games for each sport using new unified API
-      const sportIds = ['nfl', 'nba', 'nhl', 'cfb']
+      const sportIds = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
       
       for (const sportId of sportIds) {
         try {
