@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
 
     // Get entitlements
     let entitlements: UserEntitlements = DEFAULT_ENTITLEMENTS
+    let isLegacyUser = false
 
     // First, check for the new entitlements object in metadata
     if (privateMeta.entitlements && typeof privateMeta.entitlements === 'object') {
@@ -74,24 +75,39 @@ export async function GET(request: NextRequest) {
     // Fall back to priceIds array
     else if (privateMeta.priceIds && Array.isArray(privateMeta.priceIds)) {
       entitlements = getEntitlementsFromPriceIds(privateMeta.priceIds as string[])
-      console.log(`[check-entitlements] Calculated from priceIds:`, entitlements)
+      // Check if any priceId is legacy
+      isLegacyUser = (privateMeta.priceIds as string[]).some(id => LEGACY_PRICE_IDS.includes(id))
+      console.log(`[check-entitlements] Calculated from priceIds:`, entitlements, `isLegacy: ${isLegacyUser}`)
     }
     // Fall back to single plan (backward compat)
     else if (privateMeta.plan && typeof privateMeta.plan === 'string') {
       const planId = (privateMeta.plan as string).trim()
       if (isValidPriceId(planId)) {
         entitlements = getEntitlementsFromPriceIds([planId])
-        console.log(`[check-entitlements] Calculated from legacy plan:`, entitlements)
+        // Check if this is a legacy price ID
+        isLegacyUser = LEGACY_PRICE_IDS.includes(planId)
+        console.log(`[check-entitlements] Calculated from legacy plan:`, entitlements, `isLegacy: ${isLegacyUser}`)
       }
     }
 
-    // If user has a valid subscription status, they get their entitlements
-    // If not, they get nothing
-    const hasValidSubscription = isTrialing || isActive || isScheduledToCancel || isCanceledButStillValid
+    // Legacy users with a subscription ID get access regardless of new subscription status fields
+    // They don't have the new status fields in their metadata
+    const hasStripeSubscription = Boolean(privateMeta.stripeSubscriptionId || privateMeta.subscriptionId)
+    const legacyUserHasAccess = isLegacyUser && hasStripeSubscription
+
+    // For new users, check subscription status
+    const hasValidSubscription = isTrialing || isActive || isScheduledToCancel || isCanceledButStillValid || legacyUserHasAccess
     
     if (!hasValidSubscription) {
       entitlements = DEFAULT_ENTITLEMENTS
     }
+    
+    console.log(`[check-entitlements] Subscription check:`, {
+      isLegacyUser,
+      hasStripeSubscription,
+      legacyUserHasAccess,
+      hasValidSubscription,
+    })
 
     const hasAnyAccess = entitlements.picks || entitlements.publicBetting || entitlements.builder
 
