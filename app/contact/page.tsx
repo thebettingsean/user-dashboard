@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FiMessageCircle, FiHelpCircle, FiUsers, FiLightbulb } from 'react-icons/fi'
+import { FiMessageCircle, FiHelpCircle, FiUsers, FiZap } from 'react-icons/fi'
 import { IoPhonePortraitOutline } from 'react-icons/io5'
 import styles from './contact.module.css'
 
@@ -72,7 +72,7 @@ export default function ContactPage() {
         {/* Ideas */}
         <div className={styles.contactCard}>
           <div className={styles.cardIcon}>
-            <FiLightbulb size={22} />
+            <FiZap size={22} />
           </div>
           <div className={styles.cardContent}>
             <h2 className={styles.cardTitle}>Ideas</h2>

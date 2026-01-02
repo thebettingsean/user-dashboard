@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { 
   FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle,
   FiGift, FiTrendingUp, FiBell, FiCreditCard, FiHelpCircle, FiUsers, FiBook, 
-  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2, FiTool, FiLightbulb
+  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2, FiTool, FiZap
 } from 'react-icons/fi'
 import { IoPhonePortraitOutline } from 'react-icons/io5'
 import { FaHammer } from 'react-icons/fa'
@@ -566,7 +566,7 @@ export default function ManageSubscriptionPage() {
               <div className={styles.textContactList}>
                 <div className={styles.textContactItem}>
                   <div className={styles.textContactInfo}>
-                    <FiLightbulb size={16} />
+                    <FiZap size={16} />
                     <div className={styles.textContactText}>
                       <span className={styles.textContactLabel}>Text "Ideas" to:</span>
                       <span className={styles.textContactDesc}>Help us build cool stuff!</span>
