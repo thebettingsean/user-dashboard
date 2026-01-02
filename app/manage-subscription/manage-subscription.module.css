@@ -155,31 +155,21 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(100, 116, 139, 0.08) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgba(203, 213, 225, 0.85);
+  backdrop-filter: blur(4px);
 }
 
-.sectionIconGreen {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.sectionIconBlue {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-}
-
-.sectionIconPurple {
-  background: rgba(139, 92, 246, 0.15);
-  color: #8b5cf6;
-}
-
-.sectionIconYellow {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-}
-
+/* All icon colors now unified to silver/grey */
+.sectionIconGreen,
+.sectionIconBlue,
+.sectionIconPurple,
+.sectionIconYellow,
 .sectionIconRed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(100, 116, 139, 0.08) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgba(203, 213, 225, 0.85);
 }
 
 .sectionInfo {
