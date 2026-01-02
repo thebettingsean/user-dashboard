@@ -34,6 +34,7 @@ export async function GET(request: Request) {
   try {
     // Step 1: Fetch games WITH team data via JOIN (games table only has team IDs)
     // Join with game_first_seen to get true opening lines (matches what timeline shows)
+    // Join with latest snapshot to get current lines (ensures consistency with graph)
     const gamesQuery = `
       SELECT 
         g.game_id,
@@ -46,23 +47,24 @@ export async function GET(request: Request) {
         
         -- Use true opening from game_first_seen (matches timeline), fallback to games table
         COALESCE(gfs.opening_spread, g.spread_open) as opening_spread,
-        g.spread_close as current_spread,
-        g.spread_close - COALESCE(gfs.opening_spread, g.spread_open) as spread_movement,
+        -- Use latest snapshot for current (ensures match with graph), fallback to games table
+        COALESCE(latest.spread, g.spread_close) as current_spread,
+        COALESCE(latest.spread, g.spread_close) - COALESCE(gfs.opening_spread, g.spread_open) as spread_movement,
         
         COALESCE(gfs.opening_total, g.total_open) as opening_total,
-        g.total_close as current_total,
-        g.total_close - COALESCE(gfs.opening_total, g.total_open) as total_movement,
+        COALESCE(latest.total, g.total_close) as current_total,
+        COALESCE(latest.total, g.total_close) - COALESCE(gfs.opening_total, g.total_open) as total_movement,
         
         COALESCE(gfs.opening_ml_home, g.home_ml_open) as opening_ml_home,
         COALESCE(gfs.opening_ml_away, g.away_ml_open) as opening_ml_away,
-        g.home_ml_close as current_ml_home,
-        g.away_ml_close as current_ml_away,
+        COALESCE(latest.ml_home, g.home_ml_close) as current_ml_home,
+        COALESCE(latest.ml_away, g.away_ml_close) as current_ml_away,
         
-        -- Juice/odds for spreads and totals
-        g.home_spread_juice,
-        g.away_spread_juice,
-        g.over_juice,
-        g.under_juice,
+        -- Juice/odds for spreads and totals (use latest snapshot for consistency)
+        COALESCE(latest.spread_juice_home, g.home_spread_juice) as home_spread_juice,
+        COALESCE(latest.spread_juice_away, g.away_spread_juice) as away_spread_juice,
+        COALESCE(latest.total_juice_over, g.over_juice) as over_juice,
+        COALESCE(latest.total_juice_under, g.under_juice) as under_juice,
         
         g.public_spread_home_bet_pct,
         g.public_spread_home_money_pct,
@@ -116,6 +118,25 @@ export async function GET(request: Request) {
         (g.sport NOT IN ('cbb', 'ncaab') AND at.sport = g.sport)
       )
       LEFT JOIN game_first_seen gfs ON gfs.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
+      -- Join with the LATEST snapshot to get current values that match the graph
+      LEFT JOIN (
+        SELECT 
+          odds_api_game_id,
+          spread,
+          total,
+          ml_home,
+          ml_away,
+          spread_juice_home,
+          spread_juice_away,
+          total_juice_over,
+          total_juice_under
+        FROM live_odds_snapshots
+        WHERE (odds_api_game_id, snapshot_time) IN (
+          SELECT odds_api_game_id, max(snapshot_time) 
+          FROM live_odds_snapshots 
+          GROUP BY odds_api_game_id
+        )
+      ) latest ON latest.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
       WHERE toDate(toTimeZone(g.game_time, 'America/New_York')) >= toDate(toTimeZone(now(), 'America/New_York'))
         ${gamesSportFilter}
       ORDER BY g.game_time ASC, g.updated_at DESC
