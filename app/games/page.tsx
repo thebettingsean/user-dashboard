@@ -152,8 +152,14 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
 
 // Regular Game Card - Compact grid item
 function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+  const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  
   return (
-    <div className={styles.gameCard} onClick={onClick}>
+    <div 
+      className={styles.gameCard} 
+      onClick={onClick}
+      style={{ background: teamGradient }}
+    >
       <div className={styles.cardHeader}>
         <span className={styles.cardSport}>{game.sport}</span>
         <span className={styles.cardTime}>{formatGameTime(game.kickoff)}</span>
