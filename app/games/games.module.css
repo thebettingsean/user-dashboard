@@ -1,10 +1,14 @@
-/* Games Page - Dark Theme */
+/* Design System - Dark Theme (matching picks and public-betting) */
 .container {
   min-height: 100vh;
   background: #0C0E12 !important;
   padding: 24px;
+  padding-top: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
 }
 
 .headerSpacer {
@@ -14,6 +18,22 @@
 /* Header */
 .header {
   margin-bottom: 24px;
+}
+
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .title {
@@ -30,58 +50,63 @@
   margin: 0;
 }
 
-/* Sport Tabs */
-.sportTabs {
+/* Filters Row - Matching /picks exactly */
+.filtersRow {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.sportTabs::-webkit-scrollbar {
-  display: none;
-}
-
-.sportTab {
+.leftFilters {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: rgba(30, 41, 59, 0.3);
-  border: 1px solid rgba(71, 85, 105, 0.3);
-  border-radius: 6px;
-  font-size: 13px;
+  gap: 12px;
+}
+
+.sportFilters {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  gap: 4px;
+  height: 32px;
+}
+
+.filterBtn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 12px;
+  height: 28px;
+  font-size: 12px;
   font-weight: 500;
   color: #696969;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
 }
 
-.sportTab:hover:not(:disabled) {
-  border-color: rgba(71, 85, 105, 0.5);
-  color: #fff;
+.filterBtn:hover:not(:disabled) {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
 }
 
-.sportTabActive {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+.filterBtn.active {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
 }
 
-.sportTabDisabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Games Section */
-.gamesSection {
+/* Games Content */
+.gamesContent {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .loading,
@@ -96,50 +121,144 @@
   font-size: 14px;
 }
 
-/* Sport Group */
-.sportGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Featured Game Card */
+.featuredCard {
+  position: relative;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.sportHeader {
+.featuredCard:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(30, 41, 59, 0.5);
+}
+
+.featuredBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.featuredMatchup {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 4px;
+  justify-content: center;
+  gap: 32px;
+  margin: 32px 0 20px;
 }
 
-.sportTitle {
-  font-size: 15px;
+.featuredTeam {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  min-width: 100px;
+}
+
+.featuredLogo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.featuredTeamName {
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
-  margin: 0;
 }
 
-.gameCount {
-  font-size: 12px;
+.featuredVs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.atSymbol {
+  font-size: 14px;
+  color: #696969;
+  font-weight: 500;
+}
+
+.featuredSpread {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.featuredMeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.featuredTime {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
   color: #696969;
 }
 
-/* Games List */
-.gamesList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.sportBadge {
+  padding: 3px 8px;
+  background: rgba(41, 47, 63, 0.5);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
 }
 
-/* Game Card */
-.gameCard {
+.featuredCta {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3b82f6;
+  margin-top: 8px;
+}
+
+/* Games Grid */
+.gamesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* Individual Game Card */
+.gameCard {
   background: rgba(30, 41, 59, 0.3);
   border: 1px solid rgba(71, 85, 105, 0.3);
   border-radius: 10px;
+  padding: 14px;
   cursor: pointer;
   transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .gameCard:hover {
@@ -147,91 +266,107 @@
   background: rgba(30, 41, 59, 0.4);
 }
 
-.gameTeams {
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardSport {
+  font-size: 10px;
+  font-weight: 600;
+  color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardTime {
+  font-size: 11px;
+  color: #696969;
+}
+
+.cardMatchup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardTeamRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
-  min-width: 0;
 }
 
-.team {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.teamLogo {
-  width: 28px;
-  height: 28px;
+.cardLogo {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
-.teamName {
-  font-size: 14px;
+.cardTeamName {
+  font-size: 13px;
   font-weight: 500;
   color: #fff;
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.atSymbol {
+.cardSpread {
   font-size: 12px;
-  color: #696969;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
 }
 
-.gameInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.gameTime {
+.cardFooter {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(71, 85, 105, 0.2);
   font-size: 12px;
   color: #696969;
 }
 
-.gameSpread {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+.cardFooter:hover {
+  color: #3b82f6;
 }
 
-.gameArrow {
-  color: #696969;
-  flex-shrink: 0;
+/* Responsive - Tablet */
+@media (max-width: 900px) {
+  .gamesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* Responsive */
+/* Responsive - Mobile */
 @media (max-width: 640px) {
-  .gameCard {
-    flex-wrap: wrap;
-    gap: 12px;
+  .container {
+    padding: 16px;
   }
   
-  .gameTeams {
-    width: 100%;
+  .gamesGrid {
+    grid-template-columns: 1fr;
   }
   
-  .gameInfo {
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between;
+  .featuredMatchup {
+    gap: 20px;
+    margin: 24px 0 16px;
   }
   
-  .gameArrow {
-    display: none;
+  .featuredLogo {
+    width: 48px;
+    height: 48px;
   }
   
-  .teamName {
-    font-size: 13px;
+  .featuredTeamName {
+    font-size: 14px;
+  }
+  
+  .featuredTeam {
+    min-width: 80px;
   }
 }

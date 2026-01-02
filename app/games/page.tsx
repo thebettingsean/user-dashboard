@@ -2,35 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiChevronRight, FiClock, FiCalendar } from 'react-icons/fi'
-import { GiAmericanFootballBall, GiBasketballBall, GiHockey } from 'react-icons/gi'
+import { FiChevronRight, FiClock } from 'react-icons/fi'
 import styles from './games.module.css'
 
 interface Game {
   id: string
-  game_id: string
-  away_team: string
-  home_team: string
-  away_team_logo?: string
-  home_team_logo?: string
-  game_date: string
+  awayTeam: string
+  homeTeam: string
+  awayTeamLogo: string | null
+  homeTeamLogo: string | null
+  kickoff: string
   sport: string
   spread?: { homeLine: number | null; awayLine: number | null }
   totals?: { number: number | null }
 }
 
-interface SportGames {
-  sport: string
-  sportLabel: string
-  games: Game[]
-}
-
-const SPORTS = [
-  { id: 'nfl', label: 'NFL', icon: GiAmericanFootballBall },
-  { id: 'nba', label: 'NBA', icon: GiBasketballBall },
-  { id: 'nhl', label: 'NHL', icon: GiHockey },
-  { id: 'cfb', label: 'NCAAF', icon: GiAmericanFootballBall },
-]
+const SPORTS = ['all', 'nfl', 'nba', 'nhl', 'cfb']
 
 function formatGameTime(dateString: string): string {
   const date = new Date(dateString)
@@ -59,39 +46,89 @@ function formatGameTime(dateString: string): string {
   })
 }
 
+function formatSpread(spread: number | null | undefined): string {
+  if (spread === null || spread === undefined) return ''
+  return spread > 0 ? `+${spread}` : `${spread}`
+}
+
+// Featured Game Card - Large, prominent display
+function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+  return (
+    <div className={styles.featuredCard} onClick={onClick}>
+      <div className={styles.featuredBadge}>Featured Game</div>
+      
+      <div className={styles.featuredMatchup}>
+        <div className={styles.featuredTeam}>
+          {game.awayTeamLogo && (
+            <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.featuredLogo} />
+          )}
+          <span className={styles.featuredTeamName}>{game.awayTeam}</span>
+        </div>
+        
+        <div className={styles.featuredVs}>
+          <span className={styles.atSymbol}>@</span>
+          {game.spread?.homeLine && (
+            <span className={styles.featuredSpread}>{formatSpread(game.spread.homeLine)}</span>
+          )}
+        </div>
+        
+        <div className={styles.featuredTeam}>
+          {game.homeTeamLogo && (
+            <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.featuredLogo} />
+          )}
+          <span className={styles.featuredTeamName}>{game.homeTeam}</span>
+        </div>
+      </div>
+      
+      <div className={styles.featuredMeta}>
+        <div className={styles.featuredTime}>
+          <FiClock size={14} />
+          <span>{formatGameTime(game.kickoff)}</span>
+        </div>
+        <span className={styles.sportBadge}>{game.sport}</span>
+      </div>
+      
+      <div className={styles.featuredCta}>
+        View Game Details
+        <FiChevronRight size={16} />
+      </div>
+    </div>
+  )
+}
+
+// Regular Game Card - Compact grid item
 function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
   return (
     <div className={styles.gameCard} onClick={onClick}>
-      <div className={styles.gameTeams}>
-        <div className={styles.team}>
-          {game.away_team_logo && (
-            <img src={game.away_team_logo} alt={game.away_team} className={styles.teamLogo} />
+      <div className={styles.cardHeader}>
+        <span className={styles.cardSport}>{game.sport}</span>
+        <span className={styles.cardTime}>{formatGameTime(game.kickoff)}</span>
+      </div>
+      
+      <div className={styles.cardMatchup}>
+        <div className={styles.cardTeamRow}>
+          {game.awayTeamLogo && (
+            <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.cardLogo} />
           )}
-          <span className={styles.teamName}>{game.away_team}</span>
+          <span className={styles.cardTeamName}>{game.awayTeam}</span>
+          {game.spread?.awayLine && (
+            <span className={styles.cardSpread}>{formatSpread(game.spread.awayLine)}</span>
+          )}
         </div>
-        <span className={styles.atSymbol}>@</span>
-        <div className={styles.team}>
-          {game.home_team_logo && (
-            <img src={game.home_team_logo} alt={game.home_team} className={styles.teamLogo} />
+        <div className={styles.cardTeamRow}>
+          {game.homeTeamLogo && (
+            <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.cardLogo} />
           )}
-          <span className={styles.teamName}>{game.home_team}</span>
+          <span className={styles.cardTeamName}>{game.homeTeam}</span>
+          {game.spread?.homeLine && (
+            <span className={styles.cardSpread}>{formatSpread(game.spread.homeLine)}</span>
+          )}
         </div>
       </div>
       
-      <div className={styles.gameInfo}>
-        <div className={styles.gameTime}>
-          <FiClock size={12} />
-          <span>{formatGameTime(game.game_date)}</span>
-        </div>
-        {game.spread?.homeLine && (
-          <div className={styles.gameSpread}>
-            <span>Spread: {game.spread.homeLine > 0 ? '+' : ''}{game.spread.homeLine}</span>
-          </div>
-        )}
-      </div>
-      
-      <div className={styles.gameArrow}>
-        <FiChevronRight size={18} />
+      <div className={styles.cardFooter}>
+        <span>View Details</span>
+        <FiChevronRight size={14} />
       </div>
     </div>
   )
@@ -99,59 +136,63 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
 
 export default function GamesPage() {
   const router = useRouter()
-  const [activeSport, setActiveSport] = useState<string>('all')
-  const [sportGames, setSportGames] = useState<SportGames[]>([])
+  const [selectedSport, setSelectedSport] = useState<string>('all')
+  const [allGames, setAllGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
     async function fetchGames() {
       setIsLoading(true)
-      const allSportGames: SportGames[] = []
+      const games: Game[] = []
       
-      for (const sport of SPORTS) {
+      // Fetch games for each sport
+      const sportIds = ['nfl', 'nba', 'nhl', 'cfb']
+      
+      for (const sportId of sportIds) {
         try {
-          const res = await fetch(`/api/dashboard/game-hub?sport=${sport.id}`)
+          const res = await fetch(`/api/dashboard/game-hub?sport=${sportId}`)
           if (res.ok) {
             const data = await res.json()
             if (data.games && data.games.length > 0) {
-              allSportGames.push({
-                sport: sport.id,
-                sportLabel: sport.label,
-                games: data.games.map((g: any) => ({
-                  id: g.id,
-                  game_id: g.id,
-                  away_team: g.awayTeam,
-                  home_team: g.homeTeam,
-                  away_team_logo: g.awayTeamLogo,
-                  home_team_logo: g.homeTeamLogo,
-                  game_date: g.kickoff,
-                  sport: sport.label,
-                  spread: g.spread,
-                  totals: g.totals,
-                }))
-              })
+              games.push(...data.games.map((g: any) => ({
+                id: g.id,
+                awayTeam: g.awayTeam,
+                homeTeam: g.homeTeam,
+                awayTeamLogo: g.awayTeamLogo,
+                homeTeamLogo: g.homeTeamLogo,
+                kickoff: g.kickoff,
+                sport: sportId.toUpperCase(),
+                spread: g.spread,
+                totals: g.totals,
+              })))
             }
           }
         } catch (error) {
-          console.error(`Error fetching ${sport.label} games:`, error)
+          console.error(`Error fetching ${sportId} games:`, error)
         }
       }
       
-      setSportGames(allSportGames)
+      // Sort by kickoff time
+      games.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
+      
+      setAllGames(games)
       setIsLoading(false)
     }
     
     fetchGames()
   }, [])
   
-  const filteredGames = activeSport === 'all' 
-    ? sportGames 
-    : sportGames.filter(sg => sg.sport === activeSport)
+  // Filter games by selected sport
+  const filteredGames = selectedSport === 'all' 
+    ? allGames 
+    : allGames.filter(g => g.sport.toLowerCase() === selectedSport)
   
-  const totalGames = filteredGames.reduce((sum, sg) => sum + sg.games.length, 0)
+  // Featured game is the first game (soonest)
+  const featuredGame = filteredGames[0]
+  const remainingGames = filteredGames.slice(1)
   
-  const handleGameClick = (game: Game, sport: string) => {
-    router.push(`/games/${game.id}?sport=${sport}`)
+  const handleGameClick = (game: Game) => {
+    router.push(`/games/${game.id}?sport=${game.sport.toLowerCase()}`)
   }
   
   return (
@@ -160,64 +201,66 @@ export default function GamesPage() {
       
       {/* Header */}
       <header className={styles.header}>
-        <h1 className={styles.title}>Games</h1>
-        <p className={styles.subtitle}>
-          Browse upcoming games across all sports
-        </p>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Games</h1>
+            </div>
+            <p className={styles.subtitle}>
+              Browse upcoming games across all sports
+            </p>
+          </div>
+        </div>
+        
+        {/* Filters Row - Matching /picks exactly */}
+        <div className={styles.filtersRow}>
+          <div className={styles.leftFilters}>
+            <div className={styles.sportFilters}>
+              {SPORTS.map(sport => (
+                <button
+                  key={sport}
+                  className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
+                  onClick={() => setSelectedSport(sport)}
+                >
+                  {sport === 'all' ? 'All' : sport.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </header>
       
-      {/* Sport Filter Tabs */}
-      <div className={styles.sportTabs}>
-        <button 
-          className={`${styles.sportTab} ${activeSport === 'all' ? styles.sportTabActive : ''}`}
-          onClick={() => setActiveSport('all')}
-        >
-          All Sports
-        </button>
-        {SPORTS.map(sport => {
-          const SportIcon = sport.icon
-          const hasGames = sportGames.some(sg => sg.sport === sport.id && sg.games.length > 0)
-          return (
-            <button 
-              key={sport.id}
-              className={`${styles.sportTab} ${activeSport === sport.id ? styles.sportTabActive : ''} ${!hasGames ? styles.sportTabDisabled : ''}`}
-              onClick={() => hasGames && setActiveSport(sport.id)}
-              disabled={!hasGames}
-            >
-              <SportIcon size={14} />
-              {sport.label}
-            </button>
-          )
-        })}
-      </div>
-      
-      {/* Games List */}
-      <div className={styles.gamesSection}>
+      {/* Games Content */}
+      <div className={styles.gamesContent}>
         {isLoading ? (
           <div className={styles.loading}>Loading games...</div>
-        ) : totalGames === 0 ? (
+        ) : filteredGames.length === 0 ? (
           <div className={styles.empty}>
-            <FiCalendar size={32} />
             <p>No upcoming games found</p>
           </div>
         ) : (
-          filteredGames.map(sportGroup => (
-            <div key={sportGroup.sport} className={styles.sportGroup}>
-              <div className={styles.sportHeader}>
-                <h2 className={styles.sportTitle}>{sportGroup.sportLabel}</h2>
-                <span className={styles.gameCount}>{sportGroup.games.length} games</span>
-              </div>
-              <div className={styles.gamesList}>
-                {sportGroup.games.map(game => (
+          <>
+            {/* Featured Game */}
+            {featuredGame && (
+              <FeaturedGameCard 
+                game={featuredGame}
+                onClick={() => handleGameClick(featuredGame)}
+              />
+            )}
+            
+            {/* Games Grid */}
+            {remainingGames.length > 0 && (
+              <div className={styles.gamesGrid}>
+                {remainingGames.map(game => (
                   <GameCard 
                     key={game.id} 
                     game={game}
-                    onClick={() => handleGameClick(game, sportGroup.sport)}
+                    onClick={() => handleGameClick(game)}
                   />
                 ))}
               </div>
-            </div>
-          ))
+            )}
+          </>
         )}
       </div>
     </div>
