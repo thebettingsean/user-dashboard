@@ -58,6 +58,8 @@ interface TeamData {
   team_name: string
   logo_url: string
   abbreviation: string
+  primary_color: string | null
+  secondary_color: string | null
 }
 
 interface PublicBettingData {
@@ -106,7 +108,7 @@ export async function GET(request: NextRequest) {
     const oddsApiGames: OddsAPIGame[] = await oddsResponse.json()
     console.log(`[GAMES API - ${sport.toUpperCase()}] Got ${oddsApiGames.length} games from Odds API`)
 
-    // 2. Fetch team logos from ClickHouse
+    // 2. Fetch team logos and colors from ClickHouse
     const dbSport = DB_SPORT_MAP[sport] || sport
     const teamLogosQuery = await clickhouseQuery<TeamData>(`
       SELECT 
@@ -114,7 +116,9 @@ export async function GET(request: NextRequest) {
         espn_team_id,
         name as team_name,
         logo_url,
-        abbreviation
+        abbreviation,
+        primary_color,
+        secondary_color
       FROM teams
       WHERE LOWER(sport) = '${dbSport}' AND logo_url != ''
     `)
@@ -242,6 +246,8 @@ export async function GET(request: NextRequest) {
         homeTeamAbbr: homeAbbr,
         awayTeamLogo: awayTeam?.logo_url || null,
         homeTeamLogo: homeTeam?.logo_url || null,
+        awayTeamColor: awayTeam?.primary_color || null,
+        homeTeamColor: homeTeam?.primary_color || null,
         kickoff: game.commence_time,
         kickoffLabel: new Date(game.commence_time).toLocaleString('en-US', {
           timeZone: 'America/New_York',

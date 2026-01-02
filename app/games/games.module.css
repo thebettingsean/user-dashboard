@@ -124,7 +124,8 @@
 /* Featured Game Card */
 .featuredCard {
   position: relative;
-  background: rgba(30, 41, 59, 0.4);
+  /* Base dark background - gradient applied via inline style */
+  background-color: rgba(20, 24, 32, 0.95);
   border: 1px solid rgba(71, 85, 105, 0.4);
   border-radius: 12px;
   padding: 24px;
@@ -133,9 +134,25 @@
   overflow: hidden;
 }
 
+.featuredCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  border-radius: inherit;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+.featuredCard > * {
+  position: relative;
+  z-index: 1;
+}
+
 .featuredCard:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .featuredBadge {

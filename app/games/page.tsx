@@ -13,6 +13,8 @@ interface Game {
   homeTeamAbbr: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
+  awayTeamColor: string | null
+  homeTeamColor: string | null
   kickoff: string
   kickoffLabel: string
   sport: string
@@ -64,10 +66,26 @@ function formatSpread(spread: number | null | undefined): string {
   return spread > 0 ? `+${spread}` : `${spread}`
 }
 
+// Helper to create team gradient
+function getTeamGradient(awayColor: string | null, homeColor: string | null): string {
+  // Default colors if team colors not available
+  const away = awayColor || '#3b82f6'
+  const home = homeColor || '#6366f1'
+  
+  // Create a subtle, lowkey gradient using team colors at low opacity
+  return `linear-gradient(135deg, ${away}15 0%, ${away}08 25%, transparent 50%, ${home}08 75%, ${home}15 100%)`
+}
+
 // Featured Game Card - Large, prominent display
 function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+  const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  
   return (
-    <div className={styles.featuredCard} onClick={onClick}>
+    <div 
+      className={styles.featuredCard} 
+      onClick={onClick}
+      style={{ background: teamGradient }}
+    >
       <div className={styles.featuredBadge}>Featured Game</div>
       
       <div className={styles.featuredMatchup}>
