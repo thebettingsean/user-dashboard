@@ -235,4 +235,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 900 // 15 minutes max (Pro plan)
+export const maxDuration = 800 // Pro plan max (13.3 minutes)
