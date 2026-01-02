@@ -705,32 +705,40 @@ export async function GET(request: Request) {
             // Get or create team IDs
             const getOrCreateTeam = async (teamName: string): Promise<number | null> => {
               try {
+                // Normalize accented characters (Montréal → Montreal, etc.)
+                const normalizeAccents = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                const normalizedName = normalizeAccents(teamName)
+                
                 // For CBB, search both 'cbb' and 'ncaab' since our teams table uses 'ncaab' for college basketball
                 const sportFilter = sportConfig.sport === 'cbb' 
                   ? `sport IN ('cbb', 'ncaab')` 
                   : `sport = '${sportConfig.sport}'`
                 
-                // Try to find existing team by exact name match first
+                // Try to find existing team by exact name match first (try both original and normalized)
                 let existingTeam = await clickhouseQuery<{team_id: number, logo_url: string}>(`
                   SELECT team_id, logo_url FROM teams 
                   WHERE ${sportFilter}
-                    AND name = '${teamName.replace(/'/g, "''")}'
+                    AND (name = '${teamName.replace(/'/g, "''")}' OR name = '${normalizedName.replace(/'/g, "''")}')
                   ORDER BY logo_url != '' DESC
                   LIMIT 1
                 `)
                 
-                // If no exact match, try partial matching for college teams
-                if (!existingTeam.data?.[0] && sportConfig.sport === 'cbb') {
-                  // Try matching by removing common suffixes (mascots) or using first word
-                  const teamWords = teamName.split(' ')
+                // If no exact match, try LIKE matching (works for NHL, CBB, etc.)
+                if (!existingTeam.data?.[0]) {
+                  // Try matching by first word or last word (mascot)
+                  const teamWords = normalizedName.split(' ')
                   const firstWord = teamWords[0]
+                  const lastWord = teamWords[teamWords.length - 1]
+                  
+                  // For CBB, use ncaab sport
+                  const likeFilter = sportConfig.sport === 'cbb' ? `sport = 'ncaab'` : sportFilter
                   
                   existingTeam = await clickhouseQuery<{team_id: number, logo_url: string}>(`
                     SELECT team_id, logo_url FROM teams 
-                    WHERE sport = 'ncaab'
+                    WHERE ${likeFilter}
                       AND (
                         name LIKE '${firstWord.replace(/'/g, "''")}%'
-                        OR name LIKE '%${firstWord.replace(/'/g, "''")}%'
+                        OR name LIKE '%${lastWord.replace(/'/g, "''")}'
                       )
                     ORDER BY logo_url != '' DESC
                     LIMIT 1
