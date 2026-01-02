@@ -4,6 +4,8 @@
   background-color: #0C0E12;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
   /* Inline style adds team gradient on top */
 }
 
@@ -84,45 +86,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-size: 16px;
+  gap: 10px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.teamNamesAt {
-  color: rgba(255, 255, 255, 0.4);
+.teamNames span:nth-child(2) {
+  color: rgba(255, 255, 255, 0.35);
   font-weight: 400;
+  font-size: 13px;
 }
 
-/* Odds Row */
+/* Odds Row - with thin separators */
 .oddsRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.oddsItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.oddsLabel {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .oddsValue {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
+}
+
+.oddsSeparator {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 14px;
+  font-weight: 300;
 }
 
 /* Game Meta */
@@ -199,6 +194,9 @@
   padding: 32px 24px;
   max-width: 800px;
   margin: 0 auto;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section {
@@ -326,27 +324,6 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-.regenerateBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  margin-top: 24px;
-}
-
-.regenerateBtn:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .scriptError {

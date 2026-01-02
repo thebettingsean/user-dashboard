@@ -73,6 +73,12 @@ function formatML(ml: number | null | undefined): string {
   return ml > 0 ? `+${ml}` : `${ml}`
 }
 
+// Get just the team name (last word), e.g., "Carolina Panthers" -> "Panthers"
+function getTeamName(fullName: string): string {
+  const words = fullName.split(' ')
+  return words[words.length - 1] || fullName
+}
+
 // Custom Tooltip for the graph
 const CustomTooltip = ({ active, payload, marketType }: any) => {
   if (active && payload && payload.length) {
@@ -302,25 +308,20 @@ export default function GameDetailPage() {
           </div>
         </div>
         
-        {/* Team Names */}
+        {/* Team Names - Just team names, no @ */}
         <div className={styles.teamNames}>
-          <span>{gameData.awayTeam}</span>
-          <span className={styles.teamNamesAt}>@</span>
-          <span>{gameData.homeTeam}</span>
+          <span>{getTeamName(gameData.awayTeam)}</span>
+          <span>vs</span>
+          <span>{getTeamName(gameData.homeTeam)}</span>
         </div>
         
-        {/* Odds Row */}
+        {/* Odds Row - with thin separators */}
         <div className={styles.oddsRow}>
-          <div className={styles.oddsItem}>
-            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.awayLine)}</span>
-          </div>
-          <div className={styles.oddsItem}>
-            <span className={styles.oddsLabel}>O/U</span>
-            <span className={styles.oddsValue}>{gameData.totals?.number || '-'}</span>
-          </div>
-          <div className={styles.oddsItem}>
-            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.homeLine)}</span>
-          </div>
+          <span className={styles.oddsValue}>{formatSpread(gameData.spread?.awayLine) || '-'}</span>
+          <span className={styles.oddsSeparator}>|</span>
+          <span className={styles.oddsValue}>{gameData.totals?.number || '-'}</span>
+          <span className={styles.oddsSeparator}>|</span>
+          <span className={styles.oddsValue}>{formatSpread(gameData.spread?.homeLine) || '-'}</span>
         </div>
         
         {/* Game Time */}
@@ -382,14 +383,6 @@ export default function GameDetailPage() {
                 {script.split('\n').map((paragraph, idx) => (
                   paragraph.trim() ? <p key={idx}>{paragraph}</p> : null
                 ))}
-                <button 
-                  className={styles.regenerateBtn}
-                  onClick={generateScript}
-                  disabled={scriptLoading}
-                >
-                  <FiRefreshCw size={14} />
-                  Regenerate Analysis
-                </button>
               </div>
             ) : (
               <div className={styles.generatePrompt}>
@@ -488,11 +481,11 @@ export default function GameDetailPage() {
                   <div className={styles.graphLegend}>
                     <span className={styles.legendItem}>
                       <span className={styles.legendDash} style={{ background: `repeating-linear-gradient(90deg, ${awayColor}, ${awayColor} 3px, transparent 3px, transparent 5px)` }} />
-                      {gameData.awayTeam}
+                      {getTeamName(gameData.awayTeam)}
                     </span>
                     <span className={styles.legendItem}>
                       <span className={styles.legendSolid} style={{ background: homeColor }} />
-                      {gameData.homeTeam}
+                      {getTeamName(gameData.homeTeam)}
                     </span>
                   </div>
                 )}
@@ -505,7 +498,7 @@ export default function GameDetailPage() {
                 className={styles.allOddsToggle}
                 onClick={() => setShowAllOdds(!showAllOdds)}
               >
-                <span>All Available Odds</span>
+                <span>All Available {marketType === 'spread' ? 'Spread' : marketType === 'ml' ? 'ML' : 'Total'} Odds</span>
                 {showAllOdds ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
               </button>
               
