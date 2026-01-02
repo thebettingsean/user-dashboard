@@ -32,7 +32,7 @@ interface Game {
   hasPublicBetting: boolean
 }
 
-const SPORTS = ['all', 'nfl', 'nba', 'nhl', 'cfb', 'cbb']
+const SPORTS = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
 
 function formatGameTime(dateString: string): string {
   const date = new Date(dateString)
@@ -196,7 +196,7 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
 
 export default function GamesPage() {
   const router = useRouter()
-  const [selectedSport, setSelectedSport] = useState<string>('all')
+  const [selectedSport, setSelectedSport] = useState<string>('nfl')
   const [allGames, setAllGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
@@ -233,9 +233,7 @@ export default function GamesPage() {
   }, [])
   
   // Filter games by selected sport
-  const filteredGames = selectedSport === 'all' 
-    ? allGames 
-    : allGames.filter(g => g.sport.toLowerCase() === selectedSport)
+  const filteredGames = allGames.filter(g => g.sport.toLowerCase() === selectedSport)
   
   // Featured game is the first game (soonest)
   const featuredGame = filteredGames[0]
@@ -272,7 +270,7 @@ export default function GamesPage() {
                   className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
                   onClick={() => setSelectedSport(sport)}
                 >
-                  {sport === 'all' ? 'All' : sport.toUpperCase()}
+                  {sport.toUpperCase()}
                 </button>
               ))}
             </div>

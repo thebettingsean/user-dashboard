@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
-import { FiChevronLeft, FiClock, FiTrendingUp, FiArrowRight, FiExternalLink, FiRefreshCw } from 'react-icons/fi'
+import { FiChevronLeft, FiClock, FiChevronRight, FiRefreshCw } from 'react-icons/fi'
 import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { MdLockOutline } from 'react-icons/md'
@@ -14,8 +14,12 @@ interface GameData {
   id: string
   awayTeam: string
   homeTeam: string
+  awayTeamAbbr: string
+  homeTeamAbbr: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
+  awayTeamColor: string | null
+  homeTeamColor: string | null
   kickoff: string
   kickoffLabel: string
   sport: string
@@ -51,6 +55,18 @@ function formatSpread(spread: number | null | undefined): string {
   return spread > 0 ? `+${spread}` : `${spread}`
 }
 
+function formatML(ml: number | null | undefined): string {
+  if (ml === null || ml === undefined) return 'N/A'
+  return ml > 0 ? `+${ml}` : `${ml}`
+}
+
+// Team gradient for full page background
+function getPageGradient(awayColor: string | null, homeColor: string | null): string {
+  const away = awayColor || '#3b82f6'
+  const home = homeColor || '#6366f1'
+  return `linear-gradient(180deg, ${away}12 0%, ${away}06 15%, transparent 35%, transparent 65%, ${home}06 85%, ${home}12 100%)`
+}
+
 export default function GameDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -84,7 +100,6 @@ export default function GameDetailPage() {
         
         if (gamesData.success && gamesData.games) {
           const game = gamesData.games.find((g: GameData) => g.id === gameId)
-          
           if (game) {
             setGameData(game)
           }
@@ -127,7 +142,9 @@ export default function GameDetailPage() {
     setScriptError(null)
     
     try {
-      const res = await fetch(`/api/game-scripts/free?gameId=${gameId}&sport=${gameData.sport}&force=true`)
+      const res = await fetch(
+        `/api/game-scripts/free?gameId=${gameId}&sport=${gameData.sport}&homeTeam=${encodeURIComponent(gameData.homeTeam)}&awayTeam=${encodeURIComponent(gameData.awayTeam)}&gameTime=${encodeURIComponent(gameData.kickoff)}&force=true`
+      )
       const data = await res.json()
       
       if (data.error) {
@@ -165,8 +182,10 @@ export default function GameDetailPage() {
     )
   }
   
+  const pageGradient = getPageGradient(gameData.awayTeamColor, gameData.homeTeamColor)
+  
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ background: pageGradient }}>
       <div className={styles.headerSpacer} />
       
       {/* Back Button */}
@@ -175,7 +194,7 @@ export default function GameDetailPage() {
         All Games
       </button>
       
-      {/* Game Header */}
+      {/* Game Header - Seamless with page */}
       <div className={styles.gameHeader}>
         <div className={styles.matchup}>
           <div className={styles.teamSide}>
@@ -183,9 +202,6 @@ export default function GameDetailPage() {
               <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogoLarge} />
             )}
             <span className={styles.teamNameLarge}>{gameData.awayTeam}</span>
-            {gameData.spread?.awayLine && (
-              <span className={styles.teamSpreadLarge}>{formatSpread(gameData.spread.awayLine)}</span>
-            )}
           </div>
           <span className={styles.vsText}>@</span>
           <div className={styles.teamSide}>
@@ -193,9 +209,6 @@ export default function GameDetailPage() {
               <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogoLarge} />
             )}
             <span className={styles.teamNameLarge}>{gameData.homeTeam}</span>
-            {gameData.spread?.homeLine && (
-              <span className={styles.teamSpreadLarge}>{formatSpread(gameData.spread.homeLine)}</span>
-            )}
           </div>
         </div>
         
@@ -206,79 +219,48 @@ export default function GameDetailPage() {
           </div>
           <span className={styles.sportBadge}>{gameData.sport}</span>
         </div>
-        
-        {/* Odds Summary */}
-        <div className={styles.oddsRow}>
-          <div className={styles.oddsItem}>
-            <span className={styles.oddsLabel}>Spread</span>
-            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.homeLine)}</span>
-          </div>
-          {gameData.totals?.number && (
-            <div className={styles.oddsItem}>
-              <span className={styles.oddsLabel}>Total</span>
-              <span className={styles.oddsValue}>O/U {gameData.totals.number}</span>
-            </div>
-          )}
-          {gameData.moneyline && (
-            <div className={styles.oddsItem}>
-              <span className={styles.oddsLabel}>ML</span>
-              <span className={styles.oddsValue}>
-                {gameData.moneyline.away && (gameData.moneyline.away > 0 ? `+${gameData.moneyline.away}` : gameData.moneyline.away)} / {gameData.moneyline.home && (gameData.moneyline.home > 0 ? `+${gameData.moneyline.home}` : gameData.moneyline.home)}
-              </span>
-            </div>
-          )}
+      </div>
+      
+      {/* Content Tabs - Pill Style */}
+      <div className={styles.tabsContainer}>
+        <div className={styles.tabs}>
+          <button 
+            className={`${styles.tab} ${activeTab === 'script' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('script')}
+          >
+            Script
+          </button>
+          <button 
+            className={`${styles.tab} ${activeTab === 'odds' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('odds')}
+          >
+            Odds
+          </button>
+          <button 
+            className={`${styles.tab} ${activeTab === 'picks' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('picks')}
+          >
+            Analyst Picks
+            {!canViewPicks && <MdLockOutline size={12} className={styles.lockIcon} />}
+          </button>
+          <button 
+            className={`${styles.tab} ${activeTab === 'betting' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('betting')}
+          >
+            Public Betting
+            {!canViewPublicBetting && <MdLockOutline size={12} className={styles.lockIcon} />}
+          </button>
         </div>
+      </div>
+      
+      {/* Tab Content - Free Flowing */}
+      <div className={styles.content}>
         
-        {gameData.sportsbook && (
-          <div className={styles.sportsbookLabel}>
-            Odds via {gameData.sportsbook}
-          </div>
-        )}
-      </div>
-      
-      {/* Content Tabs */}
-      <div className={styles.tabs}>
-        <button 
-          className={`${styles.tab} ${activeTab === 'script' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('script')}
-        >
-          Game Script
-          <span className={styles.freeBadge}>Free</span>
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'odds' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('odds')}
-        >
-          Odds & Lines
-          <span className={styles.freeBadge}>Free</span>
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'picks' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('picks')}
-        >
-          <GiSupersonicArrow size={14} />
-          Picks
-          {!canViewPicks && <MdLockOutline size={14} className={styles.lockIcon} />}
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'betting' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('betting')}
-        >
-          <GiCash size={14} />
-          Public Betting
-          {!canViewPublicBetting && <MdLockOutline size={14} className={styles.lockIcon} />}
-        </button>
-      </div>
-      
-      {/* Tab Content */}
-      <div className={styles.tabContent}>
-        {/* Game Script Tab (FREE) */}
+        {/* ========== SCRIPT TAB ========== */}
         {activeTab === 'script' && (
-          <div className={styles.scriptSection}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Game Preview & Analysis</h2>
-              <p className={styles.sectionSubtitle}>AI-powered breakdown based on team stats & rankings</p>
-            </div>
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Game Preview & Analysis</h2>
+            <p className={styles.sectionSubtitle}>Claude powered breakdown based on detailed team stats & rankings.</p>
             
             {scriptLoading ? (
               <div className={styles.scriptLoading}>
@@ -290,11 +272,9 @@ export default function GameDetailPage() {
               </div>
             ) : script ? (
               <div className={styles.scriptContent}>
-                <div className={styles.scriptText}>
-                  {script.split('\n').map((paragraph, idx) => (
-                    paragraph.trim() ? <p key={idx}>{paragraph}</p> : null
-                  ))}
-                </div>
+                {script.split('\n').map((paragraph, idx) => (
+                  paragraph.trim() ? <p key={idx}>{paragraph}</p> : null
+                ))}
                 <button 
                   className={styles.regenerateBtn}
                   onClick={generateScript}
@@ -311,9 +291,7 @@ export default function GameDetailPage() {
                 </div>
                 <h3>Generate Game Analysis</h3>
                 <p>Get an AI-powered preview of this matchup based on team statistics and rankings.</p>
-                {scriptError && (
-                  <p className={styles.scriptError}>{scriptError}</p>
-                )}
+                {scriptError && <p className={styles.scriptError}>{scriptError}</p>}
                 <button 
                   className={styles.generateBtn}
                   onClick={generateScript}
@@ -327,83 +305,70 @@ export default function GameDetailPage() {
           </div>
         )}
         
-        {/* Odds Tab (FREE) */}
+        {/* ========== ODDS TAB ========== */}
         {activeTab === 'odds' && (
-          <div className={styles.oddsSection}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Odds & Line Movement</h2>
-              <p className={styles.sectionSubtitle}>Current odds from {gameData.sportsbook || 'top sportsbooks'}</p>
-            </div>
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Odds & Line Movement</h2>
+            <p className={styles.sectionSubtitle}>Current odds & history</p>
             
-            <div className={styles.oddsCards}>
-              {/* Current Odds */}
-              <div className={styles.oddsCard}>
-                <h3 className={styles.cardTitle}>Current Lines</h3>
-                <div className={styles.oddsGrid}>
-                  <div className={styles.oddsGridItem}>
-                    <span className={styles.oddsGridLabel}>Spread</span>
-                    <span className={styles.oddsGridValue}>
-                      {gameData.spread?.homeLine ? (
-                        `${gameData.homeTeam.split(' ').pop()} ${formatSpread(gameData.spread.homeLine)}`
-                      ) : 'N/A'}
-                    </span>
-                  </div>
-                  <div className={styles.oddsGridItem}>
-                    <span className={styles.oddsGridLabel}>Total</span>
-                    <span className={styles.oddsGridValue}>
-                      {gameData.totals?.number ? `O/U ${gameData.totals.number}` : 'N/A'}
-                    </span>
-                  </div>
-                  <div className={styles.oddsGridItem}>
-                    <span className={styles.oddsGridLabel}>Away ML</span>
-                    <span className={styles.oddsGridValue}>
-                      {gameData.moneyline?.away ? (gameData.moneyline.away > 0 ? `+${gameData.moneyline.away}` : gameData.moneyline.away) : 'N/A'}
-                    </span>
-                  </div>
-                  <div className={styles.oddsGridItem}>
-                    <span className={styles.oddsGridLabel}>Home ML</span>
-                    <span className={styles.oddsGridValue}>
-                      {gameData.moneyline?.home ? (gameData.moneyline.home > 0 ? `+${gameData.moneyline.home}` : gameData.moneyline.home) : 'N/A'}
-                    </span>
-                  </div>
+            {/* Best Lines Table */}
+            <div className={styles.bestLinesCard}>
+              <h3 className={styles.cardLabel}>Best Lines</h3>
+              <div className={styles.bestLinesGrid}>
+                <div className={styles.bestLineItem}>
+                  <span className={styles.bestLineLabel}>Spread</span>
+                  <span className={styles.bestLineValue}>
+                    {formatSpread(gameData.spread?.awayLine)} / {formatSpread(gameData.spread?.homeLine)}
+                  </span>
+                </div>
+                <div className={styles.bestLineItem}>
+                  <span className={styles.bestLineLabel}>ML's</span>
+                  <span className={styles.bestLineValue}>
+                    {formatML(gameData.moneyline?.away)} / {formatML(gameData.moneyline?.home)}
+                  </span>
+                </div>
+                <div className={styles.bestLineItem}>
+                  <span className={styles.bestLineLabel}>Total</span>
+                  <span className={styles.bestLineValue}>
+                    {gameData.totals?.number ? `O/U ${gameData.totals.number}` : 'N/A'}
+                  </span>
                 </div>
               </div>
-              
-              {/* View Full History CTA */}
-              <div className={styles.ctaCard}>
-                <FiTrendingUp size={24} />
-                <h3>View Line Movement History</h3>
-                <p>Track how lines have moved across all sportsbooks</p>
-                <button 
-                  className={styles.ctaBtn}
-                  onClick={() => router.push(`/public-betting?game=${gameId}`)}
-                >
-                  View on Public Betting
-                  <FiExternalLink size={14} />
-                </button>
-              </div>
+              {gameData.sportsbook && (
+                <p className={styles.sportsbookNote}>via {gameData.sportsbook}</p>
+              )}
             </div>
+            
+            {/* Expandable Links */}
+            <button className={styles.expandLink} onClick={() => router.push('/public-betting')}>
+              <span>More available odds</span>
+              <FiChevronRight size={16} />
+            </button>
+            
+            <button className={styles.expandLink} onClick={() => router.push('/public-betting')}>
+              <span>Line history</span>
+              <FiChevronRight size={16} />
+            </button>
           </div>
         )}
         
-        {/* Picks Tab (PAID) */}
+        {/* ========== PICKS TAB ========== */}
         {activeTab === 'picks' && (
-          <div className={styles.picksSection}>
+          <div className={styles.section}>
             {canViewPicks ? (
               <>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Analyst Picks</h2>
-                  <p className={styles.sectionSubtitle}>Expert picks for this game</p>
-                </div>
+                <h2 className={styles.sectionTitle}>Analyst Picks</h2>
+                <p className={styles.sectionSubtitle}>Expert picks for this game</p>
+                
                 <div className={styles.viewFullCta}>
-                  <GiSupersonicArrow size={20} />
+                  <GiSupersonicArrow size={24} />
                   <span>View picks for this game on the Picks page</span>
                   <button 
-                    className={styles.viewFullBtn}
+                    className={styles.ctaBtn}
                     onClick={() => router.push('/picks')}
                   >
                     Go to Picks
-                    <FiArrowRight size={14} />
+                    <FiChevronRight size={14} />
                   </button>
                 </div>
               </>
@@ -428,68 +393,23 @@ export default function GameDetailPage() {
           </div>
         )}
         
-        {/* Public Betting Tab (PAID) */}
+        {/* ========== PUBLIC BETTING TAB ========== */}
         {activeTab === 'betting' && (
-          <div className={styles.bettingSection}>
+          <div className={styles.section}>
             {canViewPublicBetting ? (
               <>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Public Betting Data</h2>
-                  <p className={styles.sectionSubtitle}>Betting splits and market indicators from SportsDataIO</p>
-                </div>
-                
-                {gameData.hasPublicBetting && gameData.publicBetting ? (
-                  <div className={styles.publicBettingGrid}>
-                    <div className={styles.bettingCard}>
-                      <h4>Spread</h4>
-                      <div className={styles.bettingRow}>
-                        <span>Home Bet %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.spreadHomeBetPct ?? 'N/A'}%</span>
-                      </div>
-                      <div className={styles.bettingRow}>
-                        <span>Home Money %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.spreadHomeMoneyPct ?? 'N/A'}%</span>
-                      </div>
-                    </div>
-                    <div className={styles.bettingCard}>
-                      <h4>Moneyline</h4>
-                      <div className={styles.bettingRow}>
-                        <span>Home Bet %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.mlHomeBetPct ?? 'N/A'}%</span>
-                      </div>
-                      <div className={styles.bettingRow}>
-                        <span>Home Money %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.mlHomeMoneyPct ?? 'N/A'}%</span>
-                      </div>
-                    </div>
-                    <div className={styles.bettingCard}>
-                      <h4>Total</h4>
-                      <div className={styles.bettingRow}>
-                        <span>Over Bet %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.totalOverBetPct ?? 'N/A'}%</span>
-                      </div>
-                      <div className={styles.bettingRow}>
-                        <span>Over Money %</span>
-                        <span className={styles.bettingValue}>{gameData.publicBetting.totalOverMoneyPct ?? 'N/A'}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.noContent}>
-                    <p>Public betting data not yet available for this game.</p>
-                    <p className={styles.noContentSub}>Check back closer to game time!</p>
-                  </div>
-                )}
+                <h2 className={styles.sectionTitle}>Public Betting Data</h2>
+                <p className={styles.sectionSubtitle}>Betting splits and market indicators</p>
                 
                 <div className={styles.viewFullCta}>
-                  <GiCash size={20} />
+                  <GiCash size={24} />
                   <span>View full public betting dashboard with line movement</span>
                   <button 
-                    className={styles.viewFullBtn}
-                    onClick={() => router.push(`/public-betting`)}
+                    className={styles.ctaBtn}
+                    onClick={() => router.push('/public-betting')}
                   >
                     Go to Public Betting
-                    <FiArrowRight size={14} />
+                    <FiChevronRight size={14} />
                   </button>
                 </div>
               </>
@@ -513,6 +433,7 @@ export default function GameDetailPage() {
             )}
           </div>
         )}
+        
       </div>
     </div>
   )
