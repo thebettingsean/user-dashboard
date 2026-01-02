@@ -252,10 +252,10 @@ export default function GamesPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <div className={styles.titleRow}>
-              <h1 className={styles.title}>Games</h1>
+              <h1 className={styles.title}>{selectedSport.toUpperCase()} Games</h1>
             </div>
             <p className={styles.subtitle}>
-              Browse upcoming games across all sports
+              Browse upcoming {selectedSport.toUpperCase()} games
             </p>
           </div>
         </div>
