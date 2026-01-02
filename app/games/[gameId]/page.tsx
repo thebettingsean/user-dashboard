@@ -272,10 +272,11 @@ export default function GameDetailPage() {
   }
   
   const tabGradient = `linear-gradient(90deg, ${awayColor} 0%, ${homeColor} 100%)`
-  const headerGradient = `linear-gradient(180deg, ${awayColor}18 0%, ${awayColor}08 30%, transparent 60%, ${homeColor}08 80%, ${homeColor}18 100%)`
+  // Full-page left-to-right gradient using team colors
+  const pageGradient = `linear-gradient(90deg, ${awayColor}15 0%, ${awayColor}08 20%, transparent 50%, ${homeColor}08 80%, ${homeColor}15 100%)`
   
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ background: pageGradient }}>
       <div className={styles.headerSpacer} />
       
       {/* Back Button */}
@@ -284,8 +285,8 @@ export default function GameDetailPage() {
         All Games
       </button>
       
-      {/* Header Section with Gradient */}
-      <div className={styles.headerSection} style={{ background: headerGradient }}>
+      {/* Header Section */}
+      <div className={styles.headerSection}>
         {/* Matchup */}
         <div className={styles.matchup}>
           <div className={styles.teamSide}>
@@ -357,9 +358,6 @@ export default function GameDetailPage() {
             </button>
           ))}
         </div>
-        
-        {/* Separator */}
-        <div className={styles.separator} />
       </div>
       
       {/* Content Section */}
@@ -419,36 +417,6 @@ export default function GameDetailPage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Odds & Line Movement</h2>
             <p className={styles.sectionSubtitle}>Current odds & history</p>
-            
-            {/* Best Lines */}
-            <div className={styles.bestLinesCard}>
-              <div className={styles.bestLinesHeader}>
-                <span className={styles.cardLabel}>Best Lines</span>
-                {gameData.sportsbook && (
-                  <span className={styles.sportsbookNote}>via {gameData.sportsbook}</span>
-                )}
-              </div>
-              <div className={styles.bestLinesGrid}>
-                <div className={styles.bestLineItem}>
-                  <span className={styles.bestLineLabel}>Spread</span>
-                  <span className={styles.bestLineValue}>
-                    {formatSpread(gameData.spread?.awayLine)} / {formatSpread(gameData.spread?.homeLine)}
-                  </span>
-                </div>
-                <div className={styles.bestLineItem}>
-                  <span className={styles.bestLineLabel}>ML's</span>
-                  <span className={styles.bestLineValue}>
-                    {formatML(gameData.moneyline?.away)} / {formatML(gameData.moneyline?.home)}
-                  </span>
-                </div>
-                <div className={styles.bestLineItem}>
-                  <span className={styles.bestLineLabel}>Total</span>
-                  <span className={styles.bestLineValue}>
-                    {gameData.totals?.number ? `O/U ${gameData.totals.number}` : '-'}
-                  </span>
-                </div>
-              </div>
-            </div>
             
             {/* Line History Section */}
             <div className={styles.lineHistorySection}>

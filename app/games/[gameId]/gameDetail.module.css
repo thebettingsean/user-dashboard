@@ -1,9 +1,10 @@
-/* Game Detail Page - Redesigned with Header Gradient */
+/* Game Detail Page - Full-page team color gradient */
 .container {
   min-height: 100vh;
-  background: #0C0E12;
+  background-color: #0C0E12;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
+  /* Inline style adds team gradient on top */
 }
 
 .headerSpacer {
@@ -193,13 +194,6 @@
   margin-left: 4px;
 }
 
-/* Separator Line */
-.separator {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  margin: 0 -24px;
-}
-
 /* ========== CONTENT SECTION ========== */
 .content {
   padding: 32px 24px;
@@ -366,60 +360,6 @@
 }
 
 /* ========== ODDS SECTION ========== */
-
-/* Best Lines Card */
-.bestLinesCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.bestLinesHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.cardLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.sportsbookNote {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.bestLinesGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.bestLineItem {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: center;
-}
-
-.bestLineLabel {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-}
-
-.bestLineValue {
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-}
 
 /* Line History Section */
 .lineHistorySection {
