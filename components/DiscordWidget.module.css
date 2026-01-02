@@ -1,0 +1,208 @@
+/* Discord Widget - Matching dark theme */
+
+.widgetWrapper {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+}
+
+.compactWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header Row */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.compactWrapper .headerRow {
+  margin-bottom: 0;
+}
+
+.discordIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(88, 100, 241, 0.15);
+  border: 1px solid rgba(88, 100, 241, 0.3);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.discordIconConnected {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.headerText {
+  flex: 1;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 2px 0;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #696969;
+  margin: 0;
+}
+
+/* Success Banner */
+.successBanner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* Username Box */
+.usernameBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(88, 100, 241, 0.1);
+  border: 1px solid rgba(88, 100, 241, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.usernameBox svg {
+  color: #5865f2;
+  flex-shrink: 0;
+}
+
+/* Instructions Box */
+.instructionsBox {
+  background: rgba(88, 100, 241, 0.08);
+  border: 1px solid rgba(88, 100, 241, 0.15);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.instructionsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 8px 0;
+}
+
+.instructionsList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.instructionsList li {
+  margin-bottom: 2px;
+}
+
+/* Connect Button */
+.connectButton {
+  width: 100%;
+  background: rgba(88, 100, 241, 0.2);
+  border: 1px solid rgba(88, 100, 241, 0.3);
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.connectButton:hover {
+  background: rgba(88, 100, 241, 0.3);
+  border-color: rgba(88, 100, 241, 0.4);
+}
+
+.connectButtonConnected {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.connectButtonConnected:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Locked State */
+.lockedNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.lockedIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.lockedText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lockedTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.lockedDesc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+/* Upgrade Button */
+.upgradeButton {
+  display: block;
+  width: 100%;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.upgradeButton:hover {
+  background: #2563eb;
+}
+
