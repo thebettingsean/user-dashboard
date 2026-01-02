@@ -20,6 +20,7 @@ interface SubscriptionData {
   cancel_at_period_end: boolean
   is_paused: boolean
   price_id: string
+  trial_end?: number | null
 }
 
 export default function ManageSubscriptionPage() {
@@ -110,6 +111,45 @@ export default function ManageSubscriptionPage() {
     return status
   }
 
+  // Get renewal label and date based on status
+  const getRenewalInfo = (sub: SubscriptionData) => {
+    // If on trial, show trial end date
+    if (sub.status === 'trialing' && sub.trial_end) {
+      return {
+        label: 'Trial Ends',
+        date: new Date(sub.trial_end * 1000).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        })
+      }
+    }
+    
+    // If trialing without trial_end, use current_period_end
+    if (sub.status === 'trialing') {
+      return {
+        label: 'Trial Ends',
+        date: sub.current_period_end ? 
+          new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          }) : 'N/A'
+      }
+    }
+    
+    // Active subscription shows renewal
+    return {
+      label: 'Renewal',
+      date: sub.current_period_end ? 
+        new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        }) : 'N/A'
+    }
+  }
+
   const handleReactivate = async (subId: string) => {
     try {
       const response = await fetch('/api/subscription/reactivate', {
@@ -161,7 +201,7 @@ export default function ManageSubscriptionPage() {
         <div className={styles.headerSpacer} />
         <div className={styles.loadingState}>
           <div className={styles.loadingSpinner} />
-          <div className={styles.loadingText}>Loading your subscriptions...</div>
+          <div className={styles.loadingText}>Loading your account...</div>
         </div>
       </div>
     )
@@ -204,21 +244,27 @@ export default function ManageSubscriptionPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <div className={styles.titleRow}>
-              <h1 className={styles.title}>Manage Subscriptions</h1>
+              <h1 className={styles.title}>My Account</h1>
             </div>
-            <p className={styles.subtitle}>Upgrade, pause, or manage your plans</p>
+            <p className={styles.subtitle}>Manage your subscriptions, preferences & settings</p>
           </div>
         </div>
       </header>
 
       {/* Content */}
       <div className={styles.contentSection}>
+        {/* Subscriptions Section */}
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Subscriptions</h2>
+        </div>
+        
         <div className={styles.subscriptionsGrid}>
           {subscriptions.map((sub) => {
             const isExpanded = expandedId === sub.id
             const statusDotClass = getStatusDotClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
             const statusBadgeClass = getStatusBadgeClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
             const statusLabel = getStatusLabel(sub.status, sub.cancel_at_period_end, sub.is_paused, sub.cancel_at)
+            const renewalInfo = getRenewalInfo(sub)
             
             return (
               <div key={sub.id} className={styles.subCard}>
@@ -257,15 +303,8 @@ export default function ManageSubscriptionPage() {
                       <span className={styles.detailValue}>{sub.price}</span>
                     </div>
                     <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Renews</span>
-                      <span className={styles.detailValue}>
-                        {sub.current_period_end ? 
-                          new Date(sub.current_period_end * 1000).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          }) : 'N/A'}
-                      </span>
+                      <span className={styles.detailLabel}>{renewalInfo.label}</span>
+                      <span className={styles.detailValue}>{renewalInfo.date}</span>
                     </div>
 
                     {/* Quick Actions - Conditional based on state */}

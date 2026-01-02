@@ -279,6 +279,20 @@
   font-size: 12px;
 }
 
+/* Section Header */
+.sectionHeader {
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* Quick Actions */
 .quickActions {
   display: flex;
@@ -287,18 +301,26 @@
   margin-top: 4px;
 }
 
+/* Mobile: horizontal row for action buttons */
+.quickActionsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
 .actionBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 4px;
+  padding: 8px 10px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid;
+  white-space: nowrap;
 }
 
 .actionBtnUpgrade {
@@ -341,11 +363,15 @@
   background: rgba(16, 185, 129, 0.2);
 }
 
-/* Desktop: 3-column layout for actions */
+/* Desktop: slightly larger buttons */
 @media (min-width: 640px) {
+  .actionBtn {
+    padding: 10px 14px;
+    font-size: 12px;
+    gap: 6px;
+  }
+  
   .quickActionsRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 }
