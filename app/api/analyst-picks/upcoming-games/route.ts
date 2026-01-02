@@ -126,6 +126,7 @@ export async function GET(request: NextRequest) {
       // Map by various name formats
       const teamName = team.team_name.toLowerCase()
       const abbr = team.abbreviation?.toLowerCase()
+      const words = teamName.split(' ').filter(w => w.length > 0)
       
       // Store by full name (e.g., "tampa bay buccaneers")
       teamLogos.set(teamName, team)
@@ -135,8 +136,21 @@ export async function GET(request: NextRequest) {
         teamLogos.set(abbr, team)
       }
       
+      // Store by first two words (e.g., "michigan state" from "michigan state spartans")
+      if (words.length >= 2) {
+        const firstTwoWords = words.slice(0, 2).join(' ')
+        teamLogos.set(firstTwoWords, team)
+      }
+      
+      // Store by all but last word (e.g., "michigan state" from "michigan state spartans")
+      if (words.length >= 2) {
+        const allButLast = words.slice(0, -1).join(' ')
+        teamLogos.set(allButLast, team)
+      }
+      
       // Store by last word (e.g., "buccaneers", "steelers")
-      const lastWord = teamName.split(' ').pop()
+      // But only if it's unique or we need it as a fallback
+      const lastWord = words[words.length - 1]
       if (lastWord) {
         teamLogos.set(lastWord, team)
       }
@@ -145,6 +159,22 @@ export async function GET(request: NextRequest) {
       const cleanName = teamName.replace(/st\./gi, 'saint').replace(/\./g, '')
       if (cleanName !== teamName) {
         teamLogos.set(cleanName, team)
+        // Also store cleaned partial names
+        const cleanWords = cleanName.split(' ').filter(w => w.length > 0)
+        if (cleanWords.length >= 2) {
+          teamLogos.set(cleanWords.slice(0, 2).join(' '), team)
+          teamLogos.set(cleanWords.slice(0, -1).join(' '), team)
+        }
+      }
+      
+      // Handle "State" vs "St" variations (e.g., "Michigan State" vs "Michigan St")
+      const stateVariation = teamName.replace(/\bstate\b/gi, 'st').replace(/\bst\b/gi, 'state')
+      if (stateVariation !== teamName) {
+        teamLogos.set(stateVariation, team)
+        const stateWords = stateVariation.split(' ').filter(w => w.length > 0)
+        if (stateWords.length >= 2) {
+          teamLogos.set(stateWords.slice(0, 2).join(' '), team)
+        }
       }
     })
     
@@ -159,17 +189,86 @@ export async function GET(request: NextRequest) {
         return teamLogos.get(lower)
       }
       
-      // Clean the name (remove special chars)
-      const cleaned = lower.replace(/\./g, '').replace(/st /gi, 'saint ')
+      // Clean the name (remove special chars, normalize "St" to "State" or "Saint")
+      const cleaned = lower.replace(/\./g, '').replace(/st /gi, 'saint ').replace(/ st$/gi, ' state')
       if (teamLogos.has(cleaned)) {
         return teamLogos.get(cleaned)
       }
       
+      // Try matching on multiple words (e.g., "michigan state" should match "michigan state spartans")
+      const words = lower.split(' ').filter(w => w.length > 0)
+      if (words.length >= 2) {
+        // Try matching first two words (e.g., "michigan state")
+        const firstTwoWords = words.slice(0, 2).join(' ')
+        if (teamLogos.has(firstTwoWords)) {
+          return teamLogos.get(firstTwoWords)
+        }
+        
+        // Try matching all words except last (e.g., "michigan state" from "michigan state spartans")
+        const allButLast = words.slice(0, -1).join(' ')
+        if (teamLogos.has(allButLast)) {
+          return teamLogos.get(allButLast)
+        }
+        
+        // Try matching on team name that contains all the words
+        let bestMatch: any = null
+        let bestMatchScore = 0
+        for (const [key, value] of teamLogos.entries()) {
+          const keyWords = key.split(' ')
+          // Check if all search words are in the key
+          const allWordsMatch = words.every(word => 
+            keyWords.some(kw => kw.includes(word) || word.includes(kw))
+          )
+          if (allWordsMatch) {
+            // Score by how many words match and length
+            const matchingWords = words.filter(word => 
+              keyWords.some(kw => kw === word || kw.includes(word) || word.includes(kw))
+            ).length
+            const score = matchingWords * 10 + key.length
+            if (score > bestMatchScore) {
+              bestMatchScore = score
+              bestMatch = value
+            }
+          }
+        }
+        if (bestMatch) {
+          return bestMatch
+        }
+      }
+      
       // Try last word match (e.g., "Buccaneers" from "Tampa Bay Buccaneers")
-      const words = lower.split(' ')
+      // But only if it's a unique match or we have no better option
       const lastWord = words[words.length - 1]
-      if (teamLogos.has(lastWord)) {
-        return teamLogos.get(lastWord)
+      if (lastWord && lastWord.length > 3) {
+        // Check if multiple teams have this last word
+        const matchesWithLastWord: any[] = []
+        for (const [key, value] of teamLogos.entries()) {
+          if (key === lastWord || key.endsWith(` ${lastWord}`) || key === `${lastWord}s` || key === `${lastWord}es`) {
+            matchesWithLastWord.push(value)
+          }
+        }
+        // Only use last word match if it's unique or if the full name contains more context
+        if (matchesWithLastWord.length === 1) {
+          return matchesWithLastWord[0]
+        } else if (matchesWithLastWord.length > 1 && words.length >= 2) {
+          // Multiple matches - try to find the one that matches more words
+          let bestLastWordMatch: any = null
+          let bestLastWordScore = 0
+          for (const match of matchesWithLastWord) {
+            const matchName = match.team_name.toLowerCase()
+            const matchWords = matchName.split(' ')
+            const matchingWords = words.filter(word => 
+              matchWords.some(mw => mw === word || mw.includes(word) || word.includes(mw))
+            ).length
+            if (matchingWords > bestLastWordScore) {
+              bestLastWordScore = matchingWords
+              bestLastWordMatch = match
+            }
+          }
+          if (bestLastWordMatch) {
+            return bestLastWordMatch
+          }
+        }
       }
       
       // Try abbreviation match (e.g., "TB" from "Tampa Bay")
@@ -180,24 +279,25 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Try partial match - any key that contains or is contained in the search
+      // Last resort: try partial match, but prioritize matches that contain multiple words
+      let bestPartialMatch: any = null
+      let bestPartialScore = 0
       for (const [key, value] of teamLogos.entries()) {
         if (lower.includes(key) || key.includes(lower)) {
-          // Prioritize longer matches
-          if (key.length > 3) {
-            return value
+          // Score by length and how many words match
+          const keyWords = key.split(' ')
+          const matchingWords = words.filter(word => 
+            keyWords.some(kw => kw.includes(word) || word.includes(kw))
+          ).length
+          const score = matchingWords * 10 + key.length
+          if (score > bestPartialScore) {
+            bestPartialScore = score
+            bestPartialMatch = value
           }
         }
       }
       
-      // Last resort: try partial match with short keys
-      for (const [key, value] of teamLogos.entries()) {
-        if (lower.includes(key) || key.includes(lower)) {
-          return value
-        }
-      }
-      
-      return null
+      return bestPartialMatch
     }
 
     // Match games with team data
@@ -275,4 +375,5 @@ export async function GET(request: NextRequest) {
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+
 
