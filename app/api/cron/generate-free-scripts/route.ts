@@ -5,16 +5,23 @@ import { NextRequest, NextResponse } from 'next/server'
  * 
  * 100% INDEPENDENT SYSTEM - NO TRENDLINE LABS
  * 
- * Schedule: Daily at 9 AM ET (14:00 UTC)
+ * BATCHED BY SPORT GROUPS (to avoid timeout):
+ * - Batch 1: NFL & NBA    → runs at 9:00 AM ET (14:00 UTC)
+ * - Batch 2: NHL & CFB    → runs at 9:05 AM ET (14:05 UTC)
+ * - Batch 3: CBB (& MLB)  → runs at 9:10 AM ET (14:10 UTC)
+ * 
+ * Usage:
+ * - /api/cron/generate-free-scripts?batch=1  → NFL, NBA
+ * - /api/cron/generate-free-scripts?batch=2  → NHL, CFB
+ * - /api/cron/generate-free-scripts?batch=3  → CBB
+ * - /api/cron/generate-free-scripts?sport=nfl → Single sport
  * 
  * Flow:
  * 1. Fetch upcoming games from ODDS API
  * 2. For each game:
  *    a) Scrape TeamRankings.com for both teams
  *    b) Send to Claude for script generation
- *    c) Store in free_game_scripts table
- * 
- * Sports: NFL, NBA, NHL, CFB, CBB
+ *    c) Store/upsert in free_game_scripts table
  */
 
 // Odds API sport keys mapping
@@ -24,6 +31,13 @@ const ODDS_API_SPORTS: Record<string, string> = {
   nhl: 'icehockey_nhl',
   cfb: 'americanfootball_ncaaf',
   cbb: 'basketball_ncaab'
+}
+
+// Batch definitions
+const SPORT_BATCHES: Record<string, string[]> = {
+  '1': ['nfl', 'nba'],      // ~25 games max
+  '2': ['nhl', 'cfb'],      // ~25 games max  
+  '3': ['cbb'],             // ~50+ games (college has lots)
 }
 
 interface OddsApiGame {
@@ -51,13 +65,24 @@ export async function GET(request: NextRequest) {
     // Get optional filters from query params
     const { searchParams } = new URL(request.url)
     const sportFilter = searchParams.get('sport')?.toLowerCase()
+    const batchNum = searchParams.get('batch')
 
     // Determine which sports to process
-    const sportsToProcess = sportFilter 
-      ? [sportFilter] 
-      : ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
+    let sportsToProcess: string[]
+    
+    if (sportFilter) {
+      // Single sport override
+      sportsToProcess = [sportFilter]
+    } else if (batchNum && SPORT_BATCHES[batchNum]) {
+      // Batch mode
+      sportsToProcess = SPORT_BATCHES[batchNum]
+    } else {
+      // Default: just NFL and NBA (safest)
+      sportsToProcess = ['nfl', 'nba']
+    }
     
     console.log(`📋 Sports to process: ${sportsToProcess.map(s => s.toUpperCase()).join(', ')}`)
+    if (batchNum) console.log(`📦 Running Batch ${batchNum}`)
 
     let totalGenerated = 0
     let totalSkipped = 0

@@ -53,8 +53,16 @@
       "schedule": "16,46 * * * *"
     },
     {
-      "path": "/api/cron/generate-free-scripts",
+      "path": "/api/cron/generate-free-scripts?batch=1",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/generate-free-scripts?batch=2",
+      "schedule": "5 14 * * *"
+    },
+    {
+      "path": "/api/cron/generate-free-scripts?batch=3",
+      "schedule": "10 14 * * *"
     }
   ]
 }
