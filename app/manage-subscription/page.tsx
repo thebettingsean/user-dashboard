@@ -3,7 +3,11 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
+import { 
+  FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle,
+  FiGift, FiTrendingUp, FiBell, FiCreditCard, FiHelpCircle, FiUsers, FiBook, 
+  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2
+} from 'react-icons/fi'
 import styles from './manage-subscription.module.css'
 
 interface SubscriptionData {
@@ -23,12 +27,15 @@ interface SubscriptionData {
   trial_end?: number | null
 }
 
+type SectionId = 'free-access' | 'maximize-profit' | 'notifications' | 'subscription' | 'help'
+
 export default function ManageSubscriptionPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [subscriptions, setSubscriptions] = useState<SubscriptionData[]>([])
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [expandedSections, setExpandedSections] = useState<SectionId[]>(['subscription'])
+  const [expandedSubId, setExpandedSubId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -63,9 +70,8 @@ export default function ManageSubscriptionPage() {
       
       if (data.subscriptions && data.subscriptions.length > 0) {
         setSubscriptions(data.subscriptions)
-        // Auto-expand first subscription if only one
         if (data.subscriptions.length === 1) {
-          setExpandedId(data.subscriptions[0].id)
+          setExpandedSubId(data.subscriptions[0].id)
         }
       } else {
         setError('No active subscriptions found')
@@ -77,8 +83,16 @@ export default function ManageSubscriptionPage() {
     }
   }
 
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id)
+  const toggleSection = (sectionId: SectionId) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    )
+  }
+
+  const toggleSubExpand = (id: string) => {
+    setExpandedSubId(expandedSubId === id ? null : id)
   }
 
   const getStatusDotClass = (status: string, cancelAtPeriodEnd: boolean, isPaused: boolean) => {
@@ -111,9 +125,7 @@ export default function ManageSubscriptionPage() {
     return status
   }
 
-  // Get renewal label and date based on status
   const getRenewalInfo = (sub: SubscriptionData) => {
-    // If on trial, show trial end date
     if (sub.status === 'trialing' && sub.trial_end) {
       return {
         label: 'Trial Ends',
@@ -125,7 +137,6 @@ export default function ManageSubscriptionPage() {
       }
     }
     
-    // If trialing without trial_end, use current_period_end
     if (sub.status === 'trialing') {
       return {
         label: 'Trial Ends',
@@ -138,7 +149,6 @@ export default function ManageSubscriptionPage() {
       }
     }
     
-    // Active subscription shows renewal
     return {
       label: 'Renewal',
       date: sub.current_period_end ? 
@@ -207,34 +217,6 @@ export default function ManageSubscriptionPage() {
     )
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.headerSpacer} />
-        <div className={styles.emptyState}>
-          <FiAlertCircle className={styles.emptyIcon} />
-          <div className={styles.emptyTitle}>No Subscriptions Found</div>
-          <div className={styles.emptySubtitle}>
-            If you believe this is an error, please contact support.
-          </div>
-          <button 
-            className={styles.primaryBtn}
-            onClick={() => window.location.href = 'https://www.thebettinginsider.com/contact'}
-          >
-            Contact Support
-          </button>
-          <button 
-            className={styles.backButton}
-            onClick={() => router.push('/')}
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.headerSpacer} />
@@ -251,158 +233,366 @@ export default function ManageSubscriptionPage() {
         </div>
       </header>
 
-      {/* Content */}
-      <div className={styles.contentSection}>
-        {/* Subscriptions Section */}
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Subscriptions</h2>
-        </div>
+      {/* Sections */}
+      <div className={styles.sectionsContainer}>
         
-        <div className={styles.subscriptionsGrid}>
-          {subscriptions.map((sub) => {
-            const isExpanded = expandedId === sub.id
-            const statusDotClass = getStatusDotClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
-            const statusBadgeClass = getStatusBadgeClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
-            const statusLabel = getStatusLabel(sub.status, sub.cancel_at_period_end, sub.is_paused, sub.cancel_at)
-            const renewalInfo = getRenewalInfo(sub)
-            
-            return (
-              <div key={sub.id} className={styles.subCard}>
-                {/* Header - Always Visible */}
-                <div 
-                  className={styles.subHeader}
-                  onClick={() => toggleExpand(sub.id)}
-                >
-                  <div className={styles.subHeaderLeft}>
-                    <div className={`${styles.statusDot} ${statusDotClass}`} />
-                    <span className={styles.subName}>{sub.product_name}</span>
-                    <span className={`${styles.statusBadge} ${statusBadgeClass}`}>
-                      {statusLabel}
-                    </span>
-                    {sub.is_legacy && (
-                      <span className={styles.legacyBadge}>Grandfathered</span>
-                    )}
-                  </div>
-                  <FiChevronDown 
-                    className={`${styles.expandIcon} ${isExpanded ? styles.expandIconRotated : ''}`}
-                    size={18}
-                  />
-                </div>
-
-                {/* Expanded Content */}
-                {isExpanded && (
-                  <div className={styles.subDetails}>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Plan</span>
-                      <span className={styles.detailValue}>
-                        {sub.tier.charAt(0).toUpperCase() + sub.tier.slice(1)}
-                      </span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>Price</span>
-                      <span className={styles.detailValue}>{sub.price}</span>
-                    </div>
-                    <div className={styles.detailRow}>
-                      <span className={styles.detailLabel}>{renewalInfo.label}</span>
-                      <span className={styles.detailValue}>{renewalInfo.date}</span>
-                    </div>
-
-                    {/* Quick Actions - Conditional based on state */}
-                    <div className={styles.quickActions}>
-                      {/* CANCELING STATE: Show Reactivate Only */}
-                      {sub.cancel_at_period_end && !sub.is_paused && (
-                        <>
-                          <div className={styles.cancelNotice}>
-                            Your subscription will expire on {sub.cancel_at ? 
-                              new Date(sub.cancel_at * 1000).toLocaleDateString('en-US', {
-                                month: 'long',
-                                day: 'numeric',
-                                year: 'numeric'
-                              }) : 'N/A'}
-                          </div>
-                          <button
-                            className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleReactivate(sub.id)
-                            }}
-                          >
-                            <FiRefreshCw size={14} />
-                            Reactivate Subscription
-                          </button>
-                        </>
-                      )}
-
-                      {/* PAUSED STATE: Show Unpause Only */}
-                      {sub.is_paused && (
-                        <>
-                          <div className={styles.pauseNotice}>
-                            Your subscription is currently paused
-                          </div>
-                          <button
-                            className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleUnpause(sub.id)
-                            }}
-                          >
-                            <FiPlay size={14} />
-                            Resume Subscription
-                          </button>
-                        </>
-                      )}
-
-                      {/* ACTIVE STATE: Show All Options */}
-                      {!sub.cancel_at_period_end && !sub.is_paused && (
-                        <div className={styles.quickActionsRow}>
-                          <button
-                            className={`${styles.actionBtn} ${styles.actionBtnUpgrade}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/manage-subscription/upgrade?sub=${sub.id}`)
-                            }}
-                          >
-                            <FiArrowUp size={14} />
-                            Upgrade
-                          </button>
-                          <button
-                            className={`${styles.actionBtn} ${styles.actionBtnCancel}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/manage-subscription/cancel?sub=${sub.id}`)
-                            }}
-                          >
-                            <FiX size={14} />
-                            Cancel
-                          </button>
-                          <button
-                            className={`${styles.actionBtn} ${styles.actionBtnPause}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/manage-subscription/pause?sub=${sub.id}`)
-                            }}
-                          >
-                            <FiPause size={14} />
-                            Pause
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+        {/* 1. FREE ACCESS */}
+        <div className={styles.section}>
+          <div 
+            className={styles.sectionHeader}
+            onClick={() => toggleSection('free-access')}
+          >
+            <div className={styles.sectionHeaderLeft}>
+              <div className={`${styles.sectionIcon} ${styles.sectionIconGreen}`}>
+                <FiGift size={18} />
               </div>
-            )
-          })}
+              <div className={styles.sectionInfo}>
+                <span className={styles.sectionName}>Free Access</span>
+                <span className={styles.sectionDesc}>Earn free months by referring friends</span>
+              </div>
+            </div>
+            <FiChevronDown 
+              className={`${styles.expandIcon} ${expandedSections.includes('free-access') ? styles.expandIconRotated : ''}`}
+              size={18}
+            />
+          </div>
+          
+          {expandedSections.includes('free-access') && (
+            <div className={styles.sectionContent}>
+              <div className={styles.infoBox}>
+                <FiShare2 size={16} />
+                <span>Refer a friend and get 1 free month when they subscribe!</span>
+              </div>
+              <div className={styles.linksList}>
+                <a href="https://www.thebettinginsider.com/referral" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiUsers size={16} />
+                  <span>Referral Program</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+                <a href="https://www.thebettinginsider.com/giveaway" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiGift size={16} />
+                  <span>Current Giveaways</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Back to Dashboard */}
-        <button 
-          className={styles.backButton}
-          onClick={() => router.push('/')}
-        >
-          ← Back to Dashboard
-        </button>
+        {/* 2. MAXIMIZE PROFIT */}
+        <div className={styles.section}>
+          <div 
+            className={styles.sectionHeader}
+            onClick={() => toggleSection('maximize-profit')}
+          >
+            <div className={styles.sectionHeaderLeft}>
+              <div className={`${styles.sectionIcon} ${styles.sectionIconBlue}`}>
+                <FiTrendingUp size={18} />
+              </div>
+              <div className={styles.sectionInfo}>
+                <span className={styles.sectionName}>Maximize Profit</span>
+                <span className={styles.sectionDesc}>Guides to improve your betting strategy</span>
+              </div>
+            </div>
+            <FiChevronDown 
+              className={`${styles.expandIcon} ${expandedSections.includes('maximize-profit') ? styles.expandIconRotated : ''}`}
+              size={18}
+            />
+          </div>
+          
+          {expandedSections.includes('maximize-profit') && (
+            <div className={styles.sectionContent}>
+              <div className={styles.linksList}>
+                <a href="/betting-guide" className={styles.linkItem}>
+                  <FiBook size={16} />
+                  <span>Betting Guide</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+                <a href="/bankroll-builder" className={styles.linkItem}>
+                  <FiDollarSign size={16} />
+                  <span>Bankroll Builder</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+                <a href="/roi-calculator" className={styles.linkItem}>
+                  <FiTrendingUp size={16} />
+                  <span>ROI Calculator</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+                <a href="https://www.thebettinginsider.com/profit-guide" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiBook size={16} />
+                  <span>Profit Guide</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 3. MANAGE NOTIFICATIONS */}
+        <div className={styles.section}>
+          <div 
+            className={styles.sectionHeader}
+            onClick={() => toggleSection('notifications')}
+          >
+            <div className={styles.sectionHeaderLeft}>
+              <div className={`${styles.sectionIcon} ${styles.sectionIconPurple}`}>
+                <FiBell size={18} />
+              </div>
+              <div className={styles.sectionInfo}>
+                <span className={styles.sectionName}>Manage Notifications</span>
+                <span className={styles.sectionDesc}>Discord alerts & notification preferences</span>
+              </div>
+            </div>
+            <FiChevronDown 
+              className={`${styles.expandIcon} ${expandedSections.includes('notifications') ? styles.expandIconRotated : ''}`}
+              size={18}
+            />
+          </div>
+          
+          {expandedSections.includes('notifications') && (
+            <div className={styles.sectionContent}>
+              <div className={styles.infoBox}>
+                <FiMessageCircle size={16} />
+                <span>Get instant alerts when new picks are posted!</span>
+              </div>
+              <div className={styles.linksList}>
+                <a href="https://discord.gg/thebettinginsider" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiMessageCircle size={16} />
+                  <span>Join Discord Server</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+                <a href="/sports" className={styles.linkItem}>
+                  <FiBell size={16} />
+                  <span>Notification Settings</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 4. MANAGE SUBSCRIPTION */}
+        <div className={styles.section}>
+          <div 
+            className={styles.sectionHeader}
+            onClick={() => toggleSection('subscription')}
+          >
+            <div className={styles.sectionHeaderLeft}>
+              <div className={`${styles.sectionIcon} ${styles.sectionIconYellow}`}>
+                <FiCreditCard size={18} />
+              </div>
+              <div className={styles.sectionInfo}>
+                <span className={styles.sectionName}>Manage Subscription</span>
+                <span className={styles.sectionDesc}>
+                  {subscriptions.length > 0 
+                    ? `${subscriptions.length} active plan${subscriptions.length > 1 ? 's' : ''}`
+                    : 'View and manage your plans'
+                  }
+                </span>
+              </div>
+            </div>
+            <FiChevronDown 
+              className={`${styles.expandIcon} ${expandedSections.includes('subscription') ? styles.expandIconRotated : ''}`}
+              size={18}
+            />
+          </div>
+          
+          {expandedSections.includes('subscription') && (
+            <div className={styles.sectionContent}>
+              {error ? (
+                <div className={styles.errorNotice}>
+                  <FiAlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
+              ) : (
+                <div className={styles.subscriptionsGrid}>
+                  {subscriptions.map((sub) => {
+                    const isExpanded = expandedSubId === sub.id
+                    const statusDotClass = getStatusDotClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
+                    const statusBadgeClass = getStatusBadgeClass(sub.status, sub.cancel_at_period_end, sub.is_paused)
+                    const statusLabel = getStatusLabel(sub.status, sub.cancel_at_period_end, sub.is_paused, sub.cancel_at)
+                    const renewalInfo = getRenewalInfo(sub)
+                    
+                    return (
+                      <div key={sub.id} className={styles.subCard}>
+                        <div 
+                          className={styles.subHeader}
+                          onClick={() => toggleSubExpand(sub.id)}
+                        >
+                          <div className={styles.subHeaderLeft}>
+                            <div className={`${styles.statusDot} ${statusDotClass}`} />
+                            <span className={styles.subName}>{sub.product_name}</span>
+                            <span className={`${styles.statusBadge} ${statusBadgeClass}`}>
+                              {statusLabel}
+                            </span>
+                            {sub.is_legacy && (
+                              <span className={styles.legacyBadge}>Grandfathered</span>
+                            )}
+                          </div>
+                          <FiChevronDown 
+                            className={`${styles.expandIcon} ${isExpanded ? styles.expandIconRotated : ''}`}
+                            size={16}
+                          />
+                        </div>
+
+                        {isExpanded && (
+                          <div className={styles.subDetails}>
+                            <div className={styles.detailRow}>
+                              <span className={styles.detailLabel}>Plan</span>
+                              <span className={styles.detailValue}>
+                                {sub.tier.charAt(0).toUpperCase() + sub.tier.slice(1)}
+                              </span>
+                            </div>
+                            <div className={styles.detailRow}>
+                              <span className={styles.detailLabel}>Price</span>
+                              <span className={styles.detailValue}>{sub.price}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                              <span className={styles.detailLabel}>{renewalInfo.label}</span>
+                              <span className={styles.detailValue}>{renewalInfo.date}</span>
+                            </div>
+
+                            <div className={styles.quickActions}>
+                              {sub.cancel_at_period_end && !sub.is_paused && (
+                                <>
+                                  <div className={styles.cancelNotice}>
+                                    Your subscription will expire on {sub.cancel_at ? 
+                                      new Date(sub.cancel_at * 1000).toLocaleDateString('en-US', {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      }) : 'N/A'}
+                                  </div>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleReactivate(sub.id)
+                                    }}
+                                  >
+                                    <FiRefreshCw size={14} />
+                                    Reactivate Subscription
+                                  </button>
+                                </>
+                              )}
+
+                              {sub.is_paused && (
+                                <>
+                                  <div className={styles.pauseNotice}>
+                                    Your subscription is currently paused
+                                  </div>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.actionBtnReactivate}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleUnpause(sub.id)
+                                    }}
+                                  >
+                                    <FiPlay size={14} />
+                                    Resume Subscription
+                                  </button>
+                                </>
+                              )}
+
+                              {!sub.cancel_at_period_end && !sub.is_paused && (
+                                <div className={styles.quickActionsRow}>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.actionBtnUpgrade}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      router.push(`/manage-subscription/upgrade?sub=${sub.id}`)
+                                    }}
+                                  >
+                                    <FiArrowUp size={14} />
+                                    Upgrade
+                                  </button>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.actionBtnCancel}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      router.push(`/manage-subscription/cancel?sub=${sub.id}`)
+                                    }}
+                                  >
+                                    <FiX size={14} />
+                                    Cancel
+                                  </button>
+                                  <button
+                                    className={`${styles.actionBtn} ${styles.actionBtnPause}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      router.push(`/manage-subscription/pause?sub=${sub.id}`)
+                                    }}
+                                  >
+                                    <FiPause size={14} />
+                                    Pause
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 5. GET HELP */}
+        <div className={styles.section}>
+          <div 
+            className={styles.sectionHeader}
+            onClick={() => toggleSection('help')}
+          >
+            <div className={styles.sectionHeaderLeft}>
+              <div className={`${styles.sectionIcon} ${styles.sectionIconRed}`}>
+                <FiHelpCircle size={18} />
+              </div>
+              <div className={styles.sectionInfo}>
+                <span className={styles.sectionName}>Get Help</span>
+                <span className={styles.sectionDesc}>Contact support & find answers</span>
+              </div>
+            </div>
+            <FiChevronDown 
+              className={`${styles.expandIcon} ${expandedSections.includes('help') ? styles.expandIconRotated : ''}`}
+              size={18}
+            />
+          </div>
+          
+          {expandedSections.includes('help') && (
+            <div className={styles.sectionContent}>
+              <div className={styles.linksList}>
+                <a href="/faq" className={styles.linkItem}>
+                  <FiHelpCircle size={16} />
+                  <span>FAQ</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
+                <a href="https://www.thebettinginsider.com/contact" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiMail size={16} />
+                  <span>Contact Support</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+                <a href="https://discord.gg/thebettinginsider" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
+                  <FiMessageCircle size={16} />
+                  <span>Discord Community</span>
+                  <FiExternalLink size={14} className={styles.linkExternal} />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
+
+      {/* Back to Dashboard */}
+      <button 
+        className={styles.backButton}
+        onClick={() => router.push('/')}
+      >
+        ← Back to Dashboard
+      </button>
     </div>
   )
 }
