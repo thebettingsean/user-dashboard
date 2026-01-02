@@ -23,8 +23,8 @@ export default function Navbar() {
   // Define nav items in order
   const navItems = [
     { href: '/picks', label: "Today's Picks" },
-    { href: '/sports/public-betting', label: 'Public Betting' },
-    { href: '/sports/ai-scripts', label: 'Game Scripts' },
+    { href: '/public-betting', label: 'Public Betting' },
+    { href: '/games', label: 'Games' },
     { href: '/odds', label: 'Odds' },
     { href: '/builder', label: 'Builder' },
   ]
@@ -379,12 +379,12 @@ export default function Navbar() {
               Today's Picks
             </Link>
             
-            <Link href="/sports/public-betting" style={styles.mobileLink} onClick={closeMobileMenu}>
+            <Link href="/public-betting" style={styles.mobileLink} onClick={closeMobileMenu}>
               Public Betting
             </Link>
             
-            <Link href="/sports/ai-scripts" style={styles.mobileLink} onClick={closeMobileMenu}>
-              Game Scripts
+            <Link href="/games" style={styles.mobileLink} onClick={closeMobileMenu}>
+              Games
             </Link>
             
             <Link href="/odds" style={styles.mobileLink} onClick={closeMobileMenu}>
