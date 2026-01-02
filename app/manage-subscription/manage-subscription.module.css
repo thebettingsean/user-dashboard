@@ -317,6 +317,11 @@
   letter-spacing: 0.03em;
 }
 
+/* Discord Widget Wrapper */
+.discordWidgetWrapper {
+  padding: 4px 0;
+}
+
 /* ===== SUBSCRIPTION CARDS (inside section) ===== */
 .subscriptionsGrid {
   display: flex;

@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation'
 import { 
   FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle,
   FiGift, FiTrendingUp, FiBell, FiCreditCard, FiHelpCircle, FiUsers, FiBook, 
-  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2
+  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2, FiTool
 } from 'react-icons/fi'
+import { FaHammer } from 'react-icons/fa'
 import styles from './manage-subscription.module.css'
+import DiscordWidget from '@/components/DiscordWidget'
 
 interface SubscriptionData {
   id: string
@@ -308,6 +310,11 @@ export default function ManageSubscriptionPage() {
                   <span>Simulator</span>
                   <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
                 </a>
+                <a href="/builder" className={styles.linkItem}>
+                  <FaHammer size={16} />
+                  <span>Builder</span>
+                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
+                </a>
                 <a href="/betting-guide" className={styles.linkItem}>
                   <FiBook size={16} />
                   <span>Betting Guide</span>
@@ -356,21 +363,8 @@ export default function ManageSubscriptionPage() {
           
           {expandedSections.includes('notifications') && (
             <div className={styles.sectionContent}>
-              <div className={styles.infoBox}>
-                <FiMessageCircle size={16} />
-                <span>Get instant alerts when new picks are posted!</span>
-              </div>
-              <div className={styles.linksList}>
-                <a href="https://discord.gg/thebettinginsider" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
-                  <FiMessageCircle size={16} />
-                  <span>Join Discord Server</span>
-                  <FiExternalLink size={14} className={styles.linkExternal} />
-                </a>
-                <a href="/sports" className={styles.linkItem}>
-                  <FiBell size={16} />
-                  <span>Notification Settings</span>
-                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
-                </a>
+              <div className={styles.discordWidgetWrapper}>
+                <DiscordWidget compact={true} />
               </div>
             </div>
           )}
