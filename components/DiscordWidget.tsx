@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { supabase } from '../lib/supabase'
 import { useEntitlements } from '../lib/hooks/useEntitlements'
+import { MdLockOutline } from 'react-icons/md'
 import styles from './DiscordWidget.module.css'
 
 export default function DiscordWidget({ compact = false }: { compact?: boolean }) {
@@ -124,23 +125,10 @@ export default function DiscordWidget({ compact = false }: { compact?: boolean }
   if (!canAccessDiscord) {
     return (
       <div className={compact ? styles.compactWrapper : styles.widgetWrapper}>
-        <div className={styles.headerRow}>
-          <div className={styles.discordIcon}>
-            <img 
-              src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68f51e56d751135b7de32426_9.svg" 
-              width={20} 
-              height={20}
-              alt="Discord" 
-            />
-          </div>
-          <div className={styles.headerText}>
-            <h3 className={styles.title}>Discord Notifications</h3>
-            <p className={styles.subtitle}>Get live pick alerts</p>
-          </div>
-        </div>
-        
         <div className={styles.lockedNotice}>
-          <div className={styles.lockedIcon}>🔒</div>
+          <div className={styles.lockedIcon}>
+            <MdLockOutline size={20} />
+          </div>
           <div className={styles.lockedText}>
             <span className={styles.lockedTitle}>Picks Subscription Required</span>
             <span className={styles.lockedDesc}>Discord notifications are available with the Analyst Picks package.</span>
