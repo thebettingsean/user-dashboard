@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: #0C0E12 !important;
   padding: 24px;
-  padding-top: 24px;
+  padding-top: 16px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
   position: relative;
@@ -12,7 +12,7 @@
 }
 
 .headerSpacer {
-  height: 40px;
+  height: 24px;
 }
 
 /* Header */
