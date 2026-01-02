@@ -132,70 +132,6 @@ export default function Navbar() {
                 )
               })}
 
-              {/* Sports Dropdown */}
-              <div
-                style={styles.navDropdown}
-                onMouseEnter={() => handleMouseEnter('sports')}
-                onMouseLeave={handleMouseLeave}
-              >
-                <span style={styles.navLink}>
-                  Sports
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '4px' }}>
-                    <path d="M7 10l5 5 5-5z"/>
-                  </svg>
-                </span>
-                
-                {openDropdown === 'sports' && (
-                  <div 
-                    className="navbar-dropdown"
-                    style={styles.dropdown}
-                    onMouseEnter={() => handleDropdownMouseEnter('sports')}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <Link href="/sports/nfl/games" style={styles.dropdownLink}>
-                      <img 
-                        src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg" 
-                        alt="NFL" 
-                        style={styles.sportLogo}
-                      />
-                      NFL
-                    </Link>
-                    <Link href="/sports/nba/games" style={styles.dropdownLink}>
-                      <img 
-                        src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg" 
-                        alt="NBA" 
-                        style={styles.sportLogo}
-                      />
-                      NBA
-                    </Link>
-                    <Link href="/sports/nhl/games" style={styles.dropdownLink}>
-                      <img 
-                        src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg" 
-                        alt="NHL" 
-                        style={styles.sportLogo}
-                      />
-                      NHL
-                    </Link>
-                    <Link href="/sports/college-football/games" style={styles.dropdownLink}>
-                      <img 
-                        src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg" 
-                        alt="NCAAF" 
-                        style={styles.sportLogo}
-                      />
-                      NCAAF
-                    </Link>
-                    <div style={{...styles.dropdownLink, opacity: 0.5, cursor: 'default'}}>
-                      <img 
-                        src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg" 
-                        alt="NCAAB" 
-                        style={{...styles.sportLogo, opacity: 0.5}}
-                      />
-                      NCAAB (soon)
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Tools Dropdown */}
               <div
                 style={styles.navDropdown}
@@ -395,42 +331,6 @@ export default function Navbar() {
               Builder{' '}
               <span style={styles.newTag}>NEW</span>
             </Link>
-
-            {/* Sports */}
-            <div style={styles.mobileDropdownItem}>
-              <div
-                style={styles.mobileDropdownHeader}
-                onClick={() => setOpenDropdown(openDropdown === 'sports' ? null : 'sports')}
-              >
-                Sports
-                <span style={styles.mobileArrow}>{openDropdown === 'sports' ? '▼' : '▶'}</span>
-              </div>
-
-              {openDropdown === 'sports' && (
-                <div style={styles.mobileSubMenu}>
-                  <Link href="/sports/nfl/games" style={styles.mobileSubLink} onClick={closeMobileMenu}>
-                    <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322bf75f88b0e514815a_1.svg" alt="NFL" style={styles.sportLogo} />
-                    NFL
-                  </Link>
-                  <Link href="/sports/nba/games" style={styles.mobileSubLink} onClick={closeMobileMenu}>
-                    <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ae219bb4e9f221240_2.svg" alt="NBA" style={styles.sportLogo} />
-                    NBA
-                  </Link>
-                  <Link href="/sports/nhl/games" style={styles.mobileSubLink} onClick={closeMobileMenu}>
-                    <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b09c4ee482d9ba578_6.svg" alt="NHL" style={styles.sportLogo} />
-                    NHL
-                  </Link>
-                  <Link href="/sports/college-football/games" style={styles.mobileSubLink} onClick={closeMobileMenu}>
-                    <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322ba3d7e3f2bf6ce88f_4.svg" alt="NCAAF" style={styles.sportLogo} />
-                    NCAAF
-                  </Link>
-                  <div style={{...styles.mobileSubLink, opacity: 0.5}}>
-                    <img src="https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6911322b63f708e0881f1517_5.svg" alt="NCAAB" style={{...styles.sportLogo, opacity: 0.5}} />
-                    NCAAB (soon)
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Tools */}
             <div style={styles.mobileDropdownItem}>
