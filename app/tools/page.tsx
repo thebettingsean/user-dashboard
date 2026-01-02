@@ -12,7 +12,7 @@ import {
   IoWalletOutline,
   IoTrophyOutline
 } from 'react-icons/io5'
-import { GiAmericanFootballHelmet, GiTouchdown } from 'react-icons/gi'
+import { GiAmericanFootballHelmet, GiAmericanFootballBall } from 'react-icons/gi'
 import { BsBuildingCheck } from 'react-icons/bs'
 import { TbTargetArrow } from 'react-icons/tb'
 import styles from './tools.module.css'
@@ -79,7 +79,7 @@ const NFL_TOOLS: Tool[] = [
     id: 'anytime-tds',
     name: 'Anytime TD Scorer',
     description: 'Find the best anytime touchdown prop values',
-    icon: <GiTouchdown size={22} />,
+    icon: <GiAmericanFootballBall size={22} />,
     href: '/anytime-tds'
   }
 ]
