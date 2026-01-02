@@ -51,7 +51,6 @@ export async function GET(request: NextRequest) {
     // Get optional filters from query params
     const { searchParams } = new URL(request.url)
     const sportFilter = searchParams.get('sport')?.toLowerCase()
-    const limitPerSport = parseInt(searchParams.get('limit') || '8')
 
     // Determine which sports to process
     const sportsToProcess = sportFilter 
@@ -59,7 +58,6 @@ export async function GET(request: NextRequest) {
       : ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
     
     console.log(`📋 Sports to process: ${sportsToProcess.map(s => s.toUpperCase()).join(', ')}`)
-    console.log(`📊 Limit per sport: ${limitPerSport}`)
 
     let totalGenerated = 0
     let totalSkipped = 0
@@ -67,9 +65,8 @@ export async function GET(request: NextRequest) {
     const errors: string[] = []
     const results: any[] = []
 
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    // Use production URL - VERCEL_URL gives deployment URL which doesn't work for internal calls
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://thebettinginsider.com'
 
     const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.THE_ODDS_API_KEY
 
@@ -118,12 +115,10 @@ export async function GET(request: NextRequest) {
         const now = new Date()
         const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
         
-        const upcomingGames = games
-          .filter(g => {
-            const gameTime = new Date(g.commence_time)
-            return gameTime > now && gameTime < sevenDaysFromNow
-          })
-          .slice(0, limitPerSport)
+        const upcomingGames = games.filter(g => {
+          const gameTime = new Date(g.commence_time)
+          return gameTime > now && gameTime < sevenDaysFromNow
+        })
 
         console.log(`📊 Found ${upcomingGames.length} upcoming ${sport.toUpperCase()} games`)
 
@@ -140,9 +135,22 @@ export async function GET(request: NextRequest) {
             scriptUrl.searchParams.set('awayTeam', game.away_team)
             scriptUrl.searchParams.set('gameTime', game.commence_time)
 
+            console.log(`   🔗 Calling: ${scriptUrl.toString().substring(0, 100)}...`)
+
             const response = await fetch(scriptUrl.toString(), {
               headers: { 'Content-Type': 'application/json' }
             })
+
+            // Check if we got HTML instead of JSON (error page)
+            const contentType = response.headers.get('content-type') || ''
+            if (!contentType.includes('application/json')) {
+              const text = await response.text()
+              console.error(`   ❌ Got HTML instead of JSON (status: ${response.status})`)
+              console.error(`   Response preview: ${text.substring(0, 100)}`)
+              errors.push(`${game.id}: Got HTML response (${response.status})`)
+              totalErrors++
+              continue
+            }
 
             const data = await response.json()
 
@@ -227,4 +235,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 300 // 5 minutes max
+export const maxDuration = 900 // 15 minutes max (Pro plan)
