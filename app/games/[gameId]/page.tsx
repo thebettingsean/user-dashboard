@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
-import { FiChevronLeft, FiClock, FiTrendingUp, FiLock, FiArrowRight, FiExternalLink } from 'react-icons/fi'
+import { FiChevronLeft, FiClock, FiTrendingUp, FiArrowRight, FiExternalLink } from 'react-icons/fi'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { MdLockOutline } from 'react-icons/md'
 import styles from './gameDetail.module.css'
@@ -16,16 +16,21 @@ interface GameData {
   awayTeamLogo: string | null
   homeTeamLogo: string | null
   kickoff: string
+  kickoffLabel: string
   sport: string
-  spread?: { homeLine: number | null; awayLine: number | null }
-  totals?: { number: number | null }
-  moneyline?: { awayOdds: number | null; homeOdds: number | null }
-}
-
-interface TeamRankings {
-  offense: number | null
-  defense: number | null
-  overall: number | null
+  spread: { homeLine: number | null; awayLine: number | null } | null
+  totals: { number: number | null } | null
+  moneyline: { home: number | null; away: number | null } | null
+  sportsbook: string | null
+  publicBetting: {
+    spreadHomeBetPct: number | null
+    spreadHomeMoneyPct: number | null
+    mlHomeBetPct: number | null
+    mlHomeMoneyPct: number | null
+    totalOverBetPct: number | null
+    totalOverMoneyPct: number | null
+  } | null
+  hasPublicBetting: boolean
 }
 
 function formatGameTime(dateString: string): string {
@@ -38,6 +43,11 @@ function formatGameTime(dateString: string): string {
     minute: '2-digit',
     hour12: true
   })
+}
+
+function formatSpread(spread: number | null | undefined): string {
+  if (spread === null || spread === undefined) return 'N/A'
+  return spread > 0 ? `+${spread}` : `${spread}`
 }
 
 export default function GameDetailPage() {
@@ -65,32 +75,27 @@ export default function GameDetailPage() {
       try {
         setIsLoading(true)
         
-        // Fetch game data from game-hub
-        const gamesRes = await fetch(`/api/dashboard/game-hub?sport=${sport}`)
+        // Fetch game data from unified games API
+        const gamesRes = await fetch(`/api/games/upcoming?sport=${sport}`)
         const gamesData = await gamesRes.json()
         
-        const game = gamesData.games?.find((g: any) => g.id === gameId)
-        
-        if (game) {
-          setGameData({
-            id: game.id,
-            awayTeam: game.awayTeam,
-            homeTeam: game.homeTeam,
-            awayTeamLogo: game.awayTeamLogo,
-            homeTeamLogo: game.homeTeamLogo,
-            kickoff: game.kickoff,
-            sport: sport.toUpperCase(),
-            spread: game.spread,
-            totals: game.totals,
-            moneyline: game.moneyline,
-          })
+        if (gamesData.success && gamesData.games) {
+          const game = gamesData.games.find((g: GameData) => g.id === gameId)
+          
+          if (game) {
+            setGameData(game)
+          }
         }
         
-        // Fetch script for this game
-        const scriptRes = await fetch(`/api/scripts/${gameId}?sport=${sport}`)
-        const scriptData = await scriptRes.json()
-        if (scriptData.script) {
-          setScript(scriptData.script)
+        // Fetch script for this game (if available)
+        try {
+          const scriptRes = await fetch(`/api/scripts/${gameId}?sport=${sport}`)
+          const scriptData = await scriptRes.json()
+          if (scriptData.script) {
+            setScript(scriptData.script)
+          }
+        } catch (e) {
+          console.log('No script available for this game')
         }
         
       } catch (error) {
@@ -152,6 +157,9 @@ export default function GameDetailPage() {
               <img src={gameData.awayTeamLogo} alt={gameData.awayTeam} className={styles.teamLogoLarge} />
             )}
             <span className={styles.teamNameLarge}>{gameData.awayTeam}</span>
+            {gameData.spread?.awayLine && (
+              <span className={styles.teamSpreadLarge}>{formatSpread(gameData.spread.awayLine)}</span>
+            )}
           </div>
           <span className={styles.vsText}>@</span>
           <div className={styles.teamSide}>
@@ -159,6 +167,9 @@ export default function GameDetailPage() {
               <img src={gameData.homeTeamLogo} alt={gameData.homeTeam} className={styles.teamLogoLarge} />
             )}
             <span className={styles.teamNameLarge}>{gameData.homeTeam}</span>
+            {gameData.spread?.homeLine && (
+              <span className={styles.teamSpreadLarge}>{formatSpread(gameData.spread.homeLine)}</span>
+            )}
           </div>
         </div>
         
@@ -171,30 +182,30 @@ export default function GameDetailPage() {
         </div>
         
         {/* Odds Summary */}
-        {(gameData.spread || gameData.totals) && (
-          <div className={styles.oddsRow}>
-            {gameData.spread?.homeLine && (
-              <div className={styles.oddsItem}>
-                <span className={styles.oddsLabel}>Spread</span>
-                <span className={styles.oddsValue}>
-                  {gameData.spread.homeLine > 0 ? '+' : ''}{gameData.spread.homeLine}
-                </span>
-              </div>
-            )}
-            {gameData.totals?.number && (
-              <div className={styles.oddsItem}>
-                <span className={styles.oddsLabel}>Total</span>
-                <span className={styles.oddsValue}>O/U {gameData.totals.number}</span>
-              </div>
-            )}
-            {gameData.moneyline && (
-              <div className={styles.oddsItem}>
-                <span className={styles.oddsLabel}>ML</span>
-                <span className={styles.oddsValue}>
-                  {gameData.moneyline.awayOdds} / {gameData.moneyline.homeOdds}
-                </span>
-              </div>
-            )}
+        <div className={styles.oddsRow}>
+          <div className={styles.oddsItem}>
+            <span className={styles.oddsLabel}>Spread</span>
+            <span className={styles.oddsValue}>{formatSpread(gameData.spread?.homeLine)}</span>
+          </div>
+          {gameData.totals?.number && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>Total</span>
+              <span className={styles.oddsValue}>O/U {gameData.totals.number}</span>
+            </div>
+          )}
+          {gameData.moneyline && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>ML</span>
+              <span className={styles.oddsValue}>
+                {gameData.moneyline.away && (gameData.moneyline.away > 0 ? `+${gameData.moneyline.away}` : gameData.moneyline.away)} / {gameData.moneyline.home && (gameData.moneyline.home > 0 ? `+${gameData.moneyline.home}` : gameData.moneyline.home)}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {gameData.sportsbook && (
+          <div className={styles.sportsbookLabel}>
+            Odds via {gameData.sportsbook}
           </div>
         )}
       </div>
@@ -264,7 +275,7 @@ export default function GameDetailPage() {
           <div className={styles.oddsSection}>
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Odds & Line Movement</h2>
-              <p className={styles.sectionSubtitle}>Current odds and historical line movement</p>
+              <p className={styles.sectionSubtitle}>Current odds from {gameData.sportsbook || 'top sportsbooks'}</p>
             </div>
             
             <div className={styles.oddsCards}>
@@ -276,7 +287,7 @@ export default function GameDetailPage() {
                     <span className={styles.oddsGridLabel}>Spread</span>
                     <span className={styles.oddsGridValue}>
                       {gameData.spread?.homeLine ? (
-                        `${gameData.homeTeam} ${gameData.spread.homeLine > 0 ? '+' : ''}${gameData.spread.homeLine}`
+                        `${gameData.homeTeam.split(' ').pop()} ${formatSpread(gameData.spread.homeLine)}`
                       ) : 'N/A'}
                     </span>
                   </div>
@@ -284,6 +295,18 @@ export default function GameDetailPage() {
                     <span className={styles.oddsGridLabel}>Total</span>
                     <span className={styles.oddsGridValue}>
                       {gameData.totals?.number ? `O/U ${gameData.totals.number}` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className={styles.oddsGridItem}>
+                    <span className={styles.oddsGridLabel}>Away ML</span>
+                    <span className={styles.oddsGridValue}>
+                      {gameData.moneyline?.away ? (gameData.moneyline.away > 0 ? `+${gameData.moneyline.away}` : gameData.moneyline.away) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className={styles.oddsGridItem}>
+                    <span className={styles.oddsGridLabel}>Home ML</span>
+                    <span className={styles.oddsGridValue}>
+                      {gameData.moneyline?.home ? (gameData.moneyline.home > 0 ? `+${gameData.moneyline.home}` : gameData.moneyline.home) : 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -355,14 +378,58 @@ export default function GameDetailPage() {
               <>
                 <div className={styles.sectionHeader}>
                   <h2 className={styles.sectionTitle}>Public Betting Data</h2>
-                  <p className={styles.sectionSubtitle}>Betting splits and market indicators</p>
+                  <p className={styles.sectionSubtitle}>Betting splits and market indicators from SportsDataIO</p>
                 </div>
+                
+                {gameData.hasPublicBetting && gameData.publicBetting ? (
+                  <div className={styles.publicBettingGrid}>
+                    <div className={styles.bettingCard}>
+                      <h4>Spread</h4>
+                      <div className={styles.bettingRow}>
+                        <span>Home Bet %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.spreadHomeBetPct ?? 'N/A'}%</span>
+                      </div>
+                      <div className={styles.bettingRow}>
+                        <span>Home Money %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.spreadHomeMoneyPct ?? 'N/A'}%</span>
+                      </div>
+                    </div>
+                    <div className={styles.bettingCard}>
+                      <h4>Moneyline</h4>
+                      <div className={styles.bettingRow}>
+                        <span>Home Bet %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.mlHomeBetPct ?? 'N/A'}%</span>
+                      </div>
+                      <div className={styles.bettingRow}>
+                        <span>Home Money %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.mlHomeMoneyPct ?? 'N/A'}%</span>
+                      </div>
+                    </div>
+                    <div className={styles.bettingCard}>
+                      <h4>Total</h4>
+                      <div className={styles.bettingRow}>
+                        <span>Over Bet %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.totalOverBetPct ?? 'N/A'}%</span>
+                      </div>
+                      <div className={styles.bettingRow}>
+                        <span>Over Money %</span>
+                        <span className={styles.bettingValue}>{gameData.publicBetting.totalOverMoneyPct ?? 'N/A'}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.noContent}>
+                    <p>Public betting data not yet available for this game.</p>
+                    <p className={styles.noContentSub}>Check back closer to game time!</p>
+                  </div>
+                )}
+                
                 <div className={styles.viewFullCta}>
                   <GiCash size={20} />
-                  <span>View full public betting data for this game</span>
+                  <span>View full public betting dashboard with line movement</span>
                   <button 
                     className={styles.viewFullBtn}
-                    onClick={() => router.push(`/public-betting?game=${gameId}`)}
+                    onClick={() => router.push(`/public-betting`)}
                   >
                     Go to Public Betting
                     <FiArrowRight size={14} />
@@ -393,4 +460,3 @@ export default function GameDetailPage() {
     </div>
   )
 }
-

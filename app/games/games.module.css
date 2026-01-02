@@ -241,6 +241,43 @@
   margin-top: 8px;
 }
 
+.teamSpread {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+.oddsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(71, 85, 105, 0.2);
+  margin-top: 8px;
+}
+
+.oddsItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.oddsLabel {
+  font-size: 10px;
+  color: #696969;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.oddsValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
 /* Games Grid */
 .gamesGrid {
   display: grid;

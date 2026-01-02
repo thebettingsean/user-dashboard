@@ -456,6 +456,59 @@
   background: #2563eb;
 }
 
+/* Public Betting Grid */
+.publicBettingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bettingCard {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.bettingCard h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #696969;
+  text-transform: uppercase;
+  margin: 0 0 12px 0;
+}
+
+.bettingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.bettingValue {
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Team Spread in Header */
+.teamSpreadLarge {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+/* Sportsbook Label */
+.sportsbookLabel {
+  text-align: center;
+  font-size: 11px;
+  color: #696969;
+  margin-top: 8px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .container {
@@ -490,6 +543,10 @@
   
   .tabContent {
     padding: 16px;
+  }
+  
+  .publicBettingGrid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -9,12 +9,25 @@ interface Game {
   id: string
   awayTeam: string
   homeTeam: string
+  awayTeamAbbr: string
+  homeTeamAbbr: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
   kickoff: string
+  kickoffLabel: string
   sport: string
-  spread?: { homeLine: number | null; awayLine: number | null }
-  totals?: { number: number | null }
+  spread: { homeLine: number | null; awayLine: number | null } | null
+  totals: { number: number | null } | null
+  moneyline: { home: number | null; away: number | null } | null
+  publicBetting: {
+    spreadHomeBetPct: number | null
+    spreadHomeMoneyPct: number | null
+    mlHomeBetPct: number | null
+    mlHomeMoneyPct: number | null
+    totalOverBetPct: number | null
+    totalOverMoneyPct: number | null
+  } | null
+  hasPublicBetting: boolean
 }
 
 const SPORTS = ['all', 'nfl', 'nba', 'nhl', 'cfb']
@@ -63,13 +76,13 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
             <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.featuredLogo} />
           )}
           <span className={styles.featuredTeamName}>{game.awayTeam}</span>
+          {game.spread?.awayLine && (
+            <span className={styles.teamSpread}>{formatSpread(game.spread.awayLine)}</span>
+          )}
         </div>
         
         <div className={styles.featuredVs}>
           <span className={styles.atSymbol}>@</span>
-          {game.spread?.homeLine && (
-            <span className={styles.featuredSpread}>{formatSpread(game.spread.homeLine)}</span>
-          )}
         </div>
         
         <div className={styles.featuredTeam}>
@@ -77,6 +90,9 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
             <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.featuredLogo} />
           )}
           <span className={styles.featuredTeamName}>{game.homeTeam}</span>
+          {game.spread?.homeLine && (
+            <span className={styles.teamSpread}>{formatSpread(game.spread.homeLine)}</span>
+          )}
         </div>
       </div>
       
@@ -87,6 +103,26 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
         </div>
         <span className={styles.sportBadge}>{game.sport}</span>
       </div>
+      
+      {/* Odds Summary Row */}
+      {(game.totals?.number || game.moneyline) && (
+        <div className={styles.oddsRow}>
+          {game.totals?.number && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>Total</span>
+              <span className={styles.oddsValue}>O/U {game.totals.number}</span>
+            </div>
+          )}
+          {game.moneyline && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>ML</span>
+              <span className={styles.oddsValue}>
+                {game.moneyline.away && (game.moneyline.away > 0 ? `+${game.moneyline.away}` : game.moneyline.away)} / {game.moneyline.home && (game.moneyline.home > 0 ? `+${game.moneyline.home}` : game.moneyline.home)}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
       
       <div className={styles.featuredCta}>
         View Game Details
@@ -145,26 +181,16 @@ export default function GamesPage() {
       setIsLoading(true)
       const games: Game[] = []
       
-      // Fetch games for each sport
+      // Fetch games for each sport using new unified API
       const sportIds = ['nfl', 'nba', 'nhl', 'cfb']
       
       for (const sportId of sportIds) {
         try {
-          const res = await fetch(`/api/dashboard/game-hub?sport=${sportId}`)
+          const res = await fetch(`/api/games/upcoming?sport=${sportId}`)
           if (res.ok) {
             const data = await res.json()
-            if (data.games && data.games.length > 0) {
-              games.push(...data.games.map((g: any) => ({
-                id: g.id,
-                awayTeam: g.awayTeam,
-                homeTeam: g.homeTeam,
-                awayTeamLogo: g.awayTeamLogo,
-                homeTeamLogo: g.homeTeamLogo,
-                kickoff: g.kickoff,
-                sport: sportId.toUpperCase(),
-                spread: g.spread,
-                totals: g.totals,
-              })))
+            if (data.success && data.games && data.games.length > 0) {
+              games.push(...data.games)
             }
           }
         } catch (error) {
