@@ -197,43 +197,53 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
 export default function GamesPage() {
   const router = useRouter()
   const [selectedSport, setSelectedSport] = useState<string>('nfl')
-  const [allGames, setAllGames] = useState<Game[]>([])
+  const [games, setGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  // Cache to avoid refetching already loaded sports
+  const [gamesCache, setGamesCache] = useState<Record<string, Game[]>>({})
   
   useEffect(() => {
-    async function fetchGames() {
-      setIsLoading(true)
-      const games: Game[] = []
-      
-      // Fetch games for each sport using new unified API
-      const sportIds = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
-      
-      for (const sportId of sportIds) {
-        try {
-          const res = await fetch(`/api/games/upcoming?sport=${sportId}`)
-          if (res.ok) {
-            const data = await res.json()
-            if (data.success && data.games && data.games.length > 0) {
-              games.push(...data.games)
-            }
-          }
-        } catch (error) {
-          console.error(`Error fetching ${sportId} games:`, error)
-        }
+    async function fetchGamesForSport() {
+      // Check if we already have this sport cached
+      if (gamesCache[selectedSport]) {
+        setGames(gamesCache[selectedSport])
+        setIsLoading(false)
+        return
       }
       
-      // Sort by kickoff time
-      games.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
+      setIsLoading(true)
       
-      setAllGames(games)
-      setIsLoading(false)
+      try {
+        const res = await fetch(`/api/games/upcoming?sport=${selectedSport}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && data.games) {
+            // Sort by kickoff time
+            const sortedGames = data.games.sort(
+              (a: Game, b: Game) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+            )
+            setGames(sortedGames)
+            // Cache the results
+            setGamesCache(prev => ({ ...prev, [selectedSport]: sortedGames }))
+          } else {
+            setGames([])
+          }
+        } else {
+          setGames([])
+        }
+      } catch (error) {
+        console.error(`Error fetching ${selectedSport} games:`, error)
+        setGames([])
+      } finally {
+        setIsLoading(false)
+      }
     }
     
-    fetchGames()
-  }, [])
+    fetchGamesForSport()
+  }, [selectedSport]) // Re-fetch when sport changes
   
-  // Filter games by selected sport
-  const filteredGames = allGames.filter(g => g.sport.toLowerCase() === selectedSport)
+  // Games are already filtered by sport from the API
+  const filteredGames = games
   
   // Featured game is the first game (soonest)
   const featuredGame = filteredGames[0]
