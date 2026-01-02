@@ -12,6 +12,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Header Row */
@@ -154,16 +156,16 @@
 .lockedNotice {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  gap: 10px;
+  padding: 12px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(71, 85, 105, 0.3);
   border-radius: 6px;
   margin-bottom: 12px;
 }
 
 .lockedIcon {
-  color: #fbbf24;
+  color: #696969;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -173,17 +175,18 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .lockedTitle {
   font-size: 13px;
   font-weight: 600;
-  color: #fbbf24;
+  color: #fff;
 }
 
 .lockedDesc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #696969;
   line-height: 1.4;
 }
 
@@ -191,11 +194,13 @@
 .upgradeButton {
   display: block;
   width: 100%;
-  background: #3b82f6;
-  border: none;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 6px;
   padding: 10px 16px;
-  color: #fff;
+  color: #3b82f6;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
@@ -205,6 +210,7 @@
 }
 
 .upgradeButton:hover {
-  background: #2563eb;
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
