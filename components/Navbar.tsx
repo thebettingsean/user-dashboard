@@ -132,53 +132,10 @@ export default function Navbar() {
                 )
               })}
 
-              {/* Tools Dropdown */}
-              <div
-                style={styles.navDropdown}
-                onMouseEnter={() => handleMouseEnter('tools')}
-                onMouseLeave={handleMouseLeave}
-              >
-                <span style={styles.navLink}>
-                  Tools
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '4px' }}>
-                    <path d="M7 10l5 5 5-5z"/>
-                  </svg>
-                </span>
-                
-                {openDropdown === 'tools' && (
-                  <div 
-                    className="navbar-dropdown"
-                    style={styles.dropdown}
-                    onMouseEnter={() => handleDropdownMouseEnter('tools')}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <Link href="/fantasy" style={styles.dropdownLink}>
-                      Fantasy
-                    </Link>
-                    <Link href="/simulator" style={styles.dropdownLink}>
-                      Simulator
-                    </Link>
-                    <Link href="/prop-parlay-tool" style={styles.dropdownLink}>
-                      Perfect Parlays
-                    </Link>
-                    <Link href="/bankroll-builder" style={styles.dropdownLink}>
-                      Bankroll Builder
-                    </Link>
-                    <Link href="/betting-guide" style={styles.dropdownLink}>
-                      Betting Guide
-                    </Link>
-                    <Link href="/roi-calculator" style={styles.dropdownLink}>
-                      ROI Calculator
-                    </Link>
-                    <Link href="/anytime-td" style={styles.dropdownLink}>
-                      Anytime TD's
-                    </Link>
-                    <Link href="/sportsbooks" style={styles.dropdownLink}>
-                      Top Sportsbooks
-                    </Link>
-                  </div>
-                )}
-              </div>
+              {/* Tools Link */}
+              <Link href="/tools" style={styles.navLink}>
+                Tools
+              </Link>
             </div>
           </div>
 
@@ -333,28 +290,9 @@ export default function Navbar() {
             </Link>
 
             {/* Tools */}
-            <div style={styles.mobileDropdownItem}>
-              <div
-                style={styles.mobileDropdownHeader}
-                onClick={() => setOpenDropdown(openDropdown === 'tools' ? null : 'tools')}
-              >
-                Tools
-                <span style={styles.mobileArrow}>{openDropdown === 'tools' ? '▼' : '▶'}</span>
-              </div>
-
-              {openDropdown === 'tools' && (
-                <div style={styles.mobileSubMenu}>
-                  <Link href="/fantasy" style={styles.mobileSubLink} onClick={closeMobileMenu}>Fantasy</Link>
-                  <Link href="/simulator" style={styles.mobileSubLink} onClick={closeMobileMenu}>Simulator</Link>
-                  <Link href="/prop-parlay-tool" style={styles.mobileSubLink} onClick={closeMobileMenu}>Perfect Parlays</Link>
-                  <Link href="/bankroll-builder" style={styles.mobileSubLink} onClick={closeMobileMenu}>Bankroll Builder</Link>
-                  <Link href="/betting-guide" style={styles.mobileSubLink} onClick={closeMobileMenu}>Betting Guide</Link>
-                  <Link href="/roi-calculator" style={styles.mobileSubLink} onClick={closeMobileMenu}>ROI Calculator</Link>
-                  <Link href="/anytime-td" style={styles.mobileSubLink} onClick={closeMobileMenu}>Anytime TD's</Link>
-                  <Link href="/sportsbooks" style={styles.mobileSubLink} onClick={closeMobileMenu}>Top Sportsbooks</Link>
-                </div>
-              )}
-            </div>
+            <Link href="/tools" style={styles.mobileLink} onClick={closeMobileMenu}>
+              Tools
+            </Link>
 
             {/* Sign In link for non-signed in users */}
             {!isSignedIn && (
