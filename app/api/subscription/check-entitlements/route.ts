@@ -47,9 +47,15 @@ export async function GET(request: NextRequest) {
     const isPeriodValid = !currentPeriodEnd || currentPeriodEnd > now
 
     // Determine subscription validity
+    // User has access if:
+    // - Status is trialing and period is valid
+    // - Status is active and period is valid  
+    // - Status is active but cancel_at_period_end is true (scheduled to cancel, but still has access)
+    // - Status is canceled but period is still valid (rare edge case)
     const isTrialing = subscriptionStatus === 'trialing' && isPeriodValid
     const isActive = subscriptionStatus === 'active' && isPeriodValid
-    const isCanceledButStillValid = subscriptionStatus === 'canceled' && !cancelAtPeriodEnd && isPeriodValid
+    const isScheduledToCancel = subscriptionStatus === 'active' && cancelAtPeriodEnd && isPeriodValid
+    const isCanceledButStillValid = subscriptionStatus === 'canceled' && isPeriodValid
 
     // Get entitlements
     let entitlements: UserEntitlements = DEFAULT_ENTITLEMENTS
@@ -81,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     // If user has a valid subscription status, they get their entitlements
     // If not, they get nothing
-    const hasValidSubscription = isTrialing || isActive || isCanceledButStillValid
+    const hasValidSubscription = isTrialing || isActive || isScheduledToCancel || isCanceledButStillValid
     
     if (!hasValidSubscription) {
       entitlements = DEFAULT_ENTITLEMENTS
@@ -94,6 +100,8 @@ export async function GET(request: NextRequest) {
       entitlements,
       subscriptionStatus,
       isTrialing,
+      isScheduledToCancel,
+      cancelAtPeriodEnd,
       hasValidSubscription,
     })
 

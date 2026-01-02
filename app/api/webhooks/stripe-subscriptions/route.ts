@@ -340,18 +340,30 @@ export async function POST(request: NextRequest) {
         })
 
         // Update Supabase
-        const isActive = subscription.status === 'active' || subscription.status === 'trialing'
+        // User keeps access if active/trialing, OR if scheduled to cancel but period hasn't ended
+        const isActiveOrTrialing = subscription.status === 'active' || subscription.status === 'trialing'
+        const isScheduledToCancel = (subscription as any).cancel_at_period_end === true
+        const periodEnd = (subscription as any).current_period_end
+        const isPeriodStillValid = periodEnd && (periodEnd * 1000) > Date.now()
+        
+        // User has access if subscription is active/trialing, or if scheduled to cancel but period is still valid
+        const hasAccess = isActiveOrTrialing || (isScheduledToCancel && isPeriodStillValid)
+        
         await supabaseUsers
           .from('users')
           .update({
             subscription_status: subscription.status,
-            subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
-            is_premium: isActive,
-            access_level: isActive ? 'full' : (subscription.status === 'canceled' ? 'none' : 'full')
+            subscription_end_date: new Date(periodEnd * 1000).toISOString(),
+            is_premium: hasAccess,
+            access_level: hasAccess ? 'full' : 'none'
           })
           .eq('clerk_user_id', user.clerk_user_id)
 
-        console.log(`✅ Subscription updated for user: ${user.clerk_user_id}`)
+        console.log(`✅ Subscription updated for user: ${user.clerk_user_id}`, {
+          status: subscription.status,
+          cancel_at_period_end: isScheduledToCancel,
+          hasAccess
+        })
       } else {
         console.warn(`⚠️  No user found for customer ${customerId}`)
       }
