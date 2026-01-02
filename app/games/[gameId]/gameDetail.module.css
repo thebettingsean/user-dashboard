@@ -1,0 +1,495 @@
+/* Game Detail Page - Dark Theme */
+.container {
+  min-height: 100vh;
+  background: #0C0E12 !important;
+  padding: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.headerSpacer {
+  height: 40px;
+}
+
+.loading,
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  color: #696969;
+  font-size: 14px;
+}
+
+/* Back Button */
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 20px;
+}
+
+.backBtn:hover {
+  color: #fff;
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+/* Game Header */
+.gameHeader {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.matchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.teamSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.teamLogoLarge {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.teamNameLarge {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vsText {
+  font-size: 14px;
+  color: #696969;
+  font-weight: 500;
+}
+
+.gameMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gameMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #696969;
+}
+
+.sportBadge {
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-transform: uppercase;
+}
+
+.oddsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(71, 85, 105, 0.2);
+}
+
+.oddsItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.oddsLabel {
+  font-size: 11px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.oddsValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  border-radius: 6px 6px 0 0;
+}
+
+.tab:hover {
+  color: #fff;
+}
+
+.tabActive {
+  color: #fff;
+  border-color: rgba(71, 85, 105, 0.3);
+  border-bottom-color: #3b82f6;
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.freeBadge {
+  padding: 2px 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #10b981;
+  text-transform: uppercase;
+}
+
+.lockIcon {
+  color: #f59e0b;
+}
+
+/* Tab Content */
+.tabContent {
+  background: rgba(30, 41, 59, 0.2);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  min-height: 300px;
+}
+
+/* Section Header */
+.sectionHeader {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.sectionSubtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+
+/* Script Section */
+.scriptContent {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.scriptText {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.scriptText h1,
+.scriptText h2,
+.scriptText h3 {
+  color: #fff;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.scriptText h1 { font-size: 18px; }
+.scriptText h2 { font-size: 16px; }
+.scriptText h3 { font-size: 15px; }
+
+.scriptText p {
+  margin-bottom: 12px;
+}
+
+.scriptText strong {
+  color: #fff;
+}
+
+.noContent {
+  text-align: center;
+  padding: 40px 20px;
+  color: #696969;
+}
+
+.noContentSub {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Odds Section */
+.oddsCards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.oddsCard {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+
+.oddsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.oddsGridItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.oddsGridLabel {
+  font-size: 11px;
+  color: #696969;
+  text-transform: uppercase;
+}
+
+.oddsGridValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.ctaCard {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  color: #3b82f6;
+}
+
+.ctaCard h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.ctaCard p {
+  font-size: 12px;
+  color: #696969;
+  margin: 0;
+}
+
+.ctaBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 8px;
+}
+
+.ctaBtn:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+/* View Full CTA */
+.viewFullCta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 20px;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  border-radius: 8px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.viewFullBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viewFullBtn:hover {
+  background: #2563eb;
+}
+
+/* Locked Section */
+.lockedSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.lockedIcon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(100, 116, 139, 0.08) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  color: rgba(203, 213, 225, 0.85);
+}
+
+.lockedTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.lockedDesc {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.subscribeBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 8px;
+}
+
+.subscribeBtn:hover {
+  background: #2563eb;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .matchup {
+    gap: 12px;
+  }
+  
+  .teamLogoLarge {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .teamNameLarge {
+    font-size: 14px;
+  }
+  
+  .tabs {
+    gap: 2px;
+  }
+  
+  .tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .freeBadge {
+    display: none;
+  }
+  
+  .tabContent {
+    padding: 16px;
+  }
+}
+
