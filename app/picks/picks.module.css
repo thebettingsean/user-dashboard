@@ -145,6 +145,142 @@
   transform: rotate(180deg);
 }
 
+/* Date Slideshow */
+.dateSlideshow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateSlideshowArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.dateSlideshowArrow:hover {
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.dateSlideshowArrow:active {
+  transform: scale(0.95);
+}
+
+.dateSlideshowArrow svg {
+  font-size: 16px;
+}
+
+.dateSlideshowContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateSlideshowItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  min-width: 60px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.dateSlideshowItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.dateSlideshowItemToday {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.15);
+  color: rgba(147, 197, 253, 0.9);
+}
+
+.dateSlideshowItemSelected {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dateSlideshowItemSelected:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dateSlideshowDayName {
+  font-size: 8px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
+}
+
+.dateSlideshowItemSelected .dateSlideshowDayName {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.dateSlideshowItemToday .dateSlideshowDayName {
+  color: rgba(147, 197, 253, 0.7);
+}
+
+.dateSlideshowDate {
+  font-size: 11px;
+  font-weight: 500;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.dateSlideshowCount {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: rgba(34, 197, 94, 0.9);
+  color: #fff;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
+.dateSlideshowCountPast {
+  background: rgba(34, 197, 94, 0.65);
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.2);
+  opacity: 0.75;
+}
+
 .dateDropdownMenu {
   position: absolute;
   top: 100%;
@@ -158,6 +294,10 @@
   z-index: 100;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   padding: 12px;
+}
+
+.dateSlideshow .dateDropdownMenu {
+  right: 0;
 }
 
 .calendarHeader {
@@ -602,6 +742,17 @@
   hyphens: auto;
 }
 
+.pickRecapWaiting {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+}
+
 .pickExpandIconWrapper {
   display: flex;
   align-items: center;
@@ -815,16 +966,46 @@
     flex-shrink: 0;
   }
 
-  .dateDropdown {
+  .dateSlideshow {
     flex-shrink: 0;
     position: relative;
+    gap: 6px;
   }
 
-  .dateDropdownBtn {
-    min-width: 100px;
-    max-width: 100%;
-    font-size: 11px;
-    padding: 0 10px;
+  .dateSlideshowArrow {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dateSlideshowArrow svg {
+    font-size: 14px;
+  }
+
+  .dateSlideshowContainer {
+    gap: 4px;
+  }
+
+  .dateSlideshowItem {
+    min-width: 55px;
+    padding: 5px 8px;
+    gap: 1px;
+  }
+
+  .dateSlideshowDayName {
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+
+  .dateSlideshowDate {
+    font-size: 10px;
+  }
+
+  .dateSlideshowCount {
+    width: 12px;
+    height: 12px;
+    font-size: 6px;
+    top: -4px;
+    right: -4px;
   }
 
   .dateDropdownMenu {
@@ -850,6 +1031,11 @@
 
   .pickTitle {
     font-size: 12px;
+  }
+
+  .pickRecapWaiting {
+    font-size: 9px;
+    margin-right: 6px;
   }
 
   .pickGameTime {
@@ -902,12 +1088,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
+  gap: 10px;
+  padding: 12px 16px;
   margin: 24px 0;
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(71, 85, 105, 0.3);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .lockedBannerContent {
@@ -918,25 +1106,27 @@
 
 .lockedBannerIcon {
   font-size: 18px;
-  color: #3b82f6;
+  color: rgba(147, 197, 253, 0.85);
   flex-shrink: 0;
 }
 
 .lockedBannerText {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .lockedBannerTitle {
   font-size: 13px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
 }
 
 .lockedBannerSubtitle {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .lockedBannerBtn {
@@ -945,26 +1135,31 @@
   justify-content: center;
   gap: 6px;
   padding: 8px 16px;
-  background: #3b82f6;
-  border: none;
-  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 500;
-  color: #fff;
+  font-weight: 600;
+  color: rgba(147, 197, 253, 1);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .lockedBannerBtn:hover {
-  background: #2563eb;
+  background: rgba(59, 130, 246, 0.35);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: rgba(147, 197, 253, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 @media (min-width: 768px) {
   .lockedBanner {
     flex-direction: row;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 10px 14px;
   }
   
   .lockedBannerContent {
@@ -978,12 +1173,14 @@
   }
   
   .lockedBannerSubtitle {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
   }
   
   .lockedBannerSubtitle::before {
     content: '•';
     margin-right: 6px;
+    color: rgba(255, 255, 255, 0.3);
   }
 }
 

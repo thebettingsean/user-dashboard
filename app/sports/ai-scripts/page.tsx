@@ -1,6 +1,15 @@
-import SportsSelectorPage from '../page'
+'use client'
 
-export default function SportsScriptsPage() {
-  return <SportsSelectorPage />
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function AiScriptsRedirect() {
+  const router = useRouter()
+  
+  useEffect(() => {
+    router.replace('/games')
+  }, [router])
+  
+  return null
 }
 

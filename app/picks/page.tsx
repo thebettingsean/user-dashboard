@@ -6,8 +6,8 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { IoTicketOutline } from 'react-icons/io5'
-import { FaLock, FaFireAlt } from 'react-icons/fa'
-import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
+import { FaLock } from 'react-icons/fa'
+import { FiChevronDown, FiChevronRight, FiChevronLeft } from 'react-icons/fi'
 import { GiSupersonicArrow } from 'react-icons/gi'
 import styles from './picks.module.css'
 
@@ -573,16 +573,94 @@ export default function PicksPage() {
             </div>
           </div>
           
-          {/* Right side: Date Dropdown */}
+          {/* Right side: Date Slideshow */}
           <div className={styles.rightFilters}>
-            <div className={styles.dateDropdown} ref={dateDropdownRef}>
-              <button 
-                className={styles.dateDropdownBtn}
-                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+            <div className={styles.dateSlideshow} ref={dateDropdownRef}>
+              <button
+                className={styles.dateSlideshowArrow}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const newDate = new Date(currentDate)
+                  newDate.setDate(newDate.getDate() - 1)
+                  setCurrentDate(newDate)
+                }}
+                aria-label="Previous day"
               >
-                {formatDateDisplay(currentDate)}
-                <FiChevronDown className={`${styles.dateDropdownIcon} ${dateDropdownOpen ? styles.rotated : ''}`} />
+                <FiChevronLeft />
               </button>
+              
+              <div className={styles.dateSlideshowContainer}>
+                {(() => {
+                  const actualToday = new Date()
+                  actualToday.setHours(0, 0, 0, 0)
+                  const todayStr = formatDateString(actualToday)
+                  const currentDateStr = formatDateString(currentDate)
+                  
+                  // Show currentDate in the middle, with day before and day after
+                  const dayBefore = new Date(currentDate)
+                  dayBefore.setDate(dayBefore.getDate() - 1)
+                  const dayAfter = new Date(currentDate)
+                  dayAfter.setDate(dayAfter.getDate() + 1)
+                  
+                  const dates = [dayBefore, currentDate, dayAfter]
+                  
+                  // Determine labels
+                  const labels = dates.map(date => {
+                    const dateStr = formatDateString(date)
+                    if (dateStr === formatDateString(new Date(actualToday.getTime() - 86400000))) return 'Yesterday'
+                    if (dateStr === todayStr) return 'Today'
+                    if (dateStr === formatDateString(new Date(actualToday.getTime() + 86400000))) return 'Tomorrow'
+                    // For other dates, show day of week abbreviation
+                    return date.toLocaleDateString('en-US', { weekday: 'short' })
+                  })
+                  
+                  return dates.map((date, index) => {
+                    const dateStr = formatDateString(date)
+                    const count = pickCounts[dateStr] || 0
+                    const isSelected = index === 1 // Middle one is always selected
+                    const isTodayDate = dateStr === todayStr
+                    const isPast = isPastDate(date)
+                    
+                    return (
+                      <button
+                        key={dateStr}
+                        className={`${styles.dateSlideshowItem} ${isTodayDate ? styles.dateSlideshowItemToday : ''} ${isSelected ? styles.dateSlideshowItemSelected : ''}`}
+                        onClick={() => {
+                          setCurrentDate(date)
+                          // Only toggle calendar if clicking the middle day (selected date)
+                          if (index === 1) {
+                            setDateDropdownOpen(prev => !prev)
+                          }
+                        }}
+                      >
+                        <div className={styles.dateSlideshowDayName}>
+                          {labels[index]}
+                        </div>
+                        <div className={styles.dateSlideshowDate}>
+                          {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                        {count > 0 && (
+                          <div className={`${styles.dateSlideshowCount} ${isPast ? styles.dateSlideshowCountPast : ''}`}>{count}</div>
+                        )}
+                      </button>
+                    )
+                  })
+                })()}
+              </div>
+              
+              <button
+                className={styles.dateSlideshowArrow}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const newDate = new Date(currentDate)
+                  newDate.setDate(newDate.getDate() + 1)
+                  setCurrentDate(newDate)
+                }}
+                aria-label="Next day"
+              >
+                <FiChevronRight />
+              </button>
+              
               {dateDropdownOpen && (
                 <div className={styles.dateDropdownMenu}>
                   <div className={styles.calendarHeader}>
@@ -664,16 +742,10 @@ export default function PicksPage() {
                         />
                         <div className={styles.capperSectionInfo}>
                           <span className={styles.capperSectionName}>{capper.name}</span>
-                          {capper.record && (
-                            <span className={styles.capperSectionRecord}>{capper.record}</span>
-                          )}
-                        </div>
-                        {capper.winStreak > 0 && (
-                          <span className={styles.capperSectionStreak}>
-                            <FaFireAlt className={styles.capperSectionStreakIcon} />
-                            {capper.winStreak}
-                          </span>
+                        {capper.record && (
+                          <span className={styles.capperSectionRecord}>{capper.record}</span>
                         )}
+                      </div>
                       </div>
                     </div>
                     
@@ -732,6 +804,23 @@ export default function PicksPage() {
                                   const netUnits = hasResult ? calculateNetUnits(pick.units, pick.odds, pick.result) : null
                                   const isWin = hasResult && (pick.result === 'won' || pick.result === 'win')
                                   const isLoss = hasResult && (pick.result === 'lost' || pick.result === 'loss')
+                                  
+                                  // Show "Waiting for capper recap" for past dates without results
+                                  if (isPast && !hasResult) {
+                                    return (
+                                      <>
+                                        <span className={styles.pickRecapWaiting}>
+                                          Waiting for recap
+                                        </span>
+                                        <div 
+                                          className={styles.pickHeaderMeta}
+                                        >
+                                          {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
+                                          {pick.odds} | {pick.units.toFixed(1)}u
+                                        </div>
+                                      </>
+                                    )
+                                  }
                                   
                                   // For past dates with results, show sportsbook, odds, and net win/loss
                                   if (isPast && hasResult && netUnits !== null) {

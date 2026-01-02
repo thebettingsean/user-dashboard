@@ -1,12 +1,15 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import DashboardLayout from '../components/DashboardLayout'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function PublicBettingPage() {
-  const params = useParams()
-  const sport = params.sport as string
-
-  return <DashboardLayout sport={sport} initialTab="public" />
+export default function PublicBettingPageRedirect() {
+  const router = useRouter()
+  
+  useEffect(() => {
+    router.replace('/public-betting')
+  }, [router])
+  
+  return null
 }
 
