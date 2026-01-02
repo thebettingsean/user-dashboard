@@ -161,16 +161,18 @@ export default function Navbar() {
                     elements: {
                       userButtonAvatarBox: { width: '40px', height: '40px' },
                       card: { backgroundColor: '#1e293b', color: '#ffffff' },
-                      userButtonPopoverCard: { backgroundColor: '#1e293b', color: '#ffffff' },
+                      userButtonPopoverCard: { backgroundColor: '#1e293b', color: '#ffffff', zIndex: 999999 },
                       userButtonPopoverActions: { color: '#ffffff' },
                       userButtonPopoverActionButton: { color: '#ffffff' },
-                      userButtonPopoverActionButtonText: { color: '#ffffff' }
+                      userButtonPopoverActionButtonText: { color: '#ffffff' },
+                      rootBox: { position: 'relative', zIndex: 999999 }
                     }
                   }}
                 >
                   <UserButton.MenuItems>
                     <UserButton.Link label="Home" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>} href="/sports" />
                     <UserButton.Link label="My Account" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>} href="/manage-subscription" />
+                    <UserButton.Link label="Contact Us" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>} href="/contact" />
                     <UserButton.Action label="View Pricing" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>} onClick={() => window.location.href = '/pricing'} />
                   </UserButton.MenuItems>
                 </UserButton>
@@ -243,16 +245,18 @@ export default function Navbar() {
                     elements: {
                       userButtonAvatarBox: { width: '36px', height: '36px' },
                       card: { backgroundColor: '#1e293b', color: '#ffffff' },
-                      userButtonPopoverCard: { backgroundColor: '#1e293b', color: '#ffffff' },
+                      userButtonPopoverCard: { backgroundColor: '#1e293b', color: '#ffffff', zIndex: 999999 },
                       userButtonPopoverActions: { color: '#ffffff' },
                       userButtonPopoverActionButton: { color: '#ffffff' },
-                      userButtonPopoverActionButtonText: { color: '#ffffff' }
+                      userButtonPopoverActionButtonText: { color: '#ffffff' },
+                      rootBox: { position: 'relative', zIndex: 999999 }
                     }
                   }}
                 >
                   <UserButton.MenuItems>
                     <UserButton.Link label="Home" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>} href="/sports" />
                     <UserButton.Link label="My Account" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>} href="/manage-subscription" />
+                    <UserButton.Link label="Contact Us" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>} href="/contact" />
                     <UserButton.Action label="View Pricing" labelIcon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>} onClick={() => window.location.href = '/pricing'} />
                   </UserButton.MenuItems>
                 </UserButton>

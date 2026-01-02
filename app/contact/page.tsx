@@ -1,176 +1,111 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import Link from 'next/link'
+import { FiMessageCircle, FiHelpCircle, FiUsers, FiLightbulb } from 'react-icons/fi'
+import { IoPhonePortraitOutline } from 'react-icons/io5'
 import styles from './contact.module.css'
 
+const PHONE_NUMBER = '(470) 751-8564'
+
 export default function ContactPage() {
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
-  const supportInfoRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry, index) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => {
-              entry.target.classList.add(styles.animate)
-              observer.unobserve(entry.target)
-            }, index * 100)
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    )
-
-    const cards = cardRefs.current.filter(Boolean)
-    cards.forEach((card) => {
-      if (card) observer.observe(card)
-    })
-
-    if (supportInfoRef.current) observer.observe(supportInfoRef.current)
-
-    return () => {
-      cards.forEach((card) => {
-        if (card) observer.unobserve(card)
-      })
-      if (supportInfoRef.current) observer.unobserve(supportInfoRef.current)
-    }
-  }, [])
-
   return (
-    <div className={styles.contactWrapper}>
-      {/* Hero Section */}
-      <section className={styles.heroSection}>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="left" 
-          data-position="high"
-          style={{ 
-            animationDelay: '0s, 0s, 0s',
-            animationDuration: '3s, 25s, 25s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="right" 
-          data-position="high"
-          style={{ 
-            animationDelay: '15s, 15s, 15s',
-            animationDuration: '3s, 28s, 28s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="left" 
-          data-position="mid"
-          style={{ 
-            animationDelay: '8s, 8s, 8s',
-            animationDuration: '3s, 30s, 30s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="right" 
-          data-position="mid"
-          style={{ 
-            animationDelay: '22s, 22s, 22s',
-            animationDuration: '3s, 27s, 27s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="left" 
-          data-position="low"
-          style={{ 
-            animationDelay: '12s, 12s, 12s',
-            animationDuration: '3s, 26s, 26s'
-          } as React.CSSProperties}
-        ></div>
-        <div 
-          className={styles.heroGradientLine} 
-          data-direction="right" 
-          data-position="low"
-          style={{ 
-            animationDelay: '18s, 18s, 18s',
-            animationDuration: '3s, 29s, 29s'
-          } as React.CSSProperties}
-        ></div>
-        <div className={styles.heroContainer}>
-          <div className={styles.heroHeader}>
-            <span className={styles.heroLabel}>Get in Touch</span>
-            <h1 className={styles.heroTitle}>
-              <span className={styles.heroTitleHighlight}>Contact Us</span>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Have questions about our picks or interested in partnering with us? We&apos;re here to help. Our team typically responds within 24 hours during business days.
+    <div className={styles.container}>
+      <div className={styles.headerSpacer} />
+      
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Contact Us</h1>
+            </div>
+            <p className={styles.subtitle}>
+              Have questions or feedback? Text us directly - we typically respond within a few hours.
             </p>
           </div>
         </div>
-      </section>
+      </header>
 
-      {/* Contact Cards Section */}
-      <div className={styles.contactGrid}>
-        <div 
-          ref={(el) => { cardRefs.current[0] = el }}
-          className={styles.contactCard}
-        >
+      {/* Contact Cards */}
+      <div className={styles.cardsContainer}>
+        
+        {/* Support */}
+        <div className={styles.contactCard}>
           <div className={styles.cardIcon}>
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="22,6 12,13 2,6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <FiHelpCircle size={22} />
           </div>
-          
-          <h2 className={styles.cardTitle}>General Support</h2>
-          
-          <a href="mailto:support@thebettinginsider.com" className={styles.emailAddress}>
-            support@thebettinginsider.com
-          </a>
-          
-          <p className={styles.cardDescription}>
-            Questions about our picks, subscription issues, or need technical support? We&apos;re here to help.
-          </p>
+          <div className={styles.cardContent}>
+            <h2 className={styles.cardTitle}>Support</h2>
+            <p className={styles.cardDescription}>
+              Product questions, subscription help, or technical issues.
+            </p>
+            <div className={styles.textAction}>
+              <span className={styles.textLabel}>Text "Support" to:</span>
+              <a href={`sms:+14707518564?body=Support`} className={styles.phoneLink}>
+                <IoPhonePortraitOutline size={16} />
+                {PHONE_NUMBER}
+              </a>
+            </div>
+          </div>
         </div>
 
-        <div 
-          ref={(el) => { cardRefs.current[1] = el }}
-          className={styles.contactCard}
-        >
-          <div className={`${styles.cardIcon} ${styles.partnersIcon}`}>
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="9" cy="7" r="4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+        {/* Partner */}
+        <div className={styles.contactCard}>
+          <div className={styles.cardIcon}>
+            <FiUsers size={22} />
           </div>
-          
-          <h2 className={styles.cardTitle}>Partnership Inquiries</h2>
-          
-          <a href="mailto:partners@thebettinginsider.com" className={`${styles.emailAddress} ${styles.partnersEmail}`}>
-            partners@thebettinginsider.com
-          </a>
-          
-          <p className={styles.cardDescription}>
-            Interested in collaborating? Looking to partner with us? Let&apos;s discuss how we can work together.
-          </p>
+          <div className={styles.cardContent}>
+            <h2 className={styles.cardTitle}>Partner</h2>
+            <p className={styles.cardDescription}>
+              Interested in collaborating? Let us know if you want to work together!
+            </p>
+            <div className={styles.textAction}>
+              <span className={styles.textLabel}>Text "Partner" to:</span>
+              <a href={`sms:+14707518564?body=Partner`} className={styles.phoneLink}>
+                <IoPhonePortraitOutline size={16} />
+                {PHONE_NUMBER}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Ideas */}
+        <div className={styles.contactCard}>
+          <div className={styles.cardIcon}>
+            <FiLightbulb size={22} />
+          </div>
+          <div className={styles.cardContent}>
+            <h2 className={styles.cardTitle}>Ideas</h2>
+            <p className={styles.cardDescription}>
+              Help us build cool stuff! Share feature requests or suggestions.
+            </p>
+            <div className={styles.textAction}>
+              <span className={styles.textLabel}>Text "Ideas" to:</span>
+              <a href={`sms:+14707518564?body=Ideas`} className={styles.phoneLink}>
+                <IoPhonePortraitOutline size={16} />
+                {PHONE_NUMBER}
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Response Info */}
+      <div className={styles.infoSection}>
+        <div className={styles.infoBox}>
+          <FiMessageCircle size={18} />
+          <div className={styles.infoContent}>
+            <span className={styles.infoTitle}>Quick Response</span>
+            <span className={styles.infoText}>We typically respond within a few hours during business days.</span>
+          </div>
         </div>
       </div>
 
-      {/* Support Info Section */}
-      <section ref={supportInfoRef} className={styles.supportSection}>
-        <div className={styles.supportCard}>
-          <h3 className={styles.supportTitle}>Response Time</h3>
-          <div className={styles.responseTime}>
-            <span className={styles.responseTimeLabel}>Average response time:</span>
-            <span className={styles.responseTimeValue}>12-24 hours</span>
-          </div>
-          <p className={styles.supportText}>
-            We typically respond within 24 hours during business days. For urgent matters, please indicate &quot;URGENT&quot; in your subject line.
-          </p>
-        </div>
-      </section>
+      {/* Back Link */}
+      <Link href="/" className={styles.backButton}>
+        ← Back to Dashboard
+      </Link>
     </div>
   )
 }
-

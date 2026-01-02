@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import { 
   FiChevronDown, FiArrowUp, FiX, FiPause, FiPlay, FiRefreshCw, FiAlertCircle,
   FiGift, FiTrendingUp, FiBell, FiCreditCard, FiHelpCircle, FiUsers, FiBook, 
-  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2, FiTool
+  FiDollarSign, FiMessageCircle, FiMail, FiExternalLink, FiShare2, FiTool, FiLightbulb
 } from 'react-icons/fi'
+import { IoPhonePortraitOutline } from 'react-icons/io5'
 import { FaHammer } from 'react-icons/fa'
 import styles from './manage-subscription.module.css'
 import DiscordWidget from '@/components/DiscordWidget'
@@ -539,7 +540,7 @@ export default function ManageSubscriptionPage() {
           )}
         </div>
 
-        {/* 5. GET HELP */}
+        {/* 5. TEXT US */}
         <div className={styles.section}>
           <div 
             className={styles.sectionHeader}
@@ -547,11 +548,11 @@ export default function ManageSubscriptionPage() {
           >
             <div className={styles.sectionHeaderLeft}>
               <div className={`${styles.sectionIcon} ${styles.sectionIconRed}`}>
-                <FiHelpCircle size={18} />
+                <IoPhonePortraitOutline size={18} />
               </div>
               <div className={styles.sectionInfo}>
-                <span className={styles.sectionName}>Get Help</span>
-                <span className={styles.sectionDesc}>Contact support & find answers</span>
+                <span className={styles.sectionName}>Text Us</span>
+                <span className={styles.sectionDesc}>Get help directly via text message</span>
               </div>
             </div>
             <FiChevronDown 
@@ -562,22 +563,43 @@ export default function ManageSubscriptionPage() {
           
           {expandedSections.includes('help') && (
             <div className={styles.sectionContent}>
-              <div className={styles.linksList}>
-                <a href="/faq" className={styles.linkItem}>
-                  <FiHelpCircle size={16} />
-                  <span>FAQ</span>
-                  <FiChevronDown size={14} className={styles.linkArrow} style={{ transform: 'rotate(-90deg)' }} />
-                </a>
-                <a href="https://www.thebettinginsider.com/contact" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
-                  <FiMail size={16} />
-                  <span>Contact Support</span>
-                  <FiExternalLink size={14} className={styles.linkExternal} />
-                </a>
-                <a href="https://discord.gg/thebettinginsider" target="_blank" rel="noopener noreferrer" className={styles.linkItem}>
-                  <FiMessageCircle size={16} />
-                  <span>Discord Community</span>
-                  <FiExternalLink size={14} className={styles.linkExternal} />
-                </a>
+              <div className={styles.textContactList}>
+                <div className={styles.textContactItem}>
+                  <div className={styles.textContactInfo}>
+                    <FiLightbulb size={16} />
+                    <div className={styles.textContactText}>
+                      <span className={styles.textContactLabel}>Text "Ideas" to:</span>
+                      <span className={styles.textContactDesc}>Help us build cool stuff!</span>
+                    </div>
+                  </div>
+                  <a href="sms:+14707518564?body=Ideas" className={styles.textPhoneLink}>
+                    (470) 751-8564
+                  </a>
+                </div>
+                <div className={styles.textContactItem}>
+                  <div className={styles.textContactInfo}>
+                    <FiHelpCircle size={16} />
+                    <div className={styles.textContactText}>
+                      <span className={styles.textContactLabel}>Text "Support" to:</span>
+                      <span className={styles.textContactDesc}>Product & subscription help.</span>
+                    </div>
+                  </div>
+                  <a href="sms:+14707518564?body=Support" className={styles.textPhoneLink}>
+                    (470) 751-8564
+                  </a>
+                </div>
+                <div className={styles.textContactItem}>
+                  <div className={styles.textContactInfo}>
+                    <FiUsers size={16} />
+                    <div className={styles.textContactText}>
+                      <span className={styles.textContactLabel}>Text "Partner" to:</span>
+                      <span className={styles.textContactDesc}>Let us know if you want to work!</span>
+                    </div>
+                  </div>
+                  <a href="sms:+14707518564?body=Partner" className={styles.textPhoneLink}>
+                    (470) 751-8564
+                  </a>
+                </div>
               </div>
             </div>
           )}
