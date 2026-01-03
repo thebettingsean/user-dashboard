@@ -54,7 +54,8 @@ type MarketType = 'spread' | 'total' | 'ml'
 
 function formatGameTime(dateString: string): string {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
     weekday: 'short',
     month: 'short',
     day: 'numeric',
