@@ -609,6 +609,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     ...oppRankConditions
   ]
   
+  // Add stat value filter (the line/over condition)
+  if (line && line > 0) {
+    allConditions.push(`${statColumn} > ${line}`)
+    appliedFilters.push(`${stat} > ${line}`)
+  }
+  
   // Add sport-specific data error filters
   if (sport === 'nfl') {
     allConditions.push(
