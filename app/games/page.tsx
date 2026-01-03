@@ -166,18 +166,25 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
 
 // Count signals for a game
 function countSignals(game: Game): number {
-  if (!game.publicBetting) return 0
+  if (!game.publicBetting || !game.hasPublicBetting) return 0
   
-  // Signal types: publicRespect, vegasBacked, whaleRespect for each bet type
-  // We'll check if any signals exist across spread, ML, and total
   let signalCount = 0
+  const pb = game.publicBetting
   
-  // In the actual implementation, we'd check game.signals object
-  // For now, if game has public betting data, assume it has signals
-  if (game.hasPublicBetting) {
-    // Basic estimate: if has public betting, likely has 1-3 signals
-    signalCount = 1
-  }
+  // Count signals based on public betting percentages
+  // A signal exists when there's a significant split (not 50/50)
+  
+  // Spread signals
+  if (pb.spreadHomeBetPct && Math.abs(pb.spreadHomeBetPct - 50) > 10) signalCount++
+  if (pb.spreadHomeMoneyPct && Math.abs(pb.spreadHomeMoneyPct - 50) > 10) signalCount++
+  
+  // ML signals
+  if (pb.mlHomeBetPct && Math.abs(pb.mlHomeBetPct - 50) > 10) signalCount++
+  if (pb.mlHomeMoneyPct && Math.abs(pb.mlHomeMoneyPct - 50) > 10) signalCount++
+  
+  // Total signals
+  if (pb.totalOverBetPct && Math.abs(pb.totalOverBetPct - 50) > 10) signalCount++
+  if (pb.totalOverMoneyPct && Math.abs(pb.totalOverMoneyPct - 50) > 10) signalCount++
   
   return signalCount
 }
@@ -270,12 +277,17 @@ export default function GamesPage() {
               sortedGames.map(async (game: Game) => {
                 try {
                   const pickRes = await fetch(`/api/picks/active-counts?gameId=${game.id}`)
-                  const pickData = await pickRes.json()
-                  return {
-                    ...game,
-                    pickCount: pickData.gamePickCount || 0
+                  if (pickRes.ok) {
+                    const pickData = await pickRes.json()
+                    console.log(`[Games] Pick count for ${game.id}:`, pickData.gamePickCount)
+                    return {
+                      ...game,
+                      pickCount: pickData.success ? (pickData.gamePickCount || 0) : 0
+                    }
                   }
+                  return { ...game, pickCount: 0 }
                 } catch (err) {
+                  console.error(`[Games] Error fetching picks for ${game.id}:`, err)
                   return { ...game, pickCount: 0 }
                 }
               })
