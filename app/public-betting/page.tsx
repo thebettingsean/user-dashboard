@@ -691,11 +691,12 @@ export default function PublicBettingPage() {
   const [sportsbookOdds, setSportsbookOdds] = useState<any>(null)
   const [mobileTeamOpen, setMobileTeamOpen] = useState<'away' | 'home' | null>(null)
   const [showPageInfo, setShowPageInfo] = useState(false)
-  const [showSignalInfo, setShowSignalInfo] = useState(false)
-  const [showAwayHistory, setShowAwayHistory] = useState(false)
-  const [showAwayBooks, setShowAwayBooks] = useState(false)
-  const [showHomeHistory, setShowHomeHistory] = useState(false)
-  const [showHomeBooks, setShowHomeBooks] = useState(false)
+  const [showAwaySignalInfo, setShowAwaySignalInfo] = useState(false)
+  const [showHomeSignalInfo, setShowHomeSignalInfo] = useState(false)
+  const [showAwayHistory, setShowAwayHistory] = useState(true)
+  const [showAwayBooks, setShowAwayBooks] = useState(true)
+  const [showHomeHistory, setShowHomeHistory] = useState(true)
+  const [showHomeBooks, setShowHomeBooks] = useState(true)
   
   // Helper to generate segmented bars (20 segments for 0-100%)
   const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
@@ -1840,7 +1841,10 @@ export default function PublicBettingPage() {
                                     {/* Content - Desktop always visible, Mobile collapsible */}
                                     <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'away' ? styles.open : ''}`}>
                                       {/* Splits Card */}
-                                      <div className={styles.signalCardV2}>
+                                      <div 
+                                        className={styles.signalCardV2}
+                                        style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
+                                      >
                                         <div className={styles.signalCardHeader}>Splits</div>
                                         <div className={styles.splitsGridV2}>
                                           <div className={styles.splitColumnV2}>
@@ -1895,19 +1899,22 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* Signals Card */}
-                                      <div className={styles.signalCardV2}>
+                                      <div 
+                                        className={`${styles.signalCardV2} ${showAwaySignalInfo ? styles.signalCardActive : ''}`}
+                                        style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
+                                      >
                                         <div className={styles.signalCardHeaderWithInfo}>
                                           <span>Signals</span>
                                           <div className={styles.signalInfoWrapper}>
                                             <button 
                                               className={styles.signalInfoBtn}
-                                              onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
+                                              onClick={(e) => { e.stopPropagation(); setShowAwaySignalInfo(!showAwaySignalInfo) }}
                                             >
                                               <FiInfo />
                                             </button>
-                                            {showSignalInfo && (
+                                            {showAwaySignalInfo && (
                                               <>
-                                                <div className={styles.tooltipOverlay} onClick={() => setShowSignalInfo(false)} />
+                                                <div className={styles.tooltipOverlay} onClick={() => setShowAwaySignalInfo(false)} />
                                                 <div className={styles.signalInfoTooltip}>
                                                   <div className={styles.signalInfoTitle}>Market Indicators</div>
                                                   <div className={styles.signalInfoItem}>
@@ -1971,42 +1978,48 @@ export default function PublicBettingPage() {
                                         </div>
                                       </div>
 
-                                      {/* History - Collapsible */}
-                                      <div className={styles.signalCardV2}>
-                                        <button 
-                                          className={styles.collapsibleHeader}
-                                          onClick={(e) => { e.stopPropagation(); setShowAwayHistory(!showAwayHistory) }}
+                                      {/* History and Books - Side by Side */}
+                                      <div className={styles.historyBooksWrapper}>
+                                        {/* History */}
+                                        <div 
+                                          className={styles.signalCardV2}
+                                          style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
                                         >
-                                          <span>History</span>
-                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showAwayHistory ? styles.open : ''}`} />
-                                        </button>
-                                        {showAwayHistory && (
+                                          <div className={styles.collapsibleHeader}>
+                                            <span>History</span>
+                                          </div>
                                           <div className={styles.historyListV2}>
-                                            {timelineData.map((point: any, idx) => {
+                                            {[...timelineData].reverse().sort((a, b) => {
+                                              // Current always first
+                                              if (a.time === 'Current') return -1
+                                              if (b.time === 'Current') return 1
+                                              // Open always last
+                                              if (a.time === 'Open') return 1
+                                              if (b.time === 'Open') return -1
+                                              return 0
+                                            }).map((point: any, idx) => {
                                               let val = dropdownMarketType === 'spread' ? (point.awayLine > 0 ? `+${point.awayLine}` : point.awayLine.toString())
                                                 : dropdownMarketType === 'ml' ? (point.mlAway > 0 ? `+${point.mlAway}` : point.mlAway.toString())
                                                 : `O ${point.total}`
+                                              const isCurrent = point.time === 'Current'
                                               return (
-                                                <div key={idx} className={styles.historyItemV2}>
-                                                  <span className={styles.historyTimeV2}>{point.time}</span>
-                                                  <span className={styles.historyValV2}>{val}</span>
+                                                <div key={idx} className={`${styles.historyItemV2} ${isCurrent ? styles.historyItemCurrent : ''}`}>
+                                                  <span className={`${styles.historyTimeV2} ${isCurrent ? styles.historyTimeCurrent : ''}`}>{point.time}</span>
+                                                  <span className={`${styles.historyValV2} ${isCurrent ? styles.historyValCurrent : ''}`}>{val}</span>
                                                 </div>
                                               )
                                             })}
                                           </div>
-                                        )}
-                                      </div>
+                                        </div>
 
-                                      {/* Books - Collapsible */}
-                                      <div className={styles.signalCardV2}>
-                                        <button 
-                                          className={styles.collapsibleHeader}
-                                          onClick={(e) => { e.stopPropagation(); setShowAwayBooks(!showAwayBooks) }}
+                                        {/* Books */}
+                                        <div 
+                                          className={styles.signalCardV2}
+                                          style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
                                         >
-                                          <span>All Books</span>
-                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showAwayBooks ? styles.open : ''}`} />
-                                        </button>
-                                        {showAwayBooks && (
+                                          <div className={styles.collapsibleHeader}>
+                                            <span>All Books</span>
+                                          </div>
                                           <div className={styles.booksListV2}>
                                             {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
                                               let val = dropdownMarketType === 'ml' 
@@ -2016,13 +2029,13 @@ export default function PublicBettingPage() {
                                                 : `O ${bookOdds.value}`
                                               return (
                                                 <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                                  <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                  <span className={styles.bookNameV2}>{bookOdds.book.charAt(0).toUpperCase() + bookOdds.book.slice(1)}</span>
                                                   <span className={styles.bookValV2}>{val}</span>
                                                 </div>
                                               )
                                             })}
                                           </div>
-                                        )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -2085,7 +2098,10 @@ export default function PublicBettingPage() {
                                     {/* Content - Desktop always visible, Mobile collapsible */}
                                     <div className={`${styles.teamColumnContent} ${mobileTeamOpen === 'home' ? styles.open : ''}`}>
                                       {/* Splits Card */}
-                                      <div className={styles.signalCardV2}>
+                                      <div 
+                                        className={styles.signalCardV2}
+                                        style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
+                                      >
                                         <div className={styles.signalCardHeader}>Splits</div>
                                         <div className={styles.splitsGridV2}>
                                           <div className={styles.splitColumnV2}>
@@ -2140,16 +2156,40 @@ export default function PublicBettingPage() {
                                       </div>
 
                                       {/* Signals Card */}
-                                      <div className={styles.signalCardV2}>
+                                      <div 
+                                        className={`${styles.signalCardV2} ${showHomeSignalInfo ? styles.signalCardActive : ''}`}
+                                        style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
+                                      >
                                         <div className={styles.signalCardHeaderWithInfo}>
                                           <span>Signals</span>
                                           <div className={styles.signalInfoWrapper}>
                                             <button 
                                               className={styles.signalInfoBtn}
-                                              onClick={(e) => { e.stopPropagation(); setShowSignalInfo(!showSignalInfo) }}
+                                              onClick={(e) => { e.stopPropagation(); setShowHomeSignalInfo(!showHomeSignalInfo) }}
                                             >
                                               <FiInfo />
                                             </button>
+                                            {showHomeSignalInfo && (
+                                              <>
+                                                <div className={styles.tooltipOverlay} onClick={() => setShowHomeSignalInfo(false)} />
+                                                <div className={styles.signalInfoTooltip}>
+                                                  <div className={styles.signalInfoTitle}>Market Indicators</div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.publicLabel}>Public Respect</strong>
+                                                    Majority of bets AND money backing this side, with line movement confirming the public lean.
+                                                  </div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.vegasLabel}>Vegas Backed</strong>
+                                                    Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.
+                                                  </div>
+                                                  <div className={styles.signalInfoItem}>
+                                                    <strong className={styles.whaleLabel}>Whale Respect</strong>
+                                                    Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.
+                                                  </div>
+                                                  <div className={styles.signalInfoNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</div>
+                                                </div>
+                                              </>
+                                            )}
                                           </div>
                                         </div>
                                         <div className={styles.signalBarsV2}>
@@ -2195,42 +2235,48 @@ export default function PublicBettingPage() {
                                         </div>
                                       </div>
 
-                                      {/* History - Collapsible */}
-                                      <div className={styles.signalCardV2}>
-                                        <button 
-                                          className={styles.collapsibleHeader}
-                                          onClick={(e) => { e.stopPropagation(); setShowHomeHistory(!showHomeHistory) }}
+                                      {/* History and Books - Side by Side */}
+                                      <div className={styles.historyBooksWrapper}>
+                                        {/* History */}
+                                        <div 
+                                          className={styles.signalCardV2}
+                                          style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
                                         >
-                                          <span>History</span>
-                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showHomeHistory ? styles.open : ''}`} />
-                                        </button>
-                                        {showHomeHistory && (
+                                          <div className={styles.collapsibleHeader}>
+                                            <span>History</span>
+                                          </div>
                                           <div className={styles.historyListV2}>
-                                            {timelineData.map((point: any, idx) => {
+                                            {[...timelineData].reverse().sort((a, b) => {
+                                              // Current always first
+                                              if (a.time === 'Current') return -1
+                                              if (b.time === 'Current') return 1
+                                              // Open always last
+                                              if (a.time === 'Open') return 1
+                                              if (b.time === 'Open') return -1
+                                              return 0
+                                            }).map((point: any, idx) => {
                                               let val = dropdownMarketType === 'spread' ? (point.homeLine > 0 ? `+${point.homeLine}` : point.homeLine.toString())
                                                 : dropdownMarketType === 'ml' ? (point.mlHome > 0 ? `+${point.mlHome}` : point.mlHome.toString())
                                                 : `U ${point.total}`
+                                              const isCurrent = point.time === 'Current'
                                               return (
-                                                <div key={idx} className={styles.historyItemV2}>
-                                                  <span className={styles.historyTimeV2}>{point.time}</span>
-                                                  <span className={styles.historyValV2}>{val}</span>
+                                                <div key={idx} className={`${styles.historyItemV2} ${isCurrent ? styles.historyItemCurrent : ''}`}>
+                                                  <span className={`${styles.historyTimeV2} ${isCurrent ? styles.historyTimeCurrent : ''}`}>{point.time}</span>
+                                                  <span className={`${styles.historyValV2} ${isCurrent ? styles.historyValCurrent : ''}`}>{val}</span>
                                                 </div>
                                               )
                                             })}
                                           </div>
-                                        )}
-                                      </div>
+                                        </div>
 
-                                      {/* Books - Collapsible */}
-                                      <div className={styles.signalCardV2}>
-                                        <button 
-                                          className={styles.collapsibleHeader}
-                                          onClick={(e) => { e.stopPropagation(); setShowHomeBooks(!showHomeBooks) }}
+                                        {/* Books */}
+                                        <div 
+                                          className={styles.signalCardV2}
+                                          style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
                                         >
-                                          <span>All Books</span>
-                                          <FiChevronDown className={`${styles.collapsibleIcon} ${showHomeBooks ? styles.open : ''}`} />
-                                        </button>
-                                        {showHomeBooks && (
+                                          <div className={styles.collapsibleHeader}>
+                                            <span>All Books</span>
+                                          </div>
                                           <div className={styles.booksListV2}>
                                             {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
                                               let val = dropdownMarketType === 'ml' 
@@ -2240,13 +2286,13 @@ export default function PublicBettingPage() {
                                                 : `U ${bookOdds.value}`
                                               return (
                                                 <div key={idx} className={`${styles.bookItemV2} ${bookOdds.isConsensus ? styles.consensusV2 : ''}`}>
-                                                  <span className={styles.bookNameV2}>{bookOdds.book}</span>
+                                                  <span className={styles.bookNameV2}>{bookOdds.book.charAt(0).toUpperCase() + bookOdds.book.slice(1)}</span>
                                                   <span className={styles.bookValV2}>{val}</span>
                                                 </div>
                                               )
                                             })}
                                           </div>
-                                        )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -2265,7 +2311,7 @@ export default function PublicBettingPage() {
         </table>
 
         {/* Mobile Table */}
-        <div className={`${styles.mobileTable} ${(!isSignedIn || !hasAccess) && !isLoadingEntitlements ? styles.blurredContent : ''}`}>
+        <div className={styles.mobileTable}>
           {/* Mobile Header */}
           <div className={styles.mobileHeader}>
             <div className={styles.mobileHeaderCell}>Team</div>
@@ -2289,6 +2335,7 @@ export default function PublicBettingPage() {
             </div>
           </div>
           
+          <div className={(!isSignedIn || !hasAccess) && !isLoadingEntitlements ? styles.blurredContent : ''}>
           {loading ? (
             <div className={styles.loadingCell}>Loading...</div>
           ) : sortedGames.length === 0 ? (
@@ -2417,6 +2464,7 @@ export default function PublicBettingPage() {
               </React.Fragment>
             ))
           )}
+          </div>
         </div>
       </div>
     </div>

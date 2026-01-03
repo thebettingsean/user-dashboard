@@ -856,6 +856,20 @@
   margin-bottom: 0;
 }
 
+/* Capper Info Section */
+.pickCapperInfo {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pickCapperName {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: -0.01em;
+}
+
 .dropdownMatchup {
   display: flex;
   align-items: center;

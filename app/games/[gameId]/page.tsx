@@ -552,9 +552,7 @@ export default function GameDetailPage() {
         
         {/* Game Time */}
         <div className={styles.gameMeta}>
-          <FiClock size={14} />
           <span>{formatGameTime(gameData.kickoff)}</span>
-          <span className={styles.sportBadge}>{gameData.sport}</span>
         </div>
         
         {/* Tabs */}
@@ -837,6 +835,10 @@ export default function GameDetailPage() {
                                     cursor: 'pointer'
                                   }}
                                 >
+                                  {/* Capper Info Section */}
+                                  <div className={styles.pickCapperInfo}>
+                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                                  </div>
                                   <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
                                 </div>
                               ) : (
@@ -844,6 +846,10 @@ export default function GameDetailPage() {
                                   className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
                                   onClick={(e) => e.stopPropagation()}
                                 >
+                                  {/* Capper Info Section */}
+                                  <div className={styles.pickCapperInfo}>
+                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                                  </div>
                                   <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
                                 </div>
                               )}

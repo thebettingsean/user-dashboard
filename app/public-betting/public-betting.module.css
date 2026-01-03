@@ -544,7 +544,7 @@
 }
 
 .expandedPanel {
-  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background: rgba(29, 37, 48, 0.3);
   border-radius: 0 0 12px 12px;
 }
 
@@ -552,6 +552,8 @@
 .graphContainer {
   border-radius: 12px;
   overflow: hidden;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 /* Graph Header */
@@ -561,8 +563,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 14px 20px;
-  background: linear-gradient(90deg, #1D2530 0%, #13181D 50%, #1D2530 100%);
-  box-shadow: 0px 13px 21.4px rgba(13, 16, 21, 0.15);
+  background: transparent;
 }
 
 .graphHeaderLeft {
@@ -955,7 +956,8 @@
 }
 
 .mobileGraphContainer {
-  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 10px;
   padding: 12px;
 }
@@ -1173,8 +1175,8 @@
   align-items: center;
   width: 100%;
   padding: 12px 14px;
-  background: linear-gradient(135deg, #171C24 0%, #0D0F13 100%);
-  border: none;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 10px;
   color: #FFFFFF;
   cursor: pointer;
@@ -1622,16 +1624,13 @@
   width: 100%;
   padding: 12px 16px;
   background: rgba(41, 47, 63, 0.3);
-  border: none;
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
   margin-bottom: 12px;
 }
 
-.collapsibleHeader:hover {
-  background: rgba(41, 47, 63, 0.5);
-}
 
 .collapsibleTitle {
   font-size: 12px;
@@ -1887,10 +1886,10 @@
 
 /* Graph Section */
 .graphSectionV2 {
-  background: linear-gradient(135deg, #171C24 0%, #0D0F13 100%);
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
 }
 
 .graphHeaderV2 {
@@ -2013,14 +2012,41 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+}
+
+.historyBooksWrapper {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.historyBooksWrapper > .signalCardV2 {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  z-index: 0;
 }
 
 .teamHeaderV2 {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 8px;
+  justify-content: center;
+  gap: 8px 10px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.teamHeaderV2 > img,
+.teamHeaderV2 > .teamNameV2 {
+  flex-shrink: 0;
+}
+
+.teamHeaderV2 > .betTypeLabel {
+  flex-basis: 100%;
+  text-align: center;
 }
 
 .teamLogoV2 {
@@ -2028,6 +2054,7 @@
   height: 32px;
   border-radius: 50%;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .teamNameV2 {
@@ -2041,13 +2068,16 @@
 .betTypeLabel {
   font-size: 11px;
   font-weight: 500;
-  color: #5A5E66;
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-left: auto;
   padding: 4px 8px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
+  text-align: center;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .betTypeLabelMobile {
@@ -2063,29 +2093,86 @@
 
 /* Signal Card - Premium Styling with Segmented Bars */
 .signalCardV2 {
-  background: linear-gradient(135deg, #171C24 0%, #0D0F13 100%);
-  border-radius: 12px;
-  padding: 16px 14px;
-  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.signalCardV2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  border-radius: 0 0 10px 0;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at bottom right, var(--team-color, rgba(59, 130, 246, 0.3)) 0%, transparent 70%);
+}
+
+/* Away team cards - gradient in bottom left */
+.teamColumnV2:first-child .signalCardV2::after {
+  right: auto;
+  left: 0;
+  border-radius: 0 0 0 10px;
+  background: radial-gradient(circle at bottom left, var(--team-color, rgba(59, 130, 246, 0.3)) 0%, transparent 70%);
+}
+
+.signalCardV2 > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Signals card should be above History/Books */
+.teamColumnV2 > .signalCardV2:not(.historyBooksWrapper .signalCardV2) {
+  z-index: 10;
+}
+
+/* Signals card with active tooltip should be above everything */
+.signalCardV2.signalCardActive {
+  z-index: 1000 !important;
+}
+
+/* Info icon should be above all other Signals cards */
+.signalCardV2 .signalInfoWrapper {
+  z-index: 99999 !important;
+}
+
+.signalCardV2:hover {
+  background: rgba(29, 37, 48, 0.5);
+  border-color: rgba(148, 163, 184, 0.15);
 }
 
 .signalCardHeader {
-  font-size: 14px;
-  font-weight: 400;
-  color: #FFFFFF;
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 .signalCardHeaderWithInfo {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
-  font-weight: 400;
-  color: #FFFFFF;
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 100;
 }
 
 /* Signal Info Icon and Tooltip */
@@ -2093,6 +2180,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  z-index: 99999;
+  isolation: isolate;
 }
 
 .signalInfoBtn {
@@ -2108,6 +2197,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 0;
+  position: relative;
+  z-index: 99999;
 }
 
 .signalInfoBtn svg {
@@ -2132,7 +2223,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.6);
-  z-index: 1001;
+  z-index: 100000;
 }
 
 /* Tooltip arrow */
@@ -2243,7 +2334,7 @@
 .splitLabelV2 {
   font-size: 11px;
   font-weight: 500;
-  color: #5A5E66;
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -2251,7 +2342,7 @@
 .splitValueV2 {
   font-size: 20px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.95);
   letter-spacing: -0.02em;
 }
 
@@ -2379,19 +2470,20 @@
 
 /* History Card */
 .historyCardV2 {
-  background: linear-gradient(135deg, #171C24 0%, #0D0F13 100%);
-  border-radius: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
   padding: 14px;
-  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+  backdrop-filter: blur(10px);
 }
 
 .historyCardHeader {
   font-size: 12px;
-  font-weight: 500;
-  color: #8B9199;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* Collapsible Headers for History/Books */
@@ -2400,25 +2492,22 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 8px 0;
+  padding: 0;
+  margin: 0;
   background: none;
   border: none;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  color: #8B9199;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: color 0.15s ease;
-}
-
-.collapsibleHeader:hover {
-  color: #FFFFFF;
+  line-height: 1.4;
+  height: 20px;
 }
 
 .collapsibleIcon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   transition: transform 0.2s ease;
 }
 
@@ -2429,9 +2518,9 @@
 .historyListV2 {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 8px;
-  max-height: 300px;
+  gap: 4px;
+  padding-top: 4px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
@@ -2452,14 +2541,17 @@
 .booksListV2 {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 8px;
-  max-height: 350px;
+  gap: 4px;
+  padding-top: 4px;
+  max-height: 400px;
   overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .booksListV2::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 .booksListV2::-webkit-scrollbar-track {
@@ -2472,64 +2564,88 @@
   border-radius: 2px;
 }
 
+.booksListV2::-webkit-scrollbar:horizontal {
+  height: 4px;
+}
+
 .historyItemV2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .historyTimeV2 {
-  font-size: 11px;
-  color: #5A5E66;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .historyValV2 {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.historyTimeCurrent,
+.historyValCurrent {
+  color: rgba(134, 239, 172, 0.85);
 }
 
 /* Books Card */
 .booksCardV2 {
-  background: linear-gradient(135deg, #171C24 0%, #0D0F13 100%);
-  border-radius: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
   padding: 14px;
-  box-shadow: 0px 1px 1px rgba(18, 18, 18, 0.1), 0px 0px 0px 1px rgba(18, 18, 18, 0.07);
+  backdrop-filter: blur(10px);
 }
 
 .booksCardHeader {
   font-size: 12px;
-  font-weight: 500;
-  color: #8B9199;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .bookItemV2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  padding: 2px 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bookItemV2.consensusV2 {
-  background: rgba(115, 249, 124, 0.08);
-  margin: 0 -8px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background: none;
+  margin: 0;
+  padding: 2px 0;
+  border-radius: 0;
+}
+
+.bookItemV2.consensusV2 .bookNameV2,
+.bookItemV2.consensusV2 .bookValV2 {
+  color: rgba(134, 239, 172, 0.85);
 }
 
 .bookNameV2 {
-  font-size: 12px;
-  color: #8B9199;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .bookValV2 {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 /* Mobile Team Section Dropdown */
