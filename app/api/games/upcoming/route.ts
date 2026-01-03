@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Extract odds from bookmakers (prefer FanDuel, then DraftKings, then first available)
-    const extractOdds = (bookmakers: OddsAPIGame['bookmakers']) => {
+    const extractOdds = (bookmakers: OddsAPIGame['bookmakers'], homeTeamName: string, awayTeamName: string) => {
       if (!bookmakers || bookmakers.length === 0) return null
 
       const preferredBooks = ['fanduel', 'draftkings', 'betmgm', 'caesars']
@@ -208,18 +208,18 @@ export async function GET(request: NextRequest) {
 
       return {
         spread: spread ? {
-          homePoint: spread.outcomes.find(o => o.name === game.home_team)?.point || null,
-          awayPoint: spread.outcomes.find(o => o.name === game.away_team)?.point || null,
+          homePoint: spread.outcomes.find(o => o.name === homeTeamName)?.point || null,
+          awayPoint: spread.outcomes.find(o => o.name === awayTeamName)?.point || null,
           // Get actual points from outcomes by matching team names
-          home: spread.outcomes.find(o => o.name === game.home_team)?.point || null,
-          away: spread.outcomes.find(o => o.name === game.away_team)?.point || null,
+          home: spread.outcomes.find(o => o.name === homeTeamName)?.point || null,
+          away: spread.outcomes.find(o => o.name === awayTeamName)?.point || null,
         } : null,
         totals: totals ? {
           number: totals.outcomes[0]?.point || null,
         } : null,
         moneyline: moneyline ? {
-          home: moneyline.outcomes.find(o => o.name === game.home_team)?.price || null,
-          away: moneyline.outcomes.find(o => o.name === game.away_team)?.price || null,
+          home: moneyline.outcomes.find(o => o.name === homeTeamName)?.price || null,
+          away: moneyline.outcomes.find(o => o.name === awayTeamName)?.price || null,
         } : null,
         sportsbook: bookmaker.title,
       }
@@ -229,7 +229,7 @@ export async function GET(request: NextRequest) {
     const games = oddsApiGames.map(game => {
       const homeTeam = findTeam(game.home_team)
       const awayTeam = findTeam(game.away_team)
-      const odds = extractOdds(game.bookmakers)
+      const odds = extractOdds(game.bookmakers, game.home_team, game.away_team)
       const publicBetting = publicBettingMap.get(game.id)
 
       const homeAbbr = homeTeam?.abbreviation || game.home_team.substring(0, 3).toUpperCase()
