@@ -691,7 +691,7 @@ export default function GameDetailPage() {
                   <div className={styles.graphLoading}>No historical data available</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={200}>
-                    <ComposedChart data={timelineData} margin={{ top: 15, right: 20, left: 20, bottom: 5 }}>
+                    <ComposedChart data={timelineData} margin={{ top: 20, right: 30, left: 50, bottom: 10 }}>
                       <defs>
                         <linearGradient id={`areaGrad-${gameId}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#2A3442" stopOpacity={0.6} />
@@ -699,7 +699,7 @@ export default function GameDetailPage() {
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(val) => val > 0 ? `+${val}` : val} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#8B9199', fontSize: 10 }} domain={['auto', 'auto']} tickFormatter={(val) => val > 0 ? `+${val}` : val} width={40} />
                       <Tooltip content={<CustomTooltip marketType={marketType} />} />
                       {marketType !== 'total' && <ReferenceLine y={0} stroke="#36383C" strokeDasharray="3 3" />}
                       <Area 
