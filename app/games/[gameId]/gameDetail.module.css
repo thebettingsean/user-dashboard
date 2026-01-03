@@ -1081,37 +1081,41 @@
   letter-spacing: 0.5px;
 }
 
+/* Split Row Wrapper (label + bar row) */
+.splitRowWrapper {
+  margin-bottom: 20px;
+}
+
+.splitRowLabel {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
 /* Split Row (contains team labels + bar) */
 .splitRow {
   display: grid;
-  grid-template-columns: 50px 1fr 60px 1fr 50px;
+  grid-template-columns: 50px 1fr 50px;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 16px;
 }
 
 .splitLabel {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-}
-
-.splitLabelCenter {
-  font-size: 10px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.4);
   text-align: center;
 }
 
 /* Horizontal Bar Container */
 .splitBarContainer {
   display: flex;
-  height: 36px;
-  border-radius: 6px;
+  height: 108px;
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
-  grid-column: 2 / 5;
 }
 
 .splitBarLeft,
@@ -1125,18 +1129,18 @@
 }
 
 .splitBarLeft {
-  border-radius: 6px 0 0 6px;
+  border-radius: 8px 0 0 8px;
 }
 
 .splitBarRight {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
 }
 
 .splitBarText {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   z-index: 2;
 }
 
@@ -1280,26 +1284,30 @@
     font-size: 12px;
   }
 
+  .splitRowWrapper {
+    margin-bottom: 16px;
+  }
+
+  .splitRowLabel {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
   .splitRow {
-    grid-template-columns: 40px 1fr 50px 1fr 40px;
-    gap: 8px;
-    margin-bottom: 10px;
+    grid-template-columns: 40px 1fr 40px;
+    gap: 12px;
   }
 
   .splitLabel {
     font-size: 10px;
   }
 
-  .splitLabelCenter {
-    font-size: 9px;
-  }
-
   .splitBarContainer {
-    height: 32px;
+    height: 80px;
   }
 
   .splitBarText {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .signalsGrid {

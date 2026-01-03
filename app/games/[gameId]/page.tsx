@@ -1119,65 +1119,69 @@ export default function GameDetailPage() {
                         <h4 className={styles.splitSectionTitle}>Spread</h4>
                         
                         {/* Bet % Bar */}
-                        <div className={styles.splitRow}>
-                          <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
-                          <div className={styles.splitBarContainer}>
-                            <div
-                              className={styles.splitBarLeft}
-                              style={{
-                                width: `${100 - (gameData.publicBetting.spreadHomeBetPct || 50)}%`,
-                                background: gameData.awayTeamColor || '#888888',
-                              }}
-                            >
-                              <span className={styles.splitBarText}>
-                                {Math.round(100 - (gameData.publicBetting.spreadHomeBetPct || 50))}%
-                              </span>
+                        <div className={styles.splitRowWrapper}>
+                          <div className={styles.splitRowLabel}>Bet %</div>
+                          <div className={styles.splitRow}>
+                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                            <div className={styles.splitBarContainer}>
+                              <div
+                                className={styles.splitBarLeft}
+                                style={{
+                                  width: `${100 - (gameData.publicBetting.spreadHomeBetPct || 50)}%`,
+                                  background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(100 - (gameData.publicBetting.spreadHomeBetPct || 50))}%
+                                </span>
+                              </div>
+                              <div
+                                className={styles.splitBarRight}
+                                style={{
+                                  width: `${gameData.publicBetting.spreadHomeBetPct || 50}%`,
+                                  background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(gameData.publicBetting.spreadHomeBetPct || 50)}%
+                                </span>
+                              </div>
                             </div>
-                            <div
-                              className={styles.splitBarRight}
-                              style={{
-                                width: `${gameData.publicBetting.spreadHomeBetPct || 50}%`,
-                                background: gameData.homeTeamColor || '#888888',
-                              }}
-                            >
-                              <span className={styles.splitBarText}>
-                                {Math.round(gameData.publicBetting.spreadHomeBetPct || 50)}%
-                              </span>
-                            </div>
+                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                           </div>
-                          <span className={styles.splitLabelCenter}>Bet %</span>
-                          <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                         </div>
 
                         {/* Money % Bar */}
-                        <div className={styles.splitRow}>
-                          <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
-                          <div className={styles.splitBarContainer}>
-                            <div
-                              className={styles.splitBarLeft}
-                              style={{
-                                width: `${100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)}%`,
-                                background: gameData.awayTeamColor || '#888888',
-                              }}
-                            >
-                              <span className={styles.splitBarText}>
-                                {Math.round(100 - (gameData.publicBetting.spreadHomeMoneyPct || 50))}%
-                              </span>
+                        <div className={styles.splitRowWrapper}>
+                          <div className={styles.splitRowLabel}>Money %</div>
+                          <div className={styles.splitRow}>
+                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                            <div className={styles.splitBarContainer}>
+                              <div
+                                className={styles.splitBarLeft}
+                                style={{
+                                  width: `${100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)}%`,
+                                  background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(100 - (gameData.publicBetting.spreadHomeMoneyPct || 50))}%
+                                </span>
+                              </div>
+                              <div
+                                className={styles.splitBarRight}
+                                style={{
+                                  width: `${gameData.publicBetting.spreadHomeMoneyPct || 50}%`,
+                                  background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(gameData.publicBetting.spreadHomeMoneyPct || 50)}%
+                                </span>
+                              </div>
                             </div>
-                            <div
-                              className={styles.splitBarRight}
-                              style={{
-                                width: `${gameData.publicBetting.spreadHomeMoneyPct || 50}%`,
-                                background: gameData.homeTeamColor || '#888888',
-                              }}
-                            >
-                              <span className={styles.splitBarText}>
-                                {Math.round(gameData.publicBetting.spreadHomeMoneyPct || 50)}%
-                              </span>
-                            </div>
+                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                           </div>
-                          <span className={styles.splitLabelCenter}>Money %</span>
-                          <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                         </div>
                       </div>
 
@@ -1187,65 +1191,69 @@ export default function GameDetailPage() {
                           <h4 className={styles.splitSectionTitle}>Moneyline</h4>
                           
                           {/* Bet % Bar */}
-                          <div className={styles.splitRow}>
-                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
-                            <div className={styles.splitBarContainer}>
-                              <div
-                                className={styles.splitBarLeft}
-                                style={{
-                                  width: `${100 - (gameData.publicBetting.mlHomeBetPct || 50)}%`,
-                                  background: gameData.awayTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(100 - (gameData.publicBetting.mlHomeBetPct || 50))}%
-                                </span>
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Bet %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.mlHomeBetPct || 50)}%`,
+                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.mlHomeBetPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.mlHomeBetPct || 50}%`,
+                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.mlHomeBetPct || 50)}%
+                                  </span>
+                                </div>
                               </div>
-                              <div
-                                className={styles.splitBarRight}
-                                style={{
-                                  width: `${gameData.publicBetting.mlHomeBetPct || 50}%`,
-                                  background: gameData.homeTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(gameData.publicBetting.mlHomeBetPct || 50)}%
-                                </span>
-                              </div>
+                              <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                             </div>
-                            <span className={styles.splitLabelCenter}>Bet %</span>
-                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                           </div>
 
                           {/* Money % Bar */}
-                          <div className={styles.splitRow}>
-                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
-                            <div className={styles.splitBarContainer}>
-                              <div
-                                className={styles.splitBarLeft}
-                                style={{
-                                  width: `${100 - (gameData.publicBetting.mlHomeMoneyPct || 50)}%`,
-                                  background: gameData.awayTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(100 - (gameData.publicBetting.mlHomeMoneyPct || 50))}%
-                                </span>
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Money %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.mlHomeMoneyPct || 50)}%`,
+                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.mlHomeMoneyPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.mlHomeMoneyPct || 50}%`,
+                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.mlHomeMoneyPct || 50)}%
+                                  </span>
+                                </div>
                               </div>
-                              <div
-                                className={styles.splitBarRight}
-                                style={{
-                                  width: `${gameData.publicBetting.mlHomeMoneyPct || 50}%`,
-                                  background: gameData.homeTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(gameData.publicBetting.mlHomeMoneyPct || 50)}%
-                                </span>
-                              </div>
+                              <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                             </div>
-                            <span className={styles.splitLabelCenter}>Money %</span>
-                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
                           </div>
                         </div>
                       )}
@@ -1256,65 +1264,69 @@ export default function GameDetailPage() {
                           <h4 className={styles.splitSectionTitle}>Total</h4>
                           
                           {/* Bet % Bar */}
-                          <div className={styles.splitRow}>
-                            <span className={styles.splitLabel}>UNDER</span>
-                            <div className={styles.splitBarContainer}>
-                              <div
-                                className={styles.splitBarLeft}
-                                style={{
-                                  width: `${100 - (gameData.publicBetting.totalOverBetPct || 50)}%`,
-                                  background: gameData.awayTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(100 - (gameData.publicBetting.totalOverBetPct || 50))}%
-                                </span>
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Bet %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>UNDER</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.totalOverBetPct || 50)}%`,
+                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.totalOverBetPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.totalOverBetPct || 50}%`,
+                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.totalOverBetPct || 50)}%
+                                  </span>
+                                </div>
                               </div>
-                              <div
-                                className={styles.splitBarRight}
-                                style={{
-                                  width: `${gameData.publicBetting.totalOverBetPct || 50}%`,
-                                  background: gameData.homeTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(gameData.publicBetting.totalOverBetPct || 50)}%
-                                </span>
-                              </div>
+                              <span className={styles.splitLabel}>OVER</span>
                             </div>
-                            <span className={styles.splitLabelCenter}>Bet %</span>
-                            <span className={styles.splitLabel}>OVER</span>
                           </div>
 
                           {/* Money % Bar */}
-                          <div className={styles.splitRow}>
-                            <span className={styles.splitLabel}>UNDER</span>
-                            <div className={styles.splitBarContainer}>
-                              <div
-                                className={styles.splitBarLeft}
-                                style={{
-                                  width: `${100 - (gameData.publicBetting.totalOverMoneyPct || 50)}%`,
-                                  background: gameData.awayTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(100 - (gameData.publicBetting.totalOverMoneyPct || 50))}%
-                                </span>
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Money %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>UNDER</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.totalOverMoneyPct || 50)}%`,
+                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.totalOverMoneyPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.totalOverMoneyPct || 50}%`,
+                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.totalOverMoneyPct || 50)}%
+                                  </span>
+                                </div>
                               </div>
-                              <div
-                                className={styles.splitBarRight}
-                                style={{
-                                  width: `${gameData.publicBetting.totalOverMoneyPct || 50}%`,
-                                  background: gameData.homeTeamColor || '#888888',
-                                }}
-                              >
-                                <span className={styles.splitBarText}>
-                                  {Math.round(gameData.publicBetting.totalOverMoneyPct || 50)}%
-                                </span>
-                              </div>
+                              <span className={styles.splitLabel}>OVER</span>
                             </div>
-                            <span className={styles.splitLabelCenter}>Money %</span>
-                            <span className={styles.splitLabel}>OVER</span>
                           </div>
                         </div>
                       )}
