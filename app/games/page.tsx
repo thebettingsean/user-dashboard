@@ -276,10 +276,17 @@ export default function GamesPage() {
             const gamesWithCounts = await Promise.all(
               sortedGames.map(async (game: Game) => {
                 try {
-                  const pickRes = await fetch(`/api/picks/active-counts?gameId=${game.id}`)
+                  // Pass team names to API for matching
+                  const params = new URLSearchParams({
+                    gameId: game.id,
+                    sport: game.sport,
+                    awayTeam: game.awayTeam,
+                    homeTeam: game.homeTeam
+                  })
+                  const pickRes = await fetch(`/api/picks/active-counts?${params.toString()}`)
                   if (pickRes.ok) {
                     const pickData = await pickRes.json()
-                    console.log(`[Games] Pick count for ${game.id}:`, pickData.gamePickCount)
+                    console.log(`[Games] Pick count for ${game.id} (${game.awayTeam} @ ${game.homeTeam}):`, pickData.gamePickCount)
                     return {
                       ...game,
                       pickCount: pickData.success ? (pickData.gamePickCount || 0) : 0
