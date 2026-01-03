@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Join with teams for logos/colors
     // Join with latest snapshot for current odds (ensures consistency)
     const gamesQuery = `
-      SELECT 
+      SELECT DISTINCT
         g.game_id,
         g.odds_api_game_id,
         g.sport,
@@ -67,10 +67,10 @@ export async function GET(request: NextRequest) {
         at.secondary_color as away_secondary_color,
         
         -- Current odds from latest snapshot (preferred) or games table (fallback)
-        COALESCE(latest.spread, g.spread_close) as current_spread,
-        COALESCE(latest.total, g.total_close) as current_total,
-        COALESCE(latest.ml_home, g.home_ml_close) as current_ml_home,
-        COALESCE(latest.ml_away, g.away_ml_close) as current_ml_away,
+        COALESCE(latest.spread, g.spread_close, g.spread_open) as current_spread,
+        COALESCE(latest.total, g.total_close, g.total_open) as current_total,
+        COALESCE(latest.ml_home, g.home_ml_close, g.home_ml_open) as current_ml_home,
+        COALESCE(latest.ml_away, g.away_ml_close, g.away_ml_open) as current_ml_away,
         
         -- Juice
         COALESCE(latest.spread_juice_home, g.home_spread_juice) as home_spread_juice,
@@ -145,13 +145,27 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${result.data.length} upcoming games`)
+    
+    // Log first game's odds for debugging
+    if (result.data.length > 0) {
+      const sample = result.data[0]
+      console.log(`[GAMES API - ${sport.toUpperCase()}] Sample odds:`, {
+        spread: sample.current_spread,
+        total: sample.current_total,
+        ml_home: sample.current_ml_home,
+        ml_away: sample.current_ml_away
+      })
+    }
 
     // Transform to frontend format
     const games = result.data.map((row: any, index: number) => {
       try {
       // Calculate spread for home/away (home spread is negative of away)
       const homeSpread = row.current_spread
-      const awaySpread = homeSpread ? -homeSpread : null
+      const awaySpread = (homeSpread !== null && homeSpread !== undefined) ? -homeSpread : null
+      
+      // Convert UTC game_time to Date object for proper formatting
+      const gameTimeUTC = new Date(row.game_time + 'Z') // Ensure it's treated as UTC
 
       return {
         id: row.odds_api_game_id || row.game_id,
@@ -164,8 +178,8 @@ export async function GET(request: NextRequest) {
         homeTeamLogo: row.home_logo || null,
         awayTeamColor: row.away_primary_color || null,
         homeTeamColor: row.home_primary_color || null,
-        kickoff: row.game_time,
-        kickoffLabel: new Date(row.game_time).toLocaleString('en-US', {
+        kickoff: gameTimeUTC.toISOString(),
+        kickoffLabel: gameTimeUTC.toLocaleString('en-US', {
           timeZone: 'America/New_York',
           weekday: 'short',
           month: 'short',
@@ -175,14 +189,15 @@ export async function GET(request: NextRequest) {
           hour12: true
         }),
         // Odds
-        spread: homeSpread !== null ? {
+        spread: (homeSpread !== null && homeSpread !== undefined) ? {
           homeLine: homeSpread,
           awayLine: awaySpread,
         } : null,
-        totals: row.current_total ? {
+        totals: (row.current_total !== null && row.current_total !== undefined) ? {
           number: row.current_total,
         } : null,
-        moneyline: (row.current_ml_home || row.current_ml_away) ? {
+        moneyline: (row.current_ml_home !== null && row.current_ml_home !== undefined) || 
+                   (row.current_ml_away !== null && row.current_ml_away !== undefined) ? {
           home: row.current_ml_home,
           away: row.current_ml_away,
         } : null,
@@ -212,13 +227,21 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    console.log(`[GAMES API - ${sport.toUpperCase()}] Returning ${games.length} games`)
+    // Deduplicate by game ID (in case DISTINCT didn't work with FINAL)
+    const uniqueGames = Array.from(
+      new Map(games.map(game => [game.id, game])).values()
+    )
+
+    // Sort by kickoff (soonest first)
+    uniqueGames.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
+
+    console.log(`[GAMES API - ${sport.toUpperCase()}] Returning ${uniqueGames.length} unique games (filtered from ${games.length})`)
 
     return NextResponse.json({
       success: true,
       sport: sport.toUpperCase(),
-      games,
-      total: games.length,
+      games: uniqueGames,
+      total: uniqueGames.length,
       dataSources: {
         games: 'ClickHouse (synced every 30min)',
         odds: 'ClickHouse live_odds_snapshots',
