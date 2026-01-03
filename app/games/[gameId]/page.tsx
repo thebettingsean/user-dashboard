@@ -1092,10 +1092,16 @@ export default function GameDetailPage() {
                 
                 {gameData?.hasPublicBetting && gameData?.publicBetting ? (
                   <>
-                    {/* Splits Card */}
-                    <div className={styles.splitsCard}>
-                      <h3 className={styles.splitsTitle}>Splits</h3>
-                      
+                    {/* Splits Title - OUTSIDE card */}
+                    <h3 className={styles.splitsTitle}>Splits</h3>
+                    
+                    {/* Splits Card with team color gradient background */}
+                    <div 
+                      className={styles.splitsCard}
+                      style={{
+                        background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
+                      }}
+                    >
                       {/* Spread Section */}
                       <div className={styles.splitSection}>
                         <h4 className={styles.splitSectionTitle}>Spread</h4>
