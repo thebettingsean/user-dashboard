@@ -761,8 +761,17 @@ export default function GameDetailPage() {
                 <div className={styles.oddsTable}>
                   <div className={styles.oddsTableHeader}>
                     <span>Sportsbook</span>
-                    <span>{gameData.awayTeamAbbr || 'Away'}</span>
-                    <span>{gameData.homeTeamAbbr || 'Home'}</span>
+                    {marketType === 'total' ? (
+                      <>
+                        <span>Over</span>
+                        <span>Under</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{gameData.awayTeamAbbr || 'Away'}</span>
+                        <span>{gameData.homeTeamAbbr || 'Home'}</span>
+                      </>
+                    )}
                   </div>
                   {getOddsForMarket().length > 0 ? (
                     getOddsForMarket().map((odd, idx) => (
