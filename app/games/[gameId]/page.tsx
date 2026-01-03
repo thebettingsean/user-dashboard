@@ -939,41 +939,17 @@ export default function GameDetailPage() {
                 {!countsLoading && (
                   <div className={styles.pickCountInfo}>
                     {pickCounts.gamePickCount > 0 ? (
-                      <>
-                        <p className={styles.pickCountText}>
-                          <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
-                        </p>
-                        <button 
-                          className={styles.viewPicksBtn}
-                          onClick={() => router.push('/picks')}
-                        >
-                          View Now
-                        </button>
-                      </>
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
+                      </p>
                     ) : pickCounts.sportPickCount > 0 ? (
-                      <>
-                        <p className={styles.pickCountText}>
-                          <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
-                        </p>
-                        <button 
-                          className={styles.viewPicksBtn}
-                          onClick={() => router.push('/picks')}
-                        >
-                          View Now
-                        </button>
-                      </>
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
+                      </p>
                     ) : pickCounts.allPicksCount > 0 ? (
-                      <>
-                        <p className={styles.pickCountText}>
-                          <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                        </p>
-                        <button 
-                          className={styles.viewPicksBtn}
-                          onClick={() => router.push('/picks')}
-                        >
-                          View Now
-                        </button>
-                      </>
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
+                      </p>
                     ) : null}
                   </div>
                 )}
@@ -982,7 +958,7 @@ export default function GameDetailPage() {
                   onClick={() => handleSubscribe('picks')}
                 >
                   <GiSupersonicArrow size={16} />
-                  Subscribe to Analyst Picks
+                  Access Analyst Picks
                 </button>
               </div>
             )}
@@ -1022,7 +998,7 @@ export default function GameDetailPage() {
                   onClick={() => handleSubscribe('publicBetting')}
                 >
                   <GiCash size={16} />
-                  Subscribe to Public Betting
+                  Access Public Betting Data
                 </button>
               </div>
             )}
