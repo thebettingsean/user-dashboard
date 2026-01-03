@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: #0C0E12 !important;
   padding: 24px;
-  padding-top: 24px;
+  padding-top: 16px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
   position: relative;
@@ -12,7 +12,7 @@
 }
 
 .headerSpacer {
-  height: 40px;
+  height: 24px;
 }
 
 /* Header */
@@ -145,6 +145,142 @@
   transform: rotate(180deg);
 }
 
+/* Date Slideshow */
+.dateSlideshow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateSlideshowArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  padding: 0;
+  opacity: 0.6;
+}
+
+.dateSlideshowArrow:hover {
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.dateSlideshowArrow:active {
+  transform: scale(0.95);
+}
+
+.dateSlideshowArrow svg {
+  font-size: 16px;
+}
+
+.dateSlideshowContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateSlideshowItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  min-width: 60px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.dateSlideshowItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.dateSlideshowItemToday {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.15);
+  color: rgba(147, 197, 253, 0.9);
+}
+
+.dateSlideshowItemSelected {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dateSlideshowItemSelected:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dateSlideshowDayName {
+  font-size: 8px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
+}
+
+.dateSlideshowItemSelected .dateSlideshowDayName {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.dateSlideshowItemToday .dateSlideshowDayName {
+  color: rgba(147, 197, 253, 0.7);
+}
+
+.dateSlideshowDate {
+  font-size: 11px;
+  font-weight: 500;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.dateSlideshowCount {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: rgba(34, 197, 94, 0.9);
+  color: #fff;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
+.dateSlideshowCountPast {
+  background: rgba(34, 197, 94, 0.65);
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.2);
+  opacity: 0.75;
+}
+
 .dateDropdownMenu {
   position: absolute;
   top: 100%;
@@ -158,6 +294,10 @@
   z-index: 100;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   padding: 12px;
+}
+
+.dateSlideshow .dateDropdownMenu {
+  right: 0;
 }
 
 .calendarHeader {
@@ -497,13 +637,13 @@
 }
 
 .pickCardMain {
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 60px;
+  gap: 10px;
+  min-height: 52px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -536,13 +676,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(226, 232, 240, 0.9);
   background: rgba(29, 37, 48, 0.4);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
-  padding: 4px 12px;
+  border-radius: 6px;
+  padding: 3px 10px;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
@@ -576,11 +716,11 @@
   word-wrap: break-word;
 }
 
-.pickMatchup {
+.pickGameTime {
   font-size: 11px;
   color: rgba(226, 232, 240, 0.65);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
+  margin-top: 2px;
 }
 
 .pickTitleRow {
@@ -600,6 +740,17 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+}
+
+.pickRecapWaiting {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
 }
 
 .pickExpandIconWrapper {
@@ -665,7 +816,7 @@
   border-top: 1px solid rgba(148, 163, 184, 0.2);
   color: #ffffff;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.6;
   width: 100%;
   max-width: 100%;
   background: rgba(0, 0, 0, 0.15);
@@ -679,15 +830,39 @@
   overflow-wrap: break-word;
   hyphens: auto;
   box-sizing: border-box;
+  white-space: pre-wrap; /* Preserve line breaks and spacing for rich text */
 }
 
 .pickAnalysisContent.expanded {
-  max-height: 800px;
+  max-height: 400px;
   opacity: 1;
   padding: 12px 16px;
+  overflow-y: auto; /* Make it scrollable */
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+}
+
+/* Webkit scrollbar styling for Chrome/Safari */
+.pickAnalysisContent.expanded::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.pickAnalysisContent.expanded::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .pickAnalysisContent p {
@@ -698,6 +873,77 @@
   margin-bottom: 0;
 }
 
+/* New Pick Card Styling */
+.pickBodyLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pickTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pickTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+
+.dropdownMatchup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+}
+
+.dropdownTeamLogo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.dropdownTeamName {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dropdownAtSymbol {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 2px;
+}
+
+.dropdownBetInfo {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+.dropdownPostedAt {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+}
+
+.sportsbookDesktopOnly {
+  display: inline;
+}
+
 /* Mobile Responsive Styles */
 @media (max-width: 767px) {
   .container {
@@ -705,36 +951,74 @@
   }
 
   .filtersRow {
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
 
   .leftFilters {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    order: 2; /* Sports below on mobile */
   }
 
   .rightFilters {
-    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    order: 1; /* Calendar on top on mobile */
   }
 
-  .dateDropdown {
+  .dateSlideshow {
     flex-shrink: 0;
+    position: relative;
+    gap: 6px;
   }
 
-  .dateDropdownBtn {
-    min-width: 100px;
-    max-width: 100%;
-    font-size: 11px;
-    padding: 0 10px;
+  .dateSlideshowArrow {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dateSlideshowArrow svg {
+    font-size: 14px;
+  }
+
+  .dateSlideshowContainer {
+    gap: 4px;
+  }
+
+  .dateSlideshowItem {
+    min-width: 55px;
+    padding: 5px 8px;
+    gap: 1px;
+  }
+
+  .dateSlideshowDayName {
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+
+  .dateSlideshowDate {
+    font-size: 10px;
+  }
+
+  .dateSlideshowCount {
+    width: 12px;
+    height: 12px;
+    font-size: 6px;
+    top: -4px;
+    right: -4px;
   }
 
   .dateDropdownMenu {
-    right: auto;
-    left: 0;
-    width: calc(100vw - 32px);
+    right: 0;
+    left: auto;
+    transform: none;
+    width: min(calc(100vw - 32px), 320px);
     max-width: 320px;
   }
 
@@ -742,6 +1026,177 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-right: 8px;
+  }
+
+  /* Pick Card Mobile Adjustments */
+  .pickCardMain {
+    padding: 8px 12px;
+    gap: 8px;
+    min-height: 48px;
+  }
+
+  .pickTitle {
+    font-size: 12px;
+  }
+
+  .pickCard:hover {
+    box-shadow: none;
+    transform: none;
+  }
+
+  .pickBodyLeft,
+  .pickTitleRow {
+    background: transparent;
+  }
+
+  .pickRecapWaiting {
+    font-size: 9px;
+    margin-right: 6px;
+  }
+
+  .pickGameTime {
+    font-size: 10px;
+  }
+
+  .pickHeaderMeta {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+
+  .pickAnalysisContent {
+    font-size: 11px;
+  }
+
+  .sportsbookDesktopOnly {
+    display: none !important;
+  }
+
+  .dropdownMatchup {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .dropdownTeamLogo {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dropdownBetInfo {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+
+  .dropdownPostedAt {
+    font-size: 8px;
+    margin-bottom: 10px;
+  }
+}
+
+/* Desktop Styles - Show sportsbook in right side */
+@media (min-width: 768px) {
+  .sportsbookDesktopOnly {
+    display: inline !important;
+  }
+}
+
+/* Locked Banner - CTA for non-subscribers */
+.lockedBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 24px 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lockedBannerContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lockedBannerIcon {
+  font-size: 18px;
+  color: rgba(147, 197, 253, 0.85);
+  flex-shrink: 0;
+}
+
+.lockedBannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lockedBannerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
+}
+
+.lockedBannerSubtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.lockedBannerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.25);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(147, 197, 253, 1);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.lockedBannerBtn:hover {
+  background: rgba(59, 130, 246, 0.35);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: rgba(147, 197, 253, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+@media (min-width: 768px) {
+  .lockedBanner {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px 14px;
+  }
+  
+  .lockedBannerContent {
+    gap: 8px;
+  }
+  
+  .lockedBannerText {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .lockedBannerSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+  }
+  
+  .lockedBannerSubtitle::before {
+    content: '•';
+    margin-right: 6px;
+    color: rgba(255, 255, 255, 0.3);
   }
 }
 

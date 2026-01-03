@@ -1,12 +1,15 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import DashboardLayout from '../components/DashboardLayout'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function AIScriptsPage() {
-  const params = useParams()
-  const sport = params.sport as string
-
-  return <DashboardLayout sport={sport} initialTab="scripts" />
+export default function AIScriptsPageRedirect() {
+  const router = useRouter()
+  
+  useEffect(() => {
+    router.replace('/games')
+  }, [router])
+  
+  return null
 }
 

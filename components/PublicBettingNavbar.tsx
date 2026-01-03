@@ -63,8 +63,8 @@ export default function PublicBettingNavbar() {
         {/* Nav Items */}
         <div className={styles.navItems}>
           <Link 
-            href="/sports/picks" 
-            className={isActive('/sports/picks') ? styles.navLinkActive : styles.navLink}
+            href="/picks" 
+            className={isActive('/picks') || isActive('/sports/picks') ? styles.navLinkActive : styles.navLink}
           >
             Today's Picks
           </Link>
@@ -152,7 +152,7 @@ export default function PublicBettingNavbar() {
           <div className={styles.mobileOverlay} onClick={() => setMobileMenuOpen(false)} />
           <div className={styles.mobileMenu}>
             <Link 
-              href="/sports/picks" 
+              href="/picks" 
               className={isActive('/sports/picks') ? styles.mobileNavLinkActive : styles.mobileNavLink}
               onClick={() => setMobileMenuOpen(false)}
             >

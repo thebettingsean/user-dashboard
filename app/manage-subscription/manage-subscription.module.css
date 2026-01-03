@@ -1,0 +1,700 @@
+/* Design System - Dark Theme (matching picks and public-betting) */
+.container {
+  min-height: 100vh;
+  background: #0C0E12 !important;
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.headerSpacer {
+  height: 40px;
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+}
+
+.headerTop {
+  margin-bottom: 16px;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+
+/* Loading State */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 13px;
+  color: #696969;
+}
+
+/* Error/Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: #3b82f6;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.emptySubtitle {
+  font-size: 13px;
+  color: #696969;
+  margin-bottom: 16px;
+}
+
+/* ===== SECTIONS CONTAINER ===== */
+.sectionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== SECTION DROPDOWN ===== */
+.section {
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.section:hover {
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sectionHeader:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sectionHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(100, 116, 139, 0.08) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgba(203, 213, 225, 0.85);
+  backdrop-filter: blur(4px);
+}
+
+/* All icon colors now unified to silver/grey */
+.sectionIconGreen,
+.sectionIconBlue,
+.sectionIconPurple,
+.sectionIconYellow,
+.sectionIconRed {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(100, 116, 139, 0.08) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: rgba(203, 213, 225, 0.85);
+}
+
+.sectionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sectionDesc {
+  font-size: 12px;
+  color: #696969;
+}
+
+.sectionContent {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(71, 85, 105, 0.2);
+  padding-top: 16px;
+}
+
+/* ===== INFO BOX ===== */
+.infoBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.infoBox svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.errorNotice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #fca5a5;
+}
+
+.errorNotice svg {
+  flex-shrink: 0;
+}
+
+/* ===== LINKS LIST ===== */
+.linksList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.linkItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.linkItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.linkItem svg:first-child {
+  color: #696969;
+  flex-shrink: 0;
+}
+
+.linkItem span {
+  flex: 1;
+}
+
+.linkExternal {
+  color: #696969;
+  flex-shrink: 0;
+}
+
+.linkArrow {
+  color: #696969;
+  flex-shrink: 0;
+}
+
+.linkItemDisabled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: default;
+}
+
+.linkItemDisabled svg {
+  color: #4a4a4a;
+  flex-shrink: 0;
+}
+
+.linkItemDisabled span:first-of-type {
+  flex: 1;
+}
+
+.comingSoonBadge {
+  padding: 2px 6px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Discord Widget Wrapper */
+.discordWidgetWrapper {
+  padding: 4px 0;
+}
+
+/* ===== SUBSCRIPTION CARDS (inside section) ===== */
+.subscriptionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subCard {
+  background: rgba(20, 28, 40, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.subCard:hover {
+  border-color: rgba(71, 85, 105, 0.4);
+}
+
+.subHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.subHeader:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.subHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusDotActive {
+  background: #10b981;
+}
+
+.statusDotTrialing {
+  background: #3b82f6;
+}
+
+.statusDotCanceling {
+  background: #ef4444;
+}
+
+.statusDotPaused {
+  background: #f59e0b;
+}
+
+.subName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.statusBadge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid;
+  background: transparent;
+}
+
+.statusBadgeActive {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.statusBadgeTrialing {
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.statusBadgeCanceling {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.statusBadgePaused {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.legacyBadge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.expandIcon {
+  color: #696969;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.expandIconRotated {
+  transform: rotate(180deg);
+}
+
+/* Expanded Details */
+.subDetails {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid rgba(71, 85, 105, 0.15);
+  padding-top: 12px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.detailLabel {
+  color: #696969;
+}
+
+.detailValue {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Notice Boxes */
+.cancelNotice {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-align: center;
+  color: #fca5a5;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.pauseNotice {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-align: center;
+  color: #fbbf24;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+/* Quick Actions */
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.quickActionsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.actionBtnUpgrade {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.actionBtnUpgrade:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.actionBtnCancel {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.actionBtnCancel:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.actionBtnPause {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+.actionBtnPause:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.actionBtnReactivate {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.actionBtnReactivate:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* Desktop: slightly larger buttons */
+@media (min-width: 640px) {
+  .actionBtn {
+    padding: 8px 12px;
+    font-size: 11px;
+    gap: 5px;
+  }
+  
+  .quickActionsRow {
+    gap: 8px;
+  }
+
+  .sectionHeader {
+    padding: 16px 20px;
+  }
+
+  .sectionContent {
+    padding: 0 20px 20px;
+    padding-top: 16px;
+  }
+}
+
+/* Back Button */
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  margin-top: 24px;
+  background: transparent;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #696969;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.backButton:hover {
+  border-color: rgba(71, 85, 105, 0.5);
+  color: #fff;
+}
+
+/* Text Contact List (Text Us section) */
+.textContactList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textContactItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.textContactItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.textContactInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.textContactInfo svg {
+  color: #696969;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.textContactText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.textContactLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.textContactDesc {
+  font-size: 11px;
+  color: #696969;
+}
+
+.textPhoneLink {
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #60a5fa;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.textPhoneLink:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+@media (max-width: 480px) {
+  .textContactItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .textPhoneLink {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Primary Button */
+.primaryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryBtn:hover {
+  background: #2563eb;
+}

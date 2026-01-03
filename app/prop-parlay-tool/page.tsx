@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useSubscription } from '../../lib/hooks/useSubscription'
 import LockedPageSection from '../../components/LockedPageSection'
+import styles from './prop-parlay-tool.module.css'
 
 const BOOK_LOGOS: Record<string, string> = {
   'draftkings': 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e0285a8e5ff0c6651eee22_1.svg',
@@ -266,36 +267,34 @@ export default function PropParlayTool() {
 
   if (loading || subLoading) {
     return (
-      <div style={styles.wrapper}>
-        <div style={styles.container}>
-          <div style={styles.loading}>
-            <div style={styles.spinner}></div>
-            <p style={{ marginTop: '1rem', fontSize: '1rem', opacity: 0.8 }}>Loading alt props...</p>
-          </div>
+      <div className={styles.container}>
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+          <p style={{ marginTop: '1rem', fontSize: '1rem', opacity: 0.8 }}>Loading alt props...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.titleSection}>
-            <div style={styles.titleRow}>
-              <h1 style={styles.title}>Perfect Prop Parlays</h1>
-              <div style={styles.titleIconBox}>
-                <img src={TITLE_ICON} alt="Tool" style={styles.titleIconImg} />
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div className={styles.headerTop}>
+          <div className={styles.titleSection}>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>Perfect Prop Parlays</h1>
+              <div className={styles.titleIconBox}>
+                <img src={TITLE_ICON} alt="Tool" className={styles.titleIconImg} />
               </div>
             </div>
-            <p style={styles.subtitle}>100% Hit Rate Props</p>
+            <p className={styles.subtitle}>100% Hit Rate Props</p>
           </div>
-          <div style={styles.bookSelector}>
-            <label style={styles.bookLabel}>Choose your book</label>
+          <div className={styles.bookSelector}>
+            <label className={styles.bookLabel}>Choose your book</label>
             <select 
               value={filters.book} 
               onChange={(e) => setFilters({...filters, book: e.target.value})}
-              style={styles.bookSelect}
+              className={styles.bookSelect}
             >
               <option value="all">All Sportsbooks</option>
               {bookmakers.map(book => (
@@ -304,52 +303,53 @@ export default function PropParlayTool() {
             </select>
           </div>
         </div>
+      </div>
 
-        <div style={styles.viewToggle}>
-          <button 
-            style={{...styles.toggleBtn, ...(view === 'props' ? styles.toggleBtnActive : {})}}
-            onClick={() => setView('props')}
-          >
-            Individual Props
-          </button>
-          <button 
-            style={{...styles.toggleBtn, ...(view === 'parlays' ? styles.toggleBtnActive : {})}}
-            onClick={() => setView('parlays')}
-          >
-            Parlay Builder
-          </button>
-        </div>
+      <div className={styles.viewToggle}>
+        <button 
+          className={`${styles.toggleBtn} ${view === 'props' ? styles.toggleBtnActive : ''}`}
+          onClick={() => setView('props')}
+        >
+          Individual Props
+        </button>
+        <button 
+          className={`${styles.toggleBtn} ${view === 'parlays' ? styles.toggleBtnActive : ''}`}
+          onClick={() => setView('parlays')}
+        >
+          Parlay Builder
+        </button>
+      </div>
 
         <LockedPageSection isLocked={view === 'parlays' && !isSubscribed}>
           {view === 'props' ? (
             <>
-              <div style={styles.filterRow}>
+              <div className={styles.filterRow}>
                 <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value as 'NFL' | 'NBA')}
-                  style={styles.sportSelector}
+                  className={styles.sportSelector}
                 >
                   <option value="NFL">NFL</option>
                   <option value="NBA">NBA</option>
                 </select>
                 
                 <button 
-                  style={styles.filterButton}
+                  className={styles.filterButton}
                   onClick={() => setShowPropsFilter(!showPropsFilter)}
                 >
-                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <img src={FILTER_ICON} alt="Filter" className={styles.filterIcon} />
                   <span>{getPropsFilterText()}</span>
                 </button>
               </div>
 
               {showPropsFilter && (
-                <div style={styles.filterDropdown}>
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Games</div>
+                <div className={styles.filterDropdown}>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Games</div>
                     <select 
                       value={filters.game} 
                       onChange={(e) => setFilters({...filters, game: e.target.value})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="all">All Games</option>
                       {games.map((g: any, i: number) => (
@@ -358,12 +358,12 @@ export default function PropParlayTool() {
                     </select>
                   </div>
 
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Odds Range</div>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Odds Range</div>
                     <select 
                       value={filters.minOdds} 
                       onChange={(e) => setFilters({...filters, minOdds: parseInt(e.target.value)})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="-600">Best Odds (All)</option>
                       <option value="-250">-150 to -250</option>
@@ -378,33 +378,33 @@ export default function PropParlayTool() {
             </>
           ) : (
             <>
-              <div style={styles.filterRow}>
+              <div className={styles.filterRow}>
                 <select
                   value={sport}
                   onChange={(e) => setSport(e.target.value as 'NFL' | 'NBA')}
-                  style={styles.sportSelector}
+                  className={styles.sportSelector}
                 >
                   <option value="NFL">NFL</option>
                   <option value="NBA">NBA</option>
                 </select>
                 
                 <button 
-                  style={styles.filterButton}
+                  className={styles.filterButton}
                   onClick={() => setShowParlaysFilter(!showParlaysFilter)}
                 >
-                  <img src={FILTER_ICON} alt="Filter" style={styles.filterIcon} />
+                  <img src={FILTER_ICON} alt="Filter" className={styles.filterIcon} />
                   <span>{getParlaysFilterText()}</span>
                 </button>
               </div>
 
               {showParlaysFilter && (
-                <div style={styles.filterDropdown}>
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Games</div>
+                <div className={styles.filterDropdown}>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Games</div>
                     <select 
                       value={filters.game} 
                       onChange={(e) => setFilters({...filters, game: e.target.value})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="all">All Games</option>
                       {games.map((g: any, i: number) => (
@@ -413,12 +413,12 @@ export default function PropParlayTool() {
                     </select>
                   </div>
 
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Parlay Type</div>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Parlay Type</div>
                     <select 
                       value={filters.parlayType} 
                       onChange={(e) => setFilters({...filters, parlayType: e.target.value})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="all">All Parlay Types</option>
                       <option value="sgp">Same Game Only</option>
@@ -426,12 +426,12 @@ export default function PropParlayTool() {
                     </select>
                   </div>
 
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Number of Legs</div>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Number of Legs</div>
                     <select 
                       value={filters.legs} 
                       onChange={(e) => setFilters({...filters, legs: parseInt(e.target.value)})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="2">2-Leg Parlay</option>
                       <option value="3">3-Leg Parlay</option>
@@ -441,12 +441,12 @@ export default function PropParlayTool() {
                     </select>
                   </div>
 
-                  <div style={styles.filterSection}>
-                    <div style={styles.filterLabel}>Parlay Odds</div>
+                  <div className={styles.filterSection}>
+                    <div className={styles.filterLabel}>Parlay Odds</div>
                     <select 
                       value={filters.parlayMinOdds} 
                       onChange={(e) => setFilters({...filters, parlayMinOdds: e.target.value})}
-                      style={styles.filterDropdownSelect}
+                      className={styles.filterDropdownSelect}
                     >
                       <option value="highest">Highest Odds</option>
                       <option value="-150">-150 or Better</option>
@@ -463,7 +463,6 @@ export default function PropParlayTool() {
             </>
           )}
         </LockedPageSection>
-      </div>
     </div>
   )
 }
@@ -472,7 +471,7 @@ function PropsTable({ props, selectedBook }: { props: any[], selectedBook: strin
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
   if (!props.length) {
-    return <div style={styles.empty}>No props match your filters</div>
+    return <div className={styles.empty}>No props match your filters</div>
   }
 
   function toggleRow(index: number) {
@@ -494,77 +493,70 @@ function PropsTable({ props, selectedBook }: { props: any[], selectedBook: strin
   }
 
   return (
-    <div style={styles.table}>
+    <div className={styles.table}>
       {props.map((prop, idx) => {
         const percentAbove = ((prop.season_avg - prop.line) / prop.line * 100).toFixed(0)
         const isExpanded = expandedRows.has(idx)
         const displayOdds = getBestOddsForBook(prop, selectedBook)
-        const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
 
         return (
-          <div key={idx} style={styles.tableRow}>
+          <div key={idx} className={styles.tableRow}>
             <div 
-              style={styles.tableRowHeader}
+              className={styles.tableRowHeader}
               onClick={() => toggleRow(idx)}
             >
-              <div style={styles.tableRowMainMobile}>
-                <div style={styles.tablePlayerNameMobile}>{prop.player}</div>
-                <div style={styles.propDetailsMobile}>
-                  <span style={styles.propTextMobile}>{formatMarket(prop.market)} O{prop.line}</span>
-                  <span style={styles.oddsTextMobile}>{displayOdds && formatOdds(displayOdds)}</span>
+              <div className={styles.tableRowMainMobile}>
+                <div className={styles.tablePlayerNameMobile}>{prop.player}</div>
+                <div className={styles.propDetailsMobile}>
+                  <span className={styles.propTextMobile}>{formatMarket(prop.market)} O{prop.line}</span>
+                  <span className={styles.oddsTextMobile}>{displayOdds && formatOdds(displayOdds)}</span>
                 </div>
-                <div style={styles.teamTextMobile}>{prop.game}</div>
+                <div className={styles.teamTextMobile}>{prop.game}</div>
               </div>
-              <div style={styles.tableRowRight}>
-                {bookLogo && <img src={bookLogo} alt="Book" style={styles.bookLogoMobile} />}
-                <div style={styles.tableToggle}>
+              <div className={styles.tableRowRight}>
+                <div className={styles.tableToggle}>
                   {isExpanded ? '▼' : '▶'}
                 </div>
               </div>
             </div>
 
             {isExpanded && (
-              <div style={styles.tableRowExpanded}>
-                <div style={styles.expandedGrid}>
-                  <div style={styles.expandedStat}>
-                    <div style={styles.expandedLabel}>Season Avg</div>
-                    <div style={styles.expandedValue}>{prop.season_avg}</div>
+              <div className={styles.tableRowExpanded}>
+                <div className={styles.expandedGrid}>
+                  <div className={styles.expandedStat}>
+                    <div className={styles.expandedLabel}>Season Avg</div>
+                    <div className={styles.expandedValue}>{prop.season_avg}</div>
                   </div>
-                  <div style={styles.expandedStat}>
-                    <div style={styles.expandedLabel}>Hit Rate</div>
-                    <div style={styles.expandedValue}>100%</div>
+                  <div className={styles.expandedStat}>
+                    <div className={styles.expandedLabel}>Hit Rate</div>
+                    <div className={styles.expandedValue}>100%</div>
                   </div>
-                  <div style={styles.expandedStat}>
-                    <div style={styles.expandedLabel}>Above Line</div>
-                    <div style={styles.expandedValue}>+{percentAbove}%</div>
+                  <div className={styles.expandedStat}>
+                    <div className={styles.expandedLabel}>Above Line</div>
+                    <div className={styles.expandedValue}>+{percentAbove}%</div>
                   </div>
                 </div>
 
-                <div style={styles.gameInfoSection}>
-                  <span style={styles.gameInfoText}>{prop.game} • {prop.game_time}</span>
+                <div className={styles.gameInfoSection}>
+                  <span className={styles.gameInfoText}>{prop.game} • {prop.game_time}</span>
                 </div>
 
-                <div style={styles.weeklySection}>
-                  <div style={styles.expandedLabel}>Weekly:</div>
-                  <div style={styles.weeklyGrid}>
+                <div className={styles.weeklySection}>
+                  <div className={styles.expandedLabel}>Weekly:</div>
+                  <div className={styles.weeklyGrid}>
                     {prop.weekly_values.map((val: number, i: number) => (
-                      <div key={i} style={styles.weeklyBadge}>W{i+1}: {val}</div>
+                      <div key={i} className={styles.weeklyBadge}>W{i+1}: {val}</div>
                     ))}
                   </div>
                 </div>
 
-                <div style={styles.booksSection}>
-                  <div style={styles.expandedLabel}>Books:</div>
-                  <div style={styles.booksGrid}>
+                <div className={styles.booksSection}>
+                  <div className={styles.expandedLabel}>Books:</div>
+                  <div className={styles.booksGrid}>
                     {prop.bookmakers.map((book: any, i: number) => (
-                      <div key={i} style={styles.bookRowExpanded}>
-                        <img 
-                          src={BOOK_LOGOS[book.name]} 
-                          alt={book.name} 
-                          style={styles.bookLogoTiny}
-                        />
-                        <span style={styles.bookNameTiny}>{formatBookName(book.name)}</span>
-                        <span style={styles.bookOddsTiny}>{formatOdds(book.odds)}</span>
+                      <div key={i} className={styles.bookRowExpanded}>
+                        <span className={styles.bookNameTiny}>{formatBookName(book.name)}</span>
+                        <span className={styles.bookOddsTiny}>{formatOdds(book.odds)}</span>
                       </div>
                     ))}
                   </div>
@@ -580,20 +572,18 @@ function PropsTable({ props, selectedBook }: { props: any[], selectedBook: strin
 
 function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: string }) {
   if (!combos.length) {
-    return <div style={styles.empty}>No parlays available with current filters</div>
+    return <div className={styles.empty}>No parlays available with current filters</div>
   }
 
-  const bookLogo = selectedBook === 'all' ? ALL_BOOKS_LOGO : BOOK_LOGOS[selectedBook]
   const affiliateLink = selectedBook !== 'all' ? AFFILIATE_LINKS[selectedBook] : null
 
   return (
-    <div style={styles.parlayGrid}>
+    <div className={styles.parlayGrid}>
       {combos.map((combo, idx) => (
         <ParlayCard 
           key={idx} 
           combo={combo} 
           rank={idx + 1} 
-          bookLogo={bookLogo}
           affiliateLink={affiliateLink}
           selectedBook={selectedBook}
         />
@@ -602,50 +592,36 @@ function ParlaysGrid({ combos, selectedBook }: { combos: any[], selectedBook: st
   )
 }
 
-function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { combo: any, rank: number, bookLogo: string, affiliateLink: string | null, selectedBook: string }) {
-  const [isHovered, setIsHovered] = React.useState(false)
-  
+function ParlayCard({ combo, rank, affiliateLink, selectedBook }: { combo: any, rank: number, affiliateLink: string | null, selectedBook: string }) {
   return (
-    <div 
-      style={{
-        ...styles.parlayCard,
-        ...(isHovered && {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
-          borderColor: 'rgba(59,130,246,0.6)'
-        })
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div style={styles.parlayCardHeader}>
-        <div style={styles.rankCircle}>
-          <img src={TITLE_ICON} alt={`Parlay #${rank}`} style={styles.rankIcon} />
+    <div className={styles.parlayCard}>
+      <div className={styles.parlayCardHeader}>
+        <div className={styles.rankCircle}>
+          <img src={TITLE_ICON} alt={`Parlay #${rank}`} className={styles.rankIcon} />
         </div>
-        <div style={styles.parlayMeta}>
-          <div style={styles.parlayTypeLabel}>
+        <div className={styles.parlayMeta}>
+          <div className={styles.parlayTypeLabel}>
             {combo.type} • {combo.legs.length}-Leg
           </div>
-          <div style={styles.parlayGameText}>{combo.game}</div>
+          <div className={styles.parlayGameText}>{combo.game}</div>
         </div>
-        <div style={styles.parlayBookCorner}>
-          <img src={bookLogo} alt="Book" style={styles.bookLogoSmall} />
-          <div style={styles.parlayOddsValue}>{formatOdds(combo.totalOdds)}</div>
+        <div className={styles.parlayBookCorner}>
+          <div className={styles.parlayOddsValue}>{formatOdds(combo.totalOdds)}</div>
         </div>
       </div>
 
-      <div style={styles.legsContainer}>
+      <div className={styles.legsContainer}>
         {combo.legs.map((leg: any, i: number) => {
           const legOdds = selectedBook === 'all' 
             ? Math.max(...leg.bookmakers.map((b: any) => b.odds))
             : leg.bookmakers.find((b: any) => b.name === selectedBook)?.odds || Math.max(...leg.bookmakers.map((b: any) => b.odds))
           
           return (
-            <div key={i} style={styles.legRow}>
-              <div style={styles.legNumber}>{i + 1}</div>
-              <div style={styles.legInfo}>
-                <div style={styles.legPlayerName}>{leg.player}</div>
-                <div style={styles.legPropInfo}>
+            <div key={i} className={styles.legRow}>
+              <div className={styles.legNumber}>{i + 1}</div>
+              <div className={styles.legInfo}>
+                <div className={styles.legPlayerName}>{leg.player}</div>
+                <div className={styles.legPropInfo}>
                   {formatMarket(leg.market)} O{leg.line} • {leg.game} • {formatOdds(legOdds)}
                 </div>
               </div>
@@ -655,12 +631,12 @@ function ParlayCard({ combo, rank, bookLogo, affiliateLink, selectedBook }: { co
       </div>
 
       {affiliateLink && (
-        <div style={styles.betNowLink}>
+        <div className={styles.betNowLink}>
           <a 
             href={affiliateLink} 
             target="_blank" 
             rel="noopener noreferrer"
-            style={styles.betNowText}
+            className={styles.betNowText}
           >
             Bet now on {formatBookName(selectedBook)} ↗
           </a>
@@ -696,486 +672,4 @@ function formatBookName(name: string) {
     'betonlineag': 'BetOnline'
   }
   return names[name] || name
-}
-
-const styles = {
-  wrapper: {
-    minHeight: '100vh',
-    padding: '120px 1rem 1.5rem 1rem', // Top padding for floating navbar
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    position: 'relative' as const
-  },
-  container: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    color: 'white'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '1.5rem',
-    gap: '1.5rem',
-    flexWrap: 'wrap' as const
-  },
-  titleSection: {},
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    marginBottom: '0.5rem'
-  },
-  title: {
-    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-    fontWeight: '800',
-    background: 'linear-gradient(135deg, #e5e7eb, #ffffff)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    margin: 0
-  },
-  titleIconBox: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  titleIconImg: {
-    width: '52px',
-    height: '52px',
-    display: 'block'
-  },
-  subtitle: {
-    fontSize: '0.7rem',
-    fontWeight: '700',
-    color: '#60a5fa',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const
-  },
-  bookSelector: {
-    textAlign: 'right' as const
-  },
-  bookLabel: {
-    display: 'block',
-    fontSize: '0.65rem',
-    color: '#9ca3af',
-    marginBottom: '0.4rem',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em'
-  },
-  bookSelect: {
-    background: 'rgba(255,255,255,0.05)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    color: '#e5e7eb',
-    borderRadius: '10px',
-    padding: '0.5rem 0.75rem',
-    fontSize: '0.8rem',
-    outline: 'none',
-    cursor: 'pointer',
-    minWidth: '160px',
-    boxShadow: '0 2px 8px 0 rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.2s'
-  },
-  viewToggle: {
-    display: 'flex',
-    gap: '0.4rem',
-    marginBottom: '1.25rem',
-    background: 'rgba(255,255,255,0.04)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    padding: '0.3rem',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.12)',
-    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.25)'
-  },
-  toggleBtn: {
-    flex: 1,
-    padding: '0.65rem 1rem',
-    background: 'transparent',
-    border: 'none',
-    color: '#9ca3af',
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  toggleBtnActive: {
-    background: 'rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    color: '#60a5fa',
-    boxShadow: '0 4px 16px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
-  },
-  filterRow: {
-    marginBottom: '1.25rem',
-    display: 'flex',
-    gap: '0.75rem',
-    alignItems: 'center'
-  },
-  sportSelector: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)',
-    color: '#e5e7eb',
-    borderRadius: '12px',
-    padding: '0.7rem 1rem',
-    fontSize: '0.8rem',
-    fontWeight: '600',
-    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
-    cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    outline: 'none'
-  } as React.CSSProperties,
-  filterButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
-    color: '#e5e7eb',
-    borderRadius: '12px',
-    padding: '0.7rem 1rem',
-    fontSize: '0.8rem',
-    cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    width: '100%',
-    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
-  },
-  filterIcon: {
-    width: '16px',
-    height: '16px',
-    opacity: 0.7
-  },
-  filterDropdown: {
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
-    borderRadius: '14px',
-    padding: '0.85rem',
-    marginBottom: '1.25rem',
-    display: 'grid',
-    gap: '0.85rem',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.1)'
-  },
-  filterSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.4rem'
-  },
-  filterLabel: {
-    fontSize: '0.65rem',
-    color: '#9ca3af',
-    fontWeight: '600',
-    textTransform: 'uppercase' as const
-  },
-  filterDropdownSelect: {
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    color: '#e5e7eb',
-    borderRadius: '6px',
-    padding: '0.5rem 0.7rem',
-    fontSize: '0.75rem',
-    outline: 'none',
-    cursor: 'pointer'
-  },
-  table: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem'
-  },
-  tableRow: {
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)', // Subtle shadow, no inset
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-  },
-  tableRowHeader: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    padding: '0.75rem 0.85rem',
-    cursor: 'pointer',
-    gap: '0.75rem'
-  },
-  tableRowMainMobile: {
-    flex: 1,
-    minWidth: 0
-  },
-  tablePlayerNameMobile: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    marginBottom: '0.25rem',
-    lineHeight: 1.2
-  },
-  propDetailsMobile: {
-    display: 'flex',
-    gap: '0.5rem',
-    fontSize: '0.7rem',
-    marginBottom: '0.2rem',
-    flexWrap: 'wrap' as const
-  },
-  propTextMobile: {
-    color: '#9ca3af'
-  },
-  oddsTextMobile: {
-    color: '#ffffff',
-    fontWeight: '700'
-  },
-  teamTextMobile: {
-    fontSize: '0.65rem',
-    color: '#6b7280'
-  },
-  tableRowRight: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    gap: '0.35rem'
-  },
-  bookLogoMobile: {
-    width: '28px',
-    height: '28px',
-    objectFit: 'contain' as const
-  },
-  tableToggle: {
-    fontSize: '0.75rem',
-    color: '#60a5fa'
-  },
-  tableRowExpanded: {
-    padding: '0.85rem',
-    borderTop: '1px solid rgba(255,255,255,0.1)',
-    background: 'rgba(0,0,0,0.15)'
-  },
-  expandedGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '0.6rem',
-    marginBottom: '0.85rem'
-  },
-  expandedStat: {
-    background: 'rgba(255,255,255,0.05)',
-    padding: '0.5rem',
-    borderRadius: '6px',
-    textAlign: 'center' as const
-  },
-  expandedLabel: {
-    fontSize: '0.65rem',
-    color: '#9ca3af',
-    marginBottom: '0.3rem',
-    fontWeight: '600'
-  },
-  expandedValue: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    color: '#ffffff'
-  },
-  gameInfoSection: {
-    marginBottom: '0.85rem',
-    padding: '0.5rem',
-    background: 'rgba(96,165,250,0.1)',
-    borderRadius: '6px'
-  },
-  gameInfoText: {
-    fontSize: '0.7rem',
-    color: '#9ca3af'
-  },
-  weeklySection: {
-    marginBottom: '0.85rem'
-  },
-  weeklyGrid: {
-    display: 'flex',
-    gap: '0.4rem',
-    flexWrap: 'wrap' as const,
-    marginTop: '0.4rem'
-  },
-  weeklyBadge: {
-    background: 'rgba(96,165,250,0.15)',
-    padding: '0.3rem 0.5rem',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: '600'
-  },
-  booksSection: {},
-  booksGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-    gap: '0.35rem',
-    marginTop: '0.4rem'
-  },
-  bookRowExpanded: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    padding: '0.35rem 0.5rem',
-    background: 'rgba(0,0,0,0.2)',
-    borderRadius: '4px'
-  },
-  bookLogoTiny: {
-    width: '16px',
-    height: '16px',
-    objectFit: 'contain' as const
-  },
-  bookNameTiny: {
-    flex: 1,
-    color: '#9ca3af',
-    fontSize: '0.65rem'
-  },
-  bookOddsTiny: {
-    fontWeight: '700',
-    fontSize: '0.7rem',
-    color: '#ffffff'
-  },
-  parlayGrid: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.85rem'
-  },
-  parlayCard: {
-    // PROPER GLASSMORPHISM:
-    background: 'rgba(255, 255, 255, 0.05)', // 5% fill opacity
-    backdropFilter: 'blur(30px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-    border: '0.5px solid rgba(255, 255, 255, 0.08)', // Ultra-thin barely visible outline
-    borderRadius: '18px',
-    padding: '1rem',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' // Subtle shadow, no inset
-  },
-  parlayCardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    marginBottom: '0.85rem',
-    paddingBottom: '0.85rem',
-    borderBottom: '1px solid rgba(255,255,255,0.1)'
-  },
-  rankCircle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0
-  },
-  rankIcon: {
-    width: '48px',
-    height: '48px'
-  },
-  parlayMeta: {
-    flex: 1
-  },
-  parlayTypeLabel: {
-    fontSize: '0.7rem',
-    color: '#60a5fa',
-    fontWeight: '700',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-    marginBottom: '0.2rem'
-  },
-  parlayGameText: {
-    fontSize: '0.75rem',
-    color: '#9ca3af'
-  },
-  parlayBookCorner: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    gap: '0.3rem'
-  },
-  bookLogoSmall: {
-    width: '28px',
-    height: '28px',
-    objectFit: 'contain' as const
-  },
-  parlayOddsValue: {
-    fontSize: '0.95rem',
-    fontWeight: '800',
-    color: '#ffffff'
-  },
-  legsContainer: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem',
-    marginBottom: '0.85rem'
-  },
-  legRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    padding: '0.6rem 0.7rem',
-    background: 'rgba(0,0,0,0.25)',
-    borderRadius: '6px'
-  },
-  legNumber: {
-    background: 'rgba(96,165,250,0.2)',
-    width: '24px',
-    height: '24px',
-    borderRadius: '5px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    color: '#60a5fa',
-    flexShrink: 0
-  },
-  legInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  legPlayerName: {
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    marginBottom: '0.2rem',
-    whiteSpace: 'nowrap' as const,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
-  },
-  legPropInfo: {
-    fontSize: '0.7rem',
-    color: '#9ca3af'
-  },
-  betNowLink: {
-    marginTop: '0.85rem',
-    paddingTop: '0.85rem',
-    borderTop: '1px solid rgba(255,255,255,0.1)',
-    textAlign: 'center' as const
-  },
-  betNowText: {
-    color: '#ffffff',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    textDecoration: 'none',
-    transition: 'opacity 0.2s'
-  },
-  loading: {
-    textAlign: 'center' as const,
-    padding: '4rem 1.5rem',
-    color: '#9ca3af'
-  },
-  spinner: {
-    display: 'inline-block',
-    width: '36px',
-    height: '36px',
-    border: '3px solid rgba(96,165,250,0.2)',
-    borderTopColor: '#60a5fa',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  empty: {
-    textAlign: 'center' as const,
-    padding: '3rem 1.5rem',
-    color: '#9ca3af',
-    fontSize: '0.9rem'
-  }
 }

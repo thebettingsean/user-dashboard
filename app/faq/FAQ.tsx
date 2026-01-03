@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import styles from './faq.module.css'
 
 interface FAQItem {
@@ -127,32 +127,6 @@ export default function FAQ() {
 
   const currentCategory = faqCategories.find(cat => cat.id === activeCategory) || faqCategories[0]
 
-  // Scroll animations
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const target = entry.target as HTMLElement
-            setTimeout(() => {
-              target.classList.add(styles.animate)
-            }, 100)
-            observer.unobserve(target)
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    )
-
-    if (ctaRef.current) {
-      observer.observe(ctaRef.current)
-    }
-
-    return () => {
-      if (ctaRef.current) observer.unobserve(ctaRef.current)
-    }
-  }, [])
-
   return (
     <div className={styles.faqGrid}>
       {/* Category Tabs */}
@@ -168,11 +142,11 @@ export default function FAQ() {
         ))}
       </div>
 
-      {/* FAQ Items - Simple Text Format */}
+      {/* FAQ Items */}
       <section className={styles.faqItemsSection}>
         <div className={styles.faqList}>
           {currentCategory.items.map((item, index) => (
-            <div key={index} className={`${styles.faqItem} ${styles.animate}`}>
+            <div key={index} className={styles.faqItem}>
               <h3 className={styles.faqQuestion}>{item.question}</h3>
               <p className={styles.faqAnswer}>{item.answer}</p>
             </div>
@@ -188,7 +162,7 @@ export default function FAQ() {
           <a href="mailto:support@thebettinginsider.com" className={styles.contactEmail}>
             support@thebettinginsider.com
           </a>
-          <a href="/contact" className={styles.contactLink}>
+          <a href="https://www.thebettinginsider.com/contact" target="_blank" rel="noopener noreferrer" className={styles.contactLink}>
             Visit Contact Page
           </a>
         </div>

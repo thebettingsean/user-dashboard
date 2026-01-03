@@ -14,19 +14,65 @@ const SPORT_MAP: Record<string, string> = {
   nba: 'basketball_nba',
 }
 
-// Prop markets to fetch
-const PROP_MARKETS = [
+// NFL Prop markets (standard + alternates)
+const NFL_PROP_MARKETS = [
+  // Standard markets
   'player_pass_tds',
   'player_pass_yds',
   'player_rush_yds',
   'player_receptions',
   'player_reception_yds',
   'player_anytime_td',
+  'player_pass_attempts',
+  'player_pass_completions',
+  'player_pass_interceptions',
+  'player_rush_attempts',
+  'player_reception_tds',
+  'player_rush_tds',
+  'player_field_goals',
+  'player_kicking_points',
+  // Alternate markets (most commonly available)
+  'player_pass_tds_alternate',
+  'player_pass_yds_alternate',
+  'player_rush_yds_alternate',
+  'player_receptions_alternate',
+  'player_reception_yds_alternate',
+  'player_pass_attempts_alternate',
+  'player_pass_completions_alternate',
+  'player_pass_interceptions_alternate',
+  'player_rush_attempts_alternate',
+  'player_reception_tds_alternate',
+  'player_rush_tds_alternate',
+  'player_field_goals_alternate',
+  'player_kicking_points_alternate'
+]
+
+// NBA Prop markets (standard + alternates)
+const NBA_PROP_MARKETS = [
+  // Standard markets
   'player_points',
   'player_rebounds',
   'player_assists',
   'player_threes',
-  'player_points_rebounds_assists'
+  'player_blocks',
+  'player_steals',
+  'player_turnovers',
+  'player_points_rebounds_assists',
+  'player_points_assists',
+  'player_points_rebounds',
+  'player_rebounds_assists',
+  // Alternate markets
+  'player_points_alternate',
+  'player_rebounds_alternate',
+  'player_assists_alternate',
+  'player_blocks_alternate',
+  'player_steals_alternate',
+  'player_turnovers_alternate',
+  'player_threes_alternate',
+  'player_points_assists_alternate',
+  'player_points_rebounds_alternate',
+  'player_rebounds_assists_alternate',
+  'player_points_rebounds_assists_alternate'
 ]
 
 export async function GET(request: NextRequest) {
@@ -59,38 +105,51 @@ export async function GET(request: NextRequest) {
 
     // Fetch props from Odds API
     const oddsApiSport = SPORT_MAP[sport]
-    const marketsParam = PROP_MARKETS.join(',')
+    const propMarkets = sport === 'nfl' ? NFL_PROP_MARKETS : NBA_PROP_MARKETS
+    const marketsParam = propMarkets.join(',')
     const oddsUrl = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/events/${oddsApiId}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketsParam}&oddsFormat=american`
+    
+    console.log(`[PROPS API] Fetching props for ${sport} game ${oddsApiId}`)
+    console.log(`[PROPS API] URL: ${oddsUrl.replace(ODDS_API_KEY, 'XXX')}`)
     
     const oddsResponse = await fetch(oddsUrl)
     if (!oddsResponse.ok) {
+      console.error(`[PROPS API] Odds API returned ${oddsResponse.status}`)
       throw new Error(`Odds API error: ${oddsResponse.status}`)
     }
 
     const gameData = await oddsResponse.json()
+    console.log(`[PROPS API] Bookmakers found: ${gameData.bookmakers?.length || 0}`)
 
     // Fetch player data from ClickHouse (images, positions, teams)
+    // Sport is stored as lowercase in players table ('nfl', 'nba')
     const playersQuery = await clickhouseQuery<{
       name: string
       position: string
-      team: string
+      team_abbr: string
       headshot_url: string
       injury_status: string
     }>(`
       SELECT 
-        name,
-        position,
-        team,
-        headshot_url,
-        injury_status
-      FROM players
-      WHERE sport = '${sport.toUpperCase()}'
-        AND is_active = true
-        ${position ? `AND LOWER(position) = '${position}'` : ''}
-      ORDER BY name
+        p.name,
+        p.position,
+        t.abbreviation as team_abbr,
+        p.headshot_url,
+        p.injury_status
+      FROM players p
+      LEFT JOIN teams t ON p.team_id = t.team_id AND LOWER(t.sport) = '${sport.toLowerCase()}'
+      WHERE LOWER(p.sport) = '${sport.toLowerCase()}'
+        AND p.is_active = true
+        ${position ? `AND LOWER(p.position) = '${position}'` : ''}
+      ORDER BY p.name
     `)
 
-    // Create player lookup map
+    console.log(`[PROPS API] ClickHouse query returned ${playersQuery.data?.length || 0} players`)
+    if (playersQuery.data && playersQuery.data.length > 0) {
+      console.log(`[PROPS API] Sample player from DB:`, playersQuery.data[0])
+    }
+
+    // Create player lookup map with multiple variations
     const playerMap = new Map()
     playersQuery.data?.forEach(player => {
       // Normalize name for matching (remove Jr., Sr., periods, etc.)
@@ -103,9 +162,21 @@ export async function GET(request: NextRequest) {
         .replace(/ iii$/i, '')
         .trim()
       
+      // Store multiple variations
       playerMap.set(normalized, player)
-      playerMap.set(player.name.toLowerCase(), player) // Also store original
+      playerMap.set(player.name.toLowerCase(), player)
+      
+      // Also store last name only for better matching
+      const parts = normalized.split(' ')
+      if (parts.length > 1) {
+        const lastName = parts[parts.length - 1]
+        const firstInitial = parts[0][0]
+        playerMap.set(`${firstInitial} ${lastName}`, player) // "M Stafford"
+        playerMap.set(`${parts[0]} ${lastName}`, player) // "Matt Stafford" or "Matthew Stafford"
+      }
     })
+
+    console.log(`[PROPS API] Players in ClickHouse: ${playerMap.size / 4} (with variations)`) // Divide by 4 since we store 4 versions
 
     // Organize props by player
     const propsByPlayer = new Map<string, any>()
@@ -117,21 +188,56 @@ export async function GET(request: NextRequest) {
           const playerName = outcome.description || outcome.name
           if (!playerName) return
 
-          // Try to match player
+          // Try to match player with multiple variations
           const normalizedName = playerName
             .toLowerCase()
             .replace(/\./g, '')
             .replace(/ jr$/i, '')
             .replace(/ sr$/i, '')
+            .replace(/ ii$/i, '')
+            .replace(/ iii$/i, '')
             .trim()
           
-          const playerData = playerMap.get(normalizedName) || playerMap.get(playerName.toLowerCase())
+          // Try multiple matching strategies
+          let playerData = playerMap.get(normalizedName) || 
+                          playerMap.get(playerName.toLowerCase())
+          
+          // If still no match, try first initial + last name
+          if (!playerData) {
+            const parts = normalizedName.split(' ')
+            if (parts.length > 1) {
+              const firstInitial = parts[0][0]
+              const lastName = parts[parts.length - 1]
+              playerData = playerMap.get(`${firstInitial} ${lastName}`)
+            }
+          }
+          
+          // If still no match, try just last name match (for rare cases)
+          if (!playerData) {
+            const parts = normalizedName.split(' ')
+            if (parts.length > 1) {
+              const lastName = parts[parts.length - 1]
+              // Find any player with matching last name
+              for (const [key, value] of playerMap.entries()) {
+                if (key.endsWith(lastName) && key.split(' ').length === parts.length) {
+                  playerData = value
+                  break
+                }
+              }
+            }
+          }
+          
+          if (!playerData) {
+            console.log(`[PROPS API] ❌ Could not match player: "${playerName}" (normalized: "${normalizedName}")`)
+          } else {
+            console.log(`[PROPS API] ✅ Matched: "${playerName}" → Position: ${playerData.position}, Team: ${playerData.team_abbr}`)
+          }
 
           if (!propsByPlayer.has(playerName)) {
             propsByPlayer.set(playerName, {
               player_name: playerName,
               position: playerData?.position || 'Unknown',
-              team: playerData?.team || 'Unknown',
+              team: playerData?.team_abbr || 'Unknown',
               headshot_url: playerData?.headshot_url || null,
               injury_status: playerData?.injury_status || null,
               props: []
@@ -154,14 +260,29 @@ export async function GET(request: NextRequest) {
     // Convert to array and filter by position if specified
     let propsArray = Array.from(propsByPlayer.values())
     
+    const matchedCount = propsArray.filter(p => p.position !== 'Unknown').length
+    const unmatchedCount = propsArray.filter(p => p.position === 'Unknown').length
+    
+    console.log(`[PROPS API] Props organized for ${propsArray.length} players (${matchedCount} matched, ${unmatchedCount} unmatched)`)
+    
     if (position) {
       propsArray = propsArray.filter(p => 
         p.position.toLowerCase() === position
       )
+      console.log(`[PROPS API] After position filter: ${propsArray.length} players`)
     }
 
     // Sort by player name
     propsArray.sort((a, b) => a.player_name.localeCompare(b.player_name))
+
+    console.log(`[PROPS API] Returning ${propsArray.length} players with props`)
+    
+    // Log position breakdown
+    const positionCounts: Record<string, number> = {}
+    propsArray.forEach(p => {
+      positionCounts[p.position] = (positionCounts[p.position] || 0) + 1
+    })
+    console.log(`[PROPS API] Position breakdown:`, positionCounts)
 
     return NextResponse.json({
       success: true,
@@ -183,17 +304,59 @@ export async function GET(request: NextRequest) {
 // Helper to format market names
 function formatMarketName(marketKey: string): string {
   const names: Record<string, string> = {
+    // NFL Standard
     player_pass_tds: 'Pass TDs',
     player_pass_yds: 'Pass Yards',
     player_rush_yds: 'Rush Yards',
     player_receptions: 'Receptions',
     player_reception_yds: 'Receiving Yards',
     player_anytime_td: 'Anytime TD',
+    player_pass_attempts: 'Pass Attempts',
+    player_pass_completions: 'Pass Completions',
+    player_pass_interceptions: 'Interceptions',
+    player_rush_attempts: 'Rush Attempts',
+    player_reception_tds: 'Receiving TDs',
+    player_rush_tds: 'Rush TDs',
+    player_field_goals: 'Field Goals',
+    player_kicking_points: 'Kicking Points',
+    // NFL Alternates
+    player_pass_tds_alternate: 'Pass TDs (Alt)',
+    player_pass_yds_alternate: 'Pass Yards (Alt)',
+    player_rush_yds_alternate: 'Rush Yards (Alt)',
+    player_receptions_alternate: 'Receptions (Alt)',
+    player_reception_yds_alternate: 'Receiving Yards (Alt)',
+    player_pass_attempts_alternate: 'Pass Attempts (Alt)',
+    player_pass_completions_alternate: 'Pass Completions (Alt)',
+    player_pass_interceptions_alternate: 'Interceptions (Alt)',
+    player_reception_tds_alternate: 'Receiving TDs (Alt)',
+    player_rush_attempts_alternate: 'Rush Attempts (Alt)',
+    player_rush_tds_alternate: 'Rush TDs (Alt)',
+    player_field_goals_alternate: 'Field Goals (Alt)',
+    player_kicking_points_alternate: 'Kicking Points (Alt)',
+    // NBA Standard
     player_points: 'Points',
     player_rebounds: 'Rebounds',
     player_assists: 'Assists',
-    player_threes: '3-Pointers Made',
-    player_points_rebounds_assists: 'Points + Rebounds + Assists'
+    player_threes: '3-Pointers',
+    player_blocks: 'Blocks',
+    player_steals: 'Steals',
+    player_turnovers: 'Turnovers',
+    player_points_rebounds_assists: 'Pts + Rebs + Asts',
+    player_points_assists: 'Points + Assists',
+    player_points_rebounds: 'Points + Rebounds',
+    player_rebounds_assists: 'Rebounds + Assists',
+    // NBA Alternates
+    player_points_alternate: 'Points (Alt)',
+    player_rebounds_alternate: 'Rebounds (Alt)',
+    player_assists_alternate: 'Assists (Alt)',
+    player_blocks_alternate: 'Blocks (Alt)',
+    player_steals_alternate: 'Steals (Alt)',
+    player_turnovers_alternate: 'Turnovers (Alt)',
+    player_threes_alternate: '3-Pointers (Alt)',
+    player_points_assists_alternate: 'Pts + Asts (Alt)',
+    player_points_rebounds_alternate: 'Pts + Rebs (Alt)',
+    player_rebounds_assists_alternate: 'Rebs + Asts (Alt)',
+    player_points_rebounds_assists_alternate: 'Pts + Rebs + Asts (Alt)'
   }
   return names[marketKey] || marketKey
 }

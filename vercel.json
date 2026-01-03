@@ -37,22 +37,6 @@
       "schedule": "0 11 * * 2"
     },
     {
-      "path": "/api/cron/generate-nfl-scripts",
-      "schedule": "0 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nba-scripts",
-      "schedule": "30 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-cfb-scripts",
-      "schedule": "15 */2 * * *"
-    },
-    {
-      "path": "/api/cron/generate-nhl-scripts",
-      "schedule": "45 */2 * * *"
-    },
-    {
       "path": "/api/cron/refresh-nfl-snapshots",
       "schedule": "10,40 * * * *"
     },
@@ -67,6 +51,18 @@
     {
       "path": "/api/cron/refresh-cfb-snapshots",
       "schedule": "16,46 * * * *"
+    },
+    {
+      "path": "/api/cron/generate-free-scripts?batch=1",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/generate-free-scripts?batch=2",
+      "schedule": "5 14 * * *"
+    },
+    {
+      "path": "/api/cron/generate-free-scripts?batch=3",
+      "schedule": "10 14 * * *"
     }
   ]
 }

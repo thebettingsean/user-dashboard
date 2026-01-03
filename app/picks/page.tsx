@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { supabase } from '@/lib/supabase'
-import { useSubscription } from '@/lib/hooks/useSubscription'
+import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { IoTicketOutline } from 'react-icons/io5'
-import { FaLock, FaFireAlt } from 'react-icons/fa'
-import { FiChevronDown } from 'react-icons/fi'
+import { FaLock } from 'react-icons/fa'
+import { FiChevronDown, FiChevronRight, FiChevronLeft } from 'react-icons/fi'
+import { GiSupersonicArrow } from 'react-icons/gi'
 import styles from './picks.module.css'
 
 type Pick = {
@@ -29,6 +30,13 @@ type Pick = {
   home_team: string | null
   analysis: string
   date: string
+  sportsbook: string
+  posted_at: string
+  // New image fields
+  away_team_image: string | null
+  home_team_image: string | null
+  prop_image: string | null
+  game_title: string
 }
 
 // Bettor Profile Image Component
@@ -70,11 +78,133 @@ function BettorProfileImage({ imageUrl, initials, size = 36 }: { imageUrl: strin
   )
 }
 
+// Bet Logo Component - determines which logo to show based on bet type
+function BetLogo({ pick }: { pick: Pick }) {
+  // If prop_image exists, show player image
+  if (pick.prop_image) {
+    return (
+      <img
+        src={pick.prop_image}
+        alt="Player"
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  // Check if it's a total (O/U) - both logos
+  const isTotal = pick.bet_title.includes(' O') || pick.bet_title.includes(' U') || 
+                   pick.bet_title.includes('/') // "Eagles / Bills O45.5"
+  
+  if (isTotal && pick.away_team_image && pick.home_team_image) {
+    return (
+      <div style={{ position: 'relative', width: 36, height: 28, flexShrink: 0 }}>
+        <img
+          src={pick.away_team_image}
+          alt=""
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 0,
+            zIndex: 1,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+        <img
+          src={pick.home_team_image}
+          alt=""
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            objectFit: 'contain',
+            position: 'absolute',
+            left: 14,
+            zIndex: 2,
+            border: '1px solid rgba(0, 0, 0, 0.5)',
+            background: 'rgba(0, 0, 0, 0.3)'
+          }}
+        />
+      </div>
+    )
+  }
+
+  // For spreads/MLs, try to determine which team is being bet
+  // Check bet_title for team name match
+  const betTitleLower = pick.bet_title.toLowerCase()
+  const gameTitle = pick.game_title || ''
+  const [awayTeam, homeTeam] = gameTitle.split('@').map(t => t.trim())
+  
+  if (homeTeam && betTitleLower.includes(homeTeam.toLowerCase()) && pick.home_team_image) {
+    return (
+      <img
+        src={pick.home_team_image}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+  
+  if (awayTeam && betTitleLower.includes(awayTeam.toLowerCase()) && pick.away_team_image) {
+    return (
+      <img
+        src={pick.away_team_image}
+        alt=""
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  // Default: show away team logo
+  if (pick.away_team_image) {
+    return (
+      <img
+        src={pick.away_team_image}
+        alt=""
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          objectFit: 'contain',
+          flexShrink: 0
+        }}
+      />
+    )
+  }
+
+  return null
+}
+
 export default function PicksPage() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const { openSignUp } = useClerk()
-  const { hasAccess } = useSubscription()
+  const { hasPicks, isLoading: isLoadingEntitlements } = useEntitlements()
+  
+  // User has access if they have picks entitlement
+  // Legacy users already have picks: true set by webhook
+  const hasAccess = hasPicks
   
   const [allPicks, setAllPicks] = useState<Pick[]>([])
   const [isLoadingPicks, setIsLoadingPicks] = useState(false)
@@ -126,9 +256,9 @@ export default function PicksPage() {
     // Only allow expanding if user is signed in and has access
     if (!isSignedIn || !hasAccess) {
       if (!isSignedIn) {
-        openSignUp()
+        openSignUp({ redirectUrl: '/subscribe/picks' })
       } else if (!hasAccess) {
-        router.push('/pricing')
+        router.push('/subscribe/picks')
       }
       return
     }
@@ -299,7 +429,14 @@ export default function PicksPage() {
           away_team: null,
           home_team: null,
           analysis: p.analysis || '',
-          date: formatDateString(targetDate)
+          date: formatDateString(targetDate),
+          sportsbook: p.sportsbook || '',
+          posted_at: p.posted_at || '',
+          // New image fields
+          away_team_image: p.away_team_image || null,
+          home_team_image: p.home_team_image || null,
+          prop_image: p.prop_image || null,
+          game_title: p.game_title || ''
         }))
 
         // Sort by bettor name, then by game time
@@ -394,6 +531,32 @@ export default function PicksPage() {
           </div>
         </div>
         
+        {/* Locked View CTA Banner - Only show if not signed in OR signed in without access */}
+        {(!isSignedIn || !hasAccess) && !isLoadingEntitlements && (
+          <div className={styles.lockedBanner}>
+            <div className={styles.lockedBannerContent}>
+              <GiSupersonicArrow className={styles.lockedBannerIcon} />
+              <div className={styles.lockedBannerText}>
+                <span className={styles.lockedBannerTitle}>Unlock Today's Expert Picks</span>
+                <span className={styles.lockedBannerSubtitle}>Get instant access with a 3-day free trial</span>
+              </div>
+            </div>
+            <button 
+              className={styles.lockedBannerBtn}
+              onClick={() => {
+                if (!isSignedIn) {
+                  openSignUp({ redirectUrl: '/subscribe/picks' })
+                } else {
+                  router.push('/subscribe/picks')
+                }
+              }}
+            >
+              Sign up now to view today's picks
+              <FiChevronRight size={18} />
+            </button>
+          </div>
+        )}
+        
         <div className={styles.filtersRow}>
           {/* Left side: Sport Filters */}
           <div className={styles.leftFilters}>
@@ -410,16 +573,94 @@ export default function PicksPage() {
             </div>
           </div>
           
-          {/* Right side: Date Dropdown */}
+          {/* Right side: Date Slideshow */}
           <div className={styles.rightFilters}>
-            <div className={styles.dateDropdown} ref={dateDropdownRef}>
-              <button 
-                className={styles.dateDropdownBtn}
-                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+            <div className={styles.dateSlideshow} ref={dateDropdownRef}>
+              <button
+                className={styles.dateSlideshowArrow}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const newDate = new Date(currentDate)
+                  newDate.setDate(newDate.getDate() - 1)
+                  setCurrentDate(newDate)
+                }}
+                aria-label="Previous day"
               >
-                {formatDateDisplay(currentDate)}
-                <FiChevronDown className={`${styles.dateDropdownIcon} ${dateDropdownOpen ? styles.rotated : ''}`} />
+                <FiChevronLeft />
               </button>
+              
+              <div className={styles.dateSlideshowContainer}>
+                {(() => {
+                  const actualToday = new Date()
+                  actualToday.setHours(0, 0, 0, 0)
+                  const todayStr = formatDateString(actualToday)
+                  const currentDateStr = formatDateString(currentDate)
+                  
+                  // Show currentDate in the middle, with day before and day after
+                  const dayBefore = new Date(currentDate)
+                  dayBefore.setDate(dayBefore.getDate() - 1)
+                  const dayAfter = new Date(currentDate)
+                  dayAfter.setDate(dayAfter.getDate() + 1)
+                  
+                  const dates = [dayBefore, currentDate, dayAfter]
+                  
+                  // Determine labels
+                  const labels = dates.map(date => {
+                    const dateStr = formatDateString(date)
+                    if (dateStr === formatDateString(new Date(actualToday.getTime() - 86400000))) return 'Yesterday'
+                    if (dateStr === todayStr) return 'Today'
+                    if (dateStr === formatDateString(new Date(actualToday.getTime() + 86400000))) return 'Tomorrow'
+                    // For other dates, show day of week abbreviation
+                    return date.toLocaleDateString('en-US', { weekday: 'short' })
+                  })
+                  
+                  return dates.map((date, index) => {
+                    const dateStr = formatDateString(date)
+                    const count = pickCounts[dateStr] || 0
+                    const isSelected = index === 1 // Middle one is always selected
+                    const isTodayDate = dateStr === todayStr
+                    const isPast = isPastDate(date)
+                    
+                    return (
+                      <button
+                        key={dateStr}
+                        className={`${styles.dateSlideshowItem} ${isTodayDate ? styles.dateSlideshowItemToday : ''} ${isSelected ? styles.dateSlideshowItemSelected : ''}`}
+                        onClick={() => {
+                          setCurrentDate(date)
+                          // Only toggle calendar if clicking the middle day (selected date)
+                          if (index === 1) {
+                            setDateDropdownOpen(prev => !prev)
+                          }
+                        }}
+                      >
+                        <div className={styles.dateSlideshowDayName}>
+                          {labels[index]}
+                        </div>
+                        <div className={styles.dateSlideshowDate}>
+                          {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                        {count > 0 && (
+                          <div className={`${styles.dateSlideshowCount} ${isPast ? styles.dateSlideshowCountPast : ''}`}>{count}</div>
+                        )}
+                      </button>
+                    )
+                  })
+                })()}
+              </div>
+              
+              <button
+                className={styles.dateSlideshowArrow}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const newDate = new Date(currentDate)
+                  newDate.setDate(newDate.getDate() + 1)
+                  setCurrentDate(newDate)
+                }}
+                aria-label="Next day"
+              >
+                <FiChevronRight />
+              </button>
+              
               {dateDropdownOpen && (
                 <div className={styles.dateDropdownMenu}>
                   <div className={styles.calendarHeader}>
@@ -501,16 +742,10 @@ export default function PicksPage() {
                         />
                         <div className={styles.capperSectionInfo}>
                           <span className={styles.capperSectionName}>{capper.name}</span>
-                          {capper.record && (
-                            <span className={styles.capperSectionRecord}>{capper.record}</span>
-                          )}
-                        </div>
-                        {capper.winStreak > 0 && (
-                          <span className={styles.capperSectionStreak}>
-                            <FaFireAlt className={styles.capperSectionStreakIcon} />
-                            {capper.winStreak}
-                          </span>
+                        {capper.record && (
+                          <span className={styles.capperSectionRecord}>{capper.record}</span>
                         )}
+                      </div>
                       </div>
                     </div>
                     
@@ -528,37 +763,38 @@ export default function PicksPage() {
                               onClick={() => togglePickAnalysis(pick.id)}
                             >
                               <div className={styles.pickBodyLeft}>
-                                {(pick.away_team || pick.home_team) && (
-                                  <div className={styles.pickMatchup}>
-                                    {pick.away_team ?? 'Away'} @ {pick.home_team ?? 'Home'}
-                                  </div>
-                                )}
+                                {/* Line 1: Bet Title with Logo */}
                                 <div className={styles.pickTitleRow}>
+                                  <div style={(!isSignedIn || !hasAccess) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
+                                    <BetLogo pick={pick} />
+                                  </div>
                                   {!isSignedIn || !hasAccess ? (
                                     <div className={styles.pickAnalysisLocked}>
                                       <FaLock className={styles.lockIcon} />
-                                      <p className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
+                                      <span className={styles.pickTitle} style={{ filter: 'blur(6px)', userSelect: 'none' }}>
                                         {pick.bet_title}
-                                      </p>
+                                      </span>
                                     </div>
                                   ) : (
-                                    <p className={styles.pickTitle}>
+                                    <span className={styles.pickTitle}>
                                       {pick.bet_title}
-                                    </p>
+                                    </span>
                                   )}
                                 </div>
-                                <div className={styles.pickFooter}>
-                                  <span 
-                                    className={styles.pickTime}
-                                    style={!isSignedIn || !hasAccess ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                                  >
-                                    {new Date(pick.game_time).toLocaleString('en-US', {
-                                      timeZone: 'America/New_York',
-                                      hour: 'numeric',
-                                      minute: '2-digit',
-                                      hour12: true
-                                    })}
-                                  </span>
+                                
+                                {/* Line 2: Game Time Only */}
+                                <div 
+                                  className={styles.pickGameTime}
+                                  style={(!isSignedIn || !hasAccess) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
+                                >
+                                  {new Date(pick.game_time).toLocaleString('en-US', {
+                                    timeZone: 'America/New_York',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })}
                                 </div>
                               </div>
                               <div className={styles.pickRightSide}>
@@ -569,7 +805,24 @@ export default function PicksPage() {
                                   const isWin = hasResult && (pick.result === 'won' || pick.result === 'win')
                                   const isLoss = hasResult && (pick.result === 'lost' || pick.result === 'loss')
                                   
-                                  // For past dates with results, show odds and net win/loss
+                                  // Show "Waiting for capper recap" for past dates without results
+                                  if (isPast && !hasResult) {
+                                    return (
+                                      <>
+                                        <span className={styles.pickRecapWaiting}>
+                                          Waiting for recap
+                                        </span>
+                                        <div 
+                                          className={styles.pickHeaderMeta}
+                                        >
+                                          {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
+                                          {pick.odds} | {pick.units.toFixed(1)}u
+                                        </div>
+                                      </>
+                                    )
+                                  }
+                                  
+                                  // For past dates with results, show sportsbook, odds, and net win/loss
                                   if (isPast && hasResult && netUnits !== null) {
                                     return (
                                       <div 
@@ -584,12 +837,13 @@ export default function PicksPage() {
                                           color: '#ef4444'
                                         } : {}}
                                       >
+                                        {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
                                         {pick.odds} | {netUnits >= 0 ? '+' : ''}{netUnits.toFixed(2)}u
                                       </div>
                                     )
                                   }
                                   
-                                  // For future/pending picks, show odds and units risked
+                                  // For future/pending picks, show sportsbook, odds, and units risked
                                   return (
                                     <div 
                                       className={styles.pickHeaderMeta}
@@ -599,6 +853,7 @@ export default function PicksPage() {
                                         color: 'rgba(251, 146, 60, 0.9)'
                                       } : {}}
                                     >
+                                      {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
                                       {pick.odds} | {pick.units.toFixed(1)}u
                                     </div>
                                   )
@@ -616,9 +871,9 @@ export default function PicksPage() {
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       if (!isSignedIn) {
-                                        openSignUp()
+                                        openSignUp({ redirectUrl: '/subscribe/picks' })
                                       } else if (!hasAccess) {
-                                        router.push('/pricing')
+                                        router.push('/subscribe/picks')
                                       }
                                     }}
                                     style={{ 
@@ -626,14 +881,74 @@ export default function PicksPage() {
                                       userSelect: 'none',
                                       cursor: 'pointer'
                                     }}
-                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
-                                  />
+                                  >
+                                    {/* Matchup with logos */}
+                                    {pick.game_title && (
+                                      <div className={styles.dropdownMatchup}>
+                                        {pick.away_team_image && (
+                                          <img src={pick.away_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[0].trim()}</span>
+                                        <span className={styles.dropdownAtSymbol}>@</span>
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[1]?.trim()}</span>
+                                        {pick.home_team_image && (
+                                          <img src={pick.home_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                      </div>
+                                    )}
+                                    {/* Bet title and sportsbook */}
+                                    <div className={styles.dropdownBetInfo}>
+                                      {pick.bet_title}, {pick.sportsbook} {pick.odds}
+                                    </div>
+                                    {/* Posted timestamp */}
+                                    <div className={styles.dropdownPostedAt}>
+                                      Posted on {new Date(pick.posted_at).toLocaleString('en-US', {
+                                        timeZone: 'America/New_York',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })} EST
+                                    </div>
+                                    <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                  </div>
                                 ) : (
                                   <div
                                     className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    dangerouslySetInnerHTML={{ __html: pick.analysis }}
-                                  />
+                                  >
+                                    {/* Matchup with logos */}
+                                    {pick.game_title && (
+                                      <div className={styles.dropdownMatchup}>
+                                        {pick.away_team_image && (
+                                          <img src={pick.away_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[0].trim()}</span>
+                                        <span className={styles.dropdownAtSymbol}>@</span>
+                                        <span className={styles.dropdownTeamName}>{pick.game_title.split('@')[1]?.trim()}</span>
+                                        {pick.home_team_image && (
+                                          <img src={pick.home_team_image} alt="" className={styles.dropdownTeamLogo} />
+                                        )}
+                                      </div>
+                                    )}
+                                    {/* Bet title and sportsbook */}
+                                    <div className={styles.dropdownBetInfo}>
+                                      {pick.bet_title}, {pick.sportsbook} {pick.odds}
+                                    </div>
+                                    {/* Posted timestamp */}
+                                    <div className={styles.dropdownPostedAt}>
+                                      Posted on {new Date(pick.posted_at).toLocaleString('en-US', {
+                                        timeZone: 'America/New_York',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })} EST
+                                    </div>
+                                    <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                                  </div>
                                 )}
                               </>
                             )}

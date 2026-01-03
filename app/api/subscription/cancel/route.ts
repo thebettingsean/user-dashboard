@@ -544,17 +544,13 @@ async function handleConfirmCancel(
       }, { status: 400 })
     }
 
-    // Handle trials differently - cancel immediately
+    // Schedule cancellation at end of period (for BOTH trials and paid subscriptions)
+    // This way user keeps access until their paid time/trial expires
     let canceledSubscription: Stripe.Subscription
-    if (subscription.status === 'trialing') {
-      console.log('Canceling trial subscription immediately')
-      canceledSubscription = await stripe.subscriptions.cancel(subscription.id)
-    } else {
-      console.log('Scheduling paid subscription to cancel at period end')
-      canceledSubscription = await stripe.subscriptions.update(subscription.id, {
-        cancel_at_period_end: true,
-      })
-    }
+    console.log('Scheduling subscription to cancel at period end')
+    canceledSubscription = await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: true,
+    })
 
     console.log('Stripe cancellation successful:', {
       subscriptionId: canceledSubscription.id,
@@ -592,11 +588,9 @@ async function handleConfirmCancel(
       }
     }
 
-    // Format cancellation date
+    // Format cancellation date - always end of period now
     let cancelsOn = ''
-    if (subscription.status === 'trialing') {
-      cancelsOn = 'immediately'
-    } else if ((canceledSubscription as any).current_period_end) {
+    if ((canceledSubscription as any).current_period_end) {
       cancelsOn = new Date((canceledSubscription as any).current_period_end * 1000).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',

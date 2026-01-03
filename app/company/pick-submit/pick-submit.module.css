@@ -373,6 +373,539 @@
   z-index: 2;
 }
 
+/* NEW: Side-by-Side Layout for Best Lines */
+.marketTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sideBySide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.betCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.betCardBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.betCardBtn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.betCardBtn.expanded {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.betCardLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.betCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.betCardTeam {
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.betCardLine {
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Overlapped logos for totals */
+.totalLogos {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 32px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.totalLogos img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.totalLogos img:first-child {
+  left: 0;
+  z-index: 1;
+}
+
+.totalLogos img:last-child {
+  left: 12px;
+  z-index: 2;
+}
+
+/* All Books Dropdown */
+.allBooks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+}
+
+.bookBtn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.bookBtn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.bookName {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.bookLine {
+  color: #3b82f6;
+  font-weight: 600;
+  text-align: right;
+}
+
+.bookOdds {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Props Placeholder */
+.propsPlaceholder {
+  padding: 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Props Hierarchy */
+.propsHierarchy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Level 1: Position */
+.positionCollapse {
+  display: flex;
+  flex-direction: column;
+}
+
+.positionBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.positionBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.positionBtn.expanded {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.positionLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.expandIcon {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Level 2: Players */
+.playersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.playerCollapse {
+  display: flex;
+  flex-direction: column;
+}
+
+.playerBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.playerBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.playerBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.playerThumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.playerLabel {
+  flex: 1;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Level 3: Prop Types */
+.propTypesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.propTypeCollapse {
+  display: flex;
+  flex-direction: column;
+}
+
+.propTypeBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.propTypeBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.propTypeBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.propTypeLabel {
+  flex: 1;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.propBestLine {
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 11px;
+  margin-right: 8px;
+}
+
+.propAltLineCount {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  margin-right: 8px;
+}
+
+/* Alternate Lines Container */
+.altLinesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.altLineItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.altLineBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.altLineBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.altLineBtn.expanded {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.altLineLabel {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Level 4: Lines */
+.propLinesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.propLineGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.propLineLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.propLineBtn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.propLineBtn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.propLineBook {
+  text-align: left;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.propLineValue {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.propLineOdds {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.showAllLinesBtn {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showAllLinesBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Player Search Results */
+.playerSearchSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playerSearchTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.playerResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playerResultCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.playerResultCard:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.playerResultImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.playerResultInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.playerResultName {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.playerResultMeta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.playerResultInjury {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.playerResultHint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  text-align: right;
+}
+
 /* Book Options (inline dropdown) */
 .bookOptions {
   display: flex;
@@ -678,6 +1211,9 @@
   resize: vertical;
   min-height: 80px;
   box-sizing: border-box;
+  white-space: pre-wrap; /* Preserve line breaks and spacing */
+  line-height: 1.6; /* Better readability for formatted text */
+  font-family: inherit;
 }
 
 .analysisInput:focus {
@@ -729,11 +1265,12 @@
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
+  padding: 20px;
+  max-width: 480px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modalHeader {
@@ -744,7 +1281,7 @@
 }
 
 .modalHeader h3 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
   color: #FFFFFF;
@@ -901,23 +1438,736 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 16px;
+    padding: 12px;
   }
 
   .splitLayout {
-    gap: 16px;
+    gap: 12px;
   }
 
   .leftPanel,
   .rightPanel {
-    padding: 16px;
+    padding: 12px;
   }
 
   .oddsGrid {
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .oddsBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  /* COMPREHENSIVE MOBILE FONT SIZE REDUCTIONS */
+  
+  /* Header */
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 10px;
+  }
+
+  /* Panels */
+  .panelTitle {
+    font-size: 14px;
+  }
+
+  /* Sport Selector */
+  .sportBtn {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+
+  /* Search */
+  .searchInput {
+    font-size: 11px;
     padding: 8px 10px;
+  }
+
+  /* Game List */
+  .gameTeams {
+    font-size: 11px;
+  }
+
+  .awayTeam,
+  .homeTeam {
+    font-size: 11px;
+  }
+
+  .atSymbol {
+    font-size: 10px;
+  }
+
+  .gameTime {
+    font-size: 10px;
+  }
+
+  /* Markets */
+  .marketTitle {
+    font-size: 11px;
+  }
+
+  .betCardBtn {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .betCardTeam {
+    font-size: 11px;
+  }
+
+  .betCardLine {
+    font-size: 10px;
+  }
+
+  .betCardLogo {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Books */
+  .bookBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .bookName {
+    font-size: 10px;
+  }
+
+  .bookLine,
+  .bookOdds {
+    font-size: 10px;
+  }
+
+  /* Pick Slate */
+  .pickCard {
+    padding: 12px;
+  }
+
+  .pickCardHeader {
+    font-size: 11px;
+  }
+
+  .pickCardTeams {
+    font-size: 10px;
+  }
+
+  .pickCardBetTitle {
+    font-size: 12px;
+  }
+
+  .pickCardOddsBook {
+    font-size: 10px;
+  }
+
+  .unitsInput,
+  .analysisTextarea {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  /* Slate Header */
+  .pickCount {
+    font-size: 10px;
+  }
+
+  .customPickBtn {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  /* Submit */
+  .submitBtn {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  /* Bettor Select */
+  .bettorLabel {
+    font-size: 11px;
+  }
+
+  .bettorSelect {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  /* Loading/Error */
+  .loading,
+  .noData,
+  .loadingMarkets {
+    font-size: 11px;
+  }
+
+  .errorBanner {
+    font-size: 11px;
+    padding: 12px;
+  }
+
+  /* Props Placeholder */
+  .propsPlaceholder {
+    font-size: 10px;
+    padding: 16px;
+  }
+
+  /* Props Mobile Styles */
+  .propsHierarchy {
+    gap: 6px;
+  }
+
+  .positionBtn {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .positionLabel {
+    font-size: 11px;
+  }
+
+  .expandIcon {
+    font-size: 14px;
+  }
+
+  .playersContainer {
+    padding-left: 8px;
+    gap: 4px;
+  }
+
+  .playerBtn {
+    padding: 8px 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  .playerThumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  .playerLabel {
+    font-size: 11px;
+  }
+
+  .propTypesContainer {
+    padding-left: 8px;
+    gap: 4px;
+  }
+
+  .propTypeBtn {
+    padding: 7px 10px;
+    font-size: 10px;
+  }
+
+  .propTypeLabel {
+    font-size: 10px;
+  }
+
+  .propBestLine {
+    font-size: 10px;
+    margin-right: 6px;
+  }
+
+  .propLinesContainer {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .propLineLabel {
+    font-size: 9px;
+  }
+
+  .propLineBtn {
+    padding: 5px 8px;
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .propLineBook {
+    font-size: 10px;
+  }
+
+  .propLineValue {
+    font-size: 10px;
+  }
+
+  .propLineOdds {
+    font-size: 10px;
+  }
+
+  .showAllLinesBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+    margin-top: 6px;
+  }
+
+  .propAltLineCount {
+    font-size: 9px;
+    margin-right: 6px;
+  }
+
+  .altLinesContainer {
+    padding-left: 8px;
+    gap: 3px;
+  }
+
+  .altLineBtn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .altLineLabel {
+    font-size: 10px;
+  }
+
+  /* Player Search Mobile */
+  .playerSearchSection {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  .playerSearchTitle {
+    font-size: 12px;
+  }
+
+  .playerResultCard {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .playerResultImage {
+    width: 32px;
+    height: 32px;
+  }
+
+  .playerResultName {
+    font-size: 12px;
+  }
+
+  .playerResultMeta {
+    font-size: 10px;
+  }
+
+  .playerResultInjury {
+    font-size: 9px;
+  }
+
+  .playerResultHint {
+    font-size: 9px;
+  }
+}
+
+/* Custom Pick Form Styles */
+.customPickForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.multiLegToggle {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+}
+
+.multiLegToggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.multiLegToggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formGroup label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.formGroup input,
+.formGroup select {
+  width: 100%;
+  padding: 7px 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  color: #FFFFFF;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.formGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.formGroup select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.formGroup small {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+}
+
+.formSection h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.customPickLegs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customPickLegs label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.legsList {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.legItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+.legImage {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.legItem span {
+  flex: 1;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removeLegBtn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 3px;
+  color: #ef4444;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeLegBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.modalBtnCancel,
+.modalBtnAdd {
+  flex: 1;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modalBtnCancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modalBtnCancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.modalBtnAdd {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  color: #FFFFFF;
+}
+
+.modalBtnAdd:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+.modalBtnAdd:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Search Results */
+.searchResults {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.searchResultItem:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.searchResultImage {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.searchResultInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchResultName {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchResultMeta {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gameResultLogos {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.gameResultLogo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* Parlay Logos Overlap */
+.parlayLogos {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-right: 8px;
+}
+
+.pickParlayLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1a1a1a;
+  margin-left: -8px;
+}
+
+.pickParlayLogo:first-child {
+  margin-left: 0;
+}
+
+.parlayMore {
+  margin-left: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    max-width: 95%;
+    padding: 16px;
+  }
+
+  .modalHeader h3 {
+    font-size: 14px;
+  }
+
+  .customPickForm {
+    gap: 10px;
+  }
+
+  .multiLegToggle {
+    padding: 7px 8px;
+  }
+
+  .multiLegToggle label {
+    font-size: 11px;
+  }
+
+  .multiLegToggle input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+
+  .formGroup label {
+    font-size: 10px;
+  }
+
+  .formGroup input,
+  .formGroup select {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .formSection {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .formSection h4 {
+    font-size: 11px;
+  }
+
+  .legImage {
+    width: 18px;
+    height: 18px;
+  }
+
+  .legItem span {
+    font-size: 10px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modalBtnCancel,
+  .modalBtnAdd {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .searchResults {
+    max-height: 140px;
+  }
+
+  .searchResultItem {
+    padding: 5px;
+    gap: 6px;
+  }
+
+  .searchResultImage {
+    width: 24px;
+    height: 24px;
+  }
+
+  .searchResultName {
+    font-size: 10px;
+  }
+
+  .searchResultMeta {
+    font-size: 9px;
+  }
+
+  .gameResultLogo {
+    width: 16px;
+    height: 16px;
+  }
+
+  .pickParlayLogo {
+    width: 18px;
+    height: 18px;
   }
 }

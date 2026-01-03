@@ -1,0 +1,660 @@
+/* Design System - Dark Theme (matching public-betting, picks, builder) */
+.container {
+  min-height: 100vh;
+  background: #0C0E12 !important;
+  padding: 24px;
+  padding-top: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #FFFFFF;
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+}
+
+.headerTop {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+}
+
+.titleIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.titleIconImg {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #696969;
+  margin: 0;
+}
+
+.bookSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bookLabel {
+  font-size: 11px;
+  color: #696969;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bookSelect {
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+  min-width: 160px;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.bookSelect:hover {
+  background: rgba(41, 47, 63, 0.7);
+  border-color: rgba(50, 51, 53, 0.7);
+}
+
+.bookSelect:focus {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+/* View Toggle */
+.viewToggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: rgba(29, 37, 48, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #696969;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.toggleBtn:hover {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.3);
+}
+
+.toggleBtnActive {
+  color: #FFFFFF;
+  background: rgba(41, 47, 63, 0.6);
+}
+
+/* Filter Row */
+.filterRow {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.sportSelector {
+  background: rgba(41, 47, 63, 0.5);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.sportSelector:hover {
+  background: rgba(41, 47, 63, 0.7);
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(29, 37, 48, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 10px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.filterButton:hover {
+  background: rgba(41, 47, 63, 0.4);
+  border-color: rgba(50, 51, 53, 0.7);
+}
+
+.filterIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+/* Filter Dropdown */
+.filterDropdown {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 11px;
+  color: #696969;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filterDropdownSelect {
+  background: rgba(29, 37, 48, 0.4);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.filterDropdownSelect:hover {
+  background: rgba(41, 47, 63, 0.5);
+  border-color: rgba(50, 51, 53, 0.7);
+}
+
+/* Props Table */
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tableRow {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tableRow:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.tableRowHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.tableRowMainMobile {
+  flex: 1;
+  min-width: 0;
+}
+
+.tablePlayerNameMobile {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.propDetailsMobile {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.propTextMobile {
+  color: #9CA3AF;
+}
+
+.oddsTextMobile {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.teamTextMobile {
+  font-size: 11px;
+  color: #696969;
+}
+
+.tableRowRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.bookLogoMobile {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.tableToggle {
+  font-size: 12px;
+  color: #9CA3AF;
+  transition: transform 0.2s ease;
+}
+
+.tableRowExpanded {
+  padding: 16px;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.expandedGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.expandedStat {
+  background: rgba(29, 37, 48, 0.4);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.expandedLabel {
+  font-size: 11px;
+  color: #696969;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.expandedValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.gameInfoSection {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.gameInfoText {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.weeklySection {
+  margin-bottom: 16px;
+}
+
+.weeklyGrid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.weeklyBadge {
+  background: rgba(29, 37, 48, 0.4);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #FFFFFF;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.booksSection {
+  margin-top: 16px;
+}
+
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.bookRowExpanded {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.bookLogoTiny {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.bookNameTiny {
+  flex: 1;
+  color: #9CA3AF;
+  font-size: 11px;
+}
+
+.bookOddsTiny {
+  font-weight: 600;
+  font-size: 12px;
+  color: #FFFFFF;
+}
+
+/* Parlay Grid */
+.parlayGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.parlayCard {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 18px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.parlayCard:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.parlayCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.rankCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rankIcon {
+  width: 40px;
+  height: 40px;
+}
+
+.parlayMeta {
+  flex: 1;
+}
+
+.parlayTypeLabel {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.parlayGameText {
+  font-size: 13px;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.parlayBookCorner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bookLogoSmall {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.parlayOddsValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.legsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.legRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(29, 37, 48, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.legNumber {
+  background: rgba(29, 37, 48, 0.5);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  flex-shrink: 0;
+  border: 1px solid rgba(50, 51, 53, 0.3);
+}
+
+.legInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.legPlayerName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legPropInfo {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.betNowLink {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  text-align: center;
+}
+
+.betNowText {
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.betNowText:hover {
+  opacity: 0.8;
+}
+
+/* Loading & Empty States */
+.loading {
+  text-align: center;
+  padding: 80px 24px;
+  color: #9CA3AF;
+}
+
+.spinner {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(148, 163, 184, 0.2);
+  border-top-color: #94A3B8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 16px;
+  }
+
+  .headerTop {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .bookSelector {
+    width: 100%;
+  }
+
+  .bookSelect {
+    width: 100%;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filterButton {
+    width: 100%;
+  }
+
+  .filterDropdown {
+    grid-template-columns: 1fr;
+  }
+
+  .expandedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .booksGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

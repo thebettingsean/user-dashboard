@@ -58,11 +58,6 @@ export default function SimulatorPage() {
   const [loading, setLoading] = useState(false);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
-  const [showAwayDropdown, setShowAwayDropdown] = useState(false);
-  const [showHomeDropdown, setShowHomeDropdown] = useState(false);
-  const [showSportDropdown, setShowSportDropdown] = useState(false);
-  const [awaySearch, setAwaySearch] = useState('');
-  const [homeSearch, setHomeSearch] = useState('');
   const [splineInstance, setSplineInstance] = useState<any>(null);
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [splineError, setSplineError] = useState(false);
@@ -150,29 +145,6 @@ export default function SimulatorPage() {
     fetchTeams();
   }, [sport]);
 
-  // Handle click outside to close dropdowns
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (
-        !target.closest('[data-dropdown-container]') &&
-        !target.closest('[data-team-button]')
-      ) {
-        if (showAwayDropdown || showHomeDropdown || showSportDropdown) {
-          setShowAwayDropdown(false);
-          setShowHomeDropdown(false);
-          setShowSportDropdown(false);
-        }
-      }
-    };
-
-    if (showAwayDropdown || showHomeDropdown || showSportDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showAwayDropdown, showHomeDropdown, showSportDropdown]);
 
   // Reset ratings when teams change
   useEffect(() => {
@@ -541,15 +513,6 @@ export default function SimulatorPage() {
     }
   };
 
-  const filteredAwayTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(awaySearch.toLowerCase()) ||
-    team.abbreviation?.toLowerCase().includes(awaySearch.toLowerCase())
-  );
-
-  const filteredHomeTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(homeSearch.toLowerCase()) ||
-    team.abbreviation?.toLowerCase().includes(homeSearch.toLowerCase())
-  );
 
   const sportLabels: Record<Sport, string> = {
     nfl: 'NFL',
@@ -576,6 +539,9 @@ export default function SimulatorPage() {
           }}
         />
       </div>
+
+      {/* Dark Overlay to reduce brightness */}
+      <div className={styles.darkOverlay}></div>
 
       {/* Content Overlay */}
       <div className={styles.contentOverlay}>
@@ -614,147 +580,53 @@ export default function SimulatorPage() {
           {/* Sport, Away, Home Selection */}
           <div className={styles.selectionRow}>
             {/* Sport Selection */}
-            <div className={styles.dropdownWrapper} data-dropdown-container>
-              <button
-                type="button"
-                data-team-button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowSportDropdown(!showSportDropdown);
-                  setShowAwayDropdown(false);
-                  setShowHomeDropdown(false);
-                }}
-                className={styles.selectionButton}
-              >
-                {sportLabels[sport]}
-              </button>
-
-              {showSportDropdown && (
-                <div className={styles.dropdown} data-dropdown-container>
-                  {(['nfl', 'nba', 'college-football', 'college-basketball'] as Sport[]).map((sportOption) => (
-                    <div
-                      key={sportOption}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSport(sportOption);
-                        setShowSportDropdown(false);
-                      }}
-                      className={`${styles.dropdownItem} ${sport === sportOption ? styles.dropdownItemActive : ''}`}
-                    >
-                      {sportLabels[sportOption]}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <select
+              value={sport}
+              onChange={(e) => setSport(e.target.value as Sport)}
+              className={styles.nativeSelect}
+            >
+              {(['nfl', 'nba', 'college-football', 'college-basketball'] as Sport[]).map((sportOption) => (
+                <option key={sportOption} value={sportOption}>
+                  {sportLabels[sportOption]}
+                </option>
+              ))}
+            </select>
 
             {/* Away Team Selection */}
-            <div className={styles.dropdownWrapper} data-dropdown-container>
-              <button
-                type="button"
-                data-team-button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowAwayDropdown(!showAwayDropdown);
-                  setShowHomeDropdown(false);
-                }}
-                className={`${styles.selectionButton} ${awayTeam ? styles.selectionButtonActive : ''}`}
-              >
-                {awayTeam ? awayTeam.name : 'Away'}
-              </button>
-
-              {showAwayDropdown && (
-                <div className={styles.dropdownLarge} data-dropdown-container>
-                  <input
-                    type="text"
-                    placeholder="Search teams..."
-                    value={awaySearch}
-                    onChange={(e) => setAwaySearch(e.target.value)}
-                    className={styles.dropdownSearch}
-                    autoFocus
-                  />
-                  {loadingTeams ? (
-                    <div className={styles.dropdownLoading}>Loading...</div>
-                  ) : filteredAwayTeams.length === 0 ? (
-                    <div className={styles.dropdownEmpty}>
-                      {teams.length === 0 ? 'No teams found' : 'No teams match your search'}
-                    </div>
-                  ) : (
-                    filteredAwayTeams.map((team) => (
-                      <div
-                        key={team.id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAwayTeam(team);
-                          setShowAwayDropdown(false);
-                          setAwaySearch('');
-                        }}
-                        className={`${styles.dropdownItem} ${awayTeam?.id === team.id ? styles.dropdownItemActive : ''}`}
-                      >
-                        {team.name} {team.abbreviation && `(${team.abbreviation})`}
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+            <select
+              value={awayTeam?.id || ''}
+              onChange={(e) => {
+                const selectedTeam = teams.find(t => t.id === e.target.value);
+                setAwayTeam(selectedTeam || null);
+              }}
+              className={styles.nativeSelect}
+              disabled={loadingTeams || teams.length === 0}
+            >
+              <option value="">Away</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name} {team.abbreviation && `(${team.abbreviation})`}
+                </option>
+              ))}
+            </select>
 
             {/* Home Team Selection */}
-            <div className={styles.dropdownWrapper} data-dropdown-container>
-              <button
-                type="button"
-                data-team-button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowHomeDropdown(!showHomeDropdown);
-                  setShowAwayDropdown(false);
-                }}
-                className={`${styles.selectionButton} ${homeTeam ? styles.selectionButtonActive : ''}`}
-              >
-                {homeTeam ? homeTeam.name : 'Home'}
-              </button>
-
-              {showHomeDropdown && (
-                <div className={styles.dropdownLarge} data-dropdown-container>
-                  <input
-                    type="text"
-                    placeholder="Search teams..."
-                    value={homeSearch}
-                    onChange={(e) => setHomeSearch(e.target.value)}
-                    className={styles.dropdownSearch}
-                    autoFocus
-                  />
-                  {loadingTeams ? (
-                    <div className={styles.dropdownLoading}>Loading...</div>
-                  ) : filteredHomeTeams.length === 0 ? (
-                    <div className={styles.dropdownEmpty}>
-                      {teams.length === 0 ? 'No teams found' : 'No teams match your search'}
-                    </div>
-                  ) : (
-                    filteredHomeTeams.map((team) => (
-                      <div
-                        key={team.id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setHomeTeam(team);
-                          setShowHomeDropdown(false);
-                          setHomeSearch('');
-                        }}
-                        className={`${styles.dropdownItem} ${homeTeam?.id === team.id ? styles.dropdownItemActive : ''}`}
-                      >
-                        {team.name} {team.abbreviation && `(${team.abbreviation})`}
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+            <select
+              value={homeTeam?.id || ''}
+              onChange={(e) => {
+                const selectedTeam = teams.find(t => t.id === e.target.value);
+                setHomeTeam(selectedTeam || null);
+              }}
+              className={styles.nativeSelect}
+              disabled={loadingTeams || teams.length === 0}
+            >
+              <option value="">Home</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name} {team.abbreviation && `(${team.abbreviation})`}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Simulation Results */}

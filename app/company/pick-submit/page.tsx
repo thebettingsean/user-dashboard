@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { FaFootballBall, FaBasketballBall, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import { FaFootballBall, FaBasketballBall, FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaHockeyPuck, FaBaseballBall } from 'react-icons/fa'
 import { IoClose } from 'react-icons/io5'
 import styles from './pick-submit.module.css'
 
@@ -51,9 +51,20 @@ type SlatePick = {
   away_team_logo: string | null
   home_team_logo: string | null
   prop_image: string | null
-  bet_type: 'spread' | 'moneyline' | 'total' | 'prop'
+  bet_type: 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay' | 'team_special'
   bet_team_logo: string | null // The specific team logo for spread/ML bets
   bet_team_name: string | null // The specific team name for spread/ML bets
+  parlay_legs?: Array<{
+    image: string | null
+    player_name?: string
+    team_name?: string
+    game_id: string | null
+    game_title: string
+    game_time: string
+    game_time_est: string
+    away_team_logo?: string
+    home_team_logo?: string
+  }>
 }
 
 type Bettor = {
@@ -77,6 +88,15 @@ export default function SubmitPicksPage() {
   const [gameMarkets, setGameMarkets] = useState<Record<string, any>>({})
   const [loadingMarkets, setLoadingMarkets] = useState<Record<string, boolean>>({})
   
+  // Props state
+  const [gameProps, setGameProps] = useState<Record<string, any>>({})
+  const [loadingProps, setLoadingProps] = useState<Record<string, boolean>>({})
+  const [expandedPosition, setExpandedPosition] = useState<string | null>(null)
+  const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null)
+  const [expandedPropType, setExpandedPropType] = useState<string | null>(null)
+  const [expandedAltLine, setExpandedAltLine] = useState<string | null>(null) // For showing specific alt line
+  const [showAllLines, setShowAllLines] = useState<Record<string, boolean>>({})
+  
   // Book selection state (when user clicks a bet type) - now inline, not modal
   const [expandedBet, setExpandedBet] = useState<string | null>(null)
   
@@ -87,12 +107,143 @@ export default function SubmitPicksPage() {
   
   // Custom pick state
   const [showCustomPick, setShowCustomPick] = useState(false)
+  const [customPickForm, setCustomPickForm] = useState({
+    isMultiLeg: false,
+    betType: '' as 'spread' | 'moneyline' | 'total' | 'prop' | 'parlay' | '',
+    betTitle: '',
+    odds: '',
+    sportsbook: '',
+    legs: [] as Array<{
+      image: string | null
+      player_name?: string
+      team_name?: string
+      game_id: string | null
+      game_title: string
+      game_time: string
+      game_time_est: string
+      away_team_logo?: string
+      home_team_logo?: string
+    }>,
+    tempImage: undefined as string | undefined,
+    tempPlayerName: undefined as string | undefined
+  })
+  const [customPickImageSearch, setCustomPickImageSearch] = useState('')
+  const [customPickGameSearch, setCustomPickGameSearch] = useState('')
+  const [customPickImageResults, setCustomPickImageResults] = useState<any[]>([])
+  const [customPickGameResults, setCustomPickGameResults] = useState<any[]>([])
+  const [searchingCustomImages, setSearchingCustomImages] = useState(false)
+  const [searchingCustomGames, setSearchingCustomGames] = useState(false)
+  
+  // Custom pick image search effect
+  useEffect(() => {
+    const searchCustomImages = async () => {
+      const query = customPickImageSearch.trim()
+      
+      if (query.length < 2) {
+        setCustomPickImageResults([])
+        return
+      }
+
+      setSearchingCustomImages(true)
+      console.log('[CUSTOM PICK] Searching images for:', query)
+
+      try {
+        let results: any[] = []
+
+        // Search players first (if NFL/NBA)
+        if (selectedSport === 'nfl' || selectedSport === 'nba') {
+          try {
+            const response = await fetch(`/api/analyst-picks/search-players?sport=${selectedSport}&query=${encodeURIComponent(query)}`)
+            if (response.ok) {
+              const data = await response.json()
+              // Add type: 'player' to each result
+              const playersWithType = data.players.map((p: any) => ({ ...p, type: 'player' }))
+              results = playersWithType
+              console.log('[CUSTOM PICK] Found players:', playersWithType.length)
+            }
+          } catch (err) {
+            console.error('[CUSTOM PICK] Error searching players:', err)
+          }
+        }
+
+        // Also search teams (filter from games list)
+        const teamResults = games
+          .filter(g => 
+            getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+            getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+          )
+          .flatMap(g => [
+            { 
+              type: 'team', 
+              name: getTeamName(g.away_team),
+              logo: g.away_team_logo,
+              game_id: g.game_id,
+              game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+              game_time: g.game_time,
+              game_time_est: g.game_time_est,
+              away_team_logo: g.away_team_logo,
+              home_team_logo: g.home_team_logo
+            },
+            { 
+              type: 'team', 
+              name: getTeamName(g.home_team),
+              logo: g.home_team_logo,
+              game_id: g.game_id,
+              game_title: `${getTeamName(g.away_team)} @ ${getTeamName(g.home_team)}`,
+              game_time: g.game_time,
+              game_time_est: g.game_time_est,
+              away_team_logo: g.away_team_logo,
+              home_team_logo: g.home_team_logo
+            }
+          ])
+          .filter((team, index, self) => 
+            // Remove duplicates by name
+            index === self.findIndex(t => t.name === team.name)
+          )
+
+        console.log('[CUSTOM PICK] Found teams:', teamResults.length)
+
+        // Combine results
+        setCustomPickImageResults([...results, ...teamResults])
+      } catch (err) {
+        console.error('[CUSTOM PICK] Search error:', err)
+      } finally {
+        setSearchingCustomImages(false)
+      }
+    }
+
+    const timer = setTimeout(searchCustomImages, 300)
+    return () => clearTimeout(timer)
+  }, [customPickImageSearch, selectedSport, games])
+
+  // Custom pick game search effect
+  useEffect(() => {
+    const query = customPickGameSearch.trim()
+    
+    if (query.length < 2) {
+      setCustomPickGameResults([])
+      return
+    }
+
+    console.log('[CUSTOM PICK] Searching games for:', query)
+
+    // Filter games by team name
+    const filtered = games.filter(g =>
+      getTeamName(g.away_team).toLowerCase().includes(query.toLowerCase()) ||
+      getTeamName(g.home_team).toLowerCase().includes(query.toLowerCase())
+    )
+    
+    console.log('[CUSTOM PICK] Found games:', filtered.length)
+    setCustomPickGameResults(filtered)
+  }, [customPickGameSearch, games])
   
   // UI state
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [playerSearchResults, setPlayerSearchResults] = useState<any[]>([])
+  const [searchingPlayers, setSearchingPlayers] = useState(false)
 
   // Load bettors on mount
   useEffect(() => {
@@ -149,13 +300,120 @@ export default function SubmitPicksPage() {
       const data = await res.json()
       
       if (data.success) {
-        setGameMarkets(prev => ({ ...prev, [game.game_id]: data.markets }))
+        // Store both best_lines and all_lines from new API structure
+        setGameMarkets(prev => ({ 
+          ...prev, 
+          [game.game_id]: {
+            best_lines: data.best_lines,
+            all_lines: data.all_lines,
+            available_books: data.available_books
+          }
+        }))
       }
     } catch (err: any) {
       console.error('Failed to load markets:', err)
     } finally {
       setLoadingMarkets(prev => ({ ...prev, [game.game_id]: false }))
     }
+  }
+
+  const fetchProps = async (game: Game) => {
+    // Only fetch props for NFL and NBA
+    if (selectedSport !== 'nfl' && selectedSport !== 'nba') return
+    if (gameProps[game.game_id]) return // Already loaded
+    
+    setLoadingProps(prev => ({ ...prev, [game.game_id]: true }))
+    try {
+      console.log('[PROPS] Fetching props for game:', game.game_id, 'sport:', selectedSport)
+      const res = await fetch(`/api/analyst-picks/player-props?oddsApiId=${game.odds_api_id}&sport=${selectedSport}`)
+      const data = await res.json()
+      
+      console.log('[PROPS] API Response:', data)
+      
+      if (data.success) {
+        console.log('[PROPS] Players received:', data.players?.length || 0)
+        // Group props by position
+        const grouped = groupPropsByPosition(data.players, selectedSport)
+        console.log('[PROPS] Grouped by position:', Object.keys(grouped))
+        setGameProps(prev => ({ 
+          ...prev, 
+          [game.game_id]: grouped
+        }))
+      } else {
+        console.error('[PROPS] API returned success=false:', data.error)
+      }
+    } catch (err: any) {
+      console.error('Failed to load props:', err)
+    } finally {
+      setLoadingProps(prev => ({ ...prev, [game.game_id]: false }))
+    }
+  }
+
+  // Helper to group props by position
+  const groupPropsByPosition = (players: any[], sport: string) => {
+    console.log('[PROPS] Grouping', players?.length || 0, 'players for', sport)
+    
+    const positionOrder = sport === 'nfl' 
+      ? ['QB', 'WR', 'RB', 'TE', 'K', 'DEF', 'No Position']
+      : ['Guard', 'Forward', 'Center', 'No Position']
+    
+    const grouped: Record<string, any[]> = {}
+    
+    players?.forEach(player => {
+      let position = sport === 'nfl' 
+        ? player.position 
+        : simplifyNBAPosition(player.position)
+      
+      console.log('[PROPS] Player:', player.player_name, 'Position:', position)
+      
+      // Filter out known defensive players (except team defense)
+      if (sport === 'nfl') {
+        const defensivePositions = ['LB', 'CB', 'S', 'DE', 'DT', 'OLB', 'ILB', 'FS', 'SS', 'NT', 'EDGE']
+        if (defensivePositions.includes(position)) {
+          console.log('[PROPS] Skipping defensive player:', player.player_name, position)
+          return // Skip defensive players
+        }
+      }
+      
+      // Handle Unknown position -> "No Position"
+      if (position === 'Unknown' || !position) {
+        position = 'No Position'
+        console.log('[PROPS] Player has no position:', player.player_name, '-> "No Position"')
+      }
+      
+      if (!grouped[position]) {
+        grouped[position] = []
+      }
+      grouped[position].push(player)
+    })
+    
+    console.log('[PROPS] Grouped positions:', Object.keys(grouped))
+    
+    // Sort each position group by player name
+    Object.keys(grouped).forEach(pos => {
+      grouped[pos].sort((a, b) => a.player_name.localeCompare(b.player_name))
+    })
+    
+    // Return in correct order
+    const ordered: Record<string, any[]> = {}
+    positionOrder.forEach(pos => {
+      if (grouped[pos]) {
+        ordered[pos] = grouped[pos]
+      }
+    })
+    
+    console.log('[PROPS] Ordered positions:', Object.keys(ordered))
+    
+    return ordered
+  }
+
+  // Helper to simplify NBA positions
+  const simplifyNBAPosition = (position: string) => {
+    const pos = position.toUpperCase()
+    if (pos === 'G' || pos.includes('G') || pos === 'PG' || pos === 'SG') return 'Guard'
+    if (pos === 'F' || pos.includes('F') || pos === 'SF' || pos === 'PF') return 'Forward'
+    if (pos === 'C' || pos.includes('C')) return 'Center'
+    return 'No Position' // Fallback instead of default
   }
 
   const handleSportChange = (sport: string) => {
@@ -172,6 +430,7 @@ export default function SubmitPicksPage() {
     } else {
       setExpandedGame(game.game_id)
       fetchMarkets(game)
+      fetchProps(game) // Also fetch props for NFL/NBA
     }
   }
 
@@ -193,6 +452,37 @@ export default function SubmitPicksPage() {
     )
   })
 
+  // Search for players when query changes (for NFL/NBA only)
+  useEffect(() => {
+    const searchPlayers = async () => {
+      if (!searchQuery || searchQuery.length < 2) {
+        setPlayerSearchResults([])
+        return
+      }
+
+      if (selectedSport !== 'nfl' && selectedSport !== 'nba') {
+        return
+      }
+
+      setSearchingPlayers(true)
+      try {
+        const res = await fetch(`/api/analyst-picks/search-players?query=${searchQuery}&sport=${selectedSport}`)
+        const data = await res.json()
+        
+        if (data.success) {
+          setPlayerSearchResults(data.players)
+        }
+      } catch (err: any) {
+        console.error('Failed to search players:', err)
+      } finally {
+        setSearchingPlayers(false)
+      }
+    }
+
+    const debounceTimer = setTimeout(searchPlayers, 300)
+    return () => clearTimeout(debounceTimer)
+  }, [searchQuery, selectedSport])
+
   const addPickToSlate = (
     game: Game, 
     betTitle: string, 
@@ -200,7 +490,8 @@ export default function SubmitPicksPage() {
     odds: number, 
     book: string,
     betType: 'spread' | 'moneyline' | 'total' | 'prop',
-    teamName?: string // For spreads/MLs - which team is being bet
+    teamName?: string, // For spreads/MLs - which team is being bet
+    playerImage?: string // For props - player headshot
   ) => {
     // Determine which logo to show for the bet title
     let betTeamLogo: string | null = null
@@ -222,7 +513,7 @@ export default function SubmitPicksPage() {
       }
     }
     // For totals, we'll show both logos (handled in rendering)
-    // For props, we'll use prop_image (future)
+    // For props, we'll use playerImage parameter
     
     const newPick: SlatePick = {
       id: `pick_${Date.now()}_${Math.random()}`,
@@ -242,7 +533,7 @@ export default function SubmitPicksPage() {
       game_id: game.game_id,
       away_team_logo: game.away_team_logo,
       home_team_logo: game.home_team_logo,
-      prop_image: null,
+      prop_image: betType === 'prop' ? (playerImage || null) : null,
       bet_type: betType,
       bet_team_logo: betTeamLogo,
       bet_team_name: betTeamName
@@ -382,6 +673,18 @@ export default function SubmitPicksPage() {
               <FaBasketballBall /> NBA
             </button>
             <button
+              className={`${styles.sportBtn} ${selectedSport === 'nhl' ? styles.active : ''}`}
+              onClick={() => handleSportChange('nhl')}
+            >
+              <FaHockeyPuck /> NHL
+            </button>
+            <button
+              className={`${styles.sportBtn} ${selectedSport === 'mlb' ? styles.active : ''}`}
+              onClick={() => handleSportChange('mlb')}
+            >
+              <FaBaseballBall /> MLB
+            </button>
+            <button
               className={`${styles.sportBtn} ${selectedSport === 'cfb' ? styles.active : ''}`}
               onClick={() => handleSportChange('cfb')}
             >
@@ -418,7 +721,7 @@ export default function SubmitPicksPage() {
           ) : (
             <div className={styles.gamesList}>
               {filteredGames.map((game) => (
-                <div key={game.game_id} className={styles.gameItem}>
+                <div key={game.game_id} className={styles.gameItem} data-game-id={game.game_id}>
                   <button
                     className={styles.gameHeader}
                     onClick={() => handleGameClick(game)}
@@ -449,164 +752,710 @@ export default function SubmitPicksPage() {
                     <div className={styles.marketsDropdown}>
                       {loadingMarkets[game.game_id] ? (
                         <div className={styles.loadingMarkets}>Loading odds...</div>
-                      ) : gameMarkets[game.game_id] ? (
+                      ) : gameMarkets[game.game_id] && gameMarkets[game.game_id].best_lines ? (
                         <div className={styles.marketsContainer}>
                           {/* Spreads */}
-                          {gameMarkets[game.game_id].spreads && (
+                          {gameMarkets[game.game_id].best_lines.spreads && (
                             <div className={styles.marketSection}>
-                              <h4>Spreads</h4>
-                              <div className={styles.betTypeList}>
-                                {[...gameMarkets[game.game_id].spreads.away, ...gameMarkets[game.game_id].spreads.home].map((marketGroup: Market[], idx: number) => {
-                                  const firstMarket = marketGroup[0]
-                                  const teamName = getTeamName(firstMarket.team)
-                                  const betTitle = `${teamName} ${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`
-                                  const betKey = `spread_${game.game_id}_${idx}`
+                              <h4 className={styles.marketTitle}>Spreads</h4>
+                              <div className={styles.sideBySide}>
+                                {/* Away Spread */}
+                                {gameMarkets[game.game_id].best_lines.spreads.away && (() => {
+                                  const bestAway = gameMarkets[game.game_id].best_lines.spreads.away
+                                  const teamName = getTeamName(game.away_team)
+                                  const betKey = `spread_away_${game.game_id}`
                                   const isExpanded = expandedBet === betKey
                                   
-                                  // Determine which team's logo to show
-                                  const isHomeTeam = teamName.toLowerCase().includes(getTeamName(game.home_team).toLowerCase()) ||
-                                                    getTeamName(game.home_team).toLowerCase().includes(teamName.toLowerCase())
-                                  const teamLogo = isHomeTeam ? game.home_team_logo : game.away_team_logo
-                                  
                                   return (
-                                    <div key={idx} className={styles.betTypeItem}>
+                                    <div className={styles.betCard}>
                                       <button
-                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <div className={styles.betTeamInfo}>
-                                          {teamLogo && <img src={teamLogo} alt="" className={styles.betTeamLogo} />}
-                                          <span className={styles.betTeam}>{teamName}</span>
+                                        {game.away_team_logo && (
+                                          <img src={game.away_team_logo} alt="" className={styles.betCardLogo} />
+                                        )}
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>{teamName}</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestAway.point > 0 ? '+' : ''}{bestAway.point} ({bestAway.odds > 0 ? '+' : ''}{bestAway.odds})
+                                          </span>
                                         </div>
-                                        <span className={styles.betLine}>{firstMarket.point > 0 ? '+' : ''}{firstMarket.point}</span>
                                       </button>
                                       
-                                      {isExpanded && (
-                                        <div className={styles.bookOptions}>
-                                          {marketGroup.map((market, bookIdx) => (
-                                            <button
-                                              key={bookIdx}
-                                              className={styles.bookOption}
-                                              onClick={() => {
-                                                addPickToSlate(game, betTitle, `${firstMarket.point > 0 ? '+' : ''}${firstMarket.point}`, market.odds, market.book, 'spread', teamName)
-                                                setExpandedBet(null)
-                                              }}
-                                            >
-                                              <span className={styles.bookName}>{market.book}</span>
-                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                            </button>
-                                          ))}
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.spreads?.away && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.spreads.away.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${teamName} ${market.point > 0 ? '+' : ''}${market.point}`
+                                                  addPickToSlate(game, betTitle, `${market.point > 0 ? '+' : ''}${market.point}`, market.odds, market.book, 'spread', teamName)
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>{market.point > 0 ? '+' : ''}{market.point}</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
                                         </div>
                                       )}
                                     </div>
                                   )
-                                })}
+                                })()}
+                                
+                                {/* Home Spread */}
+                                {gameMarkets[game.game_id].best_lines.spreads.home && (() => {
+                                  const bestHome = gameMarkets[game.game_id].best_lines.spreads.home
+                                  const teamName = getTeamName(game.home_team)
+                                  const betKey = `spread_home_${game.game_id}`
+                                  const isExpanded = expandedBet === betKey
+                                  
+                                  return (
+                                    <div className={styles.betCard}>
+                                      <button
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        {game.home_team_logo && (
+                                          <img src={game.home_team_logo} alt="" className={styles.betCardLogo} />
+                                        )}
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>{teamName}</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestHome.point > 0 ? '+' : ''}{bestHome.point} ({bestHome.odds > 0 ? '+' : ''}{bestHome.odds})
+                                          </span>
+                                        </div>
+                                      </button>
+                                      
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.spreads?.home && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.spreads.home.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${teamName} ${market.point > 0 ? '+' : ''}${market.point}`
+                                                  addPickToSlate(game, betTitle, `${market.point > 0 ? '+' : ''}${market.point}`, market.odds, market.book, 'spread', teamName)
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>{market.point > 0 ? '+' : ''}{market.point}</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })()}
                               </div>
                             </div>
                           )}
 
                           {/* Moneylines */}
-                          {gameMarkets[game.game_id].moneylines && (
+                          {gameMarkets[game.game_id].best_lines.moneylines && (
                             <div className={styles.marketSection}>
-                              <h4>Moneylines</h4>
-                              <div className={styles.betTypeList}>
-                                {[...gameMarkets[game.game_id].moneylines.away, ...gameMarkets[game.game_id].moneylines.home].map((marketGroup: Market[], idx: number) => {
-                                  const firstMarket = marketGroup[0]
-                                  const teamName = getTeamName(firstMarket.team)
-                                  const betTitle = `${teamName} ML`
-                                  const betKey = `ml_${game.game_id}_${idx}`
+                              <h4 className={styles.marketTitle}>Moneylines</h4>
+                              <div className={styles.sideBySide}>
+                                {/* Away ML */}
+                                {gameMarkets[game.game_id].best_lines.moneylines.away && (() => {
+                                  const bestAway = gameMarkets[game.game_id].best_lines.moneylines.away
+                                  const teamName = getTeamName(game.away_team)
+                                  const betKey = `ml_away_${game.game_id}`
                                   const isExpanded = expandedBet === betKey
                                   
-                                  // Determine which team's logo to show
-                                  const isHomeTeam = teamName.toLowerCase().includes(getTeamName(game.home_team).toLowerCase()) ||
-                                                    getTeamName(game.home_team).toLowerCase().includes(teamName.toLowerCase())
-                                  const teamLogo = isHomeTeam ? game.home_team_logo : game.away_team_logo
-                                  
                                   return (
-                                    <div key={idx} className={styles.betTypeItem}>
+                                    <div className={styles.betCard}>
                                       <button
-                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <div className={styles.betTeamInfo}>
-                                          {teamLogo && <img src={teamLogo} alt="" className={styles.betTeamLogo} />}
-                                          <span className={styles.betTeam}>{teamName}</span>
+                                        {game.away_team_logo && (
+                                          <img src={game.away_team_logo} alt="" className={styles.betCardLogo} />
+                                        )}
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>{teamName}</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestAway.odds > 0 ? '+' : ''}{bestAway.odds}
+                                          </span>
                                         </div>
-                                        <span className={styles.betLine}>ML</span>
                                       </button>
                                       
-                                      {isExpanded && (
-                                        <div className={styles.bookOptions}>
-                                          {marketGroup.map((market, bookIdx) => (
-                                            <button
-                                              key={bookIdx}
-                                              className={styles.bookOption}
-                                              onClick={() => {
-                                                addPickToSlate(game, betTitle, 'ML', market.odds, market.book, 'moneyline', teamName)
-                                                setExpandedBet(null)
-                                              }}
-                                            >
-                                              <span className={styles.bookName}>{market.book}</span>
-                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                            </button>
-                                          ))}
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.moneylines?.away && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.moneylines.away.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${teamName} ML`
+                                                  addPickToSlate(game, betTitle, 'ML', market.odds, market.book, 'moneyline', teamName)
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>ML</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
                                         </div>
                                       )}
                                     </div>
                                   )
-                                })}
+                                })()}
+                                
+                                {/* Home ML */}
+                                {gameMarkets[game.game_id].best_lines.moneylines.home && (() => {
+                                  const bestHome = gameMarkets[game.game_id].best_lines.moneylines.home
+                                  const teamName = getTeamName(game.home_team)
+                                  const betKey = `ml_home_${game.game_id}`
+                                  const isExpanded = expandedBet === betKey
+                                  
+                                  return (
+                                    <div className={styles.betCard}>
+                                      <button
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        {game.home_team_logo && (
+                                          <img src={game.home_team_logo} alt="" className={styles.betCardLogo} />
+                                        )}
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>{teamName}</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestHome.odds > 0 ? '+' : ''}{bestHome.odds}
+                                          </span>
+                                        </div>
+                                      </button>
+                                      
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.moneylines?.home && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.moneylines.home.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${teamName} ML`
+                                                  addPickToSlate(game, betTitle, 'ML', market.odds, market.book, 'moneyline', teamName)
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>ML</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })()}
                               </div>
                             </div>
                           )}
 
                           {/* Totals */}
-                          {gameMarkets[game.game_id].totals && (
+                          {gameMarkets[game.game_id].best_lines.totals && (
                             <div className={styles.marketSection}>
-                              <h4>Totals</h4>
-                              <div className={styles.betTypeList}>
-                                {[...gameMarkets[game.game_id].totals.over, ...gameMarkets[game.game_id].totals.under].map((marketGroup: Market[], idx: number) => {
-                                  const firstMarket = marketGroup[0]
-                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} ${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`
-                                  const betKey = `total_${game.game_id}_${idx}`
+                              <h4 className={styles.marketTitle}>Totals</h4>
+                              <div className={styles.sideBySide}>
+                                {/* Under */}
+                                {gameMarkets[game.game_id].best_lines.totals.under && (() => {
+                                  const bestUnder = gameMarkets[game.game_id].best_lines.totals.under
+                                  const betKey = `total_under_${game.game_id}`
                                   const isExpanded = expandedBet === betKey
                                   
                                   return (
-                                    <div key={idx} className={styles.betTypeItem}>
+                                    <div className={styles.betCard}>
                                       <button
-                                        className={`${styles.betTypeBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
                                         onClick={() => setExpandedBet(isExpanded ? null : betKey)}
                                       >
-                                        <div className={styles.betTeamInfo}>
-                                          <div className={styles.totalLogosSmall}>
-                                            {game.away_team_logo && <img src={game.away_team_logo} alt="" className={styles.betTeamLogoTotal} />}
-                                            {game.home_team_logo && <img src={game.home_team_logo} alt="" className={styles.betTeamLogoTotal} />}
-                                          </div>
-                                          <span className={styles.betTeam}>{firstMarket.type?.toUpperCase()}</span>
+                                        <div className={styles.totalLogos}>
+                                          {game.away_team_logo && <img src={game.away_team_logo} alt="" />}
+                                          {game.home_team_logo && <img src={game.home_team_logo} alt="" />}
                                         </div>
-                                        <span className={styles.betLine}>{firstMarket.point}</span>
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>UNDER</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestUnder.point} ({bestUnder.odds > 0 ? '+' : ''}{bestUnder.odds})
+                                          </span>
+                                        </div>
                                       </button>
                                       
-                                      {isExpanded && (
-                                        <div className={styles.bookOptions}>
-                                          {marketGroup.map((market, bookIdx) => (
-                                            <button
-                                              key={bookIdx}
-                                              className={styles.bookOption}
-                                              onClick={() => {
-                                                addPickToSlate(game, betTitle, `${firstMarket.type === 'over' ? 'O' : 'U'}${firstMarket.point}`, market.odds, market.book, 'total')
-                                                setExpandedBet(null)
-                                              }}
-                                            >
-                                              <span className={styles.bookName}>{market.book}</span>
-                                              <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
-                                            </button>
-                                          ))}
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.totals?.under && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.totals.under.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} U${market.point}`
+                                                  addPickToSlate(game, betTitle, `U${market.point}`, market.odds, market.book, 'total')
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>U{market.point}</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
                                         </div>
                                       )}
                                     </div>
                                   )
-                                })}
+                                })()}
+                                
+                                {/* Over */}
+                                {gameMarkets[game.game_id].best_lines.totals.over && (() => {
+                                  const bestOver = gameMarkets[game.game_id].best_lines.totals.over
+                                  const betKey = `total_over_${game.game_id}`
+                                  const isExpanded = expandedBet === betKey
+                                  
+                                  return (
+                                    <div className={styles.betCard}>
+                                      <button
+                                        className={`${styles.betCardBtn} ${isExpanded ? styles.expanded : ''}`}
+                                        onClick={() => setExpandedBet(isExpanded ? null : betKey)}
+                                      >
+                                        <div className={styles.totalLogos}>
+                                          {game.away_team_logo && <img src={game.away_team_logo} alt="" />}
+                                          {game.home_team_logo && <img src={game.home_team_logo} alt="" />}
+                                        </div>
+                                        <div className={styles.betCardInfo}>
+                                          <span className={styles.betCardTeam}>OVER</span>
+                                          <span className={styles.betCardLine}>
+                                            {bestOver.point} ({bestOver.odds > 0 ? '+' : ''}{bestOver.odds})
+                                          </span>
+                                        </div>
+                                      </button>
+                                      
+                                      {isExpanded && gameMarkets[game.game_id].all_lines?.totals?.over && (
+                                        <div className={styles.allBooks}>
+                                          {gameMarkets[game.game_id].all_lines.totals.over.map((group: any[], idx: number) => 
+                                            group.map((market: any, bookIdx: number) => (
+                                              <button
+                                                key={`${idx}-${bookIdx}`}
+                                                className={styles.bookBtn}
+                                                onClick={() => {
+                                                  const betTitle = `${getTeamName(game.away_team)} / ${getTeamName(game.home_team)} O${market.point}`
+                                                  addPickToSlate(game, betTitle, `O${market.point}`, market.odds, market.book, 'total')
+                                                  setExpandedBet(null)
+                                                }}
+                                              >
+                                                <span className={styles.bookName}>{market.book}</span>
+                                                <span className={styles.bookLine}>O{market.point}</span>
+                                                <span className={styles.bookOdds}>{market.odds > 0 ? '+' : ''}{market.odds}</span>
+                                              </button>
+                                            ))
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })()}
                               </div>
+                            </div>
+                          )}
+
+                          {/* Props Section - Only for NFL and NBA */}
+                          {(selectedSport === 'nfl' || selectedSport === 'nba') && (
+                            <div className={styles.marketSection}>
+                              <h4 className={styles.marketTitle}>Props</h4>
+                              {loadingProps[game.game_id] ? (
+                                <div className={styles.loadingMarkets}>Loading props...</div>
+                              ) : gameProps[game.game_id] && Object.keys(gameProps[game.game_id]).length > 0 ? (
+                                <div className={styles.propsHierarchy}>
+                                  {/* Level 1: Position */}
+                                  {Object.entries(gameProps[game.game_id]).map(([position, players]: [string, any]) => {
+                                    const positionKey = `${game.game_id}_${position}`
+                                    const isPositionExpanded = expandedPosition === positionKey
+                                    
+                                    return (
+                                      <div key={position} className={styles.positionCollapse}>
+                                        <button
+                                          className={`${styles.positionBtn} ${isPositionExpanded ? styles.expanded : ''}`}
+                                          onClick={() => {
+                                            setExpandedPosition(isPositionExpanded ? null : positionKey)
+                                            setExpandedPlayer(null)
+                                            setExpandedPropType(null)
+                                          }}
+                                        >
+                                          <span className={styles.positionLabel}>{position}</span>
+                                          <span className={styles.expandIcon}>{isPositionExpanded ? '−' : '+'}</span>
+                                        </button>
+                                        
+                                        {/* Level 2: Players (shown when position expanded) */}
+                                        {isPositionExpanded && (
+                                          <div className={styles.playersContainer}>
+                                            {players.map((player: any) => {
+                                              const playerKey = `${positionKey}_${player.player_name}`
+                                              const isPlayerExpanded = expandedPlayer === playerKey
+                                              const playerImage = player.headshot_url || '/placeholder-player.svg'
+                                              
+                                              return (
+                                                <div key={player.player_name} className={styles.playerCollapse}>
+                                                  <button
+                                                    className={`${styles.playerBtn} ${isPlayerExpanded ? styles.expanded : ''}`}
+                                                    onClick={() => {
+                                                      setExpandedPlayer(isPlayerExpanded ? null : playerKey)
+                                                      setExpandedPropType(null)
+                                                    }}
+                                                  >
+                                                    <img 
+                                                      src={playerImage} 
+                                                      alt={player.player_name} 
+                                                      className={styles.playerThumb}
+                                                      onError={(e) => {
+                                                        e.currentTarget.src = '/placeholder-player.svg'
+                                                      }}
+                                                    />
+                                                    <span className={styles.playerLabel}>{player.player_name}</span>
+                                                    <span className={styles.expandIcon}>{isPlayerExpanded ? '−' : '+'}</span>
+                                                  </button>
+                                                  
+                                                  {/* Level 3: Prop Types (shown when player expanded) */}
+                                                  {isPlayerExpanded && (() => {
+                                                    // Helper to check if market is alternate
+                                                    const isAlternate = (market: string) => market.includes('_alternate')
+                                                    
+                                                    // Group props: standard by market+point, alternates by just market
+                                                    const propsByMarket: Record<string, any> = {}
+                                                    
+                                                    player.props.forEach((prop: any) => {
+                                                      const isAlt = isAlternate(prop.market)
+                                                      // For alternates, group by just market; for standard, by market+point
+                                                      const marketKey = isAlt 
+                                                        ? prop.market 
+                                                        : (prop.point ? `${prop.market}|${prop.point}` : `${prop.market}|anytime`)
+                                                      
+                                                      if (!propsByMarket[marketKey]) {
+                                                        propsByMarket[marketKey] = {
+                                                          market: prop.market,
+                                                          market_display: prop.market_display,
+                                                          isAlternate: isAlt,
+                                                          point: !isAlt ? prop.point : null, // Only for standard
+                                                          lines: {} // For alternates: group by line value
+                                                        }
+                                                      }
+                                                      
+                                                      if (isAlt) {
+                                                        // For alternates, group by line value
+                                                        const lineKey = prop.point || 'anytime'
+                                                        if (!propsByMarket[marketKey].lines[lineKey]) {
+                                                          propsByMarket[marketKey].lines[lineKey] = {
+                                                            point: prop.point,
+                                                            overs: [],
+                                                            unders: []
+                                                          }
+                                                        }
+                                                        if (prop.name.toLowerCase().includes('over')) {
+                                                          propsByMarket[marketKey].lines[lineKey].overs.push(prop)
+                                                        } else if (prop.name.toLowerCase().includes('under')) {
+                                                          propsByMarket[marketKey].lines[lineKey].unders.push(prop)
+                                                        } else {
+                                                          // For Yes/No props like anytime TD
+                                                          if (!propsByMarket[marketKey].lines[lineKey].options) {
+                                                            propsByMarket[marketKey].lines[lineKey].options = []
+                                                          }
+                                                          propsByMarket[marketKey].lines[lineKey].options.push(prop)
+                                                        }
+                                                      } else {
+                                                        // For standard props, use old structure
+                                                        if (!propsByMarket[marketKey].overs) {
+                                                          propsByMarket[marketKey].overs = []
+                                                          propsByMarket[marketKey].unders = []
+                                                          propsByMarket[marketKey].options = []
+                                                        }
+                                                        if (prop.name.toLowerCase().includes('over')) {
+                                                          propsByMarket[marketKey].overs.push(prop)
+                                                        } else if (prop.name.toLowerCase().includes('under')) {
+                                                          propsByMarket[marketKey].unders.push(prop)
+                                                        } else {
+                                                          propsByMarket[marketKey].options.push(prop)
+                                                        }
+                                                      }
+                                                    })
+                                                    
+                                                    return (
+                                                      <div className={styles.propTypesContainer}>
+                                                        {Object.entries(propsByMarket).map(([marketKey, propGroup]: [string, any]) => {
+                                                          const propTypeKey = `${playerKey}_${marketKey}`
+                                                          const isPropExpanded = expandedPropType === propTypeKey
+                                                          const marketDisplay = propGroup.market_display || propGroup.market
+                                                          
+                                                          // Handle ALTERNATE props differently
+                                                          if (propGroup.isAlternate) {
+                                                            const lineCount = Object.keys(propGroup.lines).length
+                                                            if (lineCount === 0) return null
+                                                            
+                                                            return (
+                                                              <div key={marketKey} className={styles.propTypeCollapse}>
+                                                                <button
+                                                                  className={`${styles.propTypeBtn} ${isPropExpanded ? styles.expanded : ''}`}
+                                                                  onClick={() => {
+                                                                    setExpandedPropType(isPropExpanded ? null : propTypeKey)
+                                                                    setExpandedAltLine(null)
+                                                                  }}
+                                                                >
+                                                                  <span className={styles.propTypeLabel}>{marketDisplay}</span>
+                                                                  <span className={styles.propAltLineCount}>{lineCount} lines</span>
+                                                                  <span className={styles.expandIcon}>{isPropExpanded ? '−' : '+'}</span>
+                                                                </button>
+                                                                
+                                                                {/* Show all line values when expanded */}
+                                                                {isPropExpanded && (
+                                                                  <div className={styles.altLinesContainer}>
+                                                                    {Object.entries(propGroup.lines)
+                                                                      .sort(([a]: [string, any], [b]: [string, any]) => {
+                                                                        if (a === 'anytime') return -1
+                                                                        if (b === 'anytime') return 1
+                                                                        return parseFloat(a) - parseFloat(b)
+                                                                      })
+                                                                      .map(([lineValue, lineData]: [string, any]) => {
+                                                                        const altLineKey = `${propTypeKey}_${lineValue}`
+                                                                        const isAltLineExpanded = expandedAltLine === altLineKey
+                                                                        
+                                                                        return (
+                                                                          <div key={lineValue} className={styles.altLineItem}>
+                                                                            <button
+                                                                              className={`${styles.altLineBtn} ${isAltLineExpanded ? styles.expanded : ''}`}
+                                                                              onClick={() => {
+                                                                                setExpandedAltLine(isAltLineExpanded ? null : altLineKey)
+                                                                              }}
+                                                                            >
+                                                                              <span className={styles.altLineLabel}>
+                                                                                {lineValue === 'anytime' ? 'Anytime' : `O/U ${lineValue}`}
+                                                                              </span>
+                                                                              <span className={styles.expandIcon}>{isAltLineExpanded ? '−' : '+'}</span>
+                                                                            </button>
+                                                                            
+                                                                            {/* Show all books for this line */}
+                                                                            {isAltLineExpanded && (
+                                                                              <div className={styles.propLinesContainer}>
+                                                                                {lineData.overs.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    <span className={styles.propLineLabel}>OVER</span>
+                                                                                    {lineData.overs.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} O${prop.point || ''}`
+                                                                                          addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>O{prop.point}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                                
+                                                                                {lineData.unders.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    <span className={styles.propLineLabel}>UNDER</span>
+                                                                                    {lineData.unders.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} U${prop.point || ''}`
+                                                                                          addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>U{prop.point}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                                
+                                                                                {lineData.options && lineData.options.length > 0 && (
+                                                                                  <div className={styles.propLineGroup}>
+                                                                                    {lineData.options.map((prop: any, idx: number) => (
+                                                                                      <button
+                                                                                        key={idx}
+                                                                                        className={styles.propLineBtn}
+                                                                                        onClick={() => {
+                                                                                          const betTitle = `${player.player_name} ${marketDisplay} ${prop.name}`
+                                                                                          addPickToSlate(game, betTitle, prop.name, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                                          setExpandedPropType(null)
+                                                                                          setExpandedAltLine(null)
+                                                                                        }}
+                                                                                      >
+                                                                                        <span className={styles.propLineBook}>{prop.book}</span>
+                                                                                        <span className={styles.propLineValue}>{prop.name}</span>
+                                                                                        <span className={styles.propLineOdds}>
+                                                                                          {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                                        </span>
+                                                                                      </button>
+                                                                                    ))}
+                                                                                  </div>
+                                                                                )}
+                                                                              </div>
+                                                                            )}
+                                                                          </div>
+                                                                        )
+                                                                      })}
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            )
+                                                          }
+                                                          
+                                                          // Handle STANDARD props (existing logic)
+                                                          if (!propGroup.overs || (propGroup.overs.length === 0 && propGroup.unders.length === 0 && (!propGroup.options || propGroup.options.length === 0))) return null
+                                                          
+                                                          // Find best line (lowest for over, highest for under)
+                                                          const bestOver = propGroup.overs.length > 0 
+                                                            ? propGroup.overs.sort((a: any, b: any) => a.point - b.point)[0]
+                                                            : null
+                                                          
+                                                          const displayLine = bestOver?.point || propGroup.unders[0]?.point
+                                                          
+                                                          return (
+                                                            <div key={marketKey} className={styles.propTypeCollapse}>
+                                                              <button
+                                                                className={`${styles.propTypeBtn} ${isPropExpanded ? styles.expanded : ''}`}
+                                                                onClick={() => {
+                                                                  setExpandedPropType(isPropExpanded ? null : propTypeKey)
+                                                                }}
+                                                              >
+                                                                <span className={styles.propTypeLabel}>
+                                                                  {marketDisplay}
+                                                                </span>
+                                                                {displayLine && (
+                                                                  <span className={styles.propBestLine}>O/U {displayLine}</span>
+                                                                )}
+                                                                <span className={styles.expandIcon}>{isPropExpanded ? '−' : '+'}</span>
+                                                              </button>
+                                                              
+                                                              {/* Level 4: Lines (shown when prop type expanded) */}
+                                                              {isPropExpanded && (() => {
+                                                                const showAllKey = propTypeKey
+                                                                const isShowingAll = showAllLines[showAllKey] || false
+                                                                const sortedOvers = propGroup.overs.sort((a: any, b: any) => a.point - b.point)
+                                                                const sortedUnders = propGroup.unders.sort((a: any, b: any) => b.point - a.point)
+                                                                const displayOvers = isShowingAll ? sortedOvers : sortedOvers.slice(0, 3)
+                                                                const displayUnders = isShowingAll ? sortedUnders : sortedUnders.slice(0, 3)
+                                                                const hasMoreOvers = sortedOvers.length > 3
+                                                                const hasMoreUnders = sortedUnders.length > 3
+                                                                
+                                                                return (
+                                                                  <div className={styles.propLinesContainer}>
+                                                                    {/* Overs */}
+                                                                    {propGroup.overs.length > 0 && (
+                                                                      <div className={styles.propLineGroup}>
+                                                                        <span className={styles.propLineLabel}>OVER</span>
+                                                                        {displayOvers.map((prop: any, idx: number) => (
+                                                                          <button
+                                                                            key={idx}
+                                                                            className={styles.propLineBtn}
+                                                                            onClick={() => {
+                                                                              const betTitle = `${player.player_name} ${marketDisplay} O${prop.point || ''}`
+                                                                              addPickToSlate(game, betTitle, `O${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                              setExpandedPropType(null)
+                                                                            }}
+                                                                          >
+                                                                            <span className={styles.propLineBook}>{prop.book}</span>
+                                                                            <span className={styles.propLineValue}>O{prop.point}</span>
+                                                                            <span className={styles.propLineOdds}>
+                                                                              {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                            </span>
+                                                                          </button>
+                                                                        ))}
+                                                                      </div>
+                                                                    )}
+                                                                    
+                                                                    {/* Unders */}
+                                                                    {propGroup.unders.length > 0 && (
+                                                                      <div className={styles.propLineGroup}>
+                                                                        <span className={styles.propLineLabel}>UNDER</span>
+                                                                        {displayUnders.map((prop: any, idx: number) => (
+                                                                          <button
+                                                                            key={idx}
+                                                                            className={styles.propLineBtn}
+                                                                            onClick={() => {
+                                                                              const betTitle = `${player.player_name} ${marketDisplay} U${prop.point || ''}`
+                                                                              addPickToSlate(game, betTitle, `U${prop.point || ''}`, prop.odds, prop.book, 'prop', undefined, player.headshot_url || '/placeholder-player.svg')
+                                                                              setExpandedPropType(null)
+                                                                            }}
+                                                                          >
+                                                                            <span className={styles.propLineBook}>{prop.book}</span>
+                                                                            <span className={styles.propLineValue}>U{prop.point}</span>
+                                                                            <span className={styles.propLineOdds}>
+                                                                              {prop.odds > 0 ? '+' : ''}{prop.odds}
+                                                                            </span>
+                                                                          </button>
+                                                                        ))}
+                                                                      </div>
+                                                                    )}
+                                                                    
+                                                                    {/* Show All / Show Less button */}
+                                                                    {(hasMoreOvers || hasMoreUnders) && (
+                                                                      <button
+                                                                        className={styles.showAllLinesBtn}
+                                                                        onClick={() => {
+                                                                          setShowAllLines(prev => ({
+                                                                            ...prev,
+                                                                            [showAllKey]: !isShowingAll
+                                                                          }))
+                                                                        }}
+                                                                      >
+                                                                        {isShowingAll 
+                                                                          ? 'Show Less' 
+                                                                          : `Show All ${sortedOvers.length + sortedUnders.length} Lines`
+                                                                        }
+                                                                      </button>
+                                                                    )}
+                                                                  </div>
+                                                                )
+                                                              })()}
+                                                            </div>
+                                                          )
+                                                        })}
+                                                      </div>
+                                                    )
+                                                  })()}
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              ) : (
+                                <div className={styles.propsPlaceholder}>
+                                  <p>No props available for this game</p>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -617,6 +1466,78 @@ export default function SubmitPicksPage() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Player Search Results */}
+          {searchQuery && searchQuery.length >= 2 && (selectedSport === 'nfl' || selectedSport === 'nba') && (
+            <div className={styles.playerSearchSection}>
+              <h3 className={styles.playerSearchTitle}>Player Results</h3>
+              {searchingPlayers ? (
+                <div className={styles.loading}>Searching players...</div>
+              ) : playerSearchResults.length === 0 ? (
+                <div className={styles.noData}>No players match "{searchQuery}"</div>
+              ) : (
+                <div className={styles.playerResultsList}>
+                  {playerSearchResults.map((player) => {
+                    // Find the game where this player's team is playing
+                    const playerGame = games.find(g => 
+                      g.home_team.toLowerCase().includes(player.team.toLowerCase()) ||
+                      g.away_team.toLowerCase().includes(player.team.toLowerCase()) ||
+                      getTeamName(g.home_team).toLowerCase().includes(player.team.toLowerCase()) ||
+                      getTeamName(g.away_team).toLowerCase().includes(player.team.toLowerCase())
+                    )
+                    
+                    return (
+                      <button
+                        key={player.name} 
+                        className={styles.playerResultCard}
+                        onClick={() => {
+                          if (playerGame) {
+                            // Expand the game
+                            setExpandedGame(playerGame.game_id)
+                            // Fetch markets and props
+                            fetchMarkets(playerGame)
+                            fetchProps(playerGame)
+                            // Expand position for this player
+                            const position = selectedSport === 'nfl' 
+                              ? player.position 
+                              : simplifyNBAPosition(player.position)
+                            const positionKey = `${playerGame.game_id}_${position}`
+                            setExpandedPosition(positionKey)
+                            // Expand the player
+                            const playerKey = `${positionKey}_${player.name}`
+                            setExpandedPlayer(playerKey)
+                            // Clear search
+                            setSearchQuery('')
+                            setPlayerSearchResults([])
+                            // Scroll to game
+                            setTimeout(() => {
+                              document.querySelector(`[data-game-id="${playerGame.game_id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }, 100)
+                          }
+                        }}
+                      >
+                        {player.headshot_url && (
+                          <img src={player.headshot_url} alt={player.name} className={styles.playerResultImage} />
+                        )}
+                        <div className={styles.playerResultInfo}>
+                          <span className={styles.playerResultName}>{player.name}</span>
+                          <span className={styles.playerResultMeta}>
+                            {player.position} | {player.team}
+                          </span>
+                          {player.injury_status && player.injury_status !== 'ACTIVE' && (
+                            <span className={styles.playerResultInjury}>{player.injury_status}</span>
+                          )}
+                        </div>
+                        <div className={styles.playerResultHint}>
+                          <small>{playerGame ? `Click to jump to ${player.team} game` : 'No upcoming game found'}</small>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -649,18 +1570,49 @@ export default function SubmitPicksPage() {
                     <div className={styles.pickBetInfo}>
                       <div className={styles.pickBetTitle}>
                         {/* Show logo based on bet type */}
-                        {pick.bet_type === 'spread' || pick.bet_type === 'moneyline' ? (
-                          // Spread/ML: Show single team logo
-                          pick.bet_team_logo && <img src={pick.bet_team_logo} alt="" className={styles.pickTeamLogo} />
+                        {pick.bet_type === 'spread' || pick.bet_type === 'moneyline' || pick.bet_type === 'team_special' ? (
+                          // Spread/ML/Team Special: Show single team logo
+                          <img 
+                            src={pick.bet_team_logo || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.pickTeamLogo} 
+                          />
                         ) : pick.bet_type === 'total' ? (
                           // Total: Show both logos (overlapped)
                           <div className={styles.totalLogos}>
-                            {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
-                            {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.pickTeamLogoTotal} />}
+                            <img 
+                              src={pick.away_team_logo || '/placeholder-player.svg'} 
+                              alt="" 
+                              className={styles.pickTeamLogoTotal} 
+                            />
+                            <img 
+                              src={pick.home_team_logo || '/placeholder-player.svg'} 
+                              alt="" 
+                              className={styles.pickTeamLogoTotal} 
+                            />
                           </div>
                         ) : pick.bet_type === 'prop' ? (
-                          // Prop: Show player image (future)
-                          pick.prop_image && <img src={pick.prop_image} alt="" className={styles.pickPlayerImage} />
+                          // Prop: Show player image
+                          <img 
+                            src={pick.prop_image || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.pickPlayerImage} 
+                          />
+                        ) : pick.bet_type === 'parlay' && pick.parlay_legs ? (
+                          // Parlay: Show overlapped images from all legs (max 4)
+                          <div className={styles.parlayLogos}>
+                            {pick.parlay_legs.slice(0, 4).map((leg, idx) => (
+                              <img 
+                                key={idx} 
+                                src={leg.image || '/placeholder-player.svg'} 
+                                alt="" 
+                                className={styles.pickParlayLogo} 
+                              />
+                            ))}
+                            {pick.parlay_legs.length > 4 && (
+                              <span className={styles.parlayMore}>+{pick.parlay_legs.length - 4}</span>
+                            )}
+                          </div>
                         ) : null}
                         <strong>{pick.bet_title}</strong>
                       </div>
@@ -686,11 +1638,27 @@ export default function SubmitPicksPage() {
 
                   <div className={styles.pickGameInfo}>
                     {/* Game info: (Logo) Away @ (Logo) Home */}
-                    {pick.away_team_logo && <img src={pick.away_team_logo} alt="" className={styles.gameInfoLogo} />}
-                    <span className={styles.teamName}>{pick.away_team_name}</span>
-                    <span className={styles.atSymbol}>@</span>
-                    {pick.home_team_logo && <img src={pick.home_team_logo} alt="" className={styles.gameInfoLogo} />}
-                    <span className={styles.teamName}>{pick.home_team_name}</span>
+                    {pick.away_team_name && (
+                      <>
+                        <img 
+                          src={pick.away_team_logo || '/placeholder-player.svg'} 
+                          alt="" 
+                          className={styles.gameInfoLogo} 
+                        />
+                        <span className={styles.teamName}>{pick.away_team_name}</span>
+                        <span className={styles.atSymbol}>@</span>
+                      </>
+                    )}
+                    {pick.home_team_name && (
+                      <>
+                        <img 
+                          src={pick.home_team_logo || '/placeholder-player.svg'} 
+                          alt="" 
+                          className={styles.gameInfoLogo} 
+                        />
+                        <span className={styles.teamName}>{pick.home_team_name}</span>
+                      </>
+                    )}
                     <span className={styles.pickGameTime}>{pick.game_time_est}</span>
                   </div>
 
@@ -733,18 +1701,404 @@ export default function SubmitPicksPage() {
 
       {/* Custom Pick Modal */}
       {showCustomPick && (
-        <div className={styles.modal} onClick={() => setShowCustomPick(false)}>
+        <div className={styles.modal} onClick={() => {
+          setShowCustomPick(false)
+          // Reset form
+          setCustomPickForm({
+            isMultiLeg: false,
+            betType: '',
+            betTitle: '',
+            odds: '',
+            sportsbook: '',
+            legs: []
+          })
+          setCustomPickImageSearch('')
+          setCustomPickGameSearch('')
+          setCustomPickImageResults([])
+          setCustomPickGameResults([])
+        }}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Custom Pick</h3>
-              <button className={styles.modalClose} onClick={() => setShowCustomPick(false)}>
+              <button className={styles.modalClose} onClick={() => {
+                setShowCustomPick(false)
+                // Reset form
+                setCustomPickForm({
+                  isMultiLeg: false,
+                  betType: '',
+                  betTitle: '',
+                  odds: '',
+                  sportsbook: '',
+                  legs: []
+                })
+                setCustomPickImageSearch('')
+                setCustomPickGameSearch('')
+                setCustomPickImageResults([])
+                setCustomPickGameResults([])
+              }}>
                 <IoClose />
               </button>
             </div>
-            <p className={styles.modalSubtext}>Coming soon - manually enter all pick details</p>
-            <button className={styles.modalBtnCancel} onClick={() => setShowCustomPick(false)}>
-              Close
-            </button>
+
+            <div className={styles.customPickForm}>
+              {/* Multi-leg Toggle */}
+              <div className={styles.multiLegToggle}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={customPickForm.isMultiLeg}
+                    onChange={(e) => setCustomPickForm(prev => ({
+                      ...prev,
+                      isMultiLeg: e.target.checked,
+                      betType: e.target.checked ? 'parlay' : ''
+                    }))}
+                  />
+                  <span>Multi-leg Parlay</span>
+                </label>
+              </div>
+
+              {/* Bet Type */}
+              <div className={styles.formGroup}>
+                <label>Bet Type</label>
+                <select
+                  value={customPickForm.betType}
+                  onChange={(e) => setCustomPickForm(prev => ({
+                    ...prev,
+                    betType: e.target.value as any
+                  }))}
+                  disabled={customPickForm.isMultiLeg}
+                >
+                  <option value="">Select bet type...</option>
+                  {!customPickForm.isMultiLeg && (
+                    <>
+                      <option value="spread">Spread</option>
+                      <option value="moneyline">Moneyline</option>
+                      <option value="total">Total</option>
+                      <option value="team_special">Team Special (Team Total, etc.)</option>
+                      <option value="prop">Prop</option>
+                    </>
+                  )}
+                  {customPickForm.isMultiLeg && <option value="parlay">Parlay</option>}
+                </select>
+              </div>
+
+              {/* Bet Title */}
+              <div className={styles.formGroup}>
+                <label>Bet Title</label>
+                <input
+                  type="text"
+                  placeholder={customPickForm.isMultiLeg ? "e.g., Chiefs ML + Bills ML + Eagles ML" : "e.g., Eagles -3"}
+                  value={customPickForm.betTitle}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, betTitle: e.target.value }))}
+                />
+              </div>
+
+              {/* Odds */}
+              <div className={styles.formGroup}>
+                <label>Odds</label>
+                <input
+                  type="text"
+                  placeholder="e.g., -110 or +150"
+                  value={customPickForm.odds}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, odds: e.target.value }))}
+                />
+              </div>
+
+              {/* Sportsbook */}
+              <div className={styles.formGroup}>
+                <label>Sportsbook</label>
+                <input
+                  type="text"
+                  placeholder="e.g., DraftKings"
+                  value={customPickForm.sportsbook}
+                  onChange={(e) => setCustomPickForm(prev => ({ ...prev, sportsbook: e.target.value }))}
+                />
+              </div>
+
+              {/* Image / Game Search Section */}
+              <div className={styles.formSection}>
+                <h4>Add {customPickForm.isMultiLeg ? 'Legs' : 'Image & Game'}</h4>
+                
+                {/* Image Search */}
+                <div className={styles.formGroup}>
+                  <label>Search for Player/Team (for image)</label>
+                  <input
+                    type="text"
+                    placeholder="Search player or team..."
+                    value={customPickImageSearch}
+                    onChange={(e) => setCustomPickImageSearch(e.target.value)}
+                  />
+                  {searchingCustomImages && <small>Searching...</small>}
+                  
+                  {/* Image Results */}
+                  {customPickImageResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {customPickImageResults.slice(0, 5).map((result: any, idx: number) => (
+                        <button
+                          key={idx}
+                          className={styles.searchResultItem}
+                          onClick={() => {
+                            // For single-leg picks, replace the leg
+                            // For multi-leg, prompt to also select game
+                            if (result.type === 'player') {
+                              // Player selected - still need game
+                              setCustomPickImageSearch('')
+                              setCustomPickImageResults([])
+                              // Show in "selected image" state
+                              alert('Player image selected! Now select the game below.')
+                              // Store temporarily
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                tempImage: result.headshot_url || '/placeholder-player.svg',
+                                tempPlayerName: result.name
+                              }))
+                            } else {
+                              // Team selected - has game info already
+                              const newLeg = {
+                                image: result.logo,
+                                team_name: result.name,
+                                game_id: result.game_id,
+                                game_title: result.game_title,
+                                game_time: result.game_time,
+                                game_time_est: result.game_time_est,
+                                away_team_logo: games.find(g => g.game_id === result.game_id)?.away_team_logo,
+                                home_team_logo: games.find(g => g.game_id === result.game_id)?.home_team_logo
+                              }
+                              
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                legs: prev.isMultiLeg ? [...prev.legs, newLeg] : [newLeg]
+                              }))
+                              setCustomPickImageSearch('')
+                              setCustomPickImageResults([])
+                            }
+                          }}
+                        >
+                          <img 
+                            src={result.type === 'player' ? (result.headshot_url || '/placeholder-player.svg') : result.logo} 
+                            alt={result.name}
+                            className={styles.searchResultImage}
+                          />
+                          <div className={styles.searchResultInfo}>
+                            <span className={styles.searchResultName}>{result.name}</span>
+                            <span className={styles.searchResultMeta}>
+                              {result.type === 'player' ? `${result.position} | ${result.team}` : 'Team'}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Game Search */}
+                <div className={styles.formGroup}>
+                  <label>Search for Game {customPickForm.tempPlayerName && `(for ${customPickForm.tempPlayerName})`}</label>
+                  <input
+                    type="text"
+                    placeholder="Search team name..."
+                    value={customPickGameSearch}
+                    onChange={(e) => setCustomPickGameSearch(e.target.value)}
+                  />
+                  
+                  {/* Game Results */}
+                  {customPickGameResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {customPickGameResults.slice(0, 5).map((game: Game) => (
+                        <button
+                          key={game.game_id}
+                          className={styles.searchResultItem}
+                          onClick={() => {
+                            const newLeg = {
+                              image: customPickForm.tempImage || null,
+                              player_name: customPickForm.tempPlayerName,
+                              game_id: game.game_id,
+                              game_title: `${getTeamName(game.away_team)} @ ${getTeamName(game.home_team)}`,
+                              game_time: game.game_time,
+                              game_time_est: game.game_time_est,
+                              away_team_logo: game.away_team_logo,
+                              home_team_logo: game.home_team_logo
+                            }
+                            
+                            setCustomPickForm(prev => ({
+                              ...prev,
+                              legs: prev.isMultiLeg ? [...prev.legs, newLeg] : [newLeg],
+                              tempImage: undefined,
+                              tempPlayerName: undefined
+                            }))
+                            setCustomPickGameSearch('')
+                            setCustomPickGameResults([])
+                          }}
+                        >
+                          <div className={styles.gameResultLogos}>
+                            <img src={game.away_team_logo} alt="" className={styles.gameResultLogo} />
+                            <img src={game.home_team_logo} alt="" className={styles.gameResultLogo} />
+                          </div>
+                          <div className={styles.searchResultInfo}>
+                            <span className={styles.searchResultName}>
+                              {getTeamName(game.away_team)} @ {getTeamName(game.home_team)}
+                            </span>
+                            <span className={styles.searchResultMeta}>
+                              {game.game_time_est}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Current Legs */}
+                {customPickForm.legs.length > 0 && (
+                  <div className={styles.customPickLegs}>
+                    <label>Added {customPickForm.isMultiLeg ? 'Legs' : 'Selection'}: {customPickForm.legs.length}</label>
+                    <div className={styles.legsList}>
+                      {customPickForm.legs.map((leg, idx) => (
+                        <div key={idx} className={styles.legItem}>
+                          <img 
+                            src={leg.image || '/placeholder-player.svg'} 
+                            alt="" 
+                            className={styles.legImage} 
+                          />
+                          <span>{leg.game_title}</span>
+                          <button 
+                            className={styles.removeLegBtn}
+                            onClick={() => {
+                              setCustomPickForm(prev => ({
+                                ...prev,
+                                legs: prev.legs.filter((_, i) => i !== idx)
+                              }))
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className={styles.modalActions}>
+                <button 
+                  className={styles.modalBtnCancel} 
+                  onClick={() => {
+                    setShowCustomPick(false)
+                    setCustomPickForm({
+                      isMultiLeg: false,
+                      betType: '',
+                      betTitle: '',
+                      odds: '',
+                      sportsbook: '',
+                      legs: []
+                    })
+                    setCustomPickImageSearch('')
+                    setCustomPickGameSearch('')
+                    setCustomPickImageResults([])
+                    setCustomPickGameResults([])
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className={styles.modalBtnAdd}
+                  onClick={() => {
+                    console.log('[CUSTOM PICK] Adding to slate:', customPickForm)
+                    
+                    // Build the pick from custom form
+                    if (customPickForm.isMultiLeg && customPickForm.legs.length > 1) {
+                      // PARLAY: Multiple legs
+                      const latestGame = customPickForm.legs.sort((a, b) => 
+                        new Date(b.game_time).getTime() - new Date(a.game_time).getTime()
+                      )[0]
+                      
+                      const newPick: SlatePick = {
+                        id: `pick_${Date.now()}_${Math.random()}`,
+                        bet_title: customPickForm.betTitle,
+                        line: `${customPickForm.legs.length}-leg parlay`,
+                        odds: customPickForm.odds,
+                        sportsbook: customPickForm.sportsbook,
+                        game_title: `${customPickForm.legs.length}-leg Parlay`,
+                        away_team_name: '',
+                        home_team_name: '',
+                        game_time: latestGame.game_time,
+                        game_time_est: latestGame.game_time_est,
+                        units: '',
+                        analysis: '',
+                        sport: games.find(g => g.game_id === latestGame.game_id)?.sport || selectedSport,
+                        sport_emoji: games.find(g => g.game_id === latestGame.game_id)?.sport_emoji || '🏈',
+                        game_id: latestGame.game_id, // Use latest game ID
+                        away_team_logo: null,
+                        home_team_logo: null,
+                        prop_image: null,
+                        bet_type: 'parlay' as any,
+                        bet_team_logo: null,
+                        bet_team_name: null,
+                        parlay_legs: customPickForm.legs // Store all legs
+                      }
+                      
+                      setSlatePicks(prev => [...prev, newPick])
+                    } else {
+                      // SINGLE LEG: Regular pick
+                      const leg = customPickForm.legs[0]
+                      const game = games.find(g => g.game_id === leg.game_id)
+                      
+                      const newPick: SlatePick = {
+                        id: `pick_${Date.now()}_${Math.random()}`,
+                        bet_title: customPickForm.betTitle,
+                        line: customPickForm.betTitle.split(' ').pop() || '', // Try to extract line
+                        odds: customPickForm.odds,
+                        sportsbook: customPickForm.sportsbook,
+                        game_title: leg.game_title,
+                        away_team_name: getTeamName(game?.away_team || ''),
+                        home_team_name: getTeamName(game?.home_team || ''),
+                        game_time: leg.game_time,
+                        game_time_est: leg.game_time_est,
+                        units: '',
+                        analysis: '',
+                        sport: game?.sport || selectedSport,
+                        sport_emoji: game?.sport_emoji || '🏈',
+                        game_id: leg.game_id || '',
+                        away_team_logo: leg.away_team_logo || null,
+                        home_team_logo: leg.home_team_logo || null,
+                        prop_image: leg.image,
+                        bet_type: customPickForm.betType as any,
+                        bet_team_logo: leg.image,
+                        bet_team_name: leg.player_name || leg.team_name || null
+                      }
+                      
+                      setSlatePicks(prev => [...prev, newPick])
+                    }
+                    
+                    // Reset and close
+                    setShowCustomPick(false)
+                    setCustomPickForm({
+                      isMultiLeg: false,
+                      betType: '',
+                      betTitle: '',
+                      odds: '',
+                      sportsbook: '',
+                      legs: []
+                    })
+                    setCustomPickImageSearch('')
+                    setCustomPickGameSearch('')
+                    setCustomPickImageResults([])
+                    setCustomPickGameResults([])
+                  }}
+                  disabled={
+                    !customPickForm.betType ||
+                    !customPickForm.betTitle ||
+                    !customPickForm.odds ||
+                    !customPickForm.sportsbook ||
+                    customPickForm.legs.length === 0 ||
+                    (customPickForm.isMultiLeg && customPickForm.legs.length < 2)
+                  }
+                >
+                  Add to Slate
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

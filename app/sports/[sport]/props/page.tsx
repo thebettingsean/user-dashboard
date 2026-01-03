@@ -1,12 +1,15 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import DashboardLayout from '../components/DashboardLayout'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function PropsPage() {
-  const params = useParams()
-  const sport = params.sport as string
-
-  return <DashboardLayout sport={sport} initialTab="picks" initialFilter="topProps" />
+export default function PropsPageRedirect() {
+  const router = useRouter()
+  
+  useEffect(() => {
+    router.replace('/picks')
+  }, [router])
+  
+  return null
 }
 

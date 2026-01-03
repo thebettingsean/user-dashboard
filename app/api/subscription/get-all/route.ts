@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
             type: type,
             status: subscription.status,
             current_period_end: (subscription as any).current_period_end,
+            trial_end: (subscription as any).trial_end || null,
             cancel_at: (subscription as any).cancel_at || null,
             is_legacy: isLegacy,
             cancel_at_period_end: isCanceling,

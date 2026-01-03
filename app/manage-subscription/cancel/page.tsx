@@ -3,6 +3,8 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { FiGift, FiStar, FiFrown, FiArrowLeft } from 'react-icons/fi'
+import styles from '../shared.module.css'
 
 type CancelStep = 'loading' | 'offer' | 'reasons' | 'final_offer' | 'confirmed'
 
@@ -66,9 +68,7 @@ export default function CancelPage() {
 
       const data = await response.json()
       
-      // Check if user has already used their one-time extension offer
       if (data.skipToFinalOffer || !data.offer) {
-        console.log('[Cancel Flow] User has already accepted an extension. Skipping to reasons.')
         setStep('reasons')
       } else {
         setOffer(data)
@@ -248,14 +248,14 @@ export default function CancelPage() {
     }
   }
 
+  // Loading
   if (!isLoaded || step === 'loading') {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <div style={styles.loading}>
-            <div style={styles.spinner}></div>
-            <p style={{fontSize: '0.85rem'}}>Loading...</p>
-          </div>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner} />
+          <div className={styles.loadingText}>Loading...</div>
         </div>
       </div>
     )
@@ -264,40 +264,37 @@ export default function CancelPage() {
   // STEP: Initial Offer
   if (step === 'offer' && offer) {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <header style={styles.header}>
-            <h1 style={styles.title}>Before You Go...</h1>
-            <p style={styles.subtitle}>We'd like to make you an offer</p>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.innerContainer}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>Before You Go...</h1>
+            <p className={styles.subtitle}>We'd like to make you an offer</p>
           </header>
 
-          <div style={styles.offerCard}>
-            <div style={styles.offerIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="8" width="18" height="12" rx="2" ry="2"/>
-                <path d="M7 8V6a4 4 0 0 1 8 0v2"/>
-                <line x1="12" y1="13" x2="12" y2="16"/>
-              </svg>
+          <div className={styles.cardOffer}>
+            <div className={styles.iconContainer}>
+              <FiGift className={`${styles.icon} ${styles.iconGold}`} />
             </div>
-            <h2 style={styles.offerTitle}>Special Offer Just for You</h2>
-            <p style={styles.offerMessage}>{offer.offerMessage}</p>
+            <h2 className={styles.cardTitleGold}>Special Offer Just for You</h2>
+            <p className={styles.cardTextStrong}>{offer.offerMessage}</p>
 
             {offer.newRenewalDate && (
-              <div style={styles.renewalInfo}>
+              <div className={styles.infoBox}>
                 <strong>New Renewal Date:</strong> {offer.newRenewalDate}
               </div>
             )}
 
-            <div style={styles.offerButtons}>
+            <div className={styles.buttonGroup}>
               <button
-                style={processing ? styles.acceptButtonDisabled : styles.acceptButton}
+                className={styles.btnSuccess}
                 onClick={handleAcceptFirstOffer}
                 disabled={processing}
               >
                 {processing ? 'Processing...' : 'Accept Offer'}
               </button>
               <button
-                style={processing ? styles.declineButtonDisabled : styles.declineButton}
+                className={styles.btnSecondary}
                 onClick={handleDeclineFirstOffer}
                 disabled={processing}
               >
@@ -307,10 +304,11 @@ export default function CancelPage() {
           </div>
 
           <button 
-            style={styles.backButton}
+            className={styles.btnBack}
             onClick={() => router.push('/manage-subscription')}
           >
-            ← Back to Manage Subscription
+            <FiArrowLeft size={14} />
+            Back to Manage Subscription
           </button>
         </div>
       </div>
@@ -320,21 +318,23 @@ export default function CancelPage() {
   // STEP: Cancellation Reasons
   if (step === 'reasons') {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <header style={styles.header}>
-            <h1 style={styles.title}>We're Sorry to See You Go</h1>
-            <p style={styles.subtitle}>Help us improve by sharing why you're cancelling</p>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.innerContainer}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>We're Sorry to See You Go</h1>
+            <p className={styles.subtitle}>Help us improve by sharing why you're cancelling</p>
           </header>
 
-          <div style={styles.reasonsCard}>
-            <h3 style={styles.reasonsTitle}>Why are you cancelling? (Select all that apply)</h3>
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>Why are you cancelling?</h3>
+            <p className={styles.cardText}>Select all that apply</p>
             
-            <div style={styles.reasonsList}>
+            <div className={styles.reasonsList}>
               {CANCELLATION_REASONS.map((reason) => (
                 <label
                   key={reason.code}
-                  style={
+                  className={
                     selectedReasons.includes(reason.code)
                       ? styles.reasonLabelSelected
                       : styles.reasonLabel
@@ -344,7 +344,7 @@ export default function CancelPage() {
                     type="checkbox"
                     checked={selectedReasons.includes(reason.code)}
                     onChange={() => handleToggleReason(reason.code)}
-                    style={styles.reasonCheckbox}
+                    className={styles.reasonCheckbox}
                   />
                   {reason.label}
                 </label>
@@ -353,7 +353,7 @@ export default function CancelPage() {
 
             {selectedReasons.includes('H') && (
               <textarea
-                style={styles.otherTextarea}
+                className={styles.textarea}
                 placeholder="Please tell us more..."
                 value={otherText}
                 onChange={(e) => setOtherText(e.target.value)}
@@ -362,7 +362,7 @@ export default function CancelPage() {
             )}
 
             <button
-              style={processing ? styles.submitButtonDisabled : styles.submitButton}
+              className={styles.btnPrimary}
               onClick={handleSubmitReasons}
               disabled={processing || selectedReasons.length === 0}
             >
@@ -377,35 +377,34 @@ export default function CancelPage() {
   // STEP: Final Offer (50% off)
   if (step === 'final_offer') {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <header style={styles.header}>
-            <h1 style={styles.title}>One Last Offer</h1>
-            <p style={styles.subtitle}>We really want you to stay</p>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.innerContainer}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>One Last Offer</h1>
+            <p className={styles.subtitle}>We really want you to stay</p>
           </header>
 
-          <div style={styles.finalOfferCard}>
-            <div style={styles.finalOfferIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
+          <div className={styles.cardFinalOffer}>
+            <div className={styles.iconContainer}>
+              <FiStar className={`${styles.icon} ${styles.iconPurple}`} />
             </div>
-            <h2 style={styles.finalOfferTitle}>50% OFF FOR LIFE</h2>
-            <p style={styles.finalOfferMessage}>
+            <h2 className={styles.cardTitlePurple}>50% OFF FOR LIFE</h2>
+            <p className={styles.cardTextStrong}>
               This is our final offer. Get lifetime access to all premium features at <strong>HALF THE PRICE</strong>.
               This discount will stay with you forever.
             </p>
 
-            <div style={styles.finalOfferButtons}>
+            <div className={styles.buttonGroup}>
               <button
-                style={processing ? styles.acceptButtonDisabled : styles.acceptButton}
+                className={styles.btnSuccess}
                 onClick={handleAcceptFinalOffer}
                 disabled={processing}
               >
                 {processing ? 'Processing...' : 'Accept 50% Off'}
               </button>
               <button
-                style={processing ? styles.declineButtonDisabled : styles.declineButton}
+                className={styles.btnDanger}
                 onClick={handleConfirmCancel}
                 disabled={processing}
               >
@@ -421,31 +420,25 @@ export default function CancelPage() {
   // STEP: Confirmed Cancellation
   if (step === 'confirmed') {
     return (
-      <div style={styles.page}>
-        <div style={styles.container}>
-          <div style={styles.confirmedCard}>
-            <div style={styles.confirmedIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
-                <line x1="9" y1="9" x2="9.01" y2="9"/>
-                <line x1="15" y1="9" x2="15.01" y2="9"/>
-              </svg>
+      <div className={styles.container}>
+        <div className={styles.headerSpacer} />
+        <div className={styles.innerContainer}>
+          <div className={styles.cardError}>
+            <div className={styles.iconContainer}>
+              <FiFrown className={`${styles.icon} ${styles.iconRed}`} />
             </div>
-            <h1 style={styles.confirmedTitle}>Subscription Cancelled</h1>
-            <p style={styles.confirmedMessage}>
+            <h1 className={styles.cardTitleRed}>Subscription Cancelled</h1>
+            <p className={styles.cardTextStrong}>
               Your subscription has been cancelled and will end on <strong>{cancelsOn}</strong>.
             </p>
-            <p style={styles.confirmedSubMessage}>
+            <p className={styles.cardText}>
               You'll continue to have access to all premium features until then.
-            </p>
-            <p style={styles.confirmedSubMessage}>
-              We'd love to have you back anytime! You can reactivate your subscription at any time.
+              We'd love to have you back anytime!
             </p>
 
             <button
-              style={styles.backToDashboardButton}
-              onClick={() => router.push('https://dashboard.thebettinginsider.com')}
+              className={styles.btnPrimary}
+              onClick={() => router.push('/')}
             >
               Return to Dashboard
             </button>
@@ -456,303 +449,4 @@ export default function CancelPage() {
   }
 
   return null
-}
-
-const styles = {
-  page: {
-    minHeight: '100vh',
-    padding: '10rem 1.5rem 3rem',
-    background: 'transparent',
-    color: '#ffffff'
-  },
-  container: {
-    maxWidth: '700px',
-    margin: '0 auto',
-    width: '100%'
-  },
-  loading: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-    gap: '1rem'
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '3px solid rgba(255, 255, 255, 0.1)',
-    borderTopColor: '#3b82f6',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  header: {
-    textAlign: 'center' as const,
-    marginBottom: '2rem'
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    marginBottom: '0.5rem'
-  },
-  subtitle: {
-    fontSize: '0.85rem',
-    color: 'rgba(255, 255, 255, 0.7)'
-  },
-  offerCard: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    border: '2px solid rgba(251, 191, 36, 0.4)',
-    borderRadius: '16px',
-    padding: '2rem 1.5rem',
-    marginBottom: '1.5rem',
-    textAlign: 'center' as const
-  },
-  offerIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  offerTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    marginBottom: '0.75rem',
-    color: '#fbbf24'
-  },
-  offerMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '1.25rem',
-    color: 'rgba(255, 255, 255, 0.9)'
-  },
-  renewalInfo: {
-    background: 'rgba(251, 191, 36, 0.1)',
-    border: '1px solid rgba(251, 191, 36, 0.3)',
-    padding: '0.75rem',
-    borderRadius: '8px',
-    marginBottom: '1.5rem',
-    fontSize: '0.85rem'
-  },
-  offerButtons: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem'
-  },
-  acceptButton: {
-    background: 'linear-gradient(135deg, #10b981, #34d399)',
-    color: '#fff',
-    border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
-  },
-  acceptButtonDisabled: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: 'rgba(255, 255, 255, 0.5)',
-    border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'not-allowed'
-  },
-  declineButton: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    color: 'rgba(255, 255, 255, 0.7)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  },
-  declineButtonDisabled: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    color: 'rgba(255, 255, 255, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'not-allowed'
-  },
-  reasonsCard: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '16px',
-    padding: '1.5rem',
-    marginBottom: '1.5rem'
-  },
-  reasonsTitle: {
-    fontSize: '1rem',
-    fontWeight: '700',
-    marginBottom: '1.25rem',
-    textAlign: 'center' as const
-  },
-  reasonsList: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem',
-    marginBottom: '1.25rem'
-  },
-  reasonLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.85rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontSize: '0.85rem'
-  },
-  reasonLabelSelected: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.85rem',
-    background: 'rgba(59, 130, 246, 0.2)',
-    border: '2px solid rgba(59, 130, 246, 0.5)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontSize: '0.85rem',
-    fontWeight: '600'
-  },
-  reasonCheckbox: {
-    width: '18px',
-    height: '18px',
-    cursor: 'pointer'
-  },
-  otherTextarea: {
-    width: '100%',
-    padding: '0.85rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
-    color: '#fff',
-    fontSize: '0.85rem',
-    fontFamily: 'inherit',
-    resize: 'vertical' as const,
-    marginBottom: '1.25rem',
-    boxSizing: 'border-box' as const
-  },
-  submitButton: {
-    width: '100%',
-    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-    color: '#fff',
-    border: 'none',
-    padding: '0.85rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease'
-  },
-  submitButtonDisabled: {
-    width: '100%',
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: 'rgba(255, 255, 255, 0.5)',
-    border: 'none',
-    padding: '0.85rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'not-allowed'
-  },
-  finalOfferCard: {
-    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(167, 139, 250, 0.15))',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    border: '2px solid rgba(139, 92, 246, 0.5)',
-    borderRadius: '16px',
-    padding: '2rem 1.5rem',
-    marginBottom: '1.5rem',
-    textAlign: 'center' as const
-  },
-  finalOfferIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  finalOfferTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '800',
-    marginBottom: '0.75rem',
-    color: '#a78bfa',
-    letterSpacing: '0.5px'
-  },
-  finalOfferMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '1.5rem',
-    color: 'rgba(255, 255, 255, 0.9)'
-  },
-  finalOfferButtons: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.75rem'
-  },
-  confirmedCard: {
-    background: 'linear-gradient(135deg, rgba(14, 23, 42, 0.1) 0%, transparent 50%), rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(50px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '16px',
-    padding: '2rem 1.5rem',
-    textAlign: 'center' as const
-  },
-  confirmedIcon: {
-    marginBottom: '1rem',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  confirmedTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    marginBottom: '0.75rem'
-  },
-  confirmedMessage: {
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-    marginBottom: '0.75rem',
-    color: 'rgba(255, 255, 255, 0.9)'
-  },
-  confirmedSubMessage: {
-    fontSize: '0.85rem',
-    lineHeight: '1.5',
-    marginBottom: '0.75rem',
-    color: 'rgba(255, 255, 255, 0.7)'
-  },
-  backToDashboardButton: {
-    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-    color: '#fff',
-    border: 'none',
-    padding: '0.85rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.95rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    marginTop: '1.5rem'
-  },
-  backButton: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    color: '#fff',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '10px',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    display: 'block',
-    margin: '0 auto',
-    width: 'fit-content'
-  }
 }

@@ -191,7 +191,7 @@ export default function AffiliateWidget({ compact = false }: { compact?: boolean
         },
         {
           name: 'Picks',
-          url: `https://dashboard.thebettinginsider.com/sports/picks?ref=${refSlug}`,
+          url: `https://dashboard.thebettinginsider.com/picks?ref=${refSlug}`,
           disabled: false
         },
         {

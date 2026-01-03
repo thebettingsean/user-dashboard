@@ -1,223 +1,270 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { generateGameSlug } from '@/lib/utils/gameSlug'
+import { FiChevronRight, FiClock } from 'react-icons/fi'
 import styles from './games.module.css'
 
-type Game = {
+interface Game {
   id: string
-  sport: string
   awayTeam: string
   homeTeam: string
+  awayTeamAbbr: string
+  homeTeamAbbr: string
   awayTeamLogo: string | null
   homeTeamLogo: string | null
+  awayTeamColor: string | null
+  homeTeamColor: string | null
   kickoff: string
   kickoffLabel: string
-  picks: {
-    total: number
+  estDate?: string
+  estTime?: string
+  sport: string
+  spread: { homeLine: number | null; awayLine: number | null } | null
+  totals: { number: number | null } | null
+  moneyline: { home: number | null; away: number | null } | null
+  publicBetting: {
+    spreadHomeBetPct: number | null
+    spreadHomeMoneyPct: number | null
+    mlHomeBetPct: number | null
+    mlHomeMoneyPct: number | null
+    totalOverBetPct: number | null
+    totalOverMoneyPct: number | null
+  } | null
+  hasPublicBetting: boolean
+}
+
+const SPORTS = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
+
+function formatGameTime(dateString: string): string {
+  // dateString is now "YYYY-MM-DD HH:MM" in EST from ClickHouse
+  // Parse it and compare dates in EST, not browser timezone
+  
+  // Get current date in EST
+  const nowEST = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+  const todayEST = new Date(nowEST).toISOString().split('T')[0]
+  
+  const tomorrowDate = new Date(nowEST)
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrowEST = tomorrowDate.toISOString().split('T')[0]
+  
+  // Extract date from dateString (YYYY-MM-DD HH:MM)
+  const gameDate = dateString.split(' ')[0]
+  const gameTime = dateString.split(' ')[1]
+  
+  if (!gameTime) {
+    // Fallback to old behavior if format is different
+    return dateString
   }
-  publicMoney: any
-  referee: any
-  teamTrends: any
-  propsCount: number
-  awayTeamRank?: number
-  homeTeamRank?: number
+  
+  // Parse time (HH:MM in 24hr) to 12hr format
+  const [hours, minutes] = gameTime.split(':').map(Number)
+  const hour12 = hours % 12 || 12
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const timeStr = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`
+  
+  if (gameDate === todayEST) return `Today ${timeStr}`
+  if (gameDate === tomorrowEST) return `Tomorrow ${timeStr}`
+  
+  // For other dates, show full date
+  const date = new Date(dateString + ' EST')
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'short',
+    month: 'short', 
+    day: 'numeric'
+  }) + ` ${timeStr}`
 }
 
-function formatKickoffDate(isoString: string): string {
-  if (!isoString) return ''
-  const date = new Date(isoString)
-  if (Number.isNaN(date.getTime())) return ''
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'America/New_York'
-  }).format(date)
+function formatSpread(spread: number | null | undefined): string {
+  if (spread === null || spread === undefined) return ''
+  return spread > 0 ? `+${spread}` : `${spread}`
 }
 
-function formatPercentage(value: number | null | undefined): string {
-  if (value === null || value === undefined) return '--'
-  return `${Math.round(value)}%`
+// Helper to create team gradient
+function getTeamGradient(awayColor: string | null, homeColor: string | null): string {
+  // Default colors if team colors not available
+  const away = awayColor || '#3b82f6'
+  const home = homeColor || '#6366f1'
+  
+  // Create a subtle, lowkey gradient using team colors at low opacity
+  return `linear-gradient(135deg, ${away}15 0%, ${away}08 25%, transparent 50%, ${home}08 75%, ${home}15 100%)`
 }
 
-function toNumber(value: any): number | null {
-  if (value === null || value === undefined) return null
-  const num = typeof value === 'number' ? value : parseFloat(value)
-  return Number.isNaN(num) ? null : num
+// Featured Game Card - Large, prominent display
+function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+  const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  
+  return (
+    <div 
+      className={styles.featuredCard} 
+      onClick={onClick}
+      style={{ background: teamGradient }}
+    >
+      <div className={styles.featuredBadge}>Featured Game</div>
+      
+      <div className={styles.featuredMatchup}>
+        <div className={styles.featuredTeam}>
+          {game.awayTeamLogo && (
+            <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.featuredLogo} />
+          )}
+          <span className={styles.featuredTeamName}>{game.awayTeam}</span>
+          {game.spread?.awayLine && (
+            <span className={styles.teamSpread}>{formatSpread(game.spread.awayLine)}</span>
+          )}
+        </div>
+        
+        <div className={styles.featuredVs}>
+          <span className={styles.atSymbol}>@</span>
+        </div>
+        
+        <div className={styles.featuredTeam}>
+          {game.homeTeamLogo && (
+            <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.featuredLogo} />
+          )}
+          <span className={styles.featuredTeamName}>{game.homeTeam}</span>
+          {game.spread?.homeLine && (
+            <span className={styles.teamSpread}>{formatSpread(game.spread.homeLine)}</span>
+          )}
+        </div>
+      </div>
+      
+      <div className={styles.featuredMeta}>
+        <div className={styles.featuredTime}>
+          <span>{formatGameTime(game.kickoffLabel)}</span>
+        </div>
+      </div>
+      
+      {/* Odds Summary Row */}
+      {(game.totals?.number || game.moneyline) && (
+        <div className={styles.oddsRow}>
+          {game.totals?.number && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>Total</span>
+              <span className={styles.oddsValue}>O/U {game.totals.number}</span>
+            </div>
+          )}
+          {game.moneyline && (
+            <div className={styles.oddsItem}>
+              <span className={styles.oddsLabel}>ML</span>
+              <span className={styles.oddsValue}>
+                {game.moneyline.away && (game.moneyline.away > 0 ? `+${game.moneyline.away}` : game.moneyline.away)} / {game.moneyline.home && (game.moneyline.home > 0 ? `+${game.moneyline.home}` : game.moneyline.home)}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      
+      <div className={styles.featuredCta}>
+        View Game Details
+        <FiChevronRight size={16} />
+      </div>
+    </div>
+  )
+}
+
+// Regular Game Card - Compact grid item
+function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+  const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  
+  return (
+    <div 
+      className={styles.gameCard} 
+      onClick={onClick}
+      style={{ background: teamGradient }}
+    >
+      <div className={styles.cardHeader}>
+        <span className={styles.cardSport}>{game.sport}</span>
+        <span className={styles.cardTime}>{formatGameTime(game.kickoffLabel)}</span>
+      </div>
+      
+      <div className={styles.cardMatchup}>
+        <div className={styles.cardTeamRow}>
+          {game.awayTeamLogo && (
+            <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.cardLogo} />
+          )}
+          <span className={styles.cardTeamName}>{game.awayTeam}</span>
+          {game.spread?.awayLine && (
+            <span className={styles.cardSpread}>{formatSpread(game.spread.awayLine)}</span>
+          )}
+        </div>
+        <div className={styles.cardTeamRow}>
+          {game.homeTeamLogo && (
+            <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.cardLogo} />
+          )}
+          <span className={styles.cardTeamName}>{game.homeTeam}</span>
+          {game.spread?.homeLine && (
+            <span className={styles.cardSpread}>{formatSpread(game.spread.homeLine)}</span>
+          )}
+        </div>
+      </div>
+      
+      <div className={styles.cardFooter}>
+        <span>View Details</span>
+        <FiChevronRight size={14} />
+      </div>
+    </div>
+  )
 }
 
 export default function GamesPage() {
   const router = useRouter()
-  const [allGames, setAllGames] = useState<Game[]>([])
+  const [selectedSport, setSelectedSport] = useState<string>('nfl')
+  const [games, setGames] = useState<Game[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
-  const [selectedSport, setSelectedSport] = useState<string>('all')
-
-  // Fetch games for all sports
+  // Cache to avoid refetching already loaded sports
+  const [gamesCache, setGamesCache] = useState<Record<string, Game[]>>({})
+  
   useEffect(() => {
-    async function fetchGames() {
+    async function fetchGamesForSport() {
+      // Check if we already have this sport cached
+      if (gamesCache[selectedSport]) {
+        setGames(gamesCache[selectedSport])
+        setIsLoading(false)
+        return
+      }
+      
       setIsLoading(true)
-      setHasError(false)
       
       try {
-        const sports = ['nfl', 'nba', 'nhl', 'cfb']
-        const gamePromises = sports.map(async (sport) => {
-          try {
-            const response = await fetch(`/api/dashboard/game-hub?sport=${sport}`, {
-              cache: 'no-store'
-            })
-            if (!response.ok) {
-              console.error(`Failed to fetch ${sport} games: ${response.status}`)
-              return []
-            }
-            const data = await response.json()
-            return (data.games || []).map((game: any) => ({
-              ...game,
-              sport: sport === 'cfb' ? 'CFB' : sport.toUpperCase()
-            }))
-          } catch (error) {
-            console.error(`Error fetching ${sport} games:`, error)
-            return []
+        const res = await fetch(`/api/games/upcoming?sport=${selectedSport}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success && data.games) {
+            // Sort by kickoff time
+            const sortedGames = data.games.sort(
+              (a: Game, b: Game) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
+            )
+            setGames(sortedGames)
+            // Cache the results
+            setGamesCache(prev => ({ ...prev, [selectedSport]: sortedGames }))
+          } else {
+            setGames([])
           }
-        })
-
-        const results = await Promise.all(gamePromises)
-        const allGamesData = results.flat()
-        
-        // Sort by kickoff time
-        allGamesData.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
-        
-        setAllGames(allGamesData)
+        } else {
+          setGames([])
+        }
       } catch (error) {
-        console.error('Error fetching games:', error)
-        setHasError(true)
-        setAllGames([])
+        console.error(`Error fetching ${selectedSport} games:`, error)
+        setGames([])
       } finally {
         setIsLoading(false)
       }
     }
-
-    fetchGames()
-  }, [])
-
-  // Filter games by selected sport
-  const filteredGames = useMemo(() => {
-    if (selectedSport === 'all') return allGames
-    return allGames.filter(game => {
-      const gameSport = game.sport?.toLowerCase() || ''
-      const selected = selectedSport.toLowerCase()
-      
-      // Handle sport name variations
-      if (selected === 'cfb') {
-        return gameSport === 'cfb' || gameSport === 'ncaaf'
-      }
-      if (selected === 'cbb') {
-        return gameSport === 'cbb' || gameSport === 'ncaab'
-      }
-      
-      return gameSport === selected
-    })
-  }, [allGames, selectedSport])
-
-  // Calculate featured game: 1) Most picks, 2) Strongest data, 3) Earliest kickoff
-  const featuredGame = useMemo(() => {
-    if (filteredGames.length === 0) return undefined
     
-    return [...filteredGames].sort((a, b) => {
-      const picksB = b.picks.total ?? 0
-      const picksA = a.picks.total ?? 0
-      
-      // First priority: Most active picks
-      if (picksB !== picksA) {
-        return picksB - picksA
-      }
-      
-      // Second priority: Strongest data
-      const dataCountA = (a.publicMoney ? 1 : 0) + (a.referee ? 1 : 0) + (a.teamTrends ? 1 : 0) + (a.propsCount > 0 ? 1 : 0)
-      const dataCountB = (b.publicMoney ? 1 : 0) + (b.referee ? 1 : 0) + (b.teamTrends ? 1 : 0) + (b.propsCount > 0 ? 1 : 0)
-      if (dataCountB !== dataCountA) {
-        return dataCountB - dataCountA
-      }
-      
-      // Third priority: Earliest kickoff
-      return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
-    })[0]
-  }, [filteredGames])
-
-  // Other games (excluding featured)
-  const otherGames = useMemo(() => {
-    if (!featuredGame) return filteredGames
-    return filteredGames.filter(game => game.id !== featuredGame.id)
-  }, [filteredGames, featuredGame])
-
-  // Render public betting section
-  const renderPublicBetting = (game: Game) => {
-    const pm = game.publicMoney
-    if (!pm) return null
-
-    // Get the most public ML (by stake %)
-    const mlOptions = [
-      { label: `${game.homeTeam} ML`, bets: pm.public_money_ml_home_bets_pct, stake: pm.public_money_ml_home_stake_pct },
-      { label: `${game.awayTeam} ML`, bets: pm.public_money_ml_away_bets_pct, stake: pm.public_money_ml_away_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topML = mlOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
-
-    // Get the most public Spread (by stake %)
-    const spreadOptions = [
-      { label: `${game.homeTeam} Spread`, bets: pm.public_money_spread_home_bets_pct, stake: pm.public_money_spread_home_stake_pct },
-      { label: `${game.awayTeam} Spread`, bets: pm.public_money_spread_away_bets_pct, stake: pm.public_money_spread_away_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topSpread = spreadOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
-
-    // Get the most public O/U (by stake %)
-    const ouOptions = [
-      { label: 'Over', bets: pm.public_money_over_bets_pct, stake: pm.public_money_over_stake_pct },
-      { label: 'Under', bets: pm.public_money_under_bets_pct, stake: pm.public_money_under_stake_pct }
-    ].filter(m => m.stake !== null && m.stake !== undefined)
-    const topOU = ouOptions.sort((a, b) => (b.stake || 0) - (a.stake || 0))[0]
-
-    const topMarkets = [topML, topSpread, topOU].filter(Boolean)
-    if (topMarkets.length === 0) return null
-
-    return (
-      <div className={styles.featuredPublicBetting}>
-        <div className={styles.featuredPublicBettingTitle}>Most Public Bets</div>
-        <div className={styles.featuredPublicBettingList}>
-          {topMarkets.map((market, idx) => (
-            <div key={idx} className={styles.featuredPublicBettingItem}>
-              <div className={styles.featuredPublicBettingHeader}>
-                <span>{market!.label}</span>
-                <span className={styles.featuredPublicBettingPercent}>
-                  {formatPercentage(market!.stake)} $ · {formatPercentage(market!.bets)} bets
-                </span>
-              </div>
-              <div className={styles.featuredPublicBettingBar}>
-                <div 
-                  className={styles.featuredPublicBettingBarFill}
-                  style={{ width: `${market!.stake}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
+    fetchGamesForSport()
+  }, [selectedSport]) // Re-fetch when sport changes
+  
+  // Games are already filtered by sport from the API
+  const filteredGames = games
+  
+  // Featured game is the first game (soonest)
+  const featuredGame = filteredGames[0]
+  const remainingGames = filteredGames.slice(1)
+  
   const handleGameClick = (game: Game) => {
-    // Map sport back to route format
-    const sportRoute = game.sport?.toLowerCase() === 'cfb' ? 'college-football' : game.sport?.toLowerCase() || 'nfl'
-    const slug = generateGameSlug(game.awayTeam, game.homeTeam, game.kickoff)
-    router.push(`/sports/${sportRoute}/games/${slug}/data`)
+    router.push(`/games/${game.id}?sport=${game.sport.toLowerCase()}`)
   }
-
-  const isCollegeSport = (sport: string) => {
-    const sportLower = sport?.toLowerCase() || ''
-    return sportLower === 'cfb' || sportLower === 'ncaaf' || sportLower === 'cbb' || sportLower === 'ncaab'
-  }
-
+  
   return (
     <div className={styles.container}>
       <div className={styles.headerSpacer} />
@@ -227,181 +274,63 @@ export default function GamesPage() {
         <div className={styles.headerTop}>
           <div className={styles.titleSection}>
             <div className={styles.titleRow}>
-              <h1 className={styles.title}>Games</h1>
+              <h1 className={styles.title}>{selectedSport.toUpperCase()} Games</h1>
             </div>
-            <p className={styles.subtitle}>Live games, odds, and betting data across all sports.</p>
+            <p className={styles.subtitle}>
+              Browse upcoming {selectedSport.toUpperCase()} games
+            </p>
           </div>
         </div>
+        
+        {/* Filters Row - Matching /picks exactly */}
         <div className={styles.filtersRow}>
           <div className={styles.leftFilters}>
             <div className={styles.sportFilters}>
-              {['all', 'nfl', 'nba', 'nhl', 'cfb', 'cbb'].map(sport => (
+              {SPORTS.map(sport => (
                 <button
                   key={sport}
                   className={`${styles.filterBtn} ${selectedSport === sport ? styles.active : ''}`}
                   onClick={() => setSelectedSport(sport)}
                 >
-                  {sport === 'all' ? 'All' : sport.toUpperCase()}
+                  {sport.toUpperCase()}
                 </button>
               ))}
             </div>
           </div>
         </div>
       </header>
-
-      {/* Content Section */}
-      <div className={styles.contentSection}>
+      
+      {/* Games Content */}
+      <div className={styles.gamesContent}>
         {isLoading ? (
-          <div className={styles.loadingState}>
-            <div className={styles.loadingText}>Loading games...</div>
-          </div>
-        ) : hasError ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyTitle}>Unable to load games</div>
-            <div className={styles.emptySubtitle}>Please try again shortly</div>
-          </div>
+          <div className={styles.loading}>Loading games...</div>
         ) : filteredGames.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyTitle}>No games found</div>
-            <div className={styles.emptySubtitle}>
-              {selectedSport === 'all' 
-                ? 'No games available at this time' 
-                : `No ${selectedSport.toUpperCase()} games available`}
-            </div>
+          <div className={styles.empty}>
+            <p>No upcoming games found</p>
           </div>
         ) : (
-          <div className={styles.gamesContainer}>
-            {/* Featured Game Section */}
+          <>
+            {/* Featured Game */}
             {featuredGame && (
-              <div 
-                className={styles.featuredGame}
+              <FeaturedGameCard 
+                game={featuredGame}
                 onClick={() => handleGameClick(featuredGame)}
-              >
-                <div className={styles.featuredTitle}>Featured Game</div>
-                <div className={styles.featuredSeparator} />
-                
-                {/* Teams & Date */}
-                <div className={styles.featuredMatchup}>
-                  {featuredGame.awayTeamLogo && (
-                    <div className={styles.featuredLogoWrapper}>
-                      <img src={featuredGame.awayTeamLogo} alt={featuredGame.awayTeam} className={styles.featuredLogo} />
-                      {isCollegeSport(featuredGame.sport) && featuredGame.awayTeamRank && (
-                        <div className={styles.featuredRank}>#{featuredGame.awayTeamRank}</div>
-                      )}
-                    </div>
-                  )}
-                  <span className={styles.featuredVs}>@</span>
-                  {featuredGame.homeTeamLogo && (
-                    <div className={styles.featuredLogoWrapper}>
-                      <img src={featuredGame.homeTeamLogo} alt={featuredGame.homeTeam} className={styles.featuredLogo} />
-                      {isCollegeSport(featuredGame.sport) && featuredGame.homeTeamRank && (
-                        <div className={styles.featuredRank}>#{featuredGame.homeTeamRank}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.featuredDate}>
-                  {formatKickoffDate(featuredGame.kickoff)} · {featuredGame.kickoffLabel}
-                </div>
-                
-                {/* Referee/Coach (NFL/NBA only) */}
-                {(featuredGame.sport === 'NFL' || featuredGame.sport === 'NBA') && featuredGame.referee && (
-                  <div className={styles.featuredRef}>
-                    Referee · {(featuredGame.referee as any)?.referee_name || 'TBD'}
-                  </div>
-                )}
-                
-                {/* Public Betting Splits */}
-                {renderPublicBetting(featuredGame)}
-                
-                {/* Stats */}
-                <div className={styles.featuredStats}>
-                  <div className={styles.featuredStat}>
-                    <span className={styles.featuredStatLabel}>Active Picks</span>
-                    <span className={styles.featuredStatValue}>{featuredGame.picks.total}</span>
-                  </div>
-                  <div className={styles.featuredStat}>
-                    <span className={styles.featuredStatLabel}>Game Data</span>
-                    <span className={styles.featuredStatValue}>
-                      {(featuredGame.publicMoney ? 1 : 0) + (featuredGame.referee ? 1 : 0) + (featuredGame.teamTrends ? 1 : 0) + (featuredGame.propsCount > 0 ? 1 : 0)}/4
-                    </span>
-                  </div>
-                </div>
-              </div>
+              />
             )}
-
-            {/* Other Games Grid */}
-            {otherGames.length > 0 && (
+            
+            {/* Games Grid */}
+            {remainingGames.length > 0 && (
               <div className={styles.gamesGrid}>
-                {otherGames.map((game) => {
-                  const dataCount = (game.publicMoney ? 1 : 0) + (game.referee ? 1 : 0) + (game.teamTrends ? 1 : 0) + (game.propsCount > 0 ? 1 : 0)
-                  const collegeSport = isCollegeSport(game.sport)
-                  
-                  return (
-                    <div
-                      key={game.id}
-                      className={styles.gameCard}
-                      onClick={() => handleGameClick(game)}
-                    >
-                      <div className={styles.gameCardRow}>
-                        <div className={styles.gameCardTeamRow}>
-                          {game.awayTeamLogo && (
-                            <img src={game.awayTeamLogo} alt={game.awayTeam} className={styles.gameCardLogo} />
-                          )}
-                          <div className={styles.gameCardTeamNameWrapper}>
-                            <span className={styles.gameCardTeamName}>{game.awayTeam}</span>
-                            {collegeSport && game.awayTeamRank && (
-                              <span className={styles.gameCardRank}>#{game.awayTeamRank}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className={styles.gameCardRight}>
-                          <span 
-                            className={styles.gameCardPill}
-                            style={game.picks.total > 0 ? {
-                              background: 'rgba(234, 88, 12, 0.25)',
-                              borderColor: 'rgba(251, 146, 60, 0.5)',
-                              color: 'rgba(251, 146, 60, 0.95)'
-                            } : {}}
-                          >
-                            Picks {game.picks.total}
-                          </span>
-                          <span 
-                            className={styles.gameCardPill}
-                            style={dataCount === 4 ? {
-                              background: 'rgba(30, 58, 138, 0.35)',
-                              borderColor: 'rgba(96, 165, 250, 0.5)',
-                              color: 'rgba(147, 197, 253, 0.95)'
-                            } : {}}
-                          >
-                            Data {dataCount}/4
-                          </span>
-                        </div>
-                      </div>
-                      <div className={styles.gameCardRow}>
-                        <div className={styles.gameCardTeamRow}>
-                          {game.homeTeamLogo && (
-                            <img src={game.homeTeamLogo} alt={game.homeTeam} className={styles.gameCardLogo} />
-                          )}
-                          <div className={styles.gameCardTeamNameWrapper}>
-                            <span className={styles.gameCardTeamName}>{game.homeTeam}</span>
-                            {collegeSport && game.homeTeamRank && (
-                              <span className={styles.gameCardRank}>#{game.homeTeamRank}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className={styles.gameCardRight}>
-                          <span className={styles.gameCardTime}>
-                            {formatKickoffDate(game.kickoff)} · {game.kickoffLabel}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+                {remainingGames.map(game => (
+                  <GameCard 
+                    key={game.id} 
+                    game={game}
+                    onClick={() => handleGameClick(game)}
+                  />
+                ))}
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
