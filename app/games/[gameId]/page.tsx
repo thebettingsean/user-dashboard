@@ -691,7 +691,7 @@ export default function GameDetailPage() {
                   <div className={styles.graphLoading}>No historical data available</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={200}>
-                    <ComposedChart data={timelineData} margin={{ top: 15, right: 20, left: 5, bottom: 5 }}>
+                    <ComposedChart data={timelineData} margin={{ top: 15, right: 20, left: 20, bottom: 5 }}>
                       <defs>
                         <linearGradient id={`areaGrad-${gameId}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#2A3442" stopOpacity={0.6} />
