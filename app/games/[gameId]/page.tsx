@@ -309,6 +309,9 @@ export default function GameDetailPage() {
   })
   const [countsLoading, setCountsLoading] = useState(false)
   
+  // Public Betting tab state
+  const [bettingMarketType, setBettingMarketType] = useState<'spread' | 'total' | 'ml'>('spread')
+  
   // Access checks
   const canViewPicks = hasPicks || hasAny
   const canViewPublicBetting = hasPublicBetting || hasAny
@@ -1032,18 +1035,249 @@ export default function GameDetailPage() {
             {canViewPublicBetting ? (
               <>
                 <h2 className={styles.sectionTitle}>Public Betting Data</h2>
-                <p className={styles.sectionSubtitle}>Betting splits and market indicators</p>
+                <p className={styles.sectionSubtitle}>Betting splits and market indicators from 150+ sportsbooks</p>
                 
-                <div className={styles.viewFullCta}>
-                  <GiCash size={24} />
-                  <span>View full public betting dashboard with line movement</span>
-                  <button 
-                    className={styles.ctaBtn}
-                    onClick={() => router.push('/public-betting')}
+                {/* Bet Type Filters */}
+                <div className={styles.betTypeFilters}>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('spread')}
                   >
-                    Go to Public Betting
+                    Spread
+                  </button>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('total')}
+                  >
+                    Total
+                  </button>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('ml')}
+                  >
+                    Moneyline
                   </button>
                 </div>
+
+                {/* Bar Graph Section */}
+                <div className={styles.barGraphSection}>
+                  <div className={styles.barGraphContainer}>
+                    {/* Grid Lines (Y-axis markers) */}
+                    <div className={styles.gridLines}>
+                      <div className={styles.gridLine} />
+                      <div className={styles.gridLine} />
+                      <div className={styles.gridLine} />
+                      <div className={styles.gridLine} />
+                    </div>
+
+                    {/* Bars Container */}
+                    {(() => {
+                      const hasData = gameData?.hasPublicBetting
+                      const awayAbbr = gameData?.awayTeamAbbr || 'AWAY'
+                      const homeAbbr = gameData?.homeTeamAbbr || 'HOME'
+                      const awayColor = gameData?.awayTeamColor || '#888888'
+                      const homeColor = gameData?.homeTeamColor || '#888888'
+
+                      // Get percentages based on bet type
+                      let awayBetPct = 50
+                      let homeBetPct = 50
+                      let awayMoneyPct = 50
+                      let homeMoneyPct = 50
+                      let labels = [awayAbbr + ' Bet%', homeAbbr + ' Bet%', awayAbbr + ' Money%', homeAbbr + ' Money%']
+
+                      if (hasData && gameData?.publicBetting) {
+                        if (bettingMarketType === 'spread') {
+                          awayBetPct = 100 - (gameData.publicBetting.spreadHomeBetPct || 50)
+                          homeBetPct = gameData.publicBetting.spreadHomeBetPct || 50
+                          awayMoneyPct = 100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)
+                          homeMoneyPct = gameData.publicBetting.spreadHomeMoneyPct || 50
+                        } else if (bettingMarketType === 'total') {
+                          awayBetPct = 100 - (gameData.publicBetting.totalOverBetPct || 50)
+                          homeBetPct = gameData.publicBetting.totalOverBetPct || 50
+                          awayMoneyPct = 100 - (gameData.publicBetting.totalOverMoneyPct || 50)
+                          homeMoneyPct = gameData.publicBetting.totalOverMoneyPct || 50
+                          labels = ['Under Bet%', 'Over Bet%', 'Under Money%', 'Over Money%']
+                        } else if (bettingMarketType === 'ml') {
+                          awayBetPct = 100 - (gameData.publicBetting.mlHomeBetPct || 50)
+                          homeBetPct = gameData.publicBetting.mlHomeBetPct || 50
+                          awayMoneyPct = 100 - (gameData.publicBetting.mlHomeMoneyPct || 50)
+                          homeMoneyPct = gameData.publicBetting.mlHomeMoneyPct || 50
+                        }
+                      }
+
+                      const bars = [
+                        { pct: awayBetPct, color: awayColor, label: labels[0] },
+                        { pct: homeBetPct, color: homeColor, label: labels[1] },
+                        { pct: awayMoneyPct, color: awayColor, label: labels[2] },
+                        { pct: homeMoneyPct, color: homeColor, label: labels[3] },
+                      ]
+
+                      return (
+                        <>
+                          <div className={styles.barsContainer}>
+                            {bars.map((bar, idx) => (
+                              <div key={idx} className={styles.barWrapper}>
+                                <div className={styles.barPercentage}>{Math.round(bar.pct)}%</div>
+                                <div
+                                  className={styles.bar}
+                                  style={{
+                                    height: `${bar.pct}%`,
+                                    background: `linear-gradient(180deg, ${bar.color}CC 0%, ${bar.color}66 100%)`,
+                                  }}
+                                />
+                                <div className={styles.barBaseLine} />
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* X-axis Labels */}
+                          <div className={styles.xLabelsContainer}>
+                            {labels.map((label, idx) => (
+                              <div key={idx} className={styles.xLabel}>
+                                {label}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* No Data Overlay */}
+                          {!hasData && (
+                            <div className={styles.noDataOverlay}>
+                              <div className={styles.noDataIcon}>
+                                <GiCash size={48} />
+                              </div>
+                              <h3 className={styles.noDataTitle}>No data available for this game</h3>
+                              <p className={styles.noDataDesc}>
+                                Click below to view more games with public betting data
+                              </p>
+                              <button
+                                className={styles.noDataBtn}
+                                onClick={() => router.push('/public-betting')}
+                              >
+                                Go to Public Betting
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+
+                {/* Signals Section */}
+                {gameData?.hasPublicBetting && gameData?.signals && (() => {
+                  let homeSignals, awaySignals
+                  let homeLabel = gameData.homeTeamAbbr || 'HOME'
+                  let awayLabel = gameData.awayTeamAbbr || 'AWAY'
+
+                  if (bettingMarketType === 'spread') {
+                    homeSignals = gameData.signals.spread.home
+                    awaySignals = gameData.signals.spread.away
+                  } else if (bettingMarketType === 'total') {
+                    homeSignals = gameData.signals.total.over
+                    awaySignals = gameData.signals.total.under
+                    homeLabel = 'Over'
+                    awayLabel = 'Under'
+                  } else {
+                    homeSignals = gameData.signals.ml.home
+                    awaySignals = gameData.signals.ml.away
+                  }
+
+                  const hasHomeSignals = homeSignals.publicRespect > 0 || homeSignals.vegasBacked > 0 || homeSignals.whaleRespect > 0
+                  const hasAwaySignals = awaySignals.publicRespect > 0 || awaySignals.vegasBacked > 0 || awaySignals.whaleRespect > 0
+
+                  if (!hasHomeSignals && !hasAwaySignals) return null
+
+                  return (
+                    <div className={styles.signalsSection}>
+                      <h3 className={styles.signalsSectionTitle}>Market Signals</h3>
+                      <div className={styles.signalsGrid}>
+                        {/* Away/Under Signals */}
+                        {hasAwaySignals && (
+                          <div className={styles.signalCard}>
+                            <div className={styles.signalCardHeader}>
+                              {bettingMarketType !== 'total' && gameData.awayTeamLogo && (
+                                <img
+                                  src={gameData.awayTeamLogo}
+                                  alt={awayLabel}
+                                  className={styles.signalCardTeamLogo}
+                                />
+                              )}
+                              <span>{awayLabel}</span>
+                            </div>
+                            <div className={styles.signalIndicators}>
+                              {awaySignals.publicRespect > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Public Respect</span>
+                                  <span className={`${styles.signalValue} ${styles.publicColor}`}>
+                                    {awaySignals.publicRespect}%
+                                  </span>
+                                </div>
+                              )}
+                              {awaySignals.vegasBacked > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Vegas Backed</span>
+                                  <span className={`${styles.signalValue} ${styles.vegasColor}`}>
+                                    {awaySignals.vegasBacked}%
+                                  </span>
+                                </div>
+                              )}
+                              {awaySignals.whaleRespect > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Whale Respect</span>
+                                  <span className={`${styles.signalValue} ${styles.whaleColor}`}>
+                                    {awaySignals.whaleRespect}%
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Home/Over Signals */}
+                        {hasHomeSignals && (
+                          <div className={styles.signalCard}>
+                            <div className={styles.signalCardHeader}>
+                              {bettingMarketType !== 'total' && gameData.homeTeamLogo && (
+                                <img
+                                  src={gameData.homeTeamLogo}
+                                  alt={homeLabel}
+                                  className={styles.signalCardTeamLogo}
+                                />
+                              )}
+                              <span>{homeLabel}</span>
+                            </div>
+                            <div className={styles.signalIndicators}>
+                              {homeSignals.publicRespect > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Public Respect</span>
+                                  <span className={`${styles.signalValue} ${styles.publicColor}`}>
+                                    {homeSignals.publicRespect}%
+                                  </span>
+                                </div>
+                              )}
+                              {homeSignals.vegasBacked > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Vegas Backed</span>
+                                  <span className={`${styles.signalValue} ${styles.vegasColor}`}>
+                                    {homeSignals.vegasBacked}%
+                                  </span>
+                                </div>
+                              )}
+                              {homeSignals.whaleRespect > 0 && (
+                                <div className={styles.signalIndicator}>
+                                  <span className={styles.signalLabel}>Whale Respect</span>
+                                  <span className={`${styles.signalValue} ${styles.whaleColor}`}>
+                                    {homeSignals.whaleRespect}%
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </>
             ) : (
               <div className={styles.lockedSection}>
