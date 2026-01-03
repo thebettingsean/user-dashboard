@@ -318,6 +318,24 @@ export default function GameDetailPage() {
   const awayColor = gameData?.awayTeamColor || '#3b82f6'
   const homeColor = gameData?.homeTeamColor || '#6366f1'
   
+  // Render segmented signal bar (from /public-betting)
+  const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
+    const totalSegments = 20
+    const filledSegments = Math.round((value / 100) * totalSegments)
+    const barClass = type === 'public' ? styles.publicBar : type === 'vegas' ? styles.vegasBar : styles.whaleBar
+    
+    return (
+      <div className={styles.signalBarContainerV2}>
+        {Array.from({ length: totalSegments }, (_, i) => (
+          <div 
+            key={i} 
+            className={`${styles.signalBarSegment} ${i < filledSegments ? `${styles.filled} ${barClass}` : ''}`}
+          />
+        ))}
+      </div>
+    )
+  }
+  
   useEffect(() => {
     async function fetchGameData() {
       try {
@@ -792,7 +810,12 @@ export default function GameDetailPage() {
             <p className={styles.sectionSubtitle}>Current odds & history</p>
             
             {/* Line History Section */}
-            <div className={styles.lineHistorySection}>
+            <div 
+              className={styles.lineHistorySection}
+              style={{
+                background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
+              }}
+            >
               <div className={styles.lineHistoryHeader}>
                 <h3 className={styles.subsectionTitle}>Line History</h3>
                 <div className={styles.marketTabs}>
@@ -1388,51 +1411,64 @@ export default function GameDetailPage() {
                       if (allSignals.length === 0) return null
 
                       return (
-                        <div className={styles.signalsSection}>
-                          <h3 className={styles.signalsSectionTitle}>Signals</h3>
-                          <div className={styles.signalsGrid}>
-                            {allSignals.map((item, idx) => (
-                              <div key={idx} className={styles.signalCard}>
-                                <div className={styles.signalCardHeader}>
-                                  {item.logo && (
-                                    <img
-                                      src={item.logo}
-                                      alt={item.team}
-                                      className={styles.signalCardTeamLogo}
-                                    />
-                                  )}
-                                  <span>{item.team} {item.betType}</span>
+                        <>
+                          {/* Signals Title - OUTSIDE card */}
+                          <h3 className={styles.signalsTitle}>Signals</h3>
+                          
+                          {/* Signals Section with team color gradient */}
+                          <div 
+                            className={styles.signalsSection}
+                            style={{
+                              background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
+                            }}
+                          >
+                            <div className={styles.signalsGrid}>
+                              {allSignals.map((item, idx) => (
+                                <div key={idx} className={styles.signalCard}>
+                                  <div className={styles.signalCardHeader}>
+                                    {item.logo && (
+                                      <img
+                                        src={item.logo}
+                                        alt={item.team}
+                                        className={styles.signalCardTeamLogo}
+                                      />
+                                    )}
+                                    <span>{item.team} {item.betType}</span>
+                                  </div>
+                                  <div className={styles.signalBarsV2}>
+                                    {item.signals.publicRespect > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Public Respect</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activePublic}`}>{item.signals.publicRespect}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.publicRespect, 'public')}
+                                      </div>
+                                    )}
+                                    {item.signals.vegasBacked > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activeVegas}`}>{item.signals.vegasBacked}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.vegasBacked, 'vegas')}
+                                      </div>
+                                    )}
+                                    {item.signals.whaleRespect > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Whale Respect</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activeWhale}`}>{item.signals.whaleRespect}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.whaleRespect, 'whale')}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className={styles.signalIndicators}>
-                                  {item.signals.publicRespect > 0 && (
-                                    <div className={styles.signalRow}>
-                                      <span className={styles.signalLabel}>Public Respect</span>
-                                      <span className={`${styles.signalValue} ${styles.publicColor}`}>
-                                        {item.signals.publicRespect}%
-                                      </span>
-                                    </div>
-                                  )}
-                                  {item.signals.vegasBacked > 0 && (
-                                    <div className={styles.signalRow}>
-                                      <span className={styles.signalLabel}>Vegas Backed</span>
-                                      <span className={`${styles.signalValue} ${styles.vegasColor}`}>
-                                        {item.signals.vegasBacked}%
-                                      </span>
-                                    </div>
-                                  )}
-                                  {item.signals.whaleRespect > 0 && (
-                                    <div className={styles.signalRow}>
-                                      <span className={styles.signalLabel}>Whale Respect</span>
-                                      <span className={`${styles.signalValue} ${styles.whaleColor}`}>
-                                        {item.signals.whaleRespect}%
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        </>
                       )
                     })()}
                   </>

@@ -1123,7 +1123,7 @@
 
 /* Split Section (Spread, ML, Total) */
 .splitSection {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .splitSection:last-child {
@@ -1134,14 +1134,14 @@
   font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Split Row Wrapper (label + bar row) */
 .splitRowWrapper {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .splitRowLabel {
@@ -1248,32 +1248,33 @@
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Signals Section - Match /public-betting styling */
-.signalsSection {
-  background: rgba(29, 37, 48, 0.3);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 10px;
-  padding: 16px;
-  margin-top: 16px;
-}
-
-.signalsSectionTitle {
-  font-size: 14px;
+/* Signals Title - OUTSIDE the card */
+.signalsTitle {
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 16px 0;
+  margin: 32px 0 12px 0;
+}
+
+/* Signals Section - Match /public-betting styling */
+.signalsSection {
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .signalsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .signalCard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .signalCardHeader {
@@ -1283,46 +1284,95 @@
   font-size: 13px;
   font-weight: 500;
   color: #fff;
+  margin-bottom: 4px;
 }
 
 .signalCardTeamLogo {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
-.signalIndicators {
+/* Signal Bars V2 - from /public-betting */
+.signalBarsV2 {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 
-.signalRow {
+.signalRowV2 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signalRowHeaderV2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.signalLabel {
+.signalLabelV2 {
   font-size: 12px;
-  color: #8B9199;
-}
-
-.signalValue {
-  font-size: 14px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.publicColor {
-  color: #4CAF50;
+.signalValueV2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
-.vegasColor {
-  color: #FFC107;
+.signalValueV2.activePublic {
+  color: rgba(96, 165, 250, 0.9);
 }
 
-.whaleColor {
-  color: #2196F3;
+.signalValueV2.activeVegas {
+  color: rgba(251, 191, 36, 0.9);
+}
+
+.signalValueV2.activeWhale {
+  color: rgba(196, 181, 253, 0.9);
+}
+
+/* Segmented Bar Graph Container */
+.signalBarContainerV2 {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 8px;
+}
+
+/* Individual Bar Segments */
+.signalBarSegment {
+  width: 4px;
+  height: 8px;
+  border-radius: 2px;
+  background: #2B2D30;
+  flex-shrink: 0;
+}
+
+.signalBarSegment.filled {
+  background: #2B2D30;
+}
+
+.signalBarSegment.filled.publicBar {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(96, 165, 250, 0.8));
+}
+
+.signalBarSegment.filled.vegasBar {
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.8), rgba(251, 191, 36, 0.8));
+}
+
+.signalBarSegment.filled.whaleBar {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.8), rgba(196, 181, 253, 0.8));
+}
+
+.noSignalV2 {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 8px 0;
 }
 
 @media (max-width: 640px) {
@@ -1335,7 +1385,7 @@
   }
 
   .splitSection {
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
 
   .splitSectionTitle {
@@ -1343,7 +1393,16 @@
   }
 
   .splitRowWrapper {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .signalBarContainerV2 {
+    gap: 2px;
+  }
+  
+  .signalBarSegment {
+    width: 3px;
+    height: 6px;
   }
 
   .splitRowLabel {
