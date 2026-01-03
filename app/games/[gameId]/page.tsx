@@ -565,18 +565,8 @@ export default function GameDetailPage() {
             >
               {tab === 'script' && 'Script'}
               {tab === 'odds' && 'Odds'}
-              {tab === 'picks' && (
-                <>
-                  Analyst Picks
-                  {!canViewPicks && <MdLockOutline size={12} className={styles.lockIcon} />}
-                </>
-              )}
-              {tab === 'betting' && (
-                <>
-                  Public Betting
-                  {!canViewPublicBetting && <MdLockOutline size={12} className={styles.lockIcon} />}
-                </>
-              )}
+              {tab === 'picks' && 'Analyst Picks'}
+              {tab === 'betting' && 'Public Betting'}
               {activeTab === tab && (
                 <div className={styles.tabUnderline} style={{ background: tabGradient }} />
               )}
