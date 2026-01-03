@@ -797,17 +797,35 @@ export default function GameDetailPage() {
                     {!countsLoading && (
                       <>
                         {pickCounts.sportPickCount > 0 ? (
-                          <p className={styles.pickCountSubtext}>
-                            However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
-                            <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
-                            active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''} today
-                          </p>
+                          <>
+                            <p className={styles.pickCountSubtext}>
+                              However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
+                              <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
+                              active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
+                            </p>
+                            <button 
+                              className={styles.viewPicksBtn}
+                              onClick={() => router.push('/picks')}
+                              style={{ marginTop: '12px' }}
+                            >
+                              View Now
+                            </button>
+                          </>
                         ) : pickCounts.allPicksCount > 0 ? (
-                          <p className={styles.pickCountSubtext}>
-                            However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
-                            <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
-                            active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports today
-                          </p>
+                          <>
+                            <p className={styles.pickCountSubtext}>
+                              However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
+                              <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
+                              active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
+                            </p>
+                            <button 
+                              className={styles.viewPicksBtn}
+                              onClick={() => router.push('/picks')}
+                              style={{ marginTop: '12px' }}
+                            >
+                              View Now
+                            </button>
+                          </>
                         ) : null}
                       </>
                     )}
@@ -921,17 +939,41 @@ export default function GameDetailPage() {
                 {!countsLoading && (
                   <div className={styles.pickCountInfo}>
                     {pickCounts.gamePickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
-                      </p>
+                      <>
+                        <p className={styles.pickCountText}>
+                          <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
+                        </p>
+                        <button 
+                          className={styles.viewPicksBtn}
+                          onClick={() => router.push('/picks')}
+                        >
+                          View Now
+                        </button>
+                      </>
                     ) : pickCounts.sportPickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''} today
-                      </p>
+                      <>
+                        <p className={styles.pickCountText}>
+                          <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
+                        </p>
+                        <button 
+                          className={styles.viewPicksBtn}
+                          onClick={() => router.push('/picks')}
+                        >
+                          View Now
+                        </button>
+                      </>
                     ) : pickCounts.allPicksCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports today
-                      </p>
+                      <>
+                        <p className={styles.pickCountText}>
+                          <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
+                        </p>
+                        <button 
+                          className={styles.viewPicksBtn}
+                          onClick={() => router.push('/picks')}
+                        >
+                          View Now
+                        </button>
+                      </>
                     ) : null}
                   </div>
                 )}
