@@ -150,14 +150,14 @@ export async function GET(request: NextRequest) {
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${result.data.length} upcoming games`)
     
-    // Log first game's odds for debugging
+    // Log first game's time data for debugging
     if (result.data.length > 0) {
       const sample = result.data[0]
-      console.log(`[GAMES API - ${sport.toUpperCase()}] Sample odds:`, {
-        spread: sample.current_spread,
-        total: sample.current_total,
-        ml_home: sample.current_ml_home,
-        ml_away: sample.current_ml_away
+      console.log(`[GAMES API - ${sport.toUpperCase()}] Sample time data:`, {
+        game_time: sample.game_time,
+        est_date: sample.est_date,
+        est_time: sample.est_time,
+        home_team: sample.home_team_name
       })
     }
 
@@ -169,9 +169,29 @@ export async function GET(request: NextRequest) {
       const awaySpread = (homeSpread !== null && homeSpread !== undefined) ? -homeSpread : null
       
       // Use pre-formatted EST date/time from ClickHouse (much more reliable than JS)
-      const estDateTime = row.est_date && row.est_time 
-        ? `${row.est_date} ${row.est_time}` 
-        : row.game_time
+      let estDateTime
+      if (row.est_date && row.est_time) {
+        estDateTime = `${row.est_date} ${row.est_time}`
+      } else {
+        // Fallback: manually convert UTC to EST
+        console.warn(`[GAMES API] Missing est_date/est_time for ${row.game_id}, using fallback`)
+        const utcDate = new Date(row.game_time)
+        const estDateStr = utcDate.toLocaleDateString('en-US', {
+          timeZone: 'America/New_York',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).split('/') // MM/DD/YYYY
+        const estTimeStr = utcDate.toLocaleTimeString('en-US', {
+          timeZone: 'America/New_York',
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit'
+        }) // HH:MM:SS
+        const [mm, dd, yyyy] = estDateStr
+        const [hh, mi] = estTimeStr.split(':')
+        estDateTime = `${yyyy}-${mm}-${dd} ${hh}:${mi}` // YYYY-MM-DD HH:MM
+      }
 
       return {
         id: row.game_id, // Use full game_id (e.g., nfl_abc123)
