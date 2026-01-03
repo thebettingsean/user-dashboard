@@ -130,7 +130,7 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
       
       <div className={styles.featuredMeta}>
         <div className={styles.featuredTime}>
-          <span>{formatGameTime(game.kickoff)}</span>
+          <span>{formatGameTime(game.kickoffLabel)}</span>
         </div>
       </div>
       
@@ -174,7 +174,7 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
     >
       <div className={styles.cardHeader}>
         <span className={styles.cardSport}>{game.sport}</span>
-        <span className={styles.cardTime}>{formatGameTime(game.kickoff)}</span>
+        <span className={styles.cardTime}>{formatGameTime(game.kickoffLabel)}</span>
       </div>
       
       <div className={styles.cardMatchup}>
