@@ -128,13 +128,15 @@ export async function GET(request: NextRequest) {
     const result = await clickhouseQuery<any>(gamesQuery)
 
     if (!result.success || !result.data) {
+      console.error(`[GAMES API - ${sport.toUpperCase()}] Query failed:`, result.error || 'Unknown error')
       throw new Error('Failed to fetch games from ClickHouse')
     }
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${result.data.length} upcoming games`)
 
     // Transform to frontend format
-    const games = result.data.map((row: any) => {
+    const games = result.data.map((row: any, index: number) => {
+      try {
       // Calculate spread for home/away (home spread is negative of away)
       const homeSpread = row.current_spread
       const awaySpread = homeSpread ? -homeSpread : null
@@ -142,10 +144,10 @@ export async function GET(request: NextRequest) {
       return {
         id: row.odds_api_game_id || row.game_id,
         sport: sport.toUpperCase(),
-        awayTeam: row.away_team_name,
-        homeTeam: row.home_team_name,
-        awayTeamAbbr: row.away_abbrev || row.away_team_name.substring(0, 3).toUpperCase(),
-        homeTeamAbbr: row.home_abbrev || row.home_team_name.substring(0, 3).toUpperCase(),
+        awayTeam: row.away_team_name || 'Unknown',
+        homeTeam: row.home_team_name || 'Unknown',
+        awayTeamAbbr: row.away_abbrev || (row.away_team_name ? row.away_team_name.substring(0, 3).toUpperCase() : 'AWY'),
+        homeTeamAbbr: row.home_abbrev || (row.home_team_name ? row.home_team_name.substring(0, 3).toUpperCase() : 'HME'),
         awayTeamLogo: row.away_logo || null,
         homeTeamLogo: row.home_logo || null,
         awayTeamColor: row.away_primary_color || null,
@@ -192,6 +194,10 @@ export async function GET(request: NextRequest) {
           row.public_total_over_bet_pct
         ),
       }
+      } catch (error: any) {
+        console.error(`[GAMES API - ${sport.toUpperCase()}] Error transforming row ${index}:`, error.message, row)
+        throw error
+      }
     })
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Returning ${games.length} games`)
@@ -211,9 +217,11 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[GAMES API] Error:', error.message)
+    console.error('[GAMES API] Full error:', error)
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     }, { status: 500 })
   }
 }
