@@ -768,8 +768,9 @@ export default function GameDetailPage() {
         {/* ========== SCRIPT TAB ========== */}
         {activeTab === 'script' && (
           <div className={styles.section}>
+            <div className={styles.scriptStrengthBadge}>Basic</div>
             <h2 className={styles.sectionTitle}>Game Preview & Analysis</h2>
-            <p className={styles.sectionSubtitle}>Claude powered breakdown based on detailed team stats & rankings.</p>
+            <p className={styles.sectionSubtitle}>Claude powered breakdown based on detailed team stats & rankings. We are fixing our infrastructure. For the next few days all scripts will be "basic"</p>
             
             {scriptLoading ? (
               <div className={styles.scriptLoading}>

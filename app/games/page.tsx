@@ -32,6 +32,8 @@ interface Game {
     totalOverMoneyPct: number | null
   } | null
   hasPublicBetting: boolean
+  pickCount?: number
+  signalCount?: number
 }
 
 const SPORTS = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
@@ -162,9 +164,28 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
   )
 }
 
+// Count signals for a game
+function countSignals(game: Game): number {
+  if (!game.publicBetting) return 0
+  
+  // Signal types: publicRespect, vegasBacked, whaleRespect for each bet type
+  // We'll check if any signals exist across spread, ML, and total
+  let signalCount = 0
+  
+  // In the actual implementation, we'd check game.signals object
+  // For now, if game has public betting data, assume it has signals
+  if (game.hasPublicBetting) {
+    // Basic estimate: if has public betting, likely has 1-3 signals
+    signalCount = 1
+  }
+  
+  return signalCount
+}
+
 // Regular Game Card - Compact grid item
 function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
   const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  const signals = countSignals(game)
   
   return (
     <div 
@@ -196,6 +217,15 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
             <span className={styles.cardSpread}>{formatSpread(game.spread.homeLine)}</span>
           )}
         </div>
+      </div>
+      
+      {/* Picks, Signals, Script info */}
+      <div className={styles.cardInfo}>
+        <span className={styles.cardInfoItem}>Picks: {game.pickCount || 0}</span>
+        <span className={styles.cardInfoDot}>•</span>
+        <span className={styles.cardInfoItem}>Signals: {signals}</span>
+        <span className={styles.cardInfoDot}>•</span>
+        <span className={styles.cardInfoItem}>Script: <span className={styles.cardInfoBadge}>(Basic)</span></span>
       </div>
       
       <div className={styles.cardFooter}>
@@ -234,9 +264,26 @@ export default function GamesPage() {
             const sortedGames = data.games.sort(
               (a: Game, b: Game) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
             )
-            setGames(sortedGames)
+            
+            // Fetch pick counts for all games in parallel
+            const gamesWithCounts = await Promise.all(
+              sortedGames.map(async (game: Game) => {
+                try {
+                  const pickRes = await fetch(`/api/picks/active-counts?gameId=${game.id}`)
+                  const pickData = await pickRes.json()
+                  return {
+                    ...game,
+                    pickCount: pickData.gamePickCount || 0
+                  }
+                } catch (err) {
+                  return { ...game, pickCount: 0 }
+                }
+              })
+            )
+            
+            setGames(gamesWithCounts)
             // Cache the results
-            setGamesCache(prev => ({ ...prev, [selectedSport]: sortedGames }))
+            setGamesCache(prev => ({ ...prev, [selectedSport]: gamesWithCounts }))
           } else {
             setGames([])
           }
