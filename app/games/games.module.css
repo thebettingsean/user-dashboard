@@ -431,25 +431,25 @@
   .container {
     padding: 16px;
   }
-  
+
   .gamesGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .featuredMatchup {
     gap: 20px;
     margin: 24px 0 16px;
   }
-  
+
   .featuredLogo {
     width: 48px;
     height: 48px;
   }
-  
+
   .featuredTeamName {
     font-size: 14px;
   }
-  
+
   .featuredTeam {
     min-width: 80px;
   }

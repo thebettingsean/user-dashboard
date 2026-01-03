@@ -421,48 +421,120 @@ export default function GameDetailPage() {
         return
       }
 
-      // First try to match by game_id
-      let { data, error } = await supabase
+      // Get current time to filter for active picks only
+      const now = new Date()
+      const estNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+
+      // First try to match by game_id (exact match)
+      let { data: gameIdData, error: gameIdError } = await supabase
         .from('picks')
         .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
         .eq('game_id', gameId)
+        .gte('game_time', estNow.toISOString())
         .order('posted_at', { ascending: false })
 
-      if (error) {
-        console.error('Supabase error:', error)
-        throw error
+      if (gameIdError) {
+        console.error('[Game Picks] Supabase error (game_id query):', gameIdError)
       }
+      
+      console.log(`[Game Picks] Found ${(gameIdData || []).length} picks matching game_id: ${gameId}`)
 
-      // If no picks found by game_id, try matching by game time (same day)
-      if ((data || []).length === 0 && gameData.kickoff) {
+      // Also get picks for the same day/sport to match by team names or time
+      // (for picks that might have different game_id format or no game_id)
+      let timeData: any[] = []
+      if (gameData.kickoff) {
         const gameTime = new Date(gameData.kickoff)
+        // Look back 1 day and forward 1 day to catch picks that might have slightly different dates
         const startTime = new Date(gameTime)
+        startTime.setDate(startTime.getDate() - 1)
         startTime.setHours(0, 0, 0, 0)
         const endTime = new Date(gameTime)
+        endTime.setDate(endTime.getDate() + 1)
         endTime.setHours(23, 59, 59, 999)
 
-        const { data: timeData, error: timeError } = await supabase
+        const awayTeamName = gameData.awayTeam.toLowerCase()
+        const homeTeamName = gameData.homeTeam.toLowerCase()
+
+        // Get picks for the same day and sport (only active picks)
+        // Use the later of startTime or estNow to ensure we only get future picks
+        const minTime = startTime > estNow ? startTime : estNow
+        const { data: timeQueryData, error: timeError } = await supabase
           .from('picks')
           .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
-          .gte('game_time', startTime.toISOString())
+          .eq('sport', gameData.sport.toUpperCase())
+          .gte('game_time', minTime.toISOString())
           .lte('game_time', endTime.toISOString())
           .order('posted_at', { ascending: false })
 
-        if (!timeError && timeData && timeData.length > 0) {
-          const awayTeamName = gameData.awayTeam.toLowerCase()
-          const homeTeamName = gameData.homeTeam.toLowerCase()
+        if (!timeError && timeQueryData && timeQueryData.length > 0) {
+          console.log(`[Game Picks] Found ${timeQueryData.length} picks for ${gameData.sport} on ${gameData.kickoff}`)
+          console.log(`[Game Picks] Looking for teams: ${awayTeamName} / ${homeTeamName}`)
+          console.log(`[Game Picks] Game kickoff: ${gameData.kickoff}`)
+          console.log(`[Game Picks] Sample picks (first 5):`, timeQueryData.slice(0, 5).map((p: any) => ({
+            bet_title: p.bet_title,
+            game_title: p.game_title,
+            game_id: p.game_id || 'null',
+            game_time: p.game_time,
+            sport: p.sport
+          })))
           
-          const filtered = timeData.filter((p: any) => {
+          // Filter picks that match this game by team names in game_title
+          // Match by game_title containing both teams (most reliable indicator)
+          timeData = timeQueryData.filter((p: any) => {
+            // Skip picks that already matched by exact game_id (to avoid duplicates)
+            if (p.game_id && p.game_id.trim() !== '' && p.game_id === gameId) {
+              return false
+            }
+            
+            // Match by game_title containing both team names
             const title = (p.game_title || p.bet_title || '').toLowerCase()
-            const hasAwayTeam = awayTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
-            const hasHomeTeam = homeTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
-            return hasAwayTeam || hasHomeTeam
+            
+            // Check if game_title contains both team names (most reliable - this is what worked before)
+            const awayWords = awayTeamName.split(' ').filter(word => word.length > 2)
+            const homeWords = homeTeamName.split(' ').filter(word => word.length > 2)
+            const hasAwayInTitle = awayWords.some(word => title.includes(word.toLowerCase()))
+            const hasHomeInTitle = homeWords.some(word => title.includes(word.toLowerCase()))
+            
+            // If BOTH teams are mentioned in game_title, it's for this game
+            if (hasAwayInTitle && hasHomeInTitle) {
+              console.log(`[Game Picks] Match by both teams in game_title: "${p.bet_title}" | game_title: "${p.game_title}"`)
+              return true
+            }
+            
+            // Also check matchup pattern (e.g., "Seahawks @ 49ers")
+            const matchupPattern = `${awayTeamName.toLowerCase()} @ ${homeTeamName.toLowerCase()}`
+            const reverseMatchupPattern = `${homeTeamName.toLowerCase()} @ ${awayTeamName.toLowerCase()}`
+            const hasMatchup = title.includes(matchupPattern) || title.includes(reverseMatchupPattern)
+            
+            if (hasMatchup) {
+              console.log(`[Game Picks] Match by matchup pattern: "${p.bet_title}" | game_title: "${p.game_title}"`)
+              return true
+            }
+            
+            // If no match, return false
+            const matches = false
+            
+            // No match found
+            console.log(`[Game Picks] No match for: "${p.bet_title}" | game_title: "${p.game_title || 'none'}" | game_id: ${p.game_id || 'null'}`)
+            return false
           })
           
-          // Only use filtered results - don't fall back to all picks
-          data = filtered
+          console.log(`[Game Picks] After filtering: ${timeData.length} picks match team names`)
         }
       }
+
+      // Combine results from both queries and deduplicate by pick id
+      const allPicks = [...(gameIdData || []), ...timeData]
+      const uniquePicks = Array.from(
+        new Map(allPicks.map((p: any) => [p.id, p])).values()
+      )
+      
+      console.log(`[Game Picks] Total unique picks found: ${uniquePicks.length}`)
+      if (uniquePicks.length > 0) {
+        console.log('[Game Picks] Pick titles:', uniquePicks.map((p: any) => p.bet_title))
+      }
+      
+      const data = uniquePicks
 
       const picks = (data || []).map((p: any) => ({
         ...p,
@@ -1325,3 +1397,4 @@ export default function GameDetailPage() {
     </div>
   )
 }
+
