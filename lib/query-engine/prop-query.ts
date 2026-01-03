@@ -749,11 +749,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.home_prev_margin,
       g.away_prev_margin,
       ` : `
-      CAST(NULL as String) as referee_name,
-      CAST(NULL as UInt8) as home_streak,
-      CAST(NULL as UInt8) as away_streak,
-      CAST(NULL as Int8) as home_prev_margin,
-      CAST(NULL as Int8) as away_prev_margin,
+      CAST(NULL as Nullable(String)) as referee_name,
+      CAST(NULL as Nullable(UInt8)) as home_streak,
+      CAST(NULL as Nullable(UInt8)) as away_streak,
+      CAST(NULL as Nullable(Int8)) as home_prev_margin,
+      CAST(NULL as Nullable(Int8)) as away_prev_margin,
       `}
       -- Public betting columns (NFL only)
       ${sport === 'nfl' ? `
@@ -764,12 +764,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.public_total_over_bet_pct,
       g.public_total_over_money_pct,
       ` : `
-      CAST(NULL as Float32) as public_ml_home_bet_pct,
-      CAST(NULL as Float32) as public_ml_home_money_pct,
-      CAST(NULL as Float32) as public_spread_home_bet_pct,
-      CAST(NULL as Float32) as public_spread_home_money_pct,
-      CAST(NULL as Float32) as public_total_over_bet_pct,
-      CAST(NULL as Float32) as public_total_over_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_ml_home_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_ml_home_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_spread_home_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_spread_home_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_total_over_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_total_over_money_pct,
       `}
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
@@ -793,23 +793,23 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.opp_def_rank_points,
       b.opp_def_rank_fg_pct,
       b.opp_def_rank_three_pt_pct,
-      CAST(NULL as UInt8) as opp_def_rank_rebounds,
-      CAST(NULL as UInt8) as opp_def_rank_assists,
-      CAST(NULL as UInt8) as opp_def_rank_threes,
-      CAST(NULL as UInt8) as opp_def_rank_steals,
-      CAST(NULL as UInt8) as opp_def_rank_blocks,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_rebounds,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_assists,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_threes,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_steals,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_blocks,
       `}
       -- Opponent offensive rankings from rankings join (if available)
-      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_points,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_pass,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_rush,'}
       -- Position-specific defensive rankings (vs WR/TE/RB)
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_wr,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_te,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_rb,'}
       -- Win percentages
-      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
-      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
+      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
+      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
@@ -890,11 +890,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.home_prev_margin,
       g.away_prev_margin,
       ` : `
-      CAST(NULL as String) as referee_name,
-      CAST(NULL as UInt8) as home_streak,
-      CAST(NULL as UInt8) as away_streak,
-      CAST(NULL as Int8) as home_prev_margin,
-      CAST(NULL as Int8) as away_prev_margin,
+      CAST(NULL as Nullable(String)) as referee_name,
+      CAST(NULL as Nullable(UInt8)) as home_streak,
+      CAST(NULL as Nullable(UInt8)) as away_streak,
+      CAST(NULL as Nullable(Int8)) as home_prev_margin,
+      CAST(NULL as Nullable(Int8)) as away_prev_margin,
       `}
       -- Public betting columns (NFL only)
       ${sport === 'nfl' ? `
@@ -905,12 +905,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.public_total_over_bet_pct,
       g.public_total_over_money_pct,
       ` : `
-      CAST(NULL as Float32) as public_ml_home_bet_pct,
-      CAST(NULL as Float32) as public_ml_home_money_pct,
-      CAST(NULL as Float32) as public_spread_home_bet_pct,
-      CAST(NULL as Float32) as public_spread_home_money_pct,
-      CAST(NULL as Float32) as public_total_over_bet_pct,
-      CAST(NULL as Float32) as public_total_over_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_ml_home_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_ml_home_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_spread_home_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_spread_home_money_pct,
+      CAST(NULL as Nullable(Float32)) as public_total_over_bet_pct,
+      CAST(NULL as Nullable(Float32)) as public_total_over_money_pct,
       `}
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
@@ -934,23 +934,23 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.opp_def_rank_points,
       b.opp_def_rank_fg_pct,
       b.opp_def_rank_three_pt_pct,
-      CAST(NULL as UInt8) as opp_def_rank_rebounds,
-      CAST(NULL as UInt8) as opp_def_rank_assists,
-      CAST(NULL as UInt8) as opp_def_rank_threes,
-      CAST(NULL as UInt8) as opp_def_rank_steals,
-      CAST(NULL as UInt8) as opp_def_rank_blocks,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_rebounds,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_assists,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_threes,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_steals,
+      CAST(NULL as Nullable(UInt8)) as opp_def_rank_blocks,
       `}
       -- Opponent offensive rankings from rankings join (if available)
-      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_points,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_pass,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_rush,'}
       -- Position-specific defensive rankings (vs WR/TE/RB)
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_wr,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_te,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_rb,'}
       -- Win percentages
-      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
-      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
+      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
+      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
