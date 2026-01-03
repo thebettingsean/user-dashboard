@@ -39,6 +39,29 @@ interface GameData {
   totals: { number: number | null } | null
   moneyline: { home: number | null; away: number | null } | null
   sportsbook: string | null
+  publicBetting: {
+    spreadHomeBetPct: number | null
+    spreadHomeMoneyPct: number | null
+    mlHomeBetPct: number | null
+    mlHomeMoneyPct: number | null
+    totalOverBetPct: number | null
+    totalOverMoneyPct: number | null
+  } | null
+  signals: {
+    spread: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    total: {
+      over: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      under: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    ml: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+  }
+  hasPublicBetting: boolean
 }
 
 interface LineMovementPoint {

@@ -85,6 +85,26 @@ export async function GET(request: NextRequest) {
         g.public_total_over_bet_pct,
         g.public_total_over_money_pct,
         
+        -- Signal columns
+        g.spread_home_public_respect,
+        g.spread_home_vegas_backed,
+        g.spread_home_whale_respect,
+        g.spread_away_public_respect,
+        g.spread_away_vegas_backed,
+        g.spread_away_whale_respect,
+        g.total_over_public_respect,
+        g.total_over_vegas_backed,
+        g.total_over_whale_respect,
+        g.total_under_public_respect,
+        g.total_under_vegas_backed,
+        g.total_under_whale_respect,
+        g.ml_home_public_respect,
+        g.ml_home_vegas_backed,
+        g.ml_home_whale_respect,
+        g.ml_away_public_respect,
+        g.ml_away_vegas_backed,
+        g.ml_away_whale_respect,
+        
         -- Sportsbook (from latest snapshot)
         latest.sportsbook as current_sportsbook,
         
@@ -235,6 +255,44 @@ export async function GET(request: NextRequest) {
           totalOverBetPct: row.public_total_over_bet_pct,
           totalOverMoneyPct: row.public_total_over_money_pct,
         } : null,
+        signals: {
+          spread: {
+            home: {
+              publicRespect: row.spread_home_public_respect || 0,
+              vegasBacked: row.spread_home_vegas_backed || 0,
+              whaleRespect: row.spread_home_whale_respect || 0,
+            },
+            away: {
+              publicRespect: row.spread_away_public_respect || 0,
+              vegasBacked: row.spread_away_vegas_backed || 0,
+              whaleRespect: row.spread_away_whale_respect || 0,
+            },
+          },
+          total: {
+            over: {
+              publicRespect: row.total_over_public_respect || 0,
+              vegasBacked: row.total_over_vegas_backed || 0,
+              whaleRespect: row.total_over_whale_respect || 0,
+            },
+            under: {
+              publicRespect: row.total_under_public_respect || 0,
+              vegasBacked: row.total_under_vegas_backed || 0,
+              whaleRespect: row.total_under_whale_respect || 0,
+            },
+          },
+          ml: {
+            home: {
+              publicRespect: row.ml_home_public_respect || 0,
+              vegasBacked: row.ml_home_vegas_backed || 0,
+              whaleRespect: row.ml_home_whale_respect || 0,
+            },
+            away: {
+              publicRespect: row.ml_away_public_respect || 0,
+              vegasBacked: row.ml_away_vegas_backed || 0,
+              whaleRespect: row.ml_away_whale_respect || 0,
+            },
+          },
+        },
         hasPublicBetting: !!(
           row.public_spread_home_bet_pct || 
           row.public_ml_home_bet_pct || 
