@@ -638,7 +638,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Note: NBA doesn't have team_rankings table yet, so skip for NBA
   const rankingsTable = sport === 'nfl' ? 'nfl_team_rankings' : null
   const weekColumn = sport === 'nfl' ? 'week' : null
-  const oppRankingsJoin = needsOppRankingsJoin && rankingsTable ? `
+  // Only join rankings if we have a rankings table (NFL only for now)
+  const shouldJoinRankings = needsOppRankingsJoin && rankingsTable
+  const oppRankingsJoin = shouldJoinRankings ? `
     LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
       AND g.season = opp_rank.season 
       ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
@@ -740,18 +742,35 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.is_division_game,
       g.is_conference_game,
       g.venue,
+      ${sport === 'nfl' ? `
       g.referee_name,
       g.home_streak,
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
-      -- Public betting columns
+      ` : `
+      CAST(NULL as String) as referee_name,
+      CAST(NULL as UInt8) as home_streak,
+      CAST(NULL as UInt8) as away_streak,
+      CAST(NULL as Int8) as home_prev_margin,
+      CAST(NULL as Int8) as away_prev_margin,
+      `}
+      -- Public betting columns (NFL only)
+      ${sport === 'nfl' ? `
       g.public_ml_home_bet_pct,
       g.public_ml_home_money_pct,
       g.public_spread_home_bet_pct,
       g.public_spread_home_money_pct,
       g.public_total_over_bet_pct,
       g.public_total_over_money_pct,
+      ` : `
+      CAST(NULL as Float32) as public_ml_home_bet_pct,
+      CAST(NULL as Float32) as public_ml_home_money_pct,
+      CAST(NULL as Float32) as public_spread_home_bet_pct,
+      CAST(NULL as Float32) as public_spread_home_money_pct,
+      CAST(NULL as Float32) as public_total_over_bet_pct,
+      CAST(NULL as Float32) as public_total_over_money_pct,
+      `}
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
       t.division as opponent_division,
@@ -781,16 +800,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       CAST(NULL as UInt8) as opp_def_rank_blocks,
       `}
       -- Opponent offensive rankings from rankings join (if available)
-      ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
       -- Position-specific defensive rankings (vs WR/TE/RB)
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
       -- Win percentages
-      ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
-      ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
+      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
+      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
@@ -864,18 +883,35 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       g.is_division_game,
       g.is_conference_game,
       g.venue,
+      ${sport === 'nfl' ? `
       g.referee_name,
       g.home_streak,
       g.away_streak,
       g.home_prev_margin,
       g.away_prev_margin,
-      -- Public betting columns
+      ` : `
+      CAST(NULL as String) as referee_name,
+      CAST(NULL as UInt8) as home_streak,
+      CAST(NULL as UInt8) as away_streak,
+      CAST(NULL as Int8) as home_prev_margin,
+      CAST(NULL as Int8) as away_prev_margin,
+      `}
+      -- Public betting columns (NFL only)
+      ${sport === 'nfl' ? `
       g.public_ml_home_bet_pct,
       g.public_ml_home_money_pct,
       g.public_spread_home_bet_pct,
       g.public_spread_home_money_pct,
       g.public_total_over_bet_pct,
       g.public_total_over_money_pct,
+      ` : `
+      CAST(NULL as Float32) as public_ml_home_bet_pct,
+      CAST(NULL as Float32) as public_ml_home_money_pct,
+      CAST(NULL as Float32) as public_spread_home_bet_pct,
+      CAST(NULL as Float32) as public_spread_home_money_pct,
+      CAST(NULL as Float32) as public_total_over_bet_pct,
+      CAST(NULL as Float32) as public_total_over_money_pct,
+      `}
       t.name as opponent_name,
       t.abbreviation as opponent_abbr,
       t.division as opponent_division,
@@ -905,16 +941,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       CAST(NULL as UInt8) as opp_def_rank_blocks,
       `}
       -- Opponent offensive rankings from rankings join (if available)
-      ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'NULL as opp_off_rank_rush,'}
       -- Position-specific defensive rankings (vs WR/TE/RB)
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
-      ${needsOppRankingsJoin ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'NULL as opp_def_rank_vs_wr,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'NULL as opp_def_rank_vs_te,'}
+      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'NULL as opp_def_rank_vs_rb,'}
       -- Win percentages
-      ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
-      ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
+      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
+      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
