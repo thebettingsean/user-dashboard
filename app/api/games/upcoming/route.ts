@@ -208,20 +208,18 @@ export async function GET(request: NextRequest) {
 
       return {
         spread: spread ? {
-          homePoint: spread.outcomes.find(o => o.name.toLowerCase().includes('home') || 
-            o.point !== undefined)?.point || null,
-          awayPoint: spread.outcomes.find(o => o.name.toLowerCase().includes('away') || 
-            o.point !== undefined)?.point || null,
-          // Get actual points from outcomes
-          home: spread.outcomes[1]?.point || null,
-          away: spread.outcomes[0]?.point || null,
+          homePoint: spread.outcomes.find(o => o.name === game.home_team)?.point || null,
+          awayPoint: spread.outcomes.find(o => o.name === game.away_team)?.point || null,
+          // Get actual points from outcomes by matching team names
+          home: spread.outcomes.find(o => o.name === game.home_team)?.point || null,
+          away: spread.outcomes.find(o => o.name === game.away_team)?.point || null,
         } : null,
         totals: totals ? {
           number: totals.outcomes[0]?.point || null,
         } : null,
         moneyline: moneyline ? {
-          home: moneyline.outcomes[1]?.price || null,
-          away: moneyline.outcomes[0]?.price || null,
+          home: moneyline.outcomes.find(o => o.name === game.home_team)?.price || null,
+          away: moneyline.outcomes.find(o => o.name === game.away_team)?.price || null,
         } : null,
         sportsbook: bookmaker.title,
       }
