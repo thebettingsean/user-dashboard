@@ -1,75 +1,23 @@
 /**
- * Unified Games API - Fetches upcoming games with all data
+ * Unified Games API - Fetches upcoming games with all data FROM CLICKHOUSE
  * Data sources:
- * - Games & Odds: Odds API (api.the-odds-api.com)
- * - Team Logos: ClickHouse teams table
- * - Public Betting: ClickHouse games table (from sportsdataio)
+ * - Games, Odds & Public Betting: ClickHouse (updated every 30min by sync-live-odds cron)
+ * - Team Logos & Colors: ClickHouse teams table
+ * 
+ * No longer calls Odds API directly - uses cached data from ClickHouse instead
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { clickhouseQuery } from '@/lib/clickhouse'
-
-const ODDS_API_KEY = process.env.ODDS_API_KEY
-
-// Map our sport names to Odds API sport keys
-const SPORT_MAP: Record<string, string> = {
-  nfl: 'americanfootball_nfl',
-  nba: 'basketball_nba',
-  cfb: 'americanfootball_ncaaf',
-  cbb: 'basketball_ncaab',
-  nhl: 'icehockey_nhl',
-  mlb: 'baseball_mlb',
-}
 
 // Map frontend sport names to ClickHouse database sport names
 const DB_SPORT_MAP: Record<string, string> = {
   nfl: 'nfl',
   nba: 'nba',
   cfb: 'cfb',
-  cbb: 'ncaab',
+  cbb: 'ncaab', // Teams are stored as 'ncaab', games can be 'cbb' or 'ncaab'
   nhl: 'nhl',
   mlb: 'mlb',
-}
-
-interface OddsAPIGame {
-  id: string
-  sport_key: string
-  sport_title: string
-  commence_time: string
-  home_team: string
-  away_team: string
-  bookmakers?: Array<{
-    key: string
-    title: string
-    markets: Array<{
-      key: string
-      outcomes: Array<{
-        name: string
-        price: number
-        point?: number
-      }>
-    }>
-  }>
-}
-
-interface TeamData {
-  team_id: number
-  espn_team_id: number
-  team_name: string
-  logo_url: string
-  abbreviation: string
-  primary_color: string | null
-  secondary_color: string | null
-}
-
-interface PublicBettingData {
-  odds_api_game_id: string
-  public_spread_home_bet_pct: number | null
-  public_spread_home_money_pct: number | null
-  public_ml_home_bet_pct: number | null
-  public_ml_home_money_pct: number | null
-  public_total_over_bet_pct: number | null
-  public_total_over_money_pct: number | null
 }
 
 export async function GET(request: NextRequest) {
@@ -77,177 +25,133 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const sport = searchParams.get('sport')?.toLowerCase() || 'nfl'
 
-    if (!SPORT_MAP[sport]) {
+    if (!DB_SPORT_MAP[sport]) {
       return NextResponse.json({
         success: false,
         error: 'Invalid sport. Must be: nfl, nba, cfb, cbb, nhl, or mlb'
       }, { status: 400 })
     }
 
-    if (!ODDS_API_KEY) {
-      return NextResponse.json({
-        success: false,
-        error: 'ODDS_API_KEY not configured'
-      }, { status: 500 })
-    }
-
-    // 1. Fetch games + odds from Odds API
-    const oddsApiSport = SPORT_MAP[sport]
-    const oddsUrl = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`
+    // For games table, query both 'cbb' and 'ncaab' for college basketball
+    const sportFilter = sport === 'cbb' 
+      ? `AND g.sport IN ('cbb', 'ncaab')` 
+      : `AND g.sport = '${sport}'`
     
-    console.log(`[GAMES API - ${sport.toUpperCase()}] Fetching from Odds API...`)
-    const oddsResponse = await fetch(oddsUrl, { 
-      signal: AbortSignal.timeout(10000),
-      cache: 'no-store'
-    })
-    
-    if (!oddsResponse.ok) {
-      throw new Error(`Odds API error: ${oddsResponse.status}`)
-    }
+    // For teams table, use the mapped sport name
+    const teamsSport = DB_SPORT_MAP[sport]
 
-    const oddsApiGames: OddsAPIGame[] = await oddsResponse.json()
-    console.log(`[GAMES API - ${sport.toUpperCase()}] Got ${oddsApiGames.length} games from Odds API`)
+    console.log(`[GAMES API - ${sport.toUpperCase()}] Fetching upcoming games from ClickHouse...`)
 
-    // 2. Fetch team logos and colors from ClickHouse
-    const dbSport = DB_SPORT_MAP[sport] || sport
-    const teamLogosQuery = await clickhouseQuery<TeamData>(`
+    // Query ClickHouse for upcoming games with team data and latest odds
+    // Join with teams for logos/colors
+    // Join with latest snapshot for current odds (ensures consistency)
+    const gamesQuery = `
       SELECT 
-        team_id,
-        espn_team_id,
-        name as team_name,
-        logo_url,
-        abbreviation,
-        primary_color,
-        secondary_color
-      FROM teams
-      WHERE LOWER(sport) = '${dbSport}' AND logo_url != ''
-    `)
-    
-    console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${teamLogosQuery.data?.length || 0} teams in ClickHouse`)
-
-    // 3. Fetch public betting data from ClickHouse (if available)
-    const gameIds = oddsApiGames.map(g => g.id)
-    let publicBettingMap = new Map<string, PublicBettingData>()
-    
-    if (gameIds.length > 0) {
-      try {
-        const publicBettingQuery = await clickhouseQuery<PublicBettingData>(`
-          SELECT 
-            odds_api_game_id,
-            public_spread_home_bet_pct,
-            public_spread_home_money_pct,
-            public_ml_home_bet_pct,
-            public_ml_home_money_pct,
-            public_total_over_bet_pct,
-            public_total_over_money_pct
-          FROM games
-          WHERE odds_api_game_id IN (${gameIds.map(id => `'${id}'`).join(',')})
-            AND sport = '${sport}'
-        `)
+        g.game_id,
+        g.odds_api_game_id,
+        g.sport,
+        g.game_time,
+        g.home_team_id,
+        g.away_team_id,
         
-        if (publicBettingQuery.success && publicBettingQuery.data) {
-          publicBettingQuery.data.forEach(pb => {
-            publicBettingMap.set(pb.odds_api_game_id, pb)
-          })
-          console.log(`[GAMES API - ${sport.toUpperCase()}] Found public betting for ${publicBettingMap.size} games`)
-        }
-      } catch (error) {
-        console.log(`[GAMES API - ${sport.toUpperCase()}] No public betting data available (table may not exist for this sport)`)
-      }
+        -- Team info
+        ht.name as home_team_name,
+        at.name as away_team_name,
+        ht.logo_url as home_logo,
+        at.logo_url as away_logo,
+        ht.abbreviation as home_abbrev,
+        at.abbreviation as away_abbrev,
+        ht.primary_color as home_primary_color,
+        at.primary_color as away_primary_color,
+        ht.secondary_color as home_secondary_color,
+        at.secondary_color as away_secondary_color,
+        
+        -- Current odds from latest snapshot (preferred) or games table (fallback)
+        COALESCE(latest.spread, g.spread_close) as current_spread,
+        COALESCE(latest.total, g.total_close) as current_total,
+        COALESCE(latest.ml_home, g.home_ml_close) as current_ml_home,
+        COALESCE(latest.ml_away, g.away_ml_close) as current_ml_away,
+        
+        -- Juice
+        COALESCE(latest.spread_juice_home, g.home_spread_juice) as home_spread_juice,
+        COALESCE(latest.spread_juice_away, g.away_spread_juice) as away_spread_juice,
+        COALESCE(latest.total_juice_over, g.over_juice) as over_juice,
+        COALESCE(latest.total_juice_under, g.under_juice) as under_juice,
+        
+        -- Public betting data
+        g.public_spread_home_bet_pct,
+        g.public_spread_home_money_pct,
+        g.public_ml_home_bet_pct,
+        g.public_ml_home_money_pct,
+        g.public_total_over_bet_pct,
+        g.public_total_over_money_pct,
+        
+        -- Sportsbook (from latest snapshot)
+        latest.sportsbook as current_sportsbook
+        
+      FROM games g
+      
+      -- Join teams for logos and colors
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id
+      LEFT JOIN teams at ON g.away_team_id = at.team_id
+      
+      -- Join with latest odds snapshot for current lines
+      LEFT JOIN (
+        SELECT 
+          odds_api_game_id,
+          spread,
+          total,
+          ml_home,
+          ml_away,
+          spread_juice_home,
+          spread_juice_away,
+          total_juice_over,
+          total_juice_under,
+          sportsbook,
+          snapshot_time
+        FROM live_odds_snapshots
+        WHERE (odds_api_game_id, snapshot_time) IN (
+          SELECT odds_api_game_id, MAX(snapshot_time)
+          FROM live_odds_snapshots
+          GROUP BY odds_api_game_id
+        )
+      ) latest ON g.odds_api_game_id = latest.odds_api_game_id
+      
+      WHERE g.game_time > now()
+        ${sportFilter}
+        AND g.status NOT IN ('completed', 'archived')
+      
+      ORDER BY g.game_time ASC
+      LIMIT 100
+    `
+
+    const result = await clickhouseQuery<any>(gamesQuery)
+
+    if (!result.success || !result.data) {
+      throw new Error('Failed to fetch games from ClickHouse')
     }
 
-    // Create team lookup map
-    const teamLogos = new Map<string, TeamData>()
-    teamLogosQuery.data?.forEach(team => {
-      const teamName = team.team_name.toLowerCase()
-      const abbr = team.abbreviation?.toLowerCase()
-      
-      teamLogos.set(teamName, team)
-      if (abbr) teamLogos.set(abbr, team)
-      
-      const lastWord = teamName.split(' ').pop()
-      if (lastWord) teamLogos.set(lastWord, team)
-      
-      const cleanName = teamName.replace(/st\./gi, 'saint').replace(/\./g, '')
-      if (cleanName !== teamName) teamLogos.set(cleanName, team)
-    })
+    console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${result.data.length} upcoming games`)
 
-    // Helper to find team
-    const findTeam = (oddsApiName: string): TeamData | null => {
-      const lower = oddsApiName.toLowerCase().trim()
-      
-      if (teamLogos.has(lower)) return teamLogos.get(lower)!
-      
-      const cleaned = lower.replace(/\./g, '').replace(/st /gi, 'saint ')
-      if (teamLogos.has(cleaned)) return teamLogos.get(cleaned)!
-      
-      const words = lower.split(' ')
-      const lastWord = words[words.length - 1]
-      if (teamLogos.has(lastWord)) return teamLogos.get(lastWord)!
-      
-      for (const [key, value] of teamLogos.entries()) {
-        if (lower.includes(key) || key.includes(lower)) {
-          if (key.length > 3) return value
-        }
-      }
-      
-      return null
-    }
-
-    // Extract odds from bookmakers (prefer FanDuel, then DraftKings, then first available)
-    const extractOdds = (bookmakers: OddsAPIGame['bookmakers'], homeTeamName: string, awayTeamName: string) => {
-      if (!bookmakers || bookmakers.length === 0) return null
-
-      const preferredBooks = ['fanduel', 'draftkings', 'betmgm', 'caesars']
-      let bookmaker = bookmakers.find(b => preferredBooks.includes(b.key))
-      if (!bookmaker) bookmaker = bookmakers[0]
-
-      const spread = bookmaker.markets.find(m => m.key === 'spreads')
-      const totals = bookmaker.markets.find(m => m.key === 'totals')
-      const moneyline = bookmaker.markets.find(m => m.key === 'h2h')
+    // Transform to frontend format
+    const games = result.data.map((row: any) => {
+      // Calculate spread for home/away (home spread is negative of away)
+      const homeSpread = row.current_spread
+      const awaySpread = homeSpread ? -homeSpread : null
 
       return {
-        spread: spread ? {
-          homePoint: spread.outcomes.find(o => o.name === homeTeamName)?.point || null,
-          awayPoint: spread.outcomes.find(o => o.name === awayTeamName)?.point || null,
-          // Get actual points from outcomes by matching team names
-          home: spread.outcomes.find(o => o.name === homeTeamName)?.point || null,
-          away: spread.outcomes.find(o => o.name === awayTeamName)?.point || null,
-        } : null,
-        totals: totals ? {
-          number: totals.outcomes[0]?.point || null,
-        } : null,
-        moneyline: moneyline ? {
-          home: moneyline.outcomes.find(o => o.name === homeTeamName)?.price || null,
-          away: moneyline.outcomes.find(o => o.name === awayTeamName)?.price || null,
-        } : null,
-        sportsbook: bookmaker.title,
-      }
-    }
-
-    // Build final games array
-    const games = oddsApiGames.map(game => {
-      const homeTeam = findTeam(game.home_team)
-      const awayTeam = findTeam(game.away_team)
-      const odds = extractOdds(game.bookmakers, game.home_team, game.away_team)
-      const publicBetting = publicBettingMap.get(game.id)
-
-      const homeAbbr = homeTeam?.abbreviation || game.home_team.substring(0, 3).toUpperCase()
-      const awayAbbr = awayTeam?.abbreviation || game.away_team.substring(0, 3).toUpperCase()
-
-      return {
-        id: game.id,
+        id: row.odds_api_game_id || row.game_id,
         sport: sport.toUpperCase(),
-        awayTeam: game.away_team,
-        homeTeam: game.home_team,
-        awayTeamAbbr: awayAbbr,
-        homeTeamAbbr: homeAbbr,
-        awayTeamLogo: awayTeam?.logo_url || null,
-        homeTeamLogo: homeTeam?.logo_url || null,
-        awayTeamColor: awayTeam?.primary_color || null,
-        homeTeamColor: homeTeam?.primary_color || null,
-        kickoff: game.commence_time,
-        kickoffLabel: new Date(game.commence_time).toLocaleString('en-US', {
+        awayTeam: row.away_team_name,
+        homeTeam: row.home_team_name,
+        awayTeamAbbr: row.away_abbrev || row.away_team_name.substring(0, 3).toUpperCase(),
+        homeTeamAbbr: row.home_abbrev || row.home_team_name.substring(0, 3).toUpperCase(),
+        awayTeamLogo: row.away_logo || null,
+        homeTeamLogo: row.home_logo || null,
+        awayTeamColor: row.away_primary_color || null,
+        homeTeamColor: row.home_primary_color || null,
+        kickoff: row.game_time,
+        kickoffLabel: new Date(row.game_time).toLocaleString('en-US', {
           timeZone: 'America/New_York',
           weekday: 'short',
           month: 'short',
@@ -257,30 +161,38 @@ export async function GET(request: NextRequest) {
           hour12: true
         }),
         // Odds
-        spread: odds?.spread ? {
-          homeLine: odds.spread.home,
-          awayLine: odds.spread.away,
+        spread: homeSpread !== null ? {
+          homeLine: homeSpread,
+          awayLine: awaySpread,
         } : null,
-        totals: odds?.totals ? {
-          number: odds.totals.number,
+        totals: row.current_total ? {
+          number: row.current_total,
         } : null,
-        moneyline: odds?.moneyline || null,
-        sportsbook: odds?.sportsbook || null,
+        moneyline: (row.current_ml_home || row.current_ml_away) ? {
+          home: row.current_ml_home,
+          away: row.current_ml_away,
+        } : null,
+        sportsbook: row.current_sportsbook || 'Consensus',
         // Public Betting (from sportsdataio via ClickHouse)
-        publicBetting: publicBetting ? {
-          spreadHomeBetPct: publicBetting.public_spread_home_bet_pct,
-          spreadHomeMoneyPct: publicBetting.public_spread_home_money_pct,
-          mlHomeBetPct: publicBetting.public_ml_home_bet_pct,
-          mlHomeMoneyPct: publicBetting.public_ml_home_money_pct,
-          totalOverBetPct: publicBetting.public_total_over_bet_pct,
-          totalOverMoneyPct: publicBetting.public_total_over_money_pct,
+        publicBetting: (
+          row.public_spread_home_bet_pct || 
+          row.public_ml_home_bet_pct || 
+          row.public_total_over_bet_pct
+        ) ? {
+          spreadHomeBetPct: row.public_spread_home_bet_pct,
+          spreadHomeMoneyPct: row.public_spread_home_money_pct,
+          mlHomeBetPct: row.public_ml_home_bet_pct,
+          mlHomeMoneyPct: row.public_ml_home_money_pct,
+          totalOverBetPct: row.public_total_over_bet_pct,
+          totalOverMoneyPct: row.public_total_over_money_pct,
         } : null,
-        hasPublicBetting: !!publicBetting,
+        hasPublicBetting: !!(
+          row.public_spread_home_bet_pct || 
+          row.public_ml_home_bet_pct || 
+          row.public_total_over_bet_pct
+        ),
       }
     })
-
-    // Sort by kickoff (soonest first)
-    games.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime())
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Returning ${games.length} games`)
 
@@ -290,7 +202,8 @@ export async function GET(request: NextRequest) {
       games,
       total: games.length,
       dataSources: {
-        games: 'Odds API',
+        games: 'ClickHouse (synced every 30min)',
+        odds: 'ClickHouse live_odds_snapshots',
         logos: 'ClickHouse teams table',
         publicBetting: 'SportsDataIO (via ClickHouse)',
       }
@@ -307,4 +220,3 @@ export async function GET(request: NextRequest) {
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
