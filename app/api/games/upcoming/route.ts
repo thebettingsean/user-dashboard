@@ -89,11 +89,17 @@ export async function GET(request: NextRequest) {
         -- Sportsbook (from latest snapshot)
         latest.sportsbook as current_sportsbook
         
-      FROM games g
+      FROM games g FINAL
       
-      -- Join teams for logos and colors
-      LEFT JOIN teams ht ON g.home_team_id = ht.team_id
-      LEFT JOIN teams at ON g.away_team_id = at.team_id
+      -- Join teams for logos and colors (MUST match on sport to prevent cross-sport contamination)
+      LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND (
+        (g.sport IN ('cbb', 'ncaab') AND ht.sport IN ('cbb', 'ncaab')) OR
+        (g.sport NOT IN ('cbb', 'ncaab') AND ht.sport = g.sport)
+      )
+      LEFT JOIN teams at ON g.away_team_id = at.team_id AND (
+        (g.sport IN ('cbb', 'ncaab') AND at.sport IN ('cbb', 'ncaab')) OR
+        (g.sport NOT IN ('cbb', 'ncaab') AND at.sport = g.sport)
+      )
       
       -- Join with latest odds snapshot for current lines
       LEFT JOIN (
