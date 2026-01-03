@@ -99,7 +99,7 @@ export default function Navbar() {
             <Link href="/" style={styles.logoLink}>
               <img
                 src={pathname === '/contact' 
-                  ? "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69585b86cfd0d796669514ec_NEW%20LOGO-2.svg"
+                  ? "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69585df6d0cbf4f8412511ae_NEW%20LOGO%20222.png"
                   : "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
                 }
                 alt="The Betting Insider"
@@ -221,7 +221,7 @@ export default function Navbar() {
           <Link href="/" onClick={closeMobileMenu}>
             <img
               src={pathname === '/contact' 
-                ? "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69585b86cfd0d796669514ec_NEW%20LOGO-2.svg"
+                ? "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/69585df6d0cbf4f8412511ae_NEW%20LOGO%20222.png"
                 : "https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/68e2e0cb7ce335565e485fe4_BETTING%20INSIDER%20SVG.svg"
               }
               alt="The Betting Insider"
