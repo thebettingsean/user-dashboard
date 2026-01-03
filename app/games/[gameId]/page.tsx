@@ -6,7 +6,6 @@ import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { supabase } from '@/lib/supabase'
 import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight } from 'react-icons/fi'
-import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { 
   LineChart, 
@@ -784,20 +783,14 @@ export default function GameDetailPage() {
               </div>
             ) : (
               <div className={styles.generatePrompt}>
-                <div className={styles.generateIcon}>
-                  <IoSparkles size={32} />
-                </div>
-                <h3>Generate Game Analysis</h3>
-                <p>Get an AI-powered preview of this matchup based on team statistics and rankings.</p>
-                {scriptError && <p className={styles.scriptError}>{scriptError}</p>}
                 <button 
                   className={styles.generateBtn}
                   onClick={generateScript}
                   disabled={scriptLoading}
                 >
-                  <IoSparkles size={16} />
                   Generate Free Analysis
                 </button>
+                {scriptError && <p className={styles.scriptError}>{scriptError}</p>}
               </div>
             )}
           </div>
@@ -992,14 +985,14 @@ export default function GameDetailPage() {
                           However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
                           <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
                           active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                        </p>
-                        <button 
+                </p>
+                <button 
                           className={styles.viewPicksBtn}
                           onClick={() => router.push('/picks')}
                           style={{ marginTop: '12px' }}
-                        >
+                >
                           View Now
-                        </button>
+                </button>
                       </>
                     ) : null}
                   </>
@@ -1093,7 +1086,7 @@ export default function GameDetailPage() {
                                 <span className={styles.pickCapperName}>{pick.bettor_name}</span>
                               </div>
                               <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
-                            </div>
+              </div>
                           )}
                         </>
                       )}
@@ -1478,9 +1471,9 @@ export default function GameDetailPage() {
                     <h3>No data available for this game</h3>
                     <p>Click below to view more games with public betting data</p>
                     <button onClick={() => router.push('/public-betting')}>
-                      Go to Public Betting
-                    </button>
-                  </div>
+                    Go to Public Betting
+                  </button>
+                </div>
                 )}
               </>
             ) : (
