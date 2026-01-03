@@ -127,9 +127,15 @@ export async function GET(request: NextRequest) {
 
     const result = await clickhouseQuery<any>(gamesQuery)
 
-    if (!result.success || !result.data) {
-      console.error(`[GAMES API - ${sport.toUpperCase()}] Query failed:`, result.error || 'Unknown error')
-      throw new Error('Failed to fetch games from ClickHouse')
+    if (!result.data || result.data.length === 0) {
+      console.log(`[GAMES API - ${sport.toUpperCase()}] No upcoming games found in ClickHouse`)
+      return NextResponse.json({
+        success: true,
+        sport: sport.toUpperCase(),
+        games: [],
+        total: 0,
+        message: 'No upcoming games found'
+      })
     }
 
     console.log(`[GAMES API - ${sport.toUpperCase()}] Found ${result.data.length} upcoming games`)
