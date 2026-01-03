@@ -1054,31 +1054,20 @@
   padding: 0;
 }
 
+/* Bet Type Filters - OUTSIDE card (like Line History) */
+.betTypeFilters {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
 /* Match /public-betting graph container styling */
 .bettingGraphCard {
   background: rgba(29, 37, 48, 0.3);
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 10px;
   padding: 16px;
-  margin-top: 16px;
-}
-
-.bettingGraphHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.bettingGraphTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.betTypeFilters {
-  display: flex;
-  gap: 8px;
 }
 
 /* Match /public-betting filter button styling */
@@ -1424,14 +1413,10 @@
     padding: 12px;
   }
 
-  .bettingGraphHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
   .betTypeFilters {
     width: 100%;
     justify-content: flex-start;
+    margin-top: 12px;
+    margin-bottom: 12px;
   }
 }

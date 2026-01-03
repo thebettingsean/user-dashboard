@@ -1037,32 +1037,30 @@ export default function GameDetailPage() {
                 <h2 className={styles.sectionTitle}>Public Betting Data</h2>
                 <p className={styles.sectionSubtitle}>Betting splits and market indicators from 150+ sportsbooks</p>
                 
-                {/* Bar Graph Card - Match /public-betting styling */}
-                <div className={styles.bettingGraphCard}>
-                  <div className={styles.bettingGraphHeader}>
-                    <h3 className={styles.bettingGraphTitle}>Betting Splits</h3>
-                    <div className={styles.betTypeFilters}>
-                      <button
-                        className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
-                        onClick={() => setBettingMarketType('spread')}
-                      >
-                        Spread
-                      </button>
-                      <button
-                        className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
-                        onClick={() => setBettingMarketType('total')}
-                      >
-                        O/U
-                      </button>
-                      <button
-                        className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
-                        onClick={() => setBettingMarketType('ml')}
-                      >
-                        ML
-                      </button>
-                    </div>
-                  </div>
+                {/* Bet Type Filters - OUTSIDE card */}
+                <div className={styles.betTypeFilters}>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('spread')}
+                  >
+                    Spread
+                  </button>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('total')}
+                  >
+                    O/U
+                  </button>
+                  <button
+                    className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
+                    onClick={() => setBettingMarketType('ml')}
+                  >
+                    ML
+                  </button>
+                </div>
 
+                {/* Bar Graph Card - Clean, just the graph */}
+                <div className={styles.bettingGraphCard}>
                   {/* Bar Graph Container */}
                   <div className={styles.barGraphSection}>
                     <div className={styles.barGraphContainer}>
