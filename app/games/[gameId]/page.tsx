@@ -53,6 +53,28 @@ interface LineMovementPoint {
 type MarketType = 'spread' | 'total' | 'ml'
 
 function formatGameTime(dateString: string): string {
+  // dateString should be "YYYY-MM-DD HH:MM" in EST from API
+  // If it contains a space, it's the EST format
+  if (dateString.includes(' ') && dateString.length < 20) {
+    // Parse EST format: "YYYY-MM-DD HH:MM"
+    const [datePart, timePart] = dateString.split(' ')
+    const [year, month, day] = datePart.split('-')
+    const [hours, minutes] = timePart.split(':').map(Number)
+    
+    // Format time to 12hr
+    const hour12 = hours % 12 || 12
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    
+    // Create a readable date string
+    const date = new Date(`${year}-${month}-${day}T00:00:00`)
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' })
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' })
+    const dayNum = parseInt(day)
+    
+    return `${dayOfWeek}, ${monthName} ${dayNum} at ${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`
+  }
+  
+  // Fallback for UTC ISO format
   const date = new Date(dateString)
   return date.toLocaleString('en-US', {
     timeZone: 'America/New_York',
@@ -290,14 +312,18 @@ export default function GameDetailPage() {
         // Fetch FREE script
         // Extract Odds API ID from game_id (e.g., nfl_abc123 -> abc123)
         const oddsApiId = gameId.includes('_') ? gameId.split('_')[1] : gameId
+        console.log(`[Game Detail] Fetching script for gameId: ${gameId} -> oddsApiId: ${oddsApiId}`)
         try {
           const scriptRes = await fetch(`/api/game-scripts/free?gameId=${oddsApiId}&sport=${sport.toUpperCase()}`)
           const scriptData = await scriptRes.json()
+          console.log(`[Game Detail] Script response:`, scriptData.cached ? 'cached' : (scriptData.script ? 'found' : 'not found'))
           if (scriptData.script) {
             setScript(scriptData.script)
+          } else {
+            console.warn(`[Game Detail] No script found for ${oddsApiId}`)
           }
         } catch (e) {
-          console.log('No script available')
+          console.error('[Game Detail] Error fetching script:', e)
         }
         
       } catch (error) {
@@ -596,7 +622,7 @@ export default function GameDetailPage() {
         
         {/* Game Time */}
         <div className={styles.gameMeta}>
-          <span>{formatGameTime(gameData.kickoff)}</span>
+          <span>{formatGameTime(gameData.kickoffLabel)}</span>
         </div>
         
         {/* Tabs */}
