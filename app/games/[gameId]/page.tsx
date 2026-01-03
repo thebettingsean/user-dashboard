@@ -627,8 +627,12 @@ export default function GameDetailPage() {
     setScriptError(null)
     
     try {
+      // Extract Odds API ID (same as initial fetch) - e.g., nfl_abc123 -> abc123
+      const oddsApiId = gameId.includes('_') ? gameId.split('_')[1] : gameId
+      console.log(`[Generate Script] Using oddsApiId: ${oddsApiId}`)
+      
       const res = await fetch(
-        `/api/game-scripts/free?gameId=${gameId}&sport=${gameData.sport}&homeTeam=${encodeURIComponent(gameData.homeTeam)}&awayTeam=${encodeURIComponent(gameData.awayTeam)}&gameTime=${encodeURIComponent(gameData.kickoff)}&force=true`
+        `/api/game-scripts/free?gameId=${oddsApiId}&sport=${gameData.sport.toUpperCase()}&homeTeam=${encodeURIComponent(gameData.homeTeam)}&awayTeam=${encodeURIComponent(gameData.awayTeam)}&gameTime=${encodeURIComponent(gameData.kickoff)}&force=true`
       )
       const data = await res.json()
       
