@@ -1037,133 +1037,156 @@ export default function GameDetailPage() {
                 <h2 className={styles.sectionTitle}>Public Betting Data</h2>
                 <p className={styles.sectionSubtitle}>Betting splits and market indicators from 150+ sportsbooks</p>
                 
-                {/* Bet Type Filters */}
-                <div className={styles.betTypeFilters}>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('spread')}
-                  >
-                    Spread
-                  </button>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('total')}
-                  >
-                    Total
-                  </button>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('ml')}
-                  >
-                    Moneyline
-                  </button>
-                </div>
-
-                {/* Bar Graph Section */}
-                <div className={styles.barGraphSection}>
-                  <div className={styles.barGraphContainer}>
-                    {/* Grid Lines (Y-axis markers) */}
-                    <div className={styles.gridLines}>
-                      <div className={styles.gridLine} />
-                      <div className={styles.gridLine} />
-                      <div className={styles.gridLine} />
-                      <div className={styles.gridLine} />
+                {/* Bar Graph Card - Match /public-betting styling */}
+                <div className={styles.bettingGraphCard}>
+                  <div className={styles.bettingGraphHeader}>
+                    <h3 className={styles.bettingGraphTitle}>Betting Splits</h3>
+                    <div className={styles.betTypeFilters}>
+                      <button
+                        className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
+                        onClick={() => setBettingMarketType('spread')}
+                      >
+                        Spread
+                      </button>
+                      <button
+                        className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
+                        onClick={() => setBettingMarketType('total')}
+                      >
+                        O/U
+                      </button>
+                      <button
+                        className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
+                        onClick={() => setBettingMarketType('ml')}
+                      >
+                        ML
+                      </button>
                     </div>
+                  </div>
 
-                    {/* Bars Container */}
-                    {(() => {
-                      const hasData = gameData?.hasPublicBetting
-                      const awayAbbr = gameData?.awayTeamAbbr || 'AWAY'
-                      const homeAbbr = gameData?.homeTeamAbbr || 'HOME'
-                      const awayColor = gameData?.awayTeamColor || '#888888'
-                      const homeColor = gameData?.homeTeamColor || '#888888'
+                  {/* Bar Graph Container */}
+                  <div className={styles.barGraphSection}>
+                    <div className={styles.barGraphContainer}>
+                      {(() => {
+                        const hasData = gameData?.hasPublicBetting
+                        const awayAbbr = gameData?.awayTeamAbbr || 'AWAY'
+                        const homeAbbr = gameData?.homeTeamAbbr || 'HOME'
+                        const awayColor = gameData?.awayTeamColor || '#888888'
+                        const homeColor = gameData?.homeTeamColor || '#888888'
 
-                      // Get percentages based on bet type
-                      let awayBetPct = 50
-                      let homeBetPct = 50
-                      let awayMoneyPct = 50
-                      let homeMoneyPct = 50
-                      let labels = [awayAbbr + ' Bet%', homeAbbr + ' Bet%', awayAbbr + ' Money%', homeAbbr + ' Money%']
+                        // Get percentages based on bet type
+                        let awayBetPct = 50
+                        let homeBetPct = 50
+                        let awayMoneyPct = 50
+                        let homeMoneyPct = 50
+                        let labels = [awayAbbr + ' Bet%', homeAbbr + ' Bet%', awayAbbr + ' Money%', homeAbbr + ' Money%']
 
-                      if (hasData && gameData?.publicBetting) {
-                        if (bettingMarketType === 'spread') {
-                          awayBetPct = 100 - (gameData.publicBetting.spreadHomeBetPct || 50)
-                          homeBetPct = gameData.publicBetting.spreadHomeBetPct || 50
-                          awayMoneyPct = 100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)
-                          homeMoneyPct = gameData.publicBetting.spreadHomeMoneyPct || 50
-                        } else if (bettingMarketType === 'total') {
-                          awayBetPct = 100 - (gameData.publicBetting.totalOverBetPct || 50)
-                          homeBetPct = gameData.publicBetting.totalOverBetPct || 50
-                          awayMoneyPct = 100 - (gameData.publicBetting.totalOverMoneyPct || 50)
-                          homeMoneyPct = gameData.publicBetting.totalOverMoneyPct || 50
-                          labels = ['Under Bet%', 'Over Bet%', 'Under Money%', 'Over Money%']
-                        } else if (bettingMarketType === 'ml') {
-                          awayBetPct = 100 - (gameData.publicBetting.mlHomeBetPct || 50)
-                          homeBetPct = gameData.publicBetting.mlHomeBetPct || 50
-                          awayMoneyPct = 100 - (gameData.publicBetting.mlHomeMoneyPct || 50)
-                          homeMoneyPct = gameData.publicBetting.mlHomeMoneyPct || 50
+                        if (hasData && gameData?.publicBetting) {
+                          if (bettingMarketType === 'spread') {
+                            awayBetPct = 100 - (gameData.publicBetting.spreadHomeBetPct || 50)
+                            homeBetPct = gameData.publicBetting.spreadHomeBetPct || 50
+                            awayMoneyPct = 100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)
+                            homeMoneyPct = gameData.publicBetting.spreadHomeMoneyPct || 50
+                          } else if (bettingMarketType === 'total') {
+                            awayBetPct = 100 - (gameData.publicBetting.totalOverBetPct || 50)
+                            homeBetPct = gameData.publicBetting.totalOverBetPct || 50
+                            awayMoneyPct = 100 - (gameData.publicBetting.totalOverMoneyPct || 50)
+                            homeMoneyPct = gameData.publicBetting.totalOverMoneyPct || 50
+                            labels = ['Under Bet%', 'Over Bet%', 'Under Money%', 'Over Money%']
+                          } else if (bettingMarketType === 'ml') {
+                            awayBetPct = 100 - (gameData.publicBetting.mlHomeBetPct || 50)
+                            homeBetPct = gameData.publicBetting.mlHomeBetPct || 50
+                            awayMoneyPct = 100 - (gameData.publicBetting.mlHomeMoneyPct || 50)
+                            homeMoneyPct = gameData.publicBetting.mlHomeMoneyPct || 50
+                          }
                         }
-                      }
 
-                      const bars = [
-                        { pct: awayBetPct, color: awayColor, label: labels[0] },
-                        { pct: homeBetPct, color: homeColor, label: labels[1] },
-                        { pct: awayMoneyPct, color: awayColor, label: labels[2] },
-                        { pct: homeMoneyPct, color: homeColor, label: labels[3] },
-                      ]
+                        const bars = [
+                          { pct: awayBetPct, color: awayColor, label: labels[0] },
+                          { pct: homeBetPct, color: homeColor, label: labels[1] },
+                          { pct: awayMoneyPct, color: awayColor, label: labels[2] },
+                          { pct: homeMoneyPct, color: homeColor, label: labels[3] },
+                        ]
 
-                      return (
-                        <>
-                          <div className={styles.barsContainer}>
-                            {bars.map((bar, idx) => (
-                              <div key={idx} className={styles.barWrapper}>
-                                <div className={styles.barPercentage}>{Math.round(bar.pct)}%</div>
-                                <div
-                                  className={styles.bar}
-                                  style={{
-                                    height: `${bar.pct}%`,
-                                    background: `linear-gradient(180deg, ${bar.color}CC 0%, ${bar.color}66 100%)`,
-                                  }}
-                                />
-                                <div className={styles.barBaseLine} />
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* X-axis Labels */}
-                          <div className={styles.xLabelsContainer}>
-                            {labels.map((label, idx) => (
-                              <div key={idx} className={styles.xLabel}>
-                                {label}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* No Data Overlay */}
-                          {!hasData && (
-                            <div className={styles.noDataOverlay}>
-                              <div className={styles.noDataIcon}>
-                                <GiCash size={48} />
-                              </div>
-                              <h3 className={styles.noDataTitle}>No data available for this game</h3>
-                              <p className={styles.noDataDesc}>
-                                Click below to view more games with public betting data
-                              </p>
-                              <button
-                                className={styles.noDataBtn}
-                                onClick={() => router.push('/public-betting')}
-                              >
-                                Go to Public Betting
-                              </button>
+                        return (
+                          <>
+                            {/* Y-Axis */}
+                            <div className={styles.yAxis}>
+                              <span className={styles.yAxisLabel}>100%</span>
+                              <span className={styles.yAxisLabel}>75%</span>
+                              <span className={styles.yAxisLabel}>50%</span>
+                              <span className={styles.yAxisLabel}>25%</span>
+                              <span className={styles.yAxisLabel}>0%</span>
                             </div>
-                          )}
-                        </>
-                      )
-                    })()}
+
+                            {/* X-Axis Line */}
+                            <div className={styles.xAxisLine} />
+
+                            {/* Bars */}
+                            <div className={styles.barsContainer}>
+                              {bars.map((bar, idx) => (
+                                <div key={idx} className={styles.barWrapper}>
+                                  {/* Percentage inside or outside based on bar height */}
+                                  {bar.pct >= 10 ? (
+                                    <div
+                                      className={styles.bar}
+                                      style={{
+                                        height: `${bar.pct}%`,
+                                        background: `linear-gradient(180deg, ${bar.color}DD 0%, ${bar.color}88 100%)`,
+                                      }}
+                                    >
+                                      <span className={styles.barPercentage}>{Math.round(bar.pct)}%</span>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <span className={styles.barPercentageOutside}>{Math.round(bar.pct)}%</span>
+                                      <div
+                                        className={styles.bar}
+                                        style={{
+                                          height: `${bar.pct}%`,
+                                          background: `linear-gradient(180deg, ${bar.color}DD 0%, ${bar.color}88 100%)`,
+                                        }}
+                                      />
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* X-Axis Labels */}
+                            <div className={styles.xLabelsContainer}>
+                              {labels.map((label, idx) => (
+                                <div key={idx} className={styles.xLabel}>
+                                  {label}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* No Data Overlay */}
+                            {!hasData && (
+                              <div className={styles.noDataOverlay}>
+                                <div className={styles.noDataIcon}>
+                                  <GiCash size={40} />
+                                </div>
+                                <h3 className={styles.noDataTitle}>No data available for this game</h3>
+                                <p className={styles.noDataDesc}>
+                                  Click below to view more games with public betting data
+                                </p>
+                                <button
+                                  className={styles.noDataBtn}
+                                  onClick={() => router.push('/public-betting')}
+                                >
+                                  Go to Public Betting
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
                   </div>
                 </div>
 
-                {/* Signals Section */}
+                {/* Signals Section - Match /public-betting styling */}
                 {gameData?.hasPublicBetting && gameData?.signals && (() => {
                   let homeSignals, awaySignals
                   let homeLabel = gameData.homeTeamAbbr || 'HOME'
@@ -1189,7 +1212,7 @@ export default function GameDetailPage() {
 
                   return (
                     <div className={styles.signalsSection}>
-                      <h3 className={styles.signalsSectionTitle}>Market Signals</h3>
+                      <h3 className={styles.signalsSectionTitle}>Signals</h3>
                       <div className={styles.signalsGrid}>
                         {/* Away/Under Signals */}
                         {hasAwaySignals && (
@@ -1206,7 +1229,7 @@ export default function GameDetailPage() {
                             </div>
                             <div className={styles.signalIndicators}>
                               {awaySignals.publicRespect > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Public Respect</span>
                                   <span className={`${styles.signalValue} ${styles.publicColor}`}>
                                     {awaySignals.publicRespect}%
@@ -1214,7 +1237,7 @@ export default function GameDetailPage() {
                                 </div>
                               )}
                               {awaySignals.vegasBacked > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Vegas Backed</span>
                                   <span className={`${styles.signalValue} ${styles.vegasColor}`}>
                                     {awaySignals.vegasBacked}%
@@ -1222,7 +1245,7 @@ export default function GameDetailPage() {
                                 </div>
                               )}
                               {awaySignals.whaleRespect > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Whale Respect</span>
                                   <span className={`${styles.signalValue} ${styles.whaleColor}`}>
                                     {awaySignals.whaleRespect}%
@@ -1248,7 +1271,7 @@ export default function GameDetailPage() {
                             </div>
                             <div className={styles.signalIndicators}>
                               {homeSignals.publicRespect > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Public Respect</span>
                                   <span className={`${styles.signalValue} ${styles.publicColor}`}>
                                     {homeSignals.publicRespect}%
@@ -1256,7 +1279,7 @@ export default function GameDetailPage() {
                                 </div>
                               )}
                               {homeSignals.vegasBacked > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Vegas Backed</span>
                                   <span className={`${styles.signalValue} ${styles.vegasColor}`}>
                                     {homeSignals.vegasBacked}%
@@ -1264,7 +1287,7 @@ export default function GameDetailPage() {
                                 </div>
                               )}
                               {homeSignals.whaleRespect > 0 && (
-                                <div className={styles.signalIndicator}>
+                                <div className={styles.signalRow}>
                                   <span className={styles.signalLabel}>Whale Respect</span>
                                   <span className={`${styles.signalValue} ${styles.whaleColor}`}>
                                     {homeSignals.whaleRespect}%
