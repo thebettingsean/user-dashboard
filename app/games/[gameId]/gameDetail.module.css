@@ -1112,8 +1112,8 @@
 /* Horizontal Bar Container */
 .splitBarContainer {
   display: flex;
-  height: 108px;
-  border-radius: 8px;
+  height: 28px;
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
 }
@@ -1137,10 +1137,10 @@
 }
 
 .splitBarText {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   z-index: 2;
 }
 
@@ -1303,11 +1303,11 @@
   }
 
   .splitBarContainer {
-    height: 80px;
+    height: 24px;
   }
 
   .splitBarText {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .signalsGrid {
