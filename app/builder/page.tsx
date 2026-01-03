@@ -130,60 +130,124 @@ const TIME_PERIODS: { value: TimePeriod; label: string }[] = [
   { value: 'since_2022', label: 'Since 2022' },
 ]
 
-// Position-specific prop stats
-const POSITIONS = [
-  { value: 'any', label: 'All Positions' },
-  { value: 'QB', label: 'Quarterback' },
-  { value: 'RB', label: 'Running Back' },
-  { value: 'WR', label: 'Wide Receiver' },
-  { value: 'TE', label: 'Tight End' },
-  { value: 'K', label: 'Kicker' },
-]
+// Get positions based on sport
+const getPositions = (sport: string) => {
+  if (sport === 'nba') {
+    return [
+      { value: 'any', label: 'All Positions' },
+      { value: 'PG', label: 'Point Guard' },
+      { value: 'SG', label: 'Shooting Guard' },
+      { value: 'SF', label: 'Small Forward' },
+      { value: 'PF', label: 'Power Forward' },
+      { value: 'C', label: 'Center' },
+    ]
+  }
+  // NFL positions
+  return [
+    { value: 'any', label: 'All Positions' },
+    { value: 'QB', label: 'Quarterback' },
+    { value: 'RB', label: 'Running Back' },
+    { value: 'WR', label: 'Wide Receiver' },
+    { value: 'TE', label: 'Tight End' },
+    { value: 'K', label: 'Kicker' },
+  ]
+}
 
-const PROP_STATS_BY_POSITION: Record<string, { value: string; label: string }[]> = {
-  any: [
-    { value: 'pass_yards', label: 'Pass Yards' },
-    { value: 'rush_yards', label: 'Rush Yards' },
-    { value: 'receiving_yards', label: 'Receiving Yards' },
-    { value: 'receptions', label: 'Receptions' },
-  ],
-  QB: [
-    { value: 'pass_yards', label: 'Pass Yards' },
-    { value: 'pass_tds', label: 'Pass TDs' },
-    { value: 'pass_attempts', label: 'Pass Attempts' },
-    { value: 'completions', label: 'Completions' },
-    { value: 'interceptions', label: 'Interceptions' },
-    { value: 'rush_yards', label: 'Rush Yards' },
-    { value: 'rush_tds', label: 'Rush TDs' },
-    { value: 'rush_long', label: 'Longest Rush' },
-  ],
-  RB: [
-    { value: 'rush_yards', label: 'Rush Yards' },
-    { value: 'rush_tds', label: 'Rush TDs' },
-    { value: 'rush_attempts', label: 'Rush Attempts' },
-    { value: 'rush_long', label: 'Longest Rush' },
-    { value: 'receiving_yards', label: 'Receiving Yards' },
-    { value: 'receptions', label: 'Receptions' },
-    { value: 'receiving_long', label: 'Longest Reception' },
-  ],
-  WR: [
-    { value: 'receiving_yards', label: 'Receiving Yards' },
-    { value: 'receptions', label: 'Receptions' },
-    { value: 'receiving_tds', label: 'Receiving TDs' },
-    { value: 'receiving_long', label: 'Longest Reception' },
-    { value: 'rush_yards', label: 'Rush Yards' },
-  ],
-  TE: [
-    { value: 'receiving_yards', label: 'Receiving Yards' },
-    { value: 'receptions', label: 'Receptions' },
-    { value: 'receiving_tds', label: 'Receiving TDs' },
-    { value: 'receiving_long', label: 'Longest Reception' },
-  ],
-  K: [
-    { value: 'fg_made', label: 'FG Made' },
-    { value: 'fg_attempts', label: 'FG Attempts' },
-    { value: 'xp_made', label: 'XP Made' },
-  ],
+// Get prop stats by position based on sport
+const getPropStatsByPosition = (sport: string): Record<string, { value: string; label: string }[]> => {
+  if (sport === 'nba') {
+    return {
+      any: [
+        { value: 'points', label: 'Points' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'assists', label: 'Assists' },
+        { value: 'threes', label: '3-Pointers Made' },
+        { value: 'steals', label: 'Steals' },
+        { value: 'blocks', label: 'Blocks' },
+        { value: 'turnovers', label: 'Turnovers' },
+      ],
+      PG: [
+        { value: 'points', label: 'Points' },
+        { value: 'assists', label: 'Assists' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'steals', label: 'Steals' },
+        { value: 'threes', label: '3-Pointers Made' },
+        { value: 'turnovers', label: 'Turnovers' },
+      ],
+      SG: [
+        { value: 'points', label: 'Points' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'assists', label: 'Assists' },
+        { value: 'threes', label: '3-Pointers Made' },
+        { value: 'steals', label: 'Steals' },
+      ],
+      SF: [
+        { value: 'points', label: 'Points' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'assists', label: 'Assists' },
+        { value: 'threes', label: '3-Pointers Made' },
+        { value: 'steals', label: 'Steals' },
+      ],
+      PF: [
+        { value: 'points', label: 'Points' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'blocks', label: 'Blocks' },
+        { value: 'assists', label: 'Assists' },
+      ],
+      C: [
+        { value: 'points', label: 'Points' },
+        { value: 'rebounds', label: 'Rebounds' },
+        { value: 'blocks', label: 'Blocks' },
+      ],
+    }
+  }
+  
+  // NFL stats
+  return {
+    any: [
+      { value: 'pass_yards', label: 'Pass Yards' },
+      { value: 'rush_yards', label: 'Rush Yards' },
+      { value: 'receiving_yards', label: 'Receiving Yards' },
+      { value: 'receptions', label: 'Receptions' },
+    ],
+    QB: [
+      { value: 'pass_yards', label: 'Pass Yards' },
+      { value: 'pass_tds', label: 'Pass TDs' },
+      { value: 'pass_attempts', label: 'Pass Attempts' },
+      { value: 'completions', label: 'Completions' },
+      { value: 'interceptions', label: 'Interceptions' },
+      { value: 'rush_yards', label: 'Rush Yards' },
+      { value: 'rush_tds', label: 'Rush TDs' },
+      { value: 'rush_long', label: 'Longest Rush' },
+    ],
+    RB: [
+      { value: 'rush_yards', label: 'Rush Yards' },
+      { value: 'rush_tds', label: 'Rush TDs' },
+      { value: 'rush_attempts', label: 'Rush Attempts' },
+      { value: 'rush_long', label: 'Longest Rush' },
+      { value: 'receiving_yards', label: 'Receiving Yards' },
+      { value: 'receptions', label: 'Receptions' },
+      { value: 'receiving_long', label: 'Longest Reception' },
+    ],
+    WR: [
+      { value: 'receiving_yards', label: 'Receiving Yards' },
+      { value: 'receptions', label: 'Receptions' },
+      { value: 'receiving_tds', label: 'Receiving TDs' },
+      { value: 'receiving_long', label: 'Longest Reception' },
+      { value: 'rush_yards', label: 'Rush Yards' },
+    ],
+    TE: [
+      { value: 'receiving_yards', label: 'Receiving Yards' },
+      { value: 'receptions', label: 'Receptions' },
+      { value: 'receiving_tds', label: 'Receiving TDs' },
+      { value: 'receiving_long', label: 'Longest Reception' },
+    ],
+    K: [
+      { value: 'fg_made', label: 'FG Made' },
+      { value: 'fg_attempts', label: 'FG Attempts' },
+      { value: 'xp_made', label: 'XP Made' },
+    ],
+  }
 }
 
 // Legacy prop stats (for backwards compatibility)
@@ -471,42 +535,10 @@ function SportsEngineContent() {
   // Away team players (for O/U)
   const [awayPlayerFilters, setAwayPlayerFilters] = useState<PlayerStatFilterRow[]>([{ ...defaultPlayerFilter }])
   
-  // Get available stat types based on position
+  // Get available stat types based on position and sport
   const getStatTypesForPosition = (position: string) => {
-    switch (position) {
-      case 'QB':
-        return [
-          { value: 'pass_yards', label: 'Pass Yards' },
-          { value: 'pass_tds', label: 'Pass TDs' },
-          { value: 'pass_attempts', label: 'Pass Attempts' },
-          { value: 'pass_completions', label: 'Completions' },
-          { value: 'interceptions', label: 'INTs' },
-        ]
-      case 'WR':
-        return [
-          { value: 'receiving_yards', label: 'Rec Yards' },
-          { value: 'receptions', label: 'Receptions' },
-          { value: 'receiving_tds', label: 'Rec TDs' },
-          { value: 'targets', label: 'Targets' },
-        ]
-      case 'RB':
-        return [
-          { value: 'rush_yards', label: 'Rush Yards' },
-          { value: 'rush_attempts', label: 'Rush Attempts' },
-          { value: 'rush_tds', label: 'Rush TDs' },
-          { value: 'receiving_yards', label: 'Rec Yards' },
-          { value: 'receptions', label: 'Receptions' },
-        ]
-      case 'TE':
-        return [
-          { value: 'receiving_yards', label: 'Rec Yards' },
-          { value: 'receptions', label: 'Receptions' },
-          { value: 'receiving_tds', label: 'Rec TDs' },
-          { value: 'targets', label: 'Targets' },
-        ]
-      default:
-        return []
-    }
+    const PROP_STATS_BY_POSITION = getPropStatsByPosition(selectedSport)
+    return PROP_STATS_BY_POSITION[position] || PROP_STATS_BY_POSITION['any'] || []
   }
   
   // Add a new player filter row
@@ -660,6 +692,7 @@ function SportsEngineContent() {
   
   // Get available stats based on position (use selected player's position if available)
   const effectivePosition = selectedPlayer?.position || propPosition
+  const PROP_STATS_BY_POSITION = getPropStatsByPosition(selectedSport)
   const availablePropStats = PROP_STATS_BY_POSITION[effectivePosition] || PROP_STATS_BY_POSITION['any']
   
   // Navigate to query type URL (seamless transition)
@@ -4225,13 +4258,27 @@ function SportsEngineContent() {
         <div className={styles.mobileQueryTypes}>
           <button
             className={`${styles.filterBtn} ${selectedSport === 'nfl' ? styles.active : ''}`}
-            onClick={() => setSelectedSport('nfl')}
+            onClick={() => {
+              setSelectedSport('nfl')
+              setPropPosition('any')
+              const stats = getPropStatsByPosition('nfl')['any']
+              if (stats.length > 0) setPropStat(stats[0].value)
+              setSelectedPlayer(null)
+              setPlayerSearch('')
+            }}
           >
             NFL
           </button>
           <button
             className={`${styles.filterBtn} ${selectedSport === 'nba' ? styles.active : ''}`}
-            onClick={() => setSelectedSport('nba')}
+            onClick={() => {
+              setSelectedSport('nba')
+              setPropPosition('any')
+              const stats = getPropStatsByPosition('nba')['any']
+              if (stats.length > 0) setPropStat(stats[0].value)
+              setSelectedPlayer(null)
+              setPlayerSearch('')
+            }}
           >
             NBA
           </button>
@@ -4267,13 +4314,27 @@ function SportsEngineContent() {
             <div className={styles.sportFilters}>
               <button
                 className={`${styles.filterBtn} ${selectedSport === 'nfl' ? styles.active : ''}`}
-                onClick={() => setSelectedSport('nfl')}
+                onClick={() => {
+                  setSelectedSport('nfl')
+                  setPropPosition('any')
+                  const stats = getPropStatsByPosition('nfl')['any']
+                  if (stats.length > 0) setPropStat(stats[0].value)
+                  setSelectedPlayer(null)
+                  setPlayerSearch('')
+                }}
               >
                 NFL
               </button>
               <button
                 className={`${styles.filterBtn} ${selectedSport === 'nba' ? styles.active : ''}`}
-                onClick={() => setSelectedSport('nba')}
+                onClick={() => {
+                  setSelectedSport('nba')
+                  setPropPosition('any')
+                  const stats = getPropStatsByPosition('nba')['any']
+                  if (stats.length > 0) setPropStat(stats[0].value)
+                  setSelectedPlayer(null)
+                  setPlayerSearch('')
+                }}
               >
                 NBA
               </button>
@@ -4600,6 +4661,7 @@ function SportsEngineContent() {
                   onChange={(e) => {
                     setPropPosition(e.target.value)
                     // Reset stat when position changes
+                    const PROP_STATS_BY_POSITION = getPropStatsByPosition(selectedSport)
                     const newStats = PROP_STATS_BY_POSITION[e.target.value] || PROP_STATS_BY_POSITION['any']
                     if (newStats.length > 0) setPropStat(newStats[0].value)
                     // Clear selected player when position changes
@@ -4607,7 +4669,7 @@ function SportsEngineContent() {
                     setPlayerSearch('')
                   }}
                 >
-                  {POSITIONS.map((p) => (
+                  {getPositions(selectedSport).map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
                   ))}
                 </select>
@@ -4652,6 +4714,7 @@ function SportsEngineContent() {
                             setPlayerSearch('')
                             setPlayerSearchResults([])
                             // Update prop stats based on player's position
+                            const PROP_STATS_BY_POSITION = getPropStatsByPosition(selectedSport)
                             const newStats = PROP_STATS_BY_POSITION[p.position] || PROP_STATS_BY_POSITION['any']
                             if (newStats.length > 0) setPropStat(newStats[0].value)
                           }}
