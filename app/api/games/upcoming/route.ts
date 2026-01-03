@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     const gamesQuery = `
       SELECT DISTINCT
         g.game_id,
-        g.odds_api_game_id,
         g.sport,
         g.game_time,
         g.home_team_id,
@@ -102,6 +101,7 @@ export async function GET(request: NextRequest) {
       )
       
       -- Join with latest odds snapshot for current lines
+      -- Extract Odds API ID from game_id (format: nfl_abc123 -> abc123)
       LEFT JOIN (
         SELECT 
           odds_api_game_id,
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
           FROM live_odds_snapshots
           GROUP BY odds_api_game_id
         )
-      ) latest ON g.odds_api_game_id = latest.odds_api_game_id
+      ) latest ON latest.odds_api_game_id = substring(g.game_id, position(g.game_id, '_') + 1)
       
       WHERE g.game_time > now()
         ${sportFilter}
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
       const gameTimeUTC = new Date(row.game_time + 'Z') // Ensure it's treated as UTC
 
       return {
-        id: row.odds_api_game_id || row.game_id,
+        id: row.game_id, // Use full game_id (e.g., nfl_abc123)
         sport: sport.toUpperCase(),
         awayTeam: row.away_team_name || 'Unknown',
         homeTeam: row.home_team_name || 'Unknown',
