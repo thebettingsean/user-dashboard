@@ -811,7 +811,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
       ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
-    JOIN ${sport}_games g ON b.game_id = g.game_id
+    JOIN ${sport}_games g ON ${sport === 'nfl' ? 'b.game_id = g.game_id' : 'b.game_id = toUInt32OrZero(g.espn_game_id)'}
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
@@ -954,7 +954,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
       ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
-    JOIN ${sport}_games g ON b.game_id = g.game_id
+    JOIN ${sport}_games g ON ${sport === 'nfl' ? 'b.game_id = g.game_id' : 'b.game_id = toUInt32OrZero(g.espn_game_id)'}
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
