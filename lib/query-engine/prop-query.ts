@@ -818,7 +818,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
     JOIN ${sport}_prop_lines pl ON ${sport === 'nfl' 
       ? `p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)`
-      : `g.game_id = pl.espn_game_id AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.espn_game_id > 0`}
+      : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.espn_game_id > 0`}
     ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
