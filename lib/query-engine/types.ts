@@ -208,10 +208,13 @@ export type QueryType = 'prop' | 'team' | 'referee' | 'trend'
 
 // Prop stat types
 export type PropStatType = 
+  // NFL stats
   | 'pass_yards' | 'pass_tds' | 'pass_attempts' | 'pass_completions' | 'interceptions'
   | 'rush_yards' | 'rush_tds' | 'rush_attempts' | 'rush_long' | 'yards_per_carry'
   | 'receiving_yards' | 'receptions' | 'receiving_tds' | 'receiving_long' | 'targets'
   | 'fantasy_points' | 'completions_plus_rush_yards'  // combo stats
+  // NBA stats
+  | 'points' | 'rebounds' | 'assists' | 'threes' | 'steals' | 'blocks' | 'turnovers'
 
 // Team bet types
 export type TeamBetType = 'spread' | 'total' | 'moneyline'
@@ -222,11 +225,12 @@ export type TeamBetType = 'spread' | 'total' | 'moneyline'
 
 export interface PropQueryRequest {
   type: 'prop'
+  sport?: 'nfl' | 'nba'        // Sport type (auto-detected from stat if not provided)
   player_id?: number           // ESPN player ID (optional if position is set)
-  position?: string            // Position filter (e.g., 'QB', 'WR') - queries all players of position
+  position?: string            // Position filter (e.g., 'QB', 'WR' for NFL; 'PG', 'SG' for NBA) - queries all players of position
   stat: PropStatType           // What stat to measure
   line: number                 // Threshold (e.g., 250 for O250) - used when use_book_lines is false
-  use_book_lines?: boolean     // If true, join with nfl_prop_lines for actual sportsbook lines
+  use_book_lines?: boolean     // If true, join with nfl_prop_lines or nba_prop_lines for actual sportsbook lines
   book_line_min?: number       // Min book line filter (e.g., 80+ receiving yards line)
   book_line_max?: number       // Max book line filter
   filters: QueryFilters

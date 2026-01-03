@@ -12,6 +12,7 @@ import type { PropQueryRequest, QueryResult, GameDetail, PropStatType } from './
 // ============================================
 
 const STAT_COLUMNS: Record<PropStatType, string> = {
+  // NFL stats
   pass_yards: 'pass_yards',
   pass_tds: 'pass_tds',
   pass_attempts: 'pass_attempts',
@@ -29,11 +30,19 @@ const STAT_COLUMNS: Record<PropStatType, string> = {
   targets: 'targets',
   // Combo stats - calculated
   fantasy_points: '(pass_yards * 0.04 + pass_tds * 4 - interceptions * 2 + rush_yards * 0.1 + rush_tds * 6 + receiving_yards * 0.1 + receiving_tds * 6 + receptions * 0.5)',
-  completions_plus_rush_yards: '(pass_completions + rush_yards)'
+  completions_plus_rush_yards: '(pass_completions + rush_yards)',
+  // NBA stats
+  points: 'points',
+  rebounds: 'rebounds',
+  assists: 'assists',
+  threes: 'threes',
+  steals: 'steals',
+  blocks: 'blocks',
+  turnovers: 'turnovers'
 }
 
-// Map stat types to defensive ranking columns
-const STAT_TO_DEFENSE: Record<PropStatType, 'pass' | 'rush' | 'receiving'> = {
+// Map stat types to defensive ranking columns (for NFL)
+const STAT_TO_DEFENSE: Record<PropStatType, 'pass' | 'rush' | 'receiving' | null> = {
   pass_yards: 'pass',
   pass_tds: 'pass',
   pass_attempts: 'pass',
@@ -50,11 +59,20 @@ const STAT_TO_DEFENSE: Record<PropStatType, 'pass' | 'rush' | 'receiving'> = {
   receiving_long: 'receiving',
   targets: 'receiving',
   fantasy_points: 'pass',  // Default to pass for combo stats
-  completions_plus_rush_yards: 'pass'
+  completions_plus_rush_yards: 'pass',
+  // NBA stats - no defense mapping yet (can be added later)
+  points: null,
+  rebounds: null,
+  assists: null,
+  threes: null,
+  steals: null,
+  blocks: null,
+  turnovers: null
 }
 
-// Map our stat types to prop_type values in nfl_prop_lines
+// Map our stat types to prop_type values in nfl_prop_lines or nba_prop_lines
 const STAT_TO_PROP_TYPE: Record<PropStatType, string> = {
+  // NFL stats
   pass_yards: 'player_pass_yds',
   pass_tds: 'player_pass_tds',
   pass_attempts: 'player_pass_attempts',
@@ -71,21 +89,38 @@ const STAT_TO_PROP_TYPE: Record<PropStatType, string> = {
   receiving_long: 'player_reception_longest',
   targets: 'player_receptions',  // No direct equivalent
   fantasy_points: 'player_pass_yds',  // No direct equivalent
-  completions_plus_rush_yards: 'player_pass_yds'  // No direct equivalent
+  completions_plus_rush_yards: 'player_pass_yds',  // No direct equivalent
+  // NBA stats
+  points: 'player_points',
+  rebounds: 'player_rebounds',
+  assists: 'player_assists',
+  threes: 'player_threes',
+  steals: 'player_steals',
+  blocks: 'player_blocks',
+  turnovers: 'player_turnovers'
 }
 
 // ============================================
 // PROP QUERY EXECUTION
 // ============================================
 
+// Helper to detect sport from stat type
+function getSportFromStat(stat: PropStatType): 'nfl' | 'nba' {
+  const nbaStats: PropStatType[] = ['points', 'rebounds', 'assists', 'threes', 'steals', 'blocks', 'turnovers']
+  return nbaStats.includes(stat) ? 'nba' : 'nfl'
+}
+
 export async function executePropQuery(request: PropQueryRequest): Promise<QueryResult> {
   const startTime = Date.now()
-  const { player_id, position, stat, line, filters, use_book_lines, book_line_min, book_line_max } = request
+  const { player_id, position, stat, line, filters, use_book_lines, book_line_min, book_line_max, sport: requestedSport } = request
   
   const statColumn = STAT_COLUMNS[stat]
   if (!statColumn) {
     throw new Error(`Unknown stat type: ${stat}`)
   }
+  
+  // Use requested sport or detect from stat type
+  const sport = requestedSport || getSportFromStat(stat)
   
   // Get the prop type for book lines
   const propType = STAT_TO_PROP_TYPE[stat]
@@ -716,13 +751,13 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Win percentages
       ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
       ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
-    FROM nfl_box_scores_v2 b
-    JOIN nfl_games g ON b.game_id = g.game_id
-    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
-    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
-    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
-    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
-    JOIN nfl_prop_lines pl ON p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)
+    FROM ${sport}_box_scores${sport === 'nfl' ? '_v2' : ''} b
+    JOIN ${sport}_games g ON b.game_id = g.game_id
+    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
+    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
+    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
+    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
+    JOIN ${sport}_prop_lines pl ON p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)
     ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
@@ -811,12 +846,12 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Win percentages
       ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
       ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
-    FROM nfl_box_scores_v2 b
-    JOIN nfl_games g ON b.game_id = g.game_id
-    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = 'nfl'
-    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = 'nfl'
-    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = 'nfl'
-    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = 'nfl'
+    FROM ${sport}_box_scores${sport === 'nfl' ? '_v2' : ''} b
+    JOIN ${sport}_games g ON b.game_id = g.game_id
+    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
+    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
+    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
+    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
     ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id

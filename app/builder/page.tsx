@@ -2272,6 +2272,8 @@ function SportsEngineContent() {
         }
         if (refereeId) body.referee_id = refereeId
       } else if (queryType === 'prop') {
+        // Add sport to request
+        body.sport = selectedSport as 'nfl' | 'nba'
         // If a specific player is selected, use player_id
         // If position is selected without a player, use position
         if (selectedPlayer && selectedPlayer.espn_player_id) {
