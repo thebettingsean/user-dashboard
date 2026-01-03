@@ -8,7 +8,6 @@ import { supabase } from '@/lib/supabase'
 import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight } from 'react-icons/fi'
 import { IoSparkles } from 'react-icons/io5'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
-import { MdLockOutline } from 'react-icons/md'
 import { 
   LineChart, 
   Line, 
@@ -368,12 +367,12 @@ export default function GameDetailPage() {
     }
   }, [activeTab, gameId])
   
-  // Fetch picks when picks tab is active
+  // Fetch picks when picks tab is active (always fetch, even without access, to show blurred picks)
   useEffect(() => {
-    if (activeTab === 'picks' && gameId && canViewPicks && gameData) {
+    if (activeTab === 'picks' && gameId && gameData) {
       fetchGamePicks()
     }
-  }, [activeTab, gameId, canViewPicks])
+  }, [activeTab, gameId, gameData])
   
   // Reset expanded picks when switching away from picks tab
   useEffect(() => {
@@ -894,8 +893,8 @@ export default function GameDetailPage() {
                       </>
                     ) : (
                       <>
-                        <span>{gameData.awayTeamAbbr || 'Away'}</span>
-                        <span>{gameData.homeTeamAbbr || 'Home'}</span>
+                    <span>{gameData.awayTeamAbbr || 'Away'}</span>
+                    <span>{gameData.homeTeamAbbr || 'Home'}</span>
                       </>
                     )}
                   </div>
@@ -919,182 +918,165 @@ export default function GameDetailPage() {
         {/* ========== PICKS TAB ========== */}
         {activeTab === 'picks' && (
           <div className={styles.section}>
-            {canViewPicks ? (
-              <>
                 <h2 className={styles.sectionTitle}>Analyst Picks</h2>
                 <p className={styles.sectionSubtitle}>Expert picks for this game</p>
                 
-                {picksLoading ? (
-                  <div className={styles.loading}>Loading picks...</div>
-                ) : gamePicks.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <p>No picks available for this game yet.</p>
-                    {!countsLoading && (
-                      <>
-                        {pickCounts.sportPickCount > 0 ? (
-                          <>
-                            <p className={styles.pickCountSubtext}>
-                              However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
-                              <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
-                              active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
-                            </p>
-                            <button 
-                              className={styles.viewPicksBtn}
-                              onClick={() => router.push('/picks')}
-                              style={{ marginTop: '12px' }}
-                            >
-                              View Now
-                            </button>
-                          </>
-                        ) : pickCounts.allPicksCount > 0 ? (
-                          <>
-                            <p className={styles.pickCountSubtext}>
-                              However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
-                              <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
-                              active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                            </p>
-                            <button 
-                              className={styles.viewPicksBtn}
-                              onClick={() => router.push('/picks')}
-                              style={{ marginTop: '12px' }}
-                            >
-                              View Now
-                            </button>
-                          </>
-                        ) : null}
-                      </>
-                    )}
+            {/* Show locked message below title if user doesn't have access */}
+            {(!isSignedIn || !canViewPicks) && gamePicks.length > 0 && (
+              <div className={styles.lockedSection} style={{ marginTop: '16px', marginBottom: '24px' }}>
+                <div className={styles.lockedSectionContent}>
+                  <GiSupersonicArrow className={styles.lockedIcon} />
+                  <div className={styles.lockedText}>
+                    <span className={styles.lockedTitle}>Unlock Analyst Picks</span>
+                    <span className={styles.lockedDesc}>Get daily expert picks and analysis for this game and all upcoming matchups</span>
                   </div>
-                ) : (
-                  <div className={styles.picksList}>
-                    {gamePicks.map((pick: any) => {
-                      const isExpanded = expandedPicks.has(pick.id)
-                      return (
-                        <div 
-                          key={pick.id} 
-                          className={styles.pickCard}
-                        >
-                          <div 
-                            className={styles.pickCardMain}
-                            onClick={() => togglePickAnalysis(pick.id)}
-                          >
-                            <div className={styles.pickBodyLeft}>
-                              {/* Line 1: Bet Title with Logo */}
-                              <div className={styles.pickTitleRow}>
-                                <div style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
-                                  <BetLogo pick={pick} gameData={gameData} />
-                                </div>
-                                <span 
-                                  className={styles.pickTitle}
-                                  style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                                >
-                                  {pick.bet_title || 'Pick'}
-                                </span>
-                              </div>
-                              
-                              {/* Line 2: Game Time Only */}
-                              <div 
-                                className={styles.pickGameTime}
-                                style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                              >
-                                {new Date(pick.game_time).toLocaleString('en-US', {
-                                  timeZone: 'America/New_York',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })}
-                              </div>
-                            </div>
-                            <div className={styles.pickRightSide}>
-                              <div className={styles.pickHeaderMeta}>
-                                {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
-                                {pick.odds} | {(pick.units_at_risk || pick.units || 0).toFixed(1)}u
-                              </div>
-                              <div className={styles.pickExpandIconWrapper}>
-                                <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
-                              </div>
-                            </div>
-                          </div>
-                          {pick.analysis && (
-                            <>
-                              {!isSignedIn || !canViewPicks ? (
-                                <div
-                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (!isSignedIn) {
-                                      openSignUp({ redirectUrl: '/subscribe/picks' })
-                                    } else if (!canViewPicks) {
-                                      router.push('/subscribe/picks')
-                                    }
-                                  }}
-                                  style={{ 
-                                    filter: 'blur(6px)', 
-                                    userSelect: 'none',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {/* Capper Info Section */}
-                                  <div className={styles.pickCapperInfo}>
-                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
-                                  </div>
-                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
-                                </div>
-                              ) : (
-                                <div
-                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {/* Capper Info Section */}
-                                  <div className={styles.pickCapperInfo}>
-                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
-                                  </div>
-                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className={styles.lockedSection}>
-                <div className={styles.lockedIcon}>
-                  <MdLockOutline size={32} />
                 </div>
-                <h3 className={styles.lockedTitle}>Unlock Analyst Picks</h3>
-                <p className={styles.lockedDesc}>
-                  Get daily expert picks and analysis for this game and all upcoming matchups.
-                </p>
-                {!countsLoading && (
-                  <div className={styles.pickCountInfo}>
-                    {pickCounts.gamePickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
-                      </p>
-                    ) : pickCounts.sportPickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
-                      </p>
-                    ) : pickCounts.allPicksCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-                <button 
+                  <button 
                   className={styles.subscribeBtn}
                   onClick={() => handleSubscribe('picks')}
-                >
-                  <GiSupersonicArrow size={16} />
+                  >
+                  <GiSupersonicArrow size={14} />
                   Access Analyst Picks
-                </button>
+                  </button>
+                </div>
+            )}
+            
+            {picksLoading ? (
+              <div className={styles.loading}>Loading picks...</div>
+            ) : gamePicks.length === 0 ? (
+              <div className={styles.emptyState}>
+                <p>No picks available for this game yet.</p>
+                {!countsLoading && (
+                  <>
+                    {pickCounts.sportPickCount > 0 ? (
+                      <>
+                        <p className={styles.pickCountSubtext}>
+                          However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
+                          <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
+                          active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
+                        </p>
+                  <button 
+                          className={styles.viewPicksBtn}
+                    onClick={() => router.push('/picks')}
+                          style={{ marginTop: '12px' }}
+                  >
+                          View Now
+                  </button>
+                      </>
+                    ) : pickCounts.allPicksCount > 0 ? (
+                      <>
+                        <p className={styles.pickCountSubtext}>
+                          However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
+                          <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
+                          active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
+                        </p>
+                        <button 
+                          className={styles.viewPicksBtn}
+                          onClick={() => router.push('/picks')}
+                          style={{ marginTop: '12px' }}
+                        >
+                          View Now
+                        </button>
+                      </>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className={`${styles.picksList} ${(!isSignedIn || !canViewPicks) ? styles.blurredContent : ''}`}>
+                {gamePicks.map((pick: any) => {
+                  const isExpanded = expandedPicks.has(pick.id)
+                  return (
+                    <div 
+                      key={pick.id} 
+                      className={styles.pickCard}
+                    >
+                      <div 
+                        className={styles.pickCardMain}
+                        onClick={() => {
+                          if (canViewPicks) {
+                            togglePickAnalysis(pick.id)
+                          } else {
+                            if (!isSignedIn) {
+                              openSignUp({ redirectUrl: '/subscribe/picks' })
+                            } else {
+                              router.push('/subscribe/picks')
+                            }
+                          }
+                        }}
+                        style={(!isSignedIn || !canViewPicks) ? { cursor: 'pointer' } : {}}
+                      >
+                        <div className={styles.pickBodyLeft}>
+                          {/* Line 1: Bet Title with Logo */}
+                          <div className={styles.pickTitleRow}>
+                            <BetLogo pick={pick} gameData={gameData} />
+                            <span className={styles.pickTitle}>
+                              {pick.bet_title || 'Pick'}
+                            </span>
+                          </div>
+                          
+                          {/* Line 2: Game Time Only */}
+                          <div className={styles.pickGameTime}>
+                            {new Date(pick.game_time).toLocaleString('en-US', {
+                              timeZone: 'America/New_York',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </div>
+                        </div>
+                        <div className={styles.pickRightSide}>
+                          <div className={styles.pickHeaderMeta}>
+                            {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
+                            {pick.odds} | {(pick.units_at_risk || pick.units || 0).toFixed(1)}u
+                          </div>
+                          <div className={styles.pickExpandIconWrapper}>
+                            <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
+                          </div>
+                        </div>
+                      </div>
+                      {pick.analysis && (
+                        <>
+                          {!isSignedIn || !canViewPicks ? (
+                            <div
+                              className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (!isSignedIn) {
+                                  openSignUp({ redirectUrl: '/subscribe/picks' })
+                                } else if (!canViewPicks) {
+                                  router.push('/subscribe/picks')
+                                }
+                              }}
+                              style={{ 
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {/* Capper Info Section */}
+                              <div className={styles.pickCapperInfo}>
+                                <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                              </div>
+                              <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                            </div>
+                          ) : (
+                            <div
+                              className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Capper Info Section */}
+                              <div className={styles.pickCapperInfo}>
+                                <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                              </div>
+                              <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1461,18 +1443,18 @@ export default function GameDetailPage() {
               </>
             ) : (
               <div className={styles.lockedSection}>
-                <div className={styles.lockedIcon}>
-                  <MdLockOutline size={32} />
+                <div className={styles.lockedSectionContent}>
+                  <GiSupersonicArrow className={styles.lockedIcon} />
+                  <div className={styles.lockedText}>
+                    <span className={styles.lockedTitle}>Unlock Public Betting Data</span>
+                    <span className={styles.lockedDesc}>Access betting splits, line movement, and market indicators from 150+ sportsbooks</span>
                 </div>
-                <h3 className={styles.lockedTitle}>Unlock Public Betting Data</h3>
-                <p className={styles.lockedDesc}>
-                  Access betting splits, line movement, and market indicators from 150+ sportsbooks.
-                </p>
+                </div>
                 <button 
                   className={styles.subscribeBtn}
                   onClick={() => handleSubscribe('publicBetting')}
                 >
-                  <GiCash size={16} />
+                  <GiSupersonicArrow size={14} />
                   Access Public Betting Data
                 </button>
               </div>
