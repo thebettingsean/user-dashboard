@@ -17,6 +17,8 @@ interface Game {
   homeTeamColor: string | null
   kickoff: string
   kickoffLabel: string
+  estDate?: string
+  estTime?: string
   sport: string
   spread: { homeLine: number | null; awayLine: number | null } | null
   totals: { number: number | null } | null
@@ -35,30 +37,42 @@ interface Game {
 const SPORTS = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
 
 function formatGameTime(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const tomorrow = new Date(now)
-  tomorrow.setDate(tomorrow.getDate() + 1)
+  // dateString is now "YYYY-MM-DD HH:MM" in EST from ClickHouse
+  // Parse it and compare dates in EST, not browser timezone
   
-  const isToday = date.toDateString() === now.toDateString()
-  const isTomorrow = date.toDateString() === tomorrow.toDateString()
+  // Get current date in EST
+  const nowEST = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+  const todayEST = new Date(nowEST).toISOString().split('T')[0]
   
-  const timeStr = date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  })
+  const tomorrowDate = new Date(nowEST)
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  const tomorrowEST = tomorrowDate.toISOString().split('T')[0]
   
-  if (isToday) return `Today ${timeStr}`
-  if (isTomorrow) return `Tomorrow ${timeStr}`
+  // Extract date from dateString (YYYY-MM-DD HH:MM)
+  const gameDate = dateString.split(' ')[0]
+  const gameTime = dateString.split(' ')[1]
   
+  if (!gameTime) {
+    // Fallback to old behavior if format is different
+    return dateString
+  }
+  
+  // Parse time (HH:MM in 24hr) to 12hr format
+  const [hours, minutes] = gameTime.split(':').map(Number)
+  const hour12 = hours % 12 || 12
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const timeStr = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`
+  
+  if (gameDate === todayEST) return `Today ${timeStr}`
+  if (gameDate === tomorrowEST) return `Tomorrow ${timeStr}`
+  
+  // For other dates, show full date
+  const date = new Date(dateString + ' EST')
   return date.toLocaleDateString('en-US', { 
     weekday: 'short',
     month: 'short', 
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  })
+    day: 'numeric'
+  }) + ` ${timeStr}`
 }
 
 function formatSpread(spread: number | null | undefined): string {

@@ -86,7 +86,11 @@ export async function GET(request: NextRequest) {
         g.public_total_over_money_pct,
         
         -- Sportsbook (from latest snapshot)
-        latest.sportsbook as current_sportsbook
+        latest.sportsbook as current_sportsbook,
+        
+        -- Return EST date/time directly so frontend doesn't need timezone conversion
+        formatDateTime(toTimeZone(g.game_time, 'America/New_York'), '%Y-%m-%d') as est_date,
+        formatDateTime(toTimeZone(g.game_time, 'America/New_York'), '%H:%i') as est_time
         
       FROM games g FINAL
       
@@ -164,8 +168,10 @@ export async function GET(request: NextRequest) {
       const homeSpread = row.current_spread
       const awaySpread = (homeSpread !== null && homeSpread !== undefined) ? -homeSpread : null
       
-      // Convert UTC game_time to Date object for proper formatting
-      const gameTimeUTC = new Date(row.game_time + 'Z') // Ensure it's treated as UTC
+      // Use pre-formatted EST date/time from ClickHouse (much more reliable than JS)
+      const estDateTime = row.est_date && row.est_time 
+        ? `${row.est_date} ${row.est_time}` 
+        : row.game_time
 
       return {
         id: row.game_id, // Use full game_id (e.g., nfl_abc123)
@@ -178,16 +184,10 @@ export async function GET(request: NextRequest) {
         homeTeamLogo: row.home_logo || null,
         awayTeamColor: row.away_primary_color || null,
         homeTeamColor: row.home_primary_color || null,
-        kickoff: gameTimeUTC.toISOString(),
-        kickoffLabel: gameTimeUTC.toLocaleString('en-US', {
-          timeZone: 'America/New_York',
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }),
+        kickoff: row.game_time, // Keep original UTC for any calculations
+        kickoffLabel: estDateTime, // Use ClickHouse-formatted EST time
+        estDate: row.est_date,
+        estTime: row.est_time,
         // Odds
         spread: (homeSpread !== null && homeSpread !== undefined) ? {
           homeLine: homeSpread,
