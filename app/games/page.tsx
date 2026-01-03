@@ -31,6 +31,20 @@ interface Game {
     totalOverBetPct: number | null
     totalOverMoneyPct: number | null
   } | null
+  signals?: {
+    spread: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    total: {
+      over: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      under: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    ml: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+  }
   hasPublicBetting: boolean
   pickCount?: number
   signalCount?: number
@@ -164,27 +178,37 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
   )
 }
 
-// Count signals for a game
+// Count signals for a game - uses actual signal data from API
 function countSignals(game: Game): number {
-  if (!game.publicBetting || !game.hasPublicBetting) return 0
+  if (!game.signals) return 0
   
   let signalCount = 0
-  const pb = game.publicBetting
+  const s = game.signals
   
-  // Count signals based on public betting percentages
-  // A signal exists when there's a significant split (not 50/50)
-  
+  // Count all non-zero signals across all bet types
   // Spread signals
-  if (pb.spreadHomeBetPct && Math.abs(pb.spreadHomeBetPct - 50) > 10) signalCount++
-  if (pb.spreadHomeMoneyPct && Math.abs(pb.spreadHomeMoneyPct - 50) > 10) signalCount++
+  if (s.spread.home.publicRespect > 0) signalCount++
+  if (s.spread.home.vegasBacked > 0) signalCount++
+  if (s.spread.home.whaleRespect > 0) signalCount++
+  if (s.spread.away.publicRespect > 0) signalCount++
+  if (s.spread.away.vegasBacked > 0) signalCount++
+  if (s.spread.away.whaleRespect > 0) signalCount++
   
   // ML signals
-  if (pb.mlHomeBetPct && Math.abs(pb.mlHomeBetPct - 50) > 10) signalCount++
-  if (pb.mlHomeMoneyPct && Math.abs(pb.mlHomeMoneyPct - 50) > 10) signalCount++
+  if (s.ml.home.publicRespect > 0) signalCount++
+  if (s.ml.home.vegasBacked > 0) signalCount++
+  if (s.ml.home.whaleRespect > 0) signalCount++
+  if (s.ml.away.publicRespect > 0) signalCount++
+  if (s.ml.away.vegasBacked > 0) signalCount++
+  if (s.ml.away.whaleRespect > 0) signalCount++
   
   // Total signals
-  if (pb.totalOverBetPct && Math.abs(pb.totalOverBetPct - 50) > 10) signalCount++
-  if (pb.totalOverMoneyPct && Math.abs(pb.totalOverMoneyPct - 50) > 10) signalCount++
+  if (s.total.over.publicRespect > 0) signalCount++
+  if (s.total.over.vegasBacked > 0) signalCount++
+  if (s.total.over.whaleRespect > 0) signalCount++
+  if (s.total.under.publicRespect > 0) signalCount++
+  if (s.total.under.vegasBacked > 0) signalCount++
+  if (s.total.under.whaleRespect > 0) signalCount++
   
   return signalCount
 }
@@ -299,6 +323,19 @@ export default function GamesPage() {
                 }
               })
             )
+            
+            // Log sample game data for debugging
+            if (gamesWithCounts.length > 0) {
+              const sample = gamesWithCounts[0]
+              console.log('[Games] Sample game data:', {
+                id: sample.id,
+                teams: `${sample.awayTeam} @ ${sample.homeTeam}`,
+                pickCount: sample.pickCount,
+                hasSignals: !!sample.signals,
+                signalCount: countSignals(sample),
+                signalsData: sample.signals
+              })
+            }
             
             setGames(gamesWithCounts)
             // Cache the results

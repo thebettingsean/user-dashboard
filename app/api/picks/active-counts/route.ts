@@ -63,19 +63,37 @@ export async function GET(request: NextRequest) {
           .gte('game_time', estNow.toISOString())
         
         if (!error && sportPicks) {
-          // Match by team names in game_title (same logic as game detail page)
-          const awayLower = awayTeam.toLowerCase()
-          const homeLower = homeTeam.toLowerCase()
+          // Extract team mascots (last word) for better matching
+          // "Arizona Cardinals" -> "cardinals", "Los Angeles Rams" -> "rams"
+          const awayWords = awayTeam.toLowerCase().trim().split(/\s+/)
+          const homeWords = homeTeam.toLowerCase().trim().split(/\s+/)
+          const awayMascot = awayWords[awayWords.length - 1]
+          const homeMascot = homeWords[homeWords.length - 1]
+          
+          console.log(`[Active Counts] Matching teams: ${awayTeam} (${awayMascot}) @ ${homeTeam} (${homeMascot})`)
           
           const matchingPicks = sportPicks.filter(pick => {
             if (!pick.game_title) return false
             const titleLower = pick.game_title.toLowerCase()
             
-            // Check if both team names appear in the game title
-            return titleLower.includes(awayLower) && titleLower.includes(homeLower)
+            // Try multiple matching strategies:
+            // 1. Full team names
+            if (titleLower.includes(awayTeam.toLowerCase()) && titleLower.includes(homeTeam.toLowerCase())) {
+              return true
+            }
+            
+            // 2. Team mascots (most common format in picks: "Cardinals @ Rams")
+            if (titleLower.includes(awayMascot) && titleLower.includes(homeMascot)) {
+              return true
+            }
+            
+            return false
           })
           
           gamePickCount = matchingPicks.length
+          if (gamePickCount > 0) {
+            console.log(`[Active Counts] Found ${gamePickCount} picks for ${awayTeam} @ ${homeTeam}`)
+          }
         }
       }
     }
