@@ -255,6 +255,14 @@ export default function GameDetailPage() {
   const [picksLoading, setPicksLoading] = useState(false)
   const [expandedPicks, setExpandedPicks] = useState<Set<string>>(new Set())
   
+  // Active pick counts
+  const [pickCounts, setPickCounts] = useState({
+    gamePickCount: 0,
+    sportPickCount: 0,
+    allPicksCount: 0,
+  })
+  const [countsLoading, setCountsLoading] = useState(false)
+  
   // Access checks
   const canViewPicks = hasPicks || hasAny
   const canViewPublicBetting = hasPublicBetting || hasAny
@@ -319,6 +327,13 @@ export default function GameDetailPage() {
       setExpandedPicks(new Set())
     }
   }, [activeTab])
+  
+  // Fetch pick counts when game data is available
+  useEffect(() => {
+    if (gameData && gameId) {
+      fetchPickCounts()
+    }
+  }, [gameData, gameId])
   
   const fetchTimelineData = async () => {
     setTimelineLoading(true)
@@ -414,6 +429,31 @@ export default function GameDetailPage() {
       setGamePicks([])
     } finally {
       setPicksLoading(false)
+    }
+  }
+  
+  // Fetch active pick counts
+  const fetchPickCounts = async () => {
+    if (!gameData) return
+    
+    setCountsLoading(true)
+    try {
+      const response = await fetch(
+        `/api/picks/active-counts?gameId=${gameId}&sport=${gameData.sport.toLowerCase()}`
+      )
+      const data = await response.json()
+      
+      if (data.success) {
+        setPickCounts({
+          gamePickCount: data.gamePickCount,
+          sportPickCount: data.sportPickCount,
+          allPicksCount: data.allPicksCount,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching pick counts:', error)
+    } finally {
+      setCountsLoading(false)
     }
   }
   
@@ -753,6 +793,23 @@ export default function GameDetailPage() {
                 ) : gamePicks.length === 0 ? (
                   <div className={styles.emptyState}>
                     <p>No picks available for this game yet.</p>
+                    {!countsLoading && (
+                      <>
+                        {pickCounts.sportPickCount > 0 ? (
+                          <p className={styles.pickCountSubtext}>
+                            However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
+                            <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
+                            active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''} today
+                          </p>
+                        ) : pickCounts.allPicksCount > 0 ? (
+                          <p className={styles.pickCountSubtext}>
+                            However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
+                            <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
+                            active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports today
+                          </p>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className={styles.picksList}>
@@ -860,6 +917,23 @@ export default function GameDetailPage() {
                 <p className={styles.lockedDesc}>
                   Get daily expert picks and analysis for this game and all upcoming matchups.
                 </p>
+                {!countsLoading && (
+                  <div className={styles.pickCountInfo}>
+                    {pickCounts.gamePickCount > 0 ? (
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
+                      </p>
+                    ) : pickCounts.sportPickCount > 0 ? (
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''} today
+                      </p>
+                    ) : pickCounts.allPicksCount > 0 ? (
+                      <p className={styles.pickCountText}>
+                        <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports today
+                      </p>
+                    ) : null}
+                  </div>
+                )}
                 <button 
                   className={styles.subscribeBtn}
                   onClick={() => handleSubscribe('picks')}

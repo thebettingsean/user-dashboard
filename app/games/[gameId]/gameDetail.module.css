@@ -610,6 +610,42 @@
   line-height: 1.6;
 }
 
+.pickCountInfo {
+  padding: 16px 24px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  max-width: 400px;
+}
+
+.pickCountText {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.pickCountNumber {
+  font-size: 18px;
+  font-weight: 700;
+  color: #60a5fa;
+  margin: 0 4px;
+}
+
+.pickCountSubtext {
+  margin: 12px 0 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+}
+
+.pickCountHighlight {
+  font-weight: 600;
+  color: #60a5fa;
+  margin: 0 2px;
+}
+
 .subscribeBtn {
   display: flex;
   align-items: center;
