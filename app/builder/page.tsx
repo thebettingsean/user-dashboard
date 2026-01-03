@@ -1200,7 +1200,7 @@ function SportsEngineContent() {
       const params = new URLSearchParams({
         q: query,
         position: position === 'any' ? '' : position,
-        sport: 'nfl',
+        sport: selectedSport,
         limit: '15'
       })
       
@@ -2424,6 +2424,7 @@ function SportsEngineContent() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            sport: selectedSport,
             position: propPosition !== 'any' ? propPosition : undefined,
             stat: propStat,
             line_min: propLineMode === 'book' && bookLineMin ? parseFloat(bookLineMin) : (parseFloat(propLine) > 0 ? parseFloat(propLine) - 10 : undefined),
@@ -4229,8 +4230,8 @@ function SportsEngineContent() {
             NFL
           </button>
           <button
-            className={`${styles.filterBtn} ${styles.disabled}`}
-            disabled
+            className={`${styles.filterBtn} ${selectedSport === 'nba' ? styles.active : ''}`}
+            onClick={() => setSelectedSport('nba')}
           >
             NBA
           </button>
@@ -4271,8 +4272,8 @@ function SportsEngineContent() {
                 NFL
               </button>
               <button
-                className={`${styles.filterBtn} ${styles.disabled}`}
-                disabled
+                className={`${styles.filterBtn} ${selectedSport === 'nba' ? styles.active : ''}`}
+                onClick={() => setSelectedSport('nba')}
               >
                 NBA
               </button>
