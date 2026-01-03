@@ -31,11 +31,11 @@ const STAT_COLUMNS: Record<PropStatType, string> = {
   // Combo stats - calculated
   fantasy_points: '(pass_yards * 0.04 + pass_tds * 4 - interceptions * 2 + rush_yards * 0.1 + rush_tds * 6 + receiving_yards * 0.1 + receiving_tds * 6 + receptions * 0.5)',
   completions_plus_rush_yards: '(pass_completions + rush_yards)',
-  // NBA stats
+  // NBA stats (using nba_box_scores_v2 column names)
   points: 'points',
-  rebounds: 'rebounds',
+  rebounds: 'total_rebounds',
   assists: 'assists',
-  threes: 'threes',
+  threes: 'three_pointers_made',
   steals: 'steals',
   blocks: 'blocks',
   turnovers: 'turnovers'
@@ -606,12 +606,20 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   const allConditions = [
     ...boxConditions,
     ...gameConditions,
-    ...oppRankConditions,
-    // Exclude obvious data errors
-    'b.pass_yards < 1000',
-    'b.rush_yards < 500',
-    'b.receiving_yards < 500'
+    ...oppRankConditions
   ]
+  
+  // Add sport-specific data error filters
+  if (sport === 'nfl') {
+    allConditions.push(
+      'b.pass_yards < 1000',
+      'b.rush_yards < 500',
+      'b.receiving_yards < 500'
+    )
+  } else if (sport === 'nba') {
+    // NBA-specific data validation (if needed)
+    allConditions.push('b.points < 100') // Sanity check for points
+  }
   
   // Add player prop line filters (for game-level filtering)
   // Note: For props, "Team Players" refers to the player's team
@@ -627,13 +635,16 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   appliedFilters.push(...playerDescriptions)
   
   // Build opponent rankings JOIN clause if needed (includes team's own ranking for team_win_pct)
-  const oppRankingsJoin = needsOppRankingsJoin ? `
-    LEFT JOIN nfl_team_rankings opp_rank ON b.opponent_id = opp_rank.team_id 
+  // Note: NBA doesn't have team_rankings table yet, so skip for NBA
+  const rankingsTable = sport === 'nfl' ? 'nfl_team_rankings' : null
+  const weekColumn = sport === 'nfl' ? 'week' : null
+  const oppRankingsJoin = needsOppRankingsJoin && rankingsTable ? `
+    LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
       AND g.season = opp_rank.season 
-      AND g.week = opp_rank.week + 1
-    LEFT JOIN nfl_team_rankings team_rank ON b.team_id = team_rank.team_id 
+      ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
+    LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
       AND g.season = team_rank.season 
-      AND g.week = team_rank.week + 1
+      ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
   ` : ''
   
   // Add book line conditions if using book lines
@@ -677,6 +688,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       pl.over_odds as over_odds,
       pl.under_odds as under_odds,
       -- Full box score stats for expanded view
+      ${sport === 'nfl' ? `
       b.pass_attempts,
       b.pass_completions,
       b.pass_yards,
@@ -695,6 +707,23 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.receiving_tds,
       b.receiving_long,
       b.yards_per_reception,
+      ` : `
+      b.points,
+      b.total_rebounds as rebounds,
+      b.assists,
+      b.steals,
+      b.blocks,
+      b.turnovers,
+      b.three_pointers_made as threes,
+      b.minutes_played,
+      b.field_goals_made,
+      b.field_goals_attempted,
+      b.free_throws_made,
+      b.free_throws_attempted,
+      b.offensive_rebounds,
+      b.defensive_rebounds,
+      b.plus_minus,
+      `}
       -- Game context
       g.spread_close,
       g.total_close,
@@ -737,9 +766,20 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       at.division as away_division,
       at.conference as away_conference,
       -- Opponent defensive rankings from box scores
+      ${sport === 'nfl' ? `
       b.opp_def_rank_pass_yards,
       b.opp_def_rank_rush_yards,
       b.opp_def_rank_receiving_yards,
+      ` : `
+      b.opp_def_rank_points,
+      b.opp_def_rank_fg_pct,
+      b.opp_def_rank_three_pt_pct,
+      CAST(NULL as UInt8) as opp_def_rank_rebounds,
+      CAST(NULL as UInt8) as opp_def_rank_assists,
+      CAST(NULL as UInt8) as opp_def_rank_threes,
+      CAST(NULL as UInt8) as opp_def_rank_steals,
+      CAST(NULL as UInt8) as opp_def_rank_blocks,
+      `}
       -- Opponent offensive rankings from rankings join (if available)
       ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
       ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
@@ -751,7 +791,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Win percentages
       ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
       ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
-    FROM ${sport}_box_scores${sport === 'nfl' ? '_v2' : ''} b
+    FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
@@ -772,6 +812,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.is_home,
       ${statColumn} as stat_value,
       -- Full box score stats for expanded view
+      ${sport === 'nfl' ? `
       b.pass_attempts,
       b.pass_completions,
       b.pass_yards,
@@ -790,6 +831,23 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.receiving_tds,
       b.receiving_long,
       b.yards_per_reception,
+      ` : `
+      b.points,
+      b.total_rebounds as rebounds,
+      b.assists,
+      b.steals,
+      b.blocks,
+      b.turnovers,
+      b.three_pointers_made as threes,
+      b.minutes_played,
+      b.field_goals_made,
+      b.field_goals_attempted,
+      b.free_throws_made,
+      b.free_throws_attempted,
+      b.offensive_rebounds,
+      b.defensive_rebounds,
+      b.plus_minus,
+      `}
       -- Game context
       g.spread_close,
       g.total_close,
@@ -832,9 +890,20 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       at.division as away_division,
       at.conference as away_conference,
       -- Opponent defensive rankings from box scores
+      ${sport === 'nfl' ? `
       b.opp_def_rank_pass_yards,
       b.opp_def_rank_rush_yards,
       b.opp_def_rank_receiving_yards,
+      ` : `
+      b.opp_def_rank_points,
+      b.opp_def_rank_fg_pct,
+      b.opp_def_rank_three_pt_pct,
+      CAST(NULL as UInt8) as opp_def_rank_rebounds,
+      CAST(NULL as UInt8) as opp_def_rank_assists,
+      CAST(NULL as UInt8) as opp_def_rank_threes,
+      CAST(NULL as UInt8) as opp_def_rank_steals,
+      CAST(NULL as UInt8) as opp_def_rank_blocks,
+      `}
       -- Opponent offensive rankings from rankings join (if available)
       ${needsOppRankingsJoin ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'NULL as opp_off_rank_points,'}
       ${needsOppRankingsJoin ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'NULL as opp_off_rank_pass,'}
@@ -846,7 +915,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Win percentages
       ${needsOppRankingsJoin ? 'team_rank.win_pct as team_win_pct,' : 'NULL as team_win_pct,'}
       ${needsOppRankingsJoin ? 'opp_rank.win_pct as opp_win_pct' : 'NULL as opp_win_pct'}
-    FROM ${sport}_box_scores${sport === 'nfl' ? '_v2' : ''} b
+    FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
@@ -1002,24 +1071,42 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       player_position: row.player_position,
       player_headshot: row.player_headshot,
       // Full box score stats for expanded view
-      pass_attempts: row.pass_attempts,
-      pass_completions: row.pass_completions,
-      pass_yards: row.pass_yards,
-      pass_tds: row.pass_tds,
-      interceptions: row.interceptions,
-      sacks: row.sacks,
-      qb_rating: row.qb_rating,
-      rush_attempts: row.rush_attempts,
-      rush_yards: row.rush_yards,
-      rush_tds: row.rush_tds,
-      rush_long: row.rush_long,
-      yards_per_carry: row.yards_per_carry,
-      targets: row.targets,
-      receptions: row.receptions,
-      receiving_yards: row.receiving_yards,
-      receiving_tds: row.receiving_tds,
-      receiving_long: row.receiving_long,
-      yards_per_reception: row.yards_per_reception,
+      ...(sport === 'nfl' ? {
+        pass_attempts: row.pass_attempts,
+        pass_completions: row.pass_completions,
+        pass_yards: row.pass_yards,
+        pass_tds: row.pass_tds,
+        interceptions: row.interceptions,
+        sacks: row.sacks,
+        qb_rating: row.qb_rating,
+        rush_attempts: row.rush_attempts,
+        rush_yards: row.rush_yards,
+        rush_tds: row.rush_tds,
+        rush_long: row.rush_long,
+        yards_per_carry: row.yards_per_carry,
+        targets: row.targets,
+        receptions: row.receptions,
+        receiving_yards: row.receiving_yards,
+        receiving_tds: row.receiving_tds,
+        receiving_long: row.receiving_long,
+        yards_per_reception: row.yards_per_reception,
+      } : {
+        points: row.points,
+        rebounds: row.rebounds,
+        assists: row.assists,
+        steals: row.steals,
+        blocks: row.blocks,
+        turnovers: row.turnovers,
+        threes: row.threes,
+        minutes_played: row.minutes_played,
+        field_goals_made: row.field_goals_made,
+        field_goals_attempted: row.field_goals_attempted,
+        free_throws_made: row.free_throws_made,
+        free_throws_attempted: row.free_throws_attempted,
+        offensive_rebounds: row.offensive_rebounds,
+        defensive_rebounds: row.defensive_rebounds,
+        plus_minus: row.plus_minus,
+      }),
       // For "Why this fits" - venue and matchup info
       venue: row.venue,
       home_division: row.home_division,
@@ -1033,12 +1120,21 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       home_abbr: row.home_abbr,
       away_abbr: row.away_abbr,
       // Opponent rankings for "Why this fits"
-      opp_def_rank_pass: row.opp_def_rank_pass_yards,
-      opp_def_rank_rush: row.opp_def_rank_rush_yards,
-      opp_def_rank_receiving: row.opp_def_rank_receiving_yards,
-      opp_off_rank_points: row.opp_off_rank_points,
-      opp_off_rank_pass: row.opp_off_rank_pass,
-      opp_off_rank_rush: row.opp_off_rank_rush,
+      ...(sport === 'nfl' ? {
+        opp_def_rank_pass: row.opp_def_rank_pass_yards,
+        opp_def_rank_rush: row.opp_def_rank_rush_yards,
+        opp_def_rank_receiving: row.opp_def_rank_receiving_yards,
+        opp_off_rank_points: row.opp_off_rank_points,
+        opp_off_rank_pass: row.opp_off_rank_pass,
+        opp_off_rank_rush: row.opp_off_rank_rush,
+      } : {
+        opp_def_rank_points: row.opp_def_rank_points,
+        opp_def_rank_fg_pct: row.opp_def_rank_fg_pct,
+        opp_def_rank_three_pt_pct: row.opp_def_rank_three_pt_pct,
+        opp_off_rank_points: row.opp_off_rank_points || null,
+        opp_off_rank_pass: null,
+        opp_off_rank_rush: null,
+      }),
       // Track if player is home for context
       is_home: row.is_home === 1,
       // Public betting data

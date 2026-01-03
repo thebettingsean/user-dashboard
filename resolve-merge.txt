@@ -1,0 +1,23 @@
+Run these commands one by one in your terminal:
+
+1. cd /Users/ryansavoia/user-dashboard
+
+2. git merge --abort
+   (This will abort the stuck merge)
+
+3. git status
+   (Check what files are modified)
+
+4. git add app/builder/page.tsx app/api/query-engine/upcoming-props/route.ts
+
+5. git pull --no-rebase
+   (This will pull remote changes and merge automatically)
+
+6. git push origin main
+   (This will push your changes)
+
+If step 5 gives merge conflicts, you'll need to resolve them first, then:
+   git add .
+   git commit -m "Merge remote changes"
+   git push origin main
+
