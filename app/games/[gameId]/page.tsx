@@ -404,7 +404,8 @@ export default function GameDetailPage() {
             return hasAwayTeam || hasHomeTeam
           })
           
-          data = filtered.length > 0 ? filtered : timeData
+          // Only use filtered results - don't fall back to all picks
+          data = filtered
         }
       }
 
