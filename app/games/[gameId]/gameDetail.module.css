@@ -1155,7 +1155,147 @@
    PUBLIC BETTING - PIKKIT STYLE HORIZONTAL BARS
    ======================================== */
 
-/* Splits Title - OUTSIDE the card */
+/* Titles Row - Splits and Signals side by side */
+.publicBettingTitlesRow {
+  display: flex;
+  gap: 20px;
+  margin: 32px 0 12px 0;
+}
+
+.publicBettingTitlesRow .splitsTitle {
+  flex: 0 0 70%;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.signalsTitleWrapperDesktop {
+  flex: 0 0 30%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.signalsTitleWrapperMobile {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+
+.publicBettingTitlesRow .signalsTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.signalsInfoBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: rgba(203, 213, 225, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.signalsInfoBtn:hover {
+  background: rgba(148, 163, 184, 0.25);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.tooltipOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9998;
+  background: transparent;
+}
+
+.signalsInfoTooltip {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  background: #1a1f2e;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  padding: 16px;
+  z-index: 9999;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+  animation: tooltipFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: auto;
+  will-change: transform, opacity;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.signalsInfoTooltip h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+
+.tooltipSection {
+  margin-bottom: 12px;
+}
+
+.tooltipSection:last-of-type {
+  margin-bottom: 16px;
+}
+
+.tooltipSection strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(203, 213, 225, 0.9);
+  margin-bottom: 4px;
+}
+
+.tooltipSection p {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tooltipNote {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Splits Title - OUTSIDE the card (fallback) */
 .splitsTitle {
   font-size: 16px;
   font-weight: 600;
@@ -1164,6 +1304,62 @@
 }
 
 /* Splits Card */
+.publicBettingContainer {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .publicBettingContainer {
+    flex-direction: column;
+  }
+  
+  .splitsContainer {
+    flex: 1;
+    width: 100%;
+  }
+  
+  .signalsContainer {
+    flex: 1;
+    width: 100%;
+  }
+  
+  .publicBettingTitlesRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .publicBettingTitlesRow .splitsTitle {
+    flex: 1;
+    width: 100%;
+  }
+  
+  .signalsTitleWrapperDesktop {
+    display: none;
+  }
+  
+  .signalsTitleWrapperMobile {
+    display: flex;
+  }
+  
+  .signalsInfoTooltip {
+    background: #1a1f2e;
+  }
+}
+
+.splitsContainer {
+  flex: 0 0 70%;
+  min-width: 0;
+}
+
+.signalsContainer {
+  flex: 0 0 30%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .splitsCard {
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 10px;
@@ -1220,7 +1416,7 @@
 /* Horizontal Bar Container */
 .splitBarContainer {
   display: flex;
-  height: 14px;
+  height: 17.5px;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -1303,7 +1499,7 @@
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  margin: 32px 0 12px 0;
+  margin: 0 0 12px 0;
 }
 
 /* Signals Section - Match /public-betting styling */
@@ -1313,6 +1509,9 @@
   padding: 20px;
   position: relative;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .signalsGrid {
@@ -1390,17 +1589,19 @@
 .signalBarContainerV2 {
   display: flex;
   align-items: center;
-  gap: 3px;
-  height: 8px;
+  gap: 2px;
+  height: 10px;
+  width: 100%;
 }
 
 /* Individual Bar Segments */
 .signalBarSegment {
-  width: 4px;
-  height: 8px;
+  flex: 1;
+  height: 10px;
   border-radius: 2px;
   background: #2B2D30;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .signalBarSegment.filled {
@@ -1448,11 +1649,12 @@
   
   .signalBarContainerV2 {
     gap: 2px;
+    height: 10px;
   }
   
   .signalBarSegment {
-    width: 3px;
-    height: 6px;
+    flex: 1;
+    height: 10px;
   }
 
   .splitRowLabel {

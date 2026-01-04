@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { supabase } from '@/lib/supabase'
-import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight } from 'react-icons/fi'
+import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight, FiInfo } from 'react-icons/fi'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
 import { 
   LineChart, 
@@ -283,6 +283,7 @@ export default function GameDetailPage() {
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [script, setScript] = useState<string | null>(null)
   const [scriptLoading, setScriptLoading] = useState(false)
+  const [showSignalsInfo, setShowSignalsInfo] = useState(false)
   const [scriptError, setScriptError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'script' | 'odds' | 'picks' | 'betting'>('script')
@@ -1113,16 +1114,49 @@ export default function GameDetailPage() {
                 
                 {gameData?.hasPublicBetting && gameData?.publicBetting ? (
                   <>
-                    {/* Splits Title - OUTSIDE card */}
-                    <h3 className={styles.splitsTitle}>Splits</h3>
-                    
-                    {/* Splits Card with team color gradient background */}
-                    <div 
-                      className={styles.splitsCard}
-                      style={{
-                        background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
-                      }}
-                    >
+                    {/* Titles Row */}
+                    <div className={styles.publicBettingTitlesRow}>
+                      <h3 className={styles.splitsTitle}>Splits</h3>
+                      <div className={styles.signalsTitleWrapperDesktop}>
+                        <h3 className={styles.signalsTitle}>Signals</h3>
+                  <button 
+                          className={styles.signalsInfoBtn}
+                          onClick={() => setShowSignalsInfo(!showSignalsInfo)}
+                        >
+                          <FiInfo size={14} />
+                        </button>
+                        {showSignalsInfo && (
+                          <>
+                            <div className={styles.tooltipOverlay} onClick={() => setShowSignalsInfo(false)} />
+                            <div className={styles.signalsInfoTooltip}>
+                              <h4>Market Indicators</h4>
+                              <div className={styles.tooltipSection}>
+                                <strong>Public Respect</strong>
+                                <p>Majority of bets AND money backing this side, with line movement confirming the public lean.</p>
+                              </div>
+                              <div className={styles.tooltipSection}>
+                                <strong>Vegas Backed</strong>
+                                <p>Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.</p>
+                              </div>
+                              <div className={styles.tooltipSection}>
+                                <strong>Whale Respect</strong>
+                                <p>Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.</p>
+                              </div>
+                              <p className={styles.tooltipNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Container for Splits and Signals side by side */}
+                    <div className={styles.publicBettingContainer}>
+                      {/* Left side - Splits (70%) */}
+                      <div className={styles.splitsContainer}>
+                        {/* Splits Card */}
+                        <div 
+                          className={styles.splitsCard}
+                        >
                       {/* Spread Section */}
                       <div className={styles.splitSection}>
                         <h4 className={styles.splitSectionTitle}>Spread</h4>
@@ -1137,7 +1171,7 @@ export default function GameDetailPage() {
                                 className={styles.splitBarLeft}
                                 style={{
                                   width: `${100 - (gameData.publicBetting.spreadHomeBetPct || 50)}%`,
-                                  background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  background: `${gameData.awayTeamColor}AA`,
                                 }}
                               >
                                 <span className={styles.splitBarText}>
@@ -1148,7 +1182,7 @@ export default function GameDetailPage() {
                                 className={styles.splitBarRight}
                                 style={{
                                   width: `${gameData.publicBetting.spreadHomeBetPct || 50}%`,
-                                  background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  background: `${gameData.homeTeamColor}AA`,
                                 }}
                               >
                                 <span className={styles.splitBarText}>
@@ -1170,7 +1204,7 @@ export default function GameDetailPage() {
                                 className={styles.splitBarLeft}
                                 style={{
                                   width: `${100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)}%`,
-                                  background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                  background: `${gameData.awayTeamColor}AA`,
                                 }}
                               >
                                 <span className={styles.splitBarText}>
@@ -1181,7 +1215,7 @@ export default function GameDetailPage() {
                                 className={styles.splitBarRight}
                                 style={{
                                   width: `${gameData.publicBetting.spreadHomeMoneyPct || 50}%`,
-                                  background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                  background: `${gameData.homeTeamColor}AA`,
                                 }}
                               >
                                 <span className={styles.splitBarText}>
@@ -1209,7 +1243,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarLeft}
                                   style={{
                                     width: `${100 - (gameData.publicBetting.mlHomeBetPct || 50)}%`,
-                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                    background: `${gameData.awayTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1220,7 +1254,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarRight}
                                   style={{
                                     width: `${gameData.publicBetting.mlHomeBetPct || 50}%`,
-                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                    background: `${gameData.homeTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1242,7 +1276,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarLeft}
                                   style={{
                                     width: `${100 - (gameData.publicBetting.mlHomeMoneyPct || 50)}%`,
-                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                    background: `${gameData.awayTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1253,7 +1287,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarRight}
                                   style={{
                                     width: `${gameData.publicBetting.mlHomeMoneyPct || 50}%`,
-                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                    background: `${gameData.homeTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1282,7 +1316,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarLeft}
                                   style={{
                                     width: `${100 - (gameData.publicBetting.totalOverBetPct || 50)}%`,
-                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                    background: `${gameData.awayTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1293,7 +1327,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarRight}
                                   style={{
                                     width: `${gameData.publicBetting.totalOverBetPct || 50}%`,
-                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                    background: `${gameData.homeTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1315,7 +1349,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarLeft}
                                   style={{
                                     width: `${100 - (gameData.publicBetting.totalOverMoneyPct || 50)}%`,
-                                    background: `linear-gradient(90deg, ${gameData.awayTeamColor}F0 0%, ${gameData.awayTeamColor}C0 50%, ${gameData.awayTeamColor}A0 100%)`,
+                                    background: `${gameData.awayTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1326,7 +1360,7 @@ export default function GameDetailPage() {
                                   className={styles.splitBarRight}
                                   style={{
                                     width: `${gameData.publicBetting.totalOverMoneyPct || 50}%`,
-                                    background: `linear-gradient(90deg, ${gameData.homeTeamColor}A0 0%, ${gameData.homeTeamColor}C0 50%, ${gameData.homeTeamColor}F0 100%)`,
+                                    background: `${gameData.homeTeamColor}AA`,
                                   }}
                                 >
                                   <span className={styles.splitBarText}>
@@ -1339,10 +1373,44 @@ export default function GameDetailPage() {
                           </div>
                         </div>
                       )}
-                    </div>
+                        </div>
+                      </div>
 
-                    {/* Signals Section - Generic, showing all signals */}
-                    {gameData.signals && (() => {
+                      {/* Right side - Signals (30%) */}
+                      <div className={styles.signalsContainer}>
+                        {/* Signals Title - Mobile only */}
+                        <div className={styles.signalsTitleWrapperMobile}>
+                          <h3 className={styles.signalsTitle}>Signals</h3>
+                          <button 
+                            className={styles.signalsInfoBtn}
+                            onClick={() => setShowSignalsInfo(!showSignalsInfo)}
+                          >
+                            <FiInfo size={14} />
+                          </button>
+                          {showSignalsInfo && (
+                            <>
+                              <div className={styles.tooltipOverlay} onClick={() => setShowSignalsInfo(false)} />
+                              <div className={styles.signalsInfoTooltip}>
+                                <h4>Market Indicators</h4>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Public Respect</strong>
+                                  <p>Majority of bets AND money backing this side, with line movement confirming the public lean.</p>
+                                </div>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Vegas Backed</strong>
+                                  <p>Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.</p>
+                                </div>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Whale Respect</strong>
+                                  <p>Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.</p>
+                                </div>
+                                <p className={styles.tooltipNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        {/* Signals Section - Generic, showing all signals */}
+                        {gameData.signals && (() => {
                       // Collect all signals across all bet types
                       const allSignals: Array<{ team: string; betType: string; logo: string | null; signals: any }> = []
                       
@@ -1410,15 +1478,9 @@ export default function GameDetailPage() {
 
                       return (
                         <>
-                          {/* Signals Title - OUTSIDE card */}
-                          <h3 className={styles.signalsTitle}>Signals</h3>
-                          
-                          {/* Signals Section with team color gradient */}
+                          {/* Signals Section */}
                           <div 
                             className={styles.signalsSection}
-                            style={{
-                              background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
-                            }}
                           >
                             <div className={styles.signalsGrid}>
                               {allSignals.map((item, idx) => (
@@ -1469,6 +1531,8 @@ export default function GameDetailPage() {
                         </>
                       )
                     })()}
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <div className={styles.noDataCard}>
