@@ -256,7 +256,7 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
         <span className={styles.cardInfoDot}>•</span>
         <span className={styles.cardInfoItem}>Signals: {signals}</span>
         <span className={styles.cardInfoDot}>•</span>
-        <span className={styles.cardInfoItem}>Script: <span className={styles.cardInfoBadge}>(Basic)</span></span>
+        <span className={styles.cardInfoItem}>Script: <span className={styles.cardInfoBadge}>Basic</span></span>
       </div>
       
       <div className={styles.cardFooter}>
