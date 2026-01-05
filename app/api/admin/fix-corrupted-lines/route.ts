@@ -178,42 +178,42 @@ export async function GET(request: Request) {
           ? snapshot.public_total_over_money_pct 
           : game.public_total_over_money_pct
         
-        // Basic validation - skip only if sport is missing (should never happen)
-        if (!game.sport) {
+        // Recalculate signals with correct lines (with safe defaults)
+        let signals
+        try {
+          signals = calculateGameSignals(
+            game.sport || 'nfl',
+            // Spread data
+            game.spread_open || 0,
+            trueCloseSpread || 0,
+            game.opening_home_spread_juice || -110,
+            snapshot.spread_juice_home || -110,
+            game.opening_away_spread_juice || -110,
+            snapshot.spread_juice_away || -110,
+            finalSpreadBet || 50,
+            finalSpreadMoney || 50,
+            // Total data
+            game.total_open || 0,
+            trueCloseTotal || 0,
+            game.opening_over_juice || -110,
+            snapshot.total_juice_over || -110,
+            game.opening_under_juice || -110,
+            snapshot.total_juice_under || -110,
+            finalTotalBet || 50,
+            finalTotalMoney || 50,
+            // ML data
+            game.home_ml_open || 0,
+            trueCloseMlHome || 0,
+            game.away_ml_open || 0,
+            trueCloseMlAway || 0,
+            finalMlBet || 50,
+            finalMlMoney || 50
+          )
+        } catch (signalError: any) {
           results.gamesSkipped++
-          results.errors.push(`${game.game_id}: Missing sport`)
+          results.errors.push(`${game.game_id}: Signal calculation failed - ${signalError.message}`)
           continue
         }
-        
-        // Recalculate signals with correct lines (with safe defaults)
-        const signals = calculateGameSignals(
-          game.sport || 'nfl',
-          // Spread data
-          game.spread_open || 0,
-          trueCloseSpread || 0,
-          game.opening_home_spread_juice || -110,
-          snapshot.spread_juice_home || -110,
-          game.opening_away_spread_juice || -110,
-          snapshot.spread_juice_away || -110,
-          finalSpreadBet || 50,
-          finalSpreadMoney || 50,
-          // Total data
-          game.total_open || 0,
-          trueCloseTotal || 0,
-          game.opening_over_juice || -110,
-          snapshot.total_juice_over || -110,
-          game.opening_under_juice || -110,
-          snapshot.total_juice_under || -110,
-          finalTotalBet || 50,
-          finalTotalMoney || 50,
-          // ML data
-          game.home_ml_open || 0,
-          trueCloseMlHome || 0,
-          game.away_ml_open || 0,
-          trueCloseMlAway || 0,
-          finalMlBet || 50,
-          finalMlMoney || 50
-        )
         
         // Store example for response
         if (results.examples.length < 10) {
