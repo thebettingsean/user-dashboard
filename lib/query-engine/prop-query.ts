@@ -169,7 +169,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     boxConditions.push(`b.player_id = ${player_id}`)
   } else if (position && position !== 'any') {
     // All players of a position - join with players table
-    // Position must be uppercase to match database (RB, WR, QB, TE)
+    // Position must be uppercase to match database (RB, WR, QB, TE for NFL; G, F, C for NBA)
     const positionUpper = position.toUpperCase()
     boxConditions.push(`p.position = '${positionUpper}'`)
     appliedFilters.push(`All ${positionUpper}s`)

@@ -135,10 +135,8 @@ const getPositions = (sport: string) => {
   if (sport === 'nba') {
     return [
       { value: 'any', label: 'All Positions' },
-      { value: 'PG', label: 'Point Guard' },
-      { value: 'SG', label: 'Shooting Guard' },
-      { value: 'SF', label: 'Small Forward' },
-      { value: 'PF', label: 'Power Forward' },
+      { value: 'G', label: 'Guard' },
+      { value: 'F', label: 'Forward' },
       { value: 'C', label: 'Center' },
     ]
   }
@@ -166,7 +164,7 @@ const getPropStatsByPosition = (sport: string): Record<string, { value: string; 
         { value: 'blocks', label: 'Blocks' },
         { value: 'turnovers', label: 'Turnovers' },
       ],
-      PG: [
+      G: [
         { value: 'points', label: 'Points' },
         { value: 'assists', label: 'Assists' },
         { value: 'rebounds', label: 'Rebounds' },
@@ -174,25 +172,13 @@ const getPropStatsByPosition = (sport: string): Record<string, { value: string; 
         { value: 'threes', label: '3-Pointers Made' },
         { value: 'turnovers', label: 'Turnovers' },
       ],
-      SG: [
+      F: [
         { value: 'points', label: 'Points' },
         { value: 'rebounds', label: 'Rebounds' },
         { value: 'assists', label: 'Assists' },
         { value: 'threes', label: '3-Pointers Made' },
         { value: 'steals', label: 'Steals' },
-      ],
-      SF: [
-        { value: 'points', label: 'Points' },
-        { value: 'rebounds', label: 'Rebounds' },
-        { value: 'assists', label: 'Assists' },
-        { value: 'threes', label: '3-Pointers Made' },
-        { value: 'steals', label: 'Steals' },
-      ],
-      PF: [
-        { value: 'points', label: 'Points' },
-        { value: 'rebounds', label: 'Rebounds' },
         { value: 'blocks', label: 'Blocks' },
-        { value: 'assists', label: 'Assists' },
       ],
       C: [
         { value: 'points', label: 'Points' },
