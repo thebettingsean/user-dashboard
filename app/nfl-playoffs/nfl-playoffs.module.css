@@ -99,7 +99,17 @@
 .bracketContent {
   position: relative;
   z-index: 1;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
 }
+
+.desktopBracket {
+  display: block;
+  width: 100%;
+  transform-origin: top left;
+}
+
 
 .topRow {
   display: flex;
@@ -153,8 +163,9 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent wrapping - scale instead */
   margin-bottom: -40px;
+  min-width: 1200px; /* Set minimum width to prevent reformatting */
 }
 
 .conferenceSection {
@@ -163,7 +174,7 @@
   flex-direction: row;
   gap: 16px;
   min-width: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent wrapping - scale instead */
   align-items: center;
 }
 
@@ -499,6 +510,12 @@
   .bracket {
     flex-direction: column;
     align-items: center;
+    min-width: auto; /* Remove min-width on smaller screens */
+    flex-wrap: wrap; /* Allow wrapping on smaller desktop screens */
+  }
+
+  .bracketContent {
+    min-width: auto; /* Remove min-width on smaller screens */
   }
 
   .conferenceSection {
@@ -611,9 +628,7 @@
   border-radius: 4px;
 }
 
-.desktopBracket {
-  display: block;
-}
+/* Desktop bracket styles moved above */
 
 @media (max-width: 768px) {
   .desktopBracket {
@@ -733,13 +748,16 @@
   }
 }
 
-/* Prevent horizontal overflow */
-@media (max-width: 1200px) {
-  .bracket {
-    flex-wrap: wrap;
+/* Allow horizontal scrolling when bracket is larger than viewport */
+@media (min-width: 769px) {
+  .bracketWrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
   
-  .conferenceSection {
-    flex-wrap: wrap;
+  .bracketContent {
+    min-width: 1200px; /* Ensure bracket maintains its width */
   }
 }
+
