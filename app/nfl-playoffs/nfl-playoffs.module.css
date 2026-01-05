@@ -509,13 +509,13 @@
   background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
   border: 1px solid rgba(50, 51, 53, 0.5);
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   margin-top: 24px;
   box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
 }
 
 .challengeTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #FFFFFF;
   margin: 0 0 8px 0;
@@ -527,60 +527,12 @@
   font-size: 13px;
   color: #696969;
   text-align: center;
-  margin: 0 0 24px 0;
+  margin: 0 0 20px 0;
   line-height: 1.5;
 }
 
-.scoreDisplay {
-  margin-bottom: 24px;
-}
-
-.scoreCurrent {
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-.scoreLabel {
-  font-size: 12px;
-  color: #696969;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-}
-
-.scoreValue {
-  font-size: 48px;
-  font-weight: 700;
-  color: #FFFFFF;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.scoreMax {
-  font-size: 14px;
-  color: #696969;
-}
-
-.scoreProgress {
-  width: 100%;
-  height: 8px;
-  background: rgba(41, 47, 63, 0.5);
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-}
-
-.scoreProgressBar {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8) 0%, rgba(59, 130, 246, 0.6) 100%);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
 .scoringRules {
-  border-top: 1px solid rgba(50, 51, 53, 0.5);
-  padding-top: 20px;
+  margin-top: 0;
 }
 
 .scoringRulesTitle {

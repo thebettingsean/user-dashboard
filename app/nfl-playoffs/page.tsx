@@ -583,62 +583,6 @@ function NFLPlayoffsPageContent() {
     alert('Share URL copied to clipboard!')
   }
 
-  // Calculate bracket challenge score
-  const calculateScore = (): { current: number; max: number; breakdown: { round: string; points: number; maxPoints: number }[] } => {
-    const scoring = {
-      wildcard: 10,
-      divisional: 20,
-      conference: 40,
-      superbowl: 80,
-    }
-
-    const wildcardGames: GameKey[] = ['afc_wc_1', 'afc_wc_2', 'afc_wc_3', 'nfc_wc_1', 'nfc_wc_2', 'nfc_wc_3']
-    const divisionalGames: GameKey[] = ['afc_div_1', 'afc_div_2', 'nfc_div_1', 'nfc_div_2']
-    const conferenceGames: GameKey[] = ['afc_conf', 'nfc_conf']
-    const superbowlGames: GameKey[] = ['sb']
-
-    const countSelected = (games: GameKey[]): number => {
-      return games.filter(gameKey => {
-        const game = selections[gameKey]
-        return game?.selected !== undefined && (game?.top || game?.bottom)
-      }).length
-    }
-
-    const wildcardSelected = countSelected(wildcardGames)
-    const divisionalSelected = countSelected(divisionalGames)
-    const conferenceSelected = countSelected(conferenceGames)
-    const superbowlSelected = countSelected(superbowlGames)
-
-    const breakdown = [
-      {
-        round: 'Wild Card',
-        points: wildcardSelected * scoring.wildcard,
-        maxPoints: wildcardGames.length * scoring.wildcard,
-      },
-      {
-        round: 'Divisional',
-        points: divisionalSelected * scoring.divisional,
-        maxPoints: divisionalGames.length * scoring.divisional,
-      },
-      {
-        round: 'Conference Championship',
-        points: conferenceSelected * scoring.conference,
-        maxPoints: conferenceGames.length * scoring.conference,
-      },
-      {
-        round: 'Super Bowl',
-        points: superbowlSelected * scoring.superbowl,
-        maxPoints: superbowlGames.length * scoring.superbowl,
-      },
-    ]
-
-    const current = breakdown.reduce((sum, item) => sum + item.points, 0)
-    const max = breakdown.reduce((sum, item) => sum + item.maxPoints, 0)
-
-    return { current, max, breakdown }
-  }
-
-  const scoreData = calculateScore()
 
   // Swipe handlers for mobile carousel
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -1070,44 +1014,6 @@ function NFLPlayoffsPageContent() {
         </div>
       </div>
 
-      <div className={styles.challengeSection}>
-        <h2 className={styles.challengeTitle}>Bracket Challenge</h2>
-        <p className={styles.challengeDescription}>
-          Track your picks and see how you score! Follow along as the playoffs progress.
-        </p>
-        
-        <div className={styles.scoreDisplay}>
-          <div className={styles.scoreCurrent}>
-            <div className={styles.scoreLabel}>Your Score</div>
-            <div className={styles.scoreValue}>{scoreData.current}</div>
-            <div className={styles.scoreMax}>/ {scoreData.max} points</div>
-          </div>
-          <div className={styles.scoreProgress}>
-            <div 
-              className={styles.scoreProgressBar}
-              style={{ width: `${(scoreData.current / scoreData.max) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        <div className={styles.scoringRules}>
-          <h3 className={styles.scoringRulesTitle}>Scoring Rules</h3>
-          <div className={styles.scoringRulesList}>
-            {scoreData.breakdown.map((item, index) => (
-              <div key={index} className={styles.scoringRuleItem}>
-                <div className={styles.scoringRuleRound}>{item.round}:</div>
-                <div className={styles.scoringRulePoints}>
-                  {item.points} / {item.maxPoints} pts
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className={styles.scoringRuleTotal}>
-            <div className={styles.scoringRuleRound}>Perfect Bracket:</div>
-            <div className={styles.scoringRulePoints}>{scoreData.max} points</div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
