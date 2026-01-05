@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { clickhouseCommand, clickhouseQuery } from '@/lib/clickhouse'
 
-const SPORTSDATA_API_KEY = process.env.SPORTSDATA_API_KEY
+const SPORTSDATA_API_KEY = process.env.SPORTSDATA_IO_SPLITS_KEY
 
 export async function GET() {
   if (!SPORTSDATA_API_KEY) {
