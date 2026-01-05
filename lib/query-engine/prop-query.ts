@@ -609,11 +609,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     ...oppRankConditions
   ]
   
-  // Add stat value filter (the line/over condition)
-  if (line && line > 0) {
-    allConditions.push(`b.${statColumn} > ${line}`)
-    appliedFilters.push(`${stat} > ${line}`)
-  }
+  // Note: We do NOT filter by line in the WHERE clause here.
+  // The line is used for hit/miss calculation in the application code after fetching all games.
+  // This ensures we get both hits and misses for accurate hit rate calculation.
   
   // Add sport-specific data error filters
   if (sport === 'nfl') {
