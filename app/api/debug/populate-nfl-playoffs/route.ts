@@ -12,7 +12,7 @@ export async function GET() {
     console.log('[DEBUG] Starting NFL playoff game population')
     
     // Fetch playoff games from SportsDataIO for season 2025POST
-    const playoffGamesUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Scores/2025POST?key=${SPORTSDATA_API_KEY}`
+    const playoffGamesUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/2025POST?key=${SPORTSDATA_API_KEY}`
     console.log('[DEBUG] Fetching from:', playoffGamesUrl.replace(SPORTSDATA_API_KEY, 'REDACTED'))
     
     const playoffResp = await fetch(playoffGamesUrl)

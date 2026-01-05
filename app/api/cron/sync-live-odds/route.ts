@@ -247,7 +247,7 @@ export async function GET(request: Request) {
             
             try {
               // Fetch playoff games from SportsDataIO for season 2025POST
-              const playoffGamesUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Scores/2025POST?key=${SPORTSDATA_API_KEY}`
+              const playoffGamesUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Schedules/2025POST?key=${SPORTSDATA_API_KEY}`
               const playoffResp = await fetch(playoffGamesUrl)
               
               if (playoffResp.ok) {
