@@ -143,10 +143,20 @@ export async function GET(request: Request) {
         }
         
         // This game has corrupted lines - fix it!
-        const trueCloseSpread = snapshot.spread
-        const trueCloseTotal = snapshot.total
-        const trueCloseMlHome = snapshot.ml_home
-        const trueCloseMlAway = snapshot.ml_away
+        // Use snapshot data if valid, otherwise fall back to opening lines
+        // (Opening lines are better than corrupted mid-game lines)
+        const trueCloseSpread = (snapshot.spread !== null && snapshot.spread !== undefined && snapshot.spread !== 0) 
+          ? snapshot.spread 
+          : game.spread_open
+        const trueCloseTotal = (snapshot.total !== null && snapshot.total !== undefined && snapshot.total !== 0) 
+          ? snapshot.total 
+          : game.total_open
+        const trueCloseMlHome = (snapshot.ml_home !== null && snapshot.ml_home !== undefined && snapshot.ml_home !== 0) 
+          ? snapshot.ml_home 
+          : game.home_ml_open
+        const trueCloseMlAway = (snapshot.ml_away !== null && snapshot.ml_away !== undefined && snapshot.ml_away !== 0) 
+          ? snapshot.ml_away 
+          : game.away_ml_open
         
         // Use snapshot's public data if available, otherwise keep existing
         const finalSpreadBet = snapshot.public_spread_home_bet_pct !== 50 && snapshot.public_spread_home_bet_pct !== null
@@ -168,14 +178,10 @@ export async function GET(request: Request) {
           ? snapshot.public_total_over_money_pct 
           : game.public_total_over_money_pct
         
-        // Validate all required data is present before calculating signals
-        if (!game.sport || 
-            game.spread_open === null || game.spread_open === undefined ||
-            trueCloseSpread === null || trueCloseSpread === undefined ||
-            game.total_open === null || game.total_open === undefined ||
-            trueCloseTotal === null || trueCloseTotal === undefined) {
+        // Basic validation - skip only if sport is missing (should never happen)
+        if (!game.sport) {
           results.gamesSkipped++
-          results.errors.push(`${game.game_id}: Missing required data for signal calculation`)
+          results.errors.push(`${game.game_id}: Missing sport`)
           continue
         }
         
