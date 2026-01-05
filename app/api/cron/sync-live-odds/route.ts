@@ -563,10 +563,10 @@ export async function GET(request: Request) {
           // We should ONLY update lines for games that haven't kicked off yet
           // Once a game starts, we want to preserve the final pre-game lines
           // ====================================================================
-          const gameTime = new Date(game.commence_time)
+          const kickoffTime = new Date(game.commence_time)
           const now = new Date()
           
-          if (gameTime < now) {
+          if (kickoffTime < now) {
             // Game has already started - skip it entirely
             // Don't update lines, signals, or anything else
             continue
