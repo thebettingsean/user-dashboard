@@ -859,43 +859,48 @@ export async function GET(request: Request) {
               `)
               const gfs = firstSeenData.data?.[0]
               
-              // CRITICAL: If game_first_seen doesn't have opening lines (or has 0),
-              // use the EARLIEST snapshot as the opening line
-              const earliestSnapshot = await clickhouseQuery<any>(`
-                SELECT 
-                  spread, total, ml_home, ml_away,
-                  spread_juice_home, spread_juice_away, total_juice_over, total_juice_under
+              // CRITICAL: If game_first_seen doesn't have opening lines (or they are 0),
+              // use the FIRST *NON-ZERO* snapshot values as the opening lines.
+              // Some books/snapshots can record 0 placeholders early; we must ignore those.
+              const openingFromSnapshots = await clickhouseQuery<any>(`
+                SELECT
+                  argMinIf(spread, snapshot_time, spread != 0) AS opening_spread,
+                  argMinIf(total, snapshot_time, total != 0) AS opening_total,
+                  argMinIf(ml_home, snapshot_time, ml_home != 0) AS opening_ml_home,
+                  argMinIf(ml_away, snapshot_time, ml_away != 0) AS opening_ml_away,
+                  argMinIf(spread_juice_home, snapshot_time, spread != 0) AS opening_spread_juice_home,
+                  argMinIf(spread_juice_away, snapshot_time, spread != 0) AS opening_spread_juice_away,
+                  argMinIf(total_juice_over, snapshot_time, total != 0) AS opening_total_juice_over,
+                  argMinIf(total_juice_under, snapshot_time, total != 0) AS opening_total_juice_under
                 FROM live_odds_snapshots
                 WHERE odds_api_game_id = '${game.id}'
-                ORDER BY snapshot_time ASC
-                LIMIT 1
               `)
-              const firstSnapshot = earliestSnapshot.data?.[0]
+              const snapOpen = openingFromSnapshots.data?.[0]
               
               // Use game_first_seen for true opening, fallback to earliest snapshot, then games table, then current
               const spreadOpen = isOpening ? consensus.spread 
                 : (gfs?.opening_spread && gfs.opening_spread !== 0 
                     ? gfs.opening_spread 
-                    : firstSnapshot?.spread && firstSnapshot.spread !== 0
-                      ? firstSnapshot.spread
+                    : snapOpen?.opening_spread && snapOpen.opening_spread !== 0
+                      ? snapOpen.opening_spread
                       : existingGame.data?.[0]?.spread_open ?? consensus.spread)
               const totalOpen = isOpening ? consensus.total 
                 : (gfs?.opening_total && gfs.opening_total !== 0
                     ? gfs.opening_total
-                    : firstSnapshot?.total && firstSnapshot.total !== 0
-                      ? firstSnapshot.total
+                    : snapOpen?.opening_total && snapOpen.opening_total !== 0
+                      ? snapOpen.opening_total
                       : existingGame.data?.[0]?.total_open ?? consensus.total)
               const mlHomeOpen = isOpening ? consensus.mlHome 
                 : (gfs?.opening_ml_home && gfs.opening_ml_home !== 0
                     ? gfs.opening_ml_home
-                    : firstSnapshot?.ml_home && firstSnapshot.ml_home !== 0
-                      ? firstSnapshot.ml_home
+                    : snapOpen?.opening_ml_home && snapOpen.opening_ml_home !== 0
+                      ? snapOpen.opening_ml_home
                       : existingGame.data?.[0]?.home_ml_open ?? consensus.mlHome)
               const mlAwayOpen = isOpening ? consensus.mlAway 
                 : (gfs?.opening_ml_away && gfs.opening_ml_away !== 0
                     ? gfs.opening_ml_away
-                    : firstSnapshot?.ml_away && firstSnapshot.ml_away !== 0
-                      ? firstSnapshot.ml_away
+                    : snapOpen?.opening_ml_away && snapOpen.opening_ml_away !== 0
+                      ? snapOpen.opening_ml_away
                       : existingGame.data?.[0]?.away_ml_open ?? consensus.mlAway)
               
               // Get opening juice from game_first_seen first, then earliest snapshot, then games table
@@ -903,26 +908,26 @@ export async function GET(request: Request) {
               const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome 
                 : (gfs?.opening_home_spread_juice && gfs.opening_home_spread_juice !== -110 
                     ? gfs.opening_home_spread_juice 
-                    : firstSnapshot?.spread_juice_home && firstSnapshot.spread_juice_home !== -110
-                      ? firstSnapshot.spread_juice_home
+                    : snapOpen?.opening_spread_juice_home && snapOpen.opening_spread_juice_home !== -110
+                      ? snapOpen.opening_spread_juice_home
                       : consensus.spreadJuiceHome)
               const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway 
                 : (gfs?.opening_away_spread_juice && gfs.opening_away_spread_juice !== -110 
                     ? gfs.opening_away_spread_juice 
-                    : firstSnapshot?.spread_juice_away && firstSnapshot.spread_juice_away !== -110
-                      ? firstSnapshot.spread_juice_away
+                    : snapOpen?.opening_spread_juice_away && snapOpen.opening_spread_juice_away !== -110
+                      ? snapOpen.opening_spread_juice_away
                       : consensus.spreadJuiceAway)
               const overJuiceOpen = isOpening ? consensus.overJuice 
                 : (gfs?.opening_over_juice && gfs.opening_over_juice !== -110 
                     ? gfs.opening_over_juice 
-                    : firstSnapshot?.total_juice_over && firstSnapshot.total_juice_over !== -110
-                      ? firstSnapshot.total_juice_over
+                    : snapOpen?.opening_total_juice_over && snapOpen.opening_total_juice_over !== -110
+                      ? snapOpen.opening_total_juice_over
                       : consensus.overJuice)
               const underJuiceOpen = isOpening ? consensus.underJuice 
                 : (gfs?.opening_under_juice && gfs.opening_under_juice !== -110 
                     ? gfs.opening_under_juice 
-                    : firstSnapshot?.total_juice_under && firstSnapshot.total_juice_under !== -110
-                      ? firstSnapshot.total_juice_under
+                    : snapOpen?.opening_total_juice_under && snapOpen.opening_total_juice_under !== -110
+                      ? snapOpen.opening_total_juice_under
                       : consensus.underJuice)
               
               // CRITICAL: Preserve existing splits if we have real data (not 50/50)
