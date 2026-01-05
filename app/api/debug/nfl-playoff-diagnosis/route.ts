@@ -58,12 +58,12 @@ export async function GET() {
         g.game_time,
         ht.name as home_team,
         at.name as away_team,
-        g.spread_home_bet_pct,
-        g.spread_home_money_pct,
-        g.ml_home_bet_pct,
-        g.ml_home_money_pct,
-        g.total_over_bet_pct,
-        g.total_over_money_pct
+        g.public_spread_home_bet_pct,
+        g.public_spread_home_money_pct,
+        g.public_ml_home_bet_pct,
+        g.public_ml_home_money_pct,
+        g.public_total_over_bet_pct,
+        g.public_total_over_money_pct
       FROM games g
       LEFT JOIN teams ht ON g.home_team_id = ht.team_id AND ht.sport = g.sport
       LEFT JOIN teams at ON g.away_team_id = at.team_id AND at.sport = g.sport
@@ -75,8 +75,8 @@ export async function GET() {
     `)
     results.games_table_nfl = publicBettingQuery.data || []
     results.games_with_splits = results.games_table_nfl.filter((g: any) => 
-      (g.spread_home_bet_pct && g.spread_home_bet_pct > 0) ||
-      (g.ml_home_bet_pct && g.ml_home_bet_pct > 0)
+      (g.public_spread_home_bet_pct && g.public_spread_home_bet_pct > 0) ||
+      (g.public_ml_home_bet_pct && g.public_ml_home_bet_pct > 0)
     ).length
     
     // 4. Current date/time info
