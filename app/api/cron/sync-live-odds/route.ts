@@ -558,6 +558,20 @@ export async function GET(request: Request) {
         try {
           if (game.bookmakers.length === 0) continue
           
+          // ====================================================================
+          // CRITICAL: Skip games that have already started
+          // We should ONLY update lines for games that haven't kicked off yet
+          // Once a game starts, we want to preserve the final pre-game lines
+          // ====================================================================
+          const gameTime = new Date(game.commence_time)
+          const now = new Date()
+          
+          if (gameTime < now) {
+            // Game has already started - skip it entirely
+            // Don't update lines, signals, or anything else
+            continue
+          }
+          
           // Calculate consensus from ALL bookmakers
           const { consensus, allBooks, bookCount } = calculateConsensus(game.bookmakers, game.home_team)
           
