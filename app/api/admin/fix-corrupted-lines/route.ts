@@ -168,34 +168,45 @@ export async function GET(request: Request) {
           ? snapshot.public_total_over_money_pct 
           : game.public_total_over_money_pct
         
-        // Recalculate signals with correct lines
+        // Validate all required data is present before calculating signals
+        if (!game.sport || 
+            game.spread_open === null || game.spread_open === undefined ||
+            trueCloseSpread === null || trueCloseSpread === undefined ||
+            game.total_open === null || game.total_open === undefined ||
+            trueCloseTotal === null || trueCloseTotal === undefined) {
+          results.gamesSkipped++
+          results.errors.push(`${game.game_id}: Missing required data for signal calculation`)
+          continue
+        }
+        
+        // Recalculate signals with correct lines (with safe defaults)
         const signals = calculateGameSignals(
-          game.sport,
+          game.sport || 'nfl',
           // Spread data
-          game.spread_open,
-          trueCloseSpread,
+          game.spread_open || 0,
+          trueCloseSpread || 0,
           game.opening_home_spread_juice || -110,
           snapshot.spread_juice_home || -110,
           game.opening_away_spread_juice || -110,
           snapshot.spread_juice_away || -110,
-          finalSpreadBet,
-          finalSpreadMoney,
+          finalSpreadBet || 50,
+          finalSpreadMoney || 50,
           // Total data
-          game.total_open,
-          trueCloseTotal,
+          game.total_open || 0,
+          trueCloseTotal || 0,
           game.opening_over_juice || -110,
           snapshot.total_juice_over || -110,
           game.opening_under_juice || -110,
           snapshot.total_juice_under || -110,
-          finalTotalBet,
-          finalTotalMoney,
+          finalTotalBet || 50,
+          finalTotalMoney || 50,
           // ML data
-          game.home_ml_open,
-          trueCloseMlHome,
-          game.away_ml_open,
-          trueCloseMlAway,
-          finalMlBet,
-          finalMlMoney
+          game.home_ml_open || 0,
+          trueCloseMlHome || 0,
+          game.away_ml_open || 0,
+          trueCloseMlAway || 0,
+          finalMlBet || 50,
+          finalMlMoney || 50
         )
         
         // Store example for response
@@ -263,7 +274,17 @@ export async function GET(request: Request) {
         
       } catch (gameError: any) {
         results.errors.push(`${game.game_id}: ${gameError.message}`)
-        console.error(`[Fix Corrupted Lines] Error fixing game ${game.game_id}:`, gameError.message)
+        console.error(`[Fix Corrupted Lines] Error fixing game ${game.game_id}:`, {
+          error: gameError.message,
+          stack: gameError.stack,
+          gameData: {
+            sport: game.sport,
+            spread_open: game.spread_open,
+            spread_close: game.spread_close,
+            total_open: game.total_open,
+            total_close: game.total_close,
+          }
+        })
       }
     }
     
