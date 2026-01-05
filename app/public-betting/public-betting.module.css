@@ -404,6 +404,11 @@
   transition: background 0.15s ease;
 }
 
+.awayRow.disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
 .awayRow td {
   border-bottom: none;
   padding-top: 14px;
@@ -412,6 +417,11 @@
 .homeRow {
   cursor: pointer;
   transition: background 0.15s ease;
+}
+
+.homeRow.disabled {
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Hover state for entire game (both rows) */
@@ -901,6 +911,11 @@
 
 .mobileGameCard:last-child {
   border-bottom: none;
+}
+
+.mobileGameCard.disabled {
+  cursor: default;
+  pointer-events: none;
 }
 
 .mobileGameCard.expanded {

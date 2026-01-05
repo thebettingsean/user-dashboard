@@ -5,10 +5,8 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useUser, useClerk } from '@clerk/nextjs'
 import { useEntitlements } from '@/lib/hooks/useEntitlements'
 import { supabase } from '@/lib/supabase'
-import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight } from 'react-icons/fi'
-import { IoSparkles } from 'react-icons/io5'
+import { FiChevronLeft, FiClock, FiChevronDown, FiChevronUp, FiRefreshCw, FiChevronRight, FiInfo } from 'react-icons/fi'
 import { GiSupersonicArrow, GiCash } from 'react-icons/gi'
-import { MdLockOutline } from 'react-icons/md'
 import { 
   LineChart, 
   Line, 
@@ -285,6 +283,7 @@ export default function GameDetailPage() {
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [script, setScript] = useState<string | null>(null)
   const [scriptLoading, setScriptLoading] = useState(false)
+  const [showSignalsInfo, setShowSignalsInfo] = useState(false)
   const [scriptError, setScriptError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'script' | 'odds' | 'picks' | 'betting'>('script')
@@ -309,8 +308,7 @@ export default function GameDetailPage() {
   })
   const [countsLoading, setCountsLoading] = useState(false)
   
-  // Public Betting tab state
-  const [bettingMarketType, setBettingMarketType] = useState<'spread' | 'total' | 'ml'>('spread')
+  // Public Betting tab state - removed, showing all bet types now
   
   // Access checks
   const canViewPicks = hasPicks || hasAny
@@ -319,6 +317,24 @@ export default function GameDetailPage() {
   // Team colors for gradient
   const awayColor = gameData?.awayTeamColor || '#3b82f6'
   const homeColor = gameData?.homeTeamColor || '#6366f1'
+  
+  // Render segmented signal bar (from /public-betting)
+  const renderSegmentedBar = (value: number, type: 'public' | 'vegas' | 'whale') => {
+    const totalSegments = 20
+    const filledSegments = Math.round((value / 100) * totalSegments)
+    const barClass = type === 'public' ? styles.publicBar : type === 'vegas' ? styles.vegasBar : styles.whaleBar
+    
+    return (
+      <div className={styles.signalBarContainerV2}>
+        {Array.from({ length: totalSegments }, (_, i) => (
+          <div 
+            key={i} 
+            className={`${styles.signalBarSegment} ${i < filledSegments ? `${styles.filled} ${barClass}` : ''}`}
+          />
+        ))}
+      </div>
+    )
+  }
   
   useEffect(() => {
     async function fetchGameData() {
@@ -369,12 +385,12 @@ export default function GameDetailPage() {
     }
   }, [activeTab, gameId])
   
-  // Fetch picks when picks tab is active
+  // Fetch picks when picks tab is active (always fetch, even without access, to show blurred picks)
   useEffect(() => {
-    if (activeTab === 'picks' && gameId && canViewPicks && gameData) {
+    if (activeTab === 'picks' && gameId && gameData) {
       fetchGamePicks()
     }
-  }, [activeTab, gameId, canViewPicks])
+  }, [activeTab, gameId, gameData])
   
   // Reset expanded picks when switching away from picks tab
   useEffect(() => {
@@ -421,48 +437,120 @@ export default function GameDetailPage() {
         return
       }
 
-      // First try to match by game_id
-      let { data, error } = await supabase
+      // Get current time to filter for active picks only
+      const now = new Date()
+      const estNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+
+      // First try to match by game_id (exact match)
+      let { data: gameIdData, error: gameIdError } = await supabase
         .from('picks')
         .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
         .eq('game_id', gameId)
+        .gte('game_time', estNow.toISOString())
         .order('posted_at', { ascending: false })
 
-      if (error) {
-        console.error('Supabase error:', error)
-        throw error
+      if (gameIdError) {
+        console.error('[Game Picks] Supabase error (game_id query):', gameIdError)
       }
+      
+      console.log(`[Game Picks] Found ${(gameIdData || []).length} picks matching game_id: ${gameId}`)
 
-      // If no picks found by game_id, try matching by game time (same day)
-      if ((data || []).length === 0 && gameData.kickoff) {
+      // Also get picks for the same day/sport to match by team names or time
+      // (for picks that might have different game_id format or no game_id)
+      let timeData: any[] = []
+      if (gameData.kickoff) {
         const gameTime = new Date(gameData.kickoff)
+        // Look back 1 day and forward 1 day to catch picks that might have slightly different dates
         const startTime = new Date(gameTime)
+        startTime.setDate(startTime.getDate() - 1)
         startTime.setHours(0, 0, 0, 0)
         const endTime = new Date(gameTime)
+        endTime.setDate(endTime.getDate() + 1)
         endTime.setHours(23, 59, 59, 999)
 
-        const { data: timeData, error: timeError } = await supabase
+        const awayTeamName = gameData.awayTeam.toLowerCase()
+        const homeTeamName = gameData.homeTeam.toLowerCase()
+
+        // Get picks for the same day and sport (only active picks)
+        // Use the later of startTime or estNow to ensure we only get future picks
+        const minTime = startTime > estNow ? startTime : estNow
+        const { data: timeQueryData, error: timeError } = await supabase
           .from('picks')
           .select('*, bettors(name, record, win_streak, profile_initials, profile_image)')
-          .gte('game_time', startTime.toISOString())
+          .eq('sport', gameData.sport.toUpperCase())
+          .gte('game_time', minTime.toISOString())
           .lte('game_time', endTime.toISOString())
           .order('posted_at', { ascending: false })
 
-        if (!timeError && timeData && timeData.length > 0) {
-          const awayTeamName = gameData.awayTeam.toLowerCase()
-          const homeTeamName = gameData.homeTeam.toLowerCase()
+        if (!timeError && timeQueryData && timeQueryData.length > 0) {
+          console.log(`[Game Picks] Found ${timeQueryData.length} picks for ${gameData.sport} on ${gameData.kickoff}`)
+          console.log(`[Game Picks] Looking for teams: ${awayTeamName} / ${homeTeamName}`)
+          console.log(`[Game Picks] Game kickoff: ${gameData.kickoff}`)
+          console.log(`[Game Picks] Sample picks (first 5):`, timeQueryData.slice(0, 5).map((p: any) => ({
+            bet_title: p.bet_title,
+            game_title: p.game_title,
+            game_id: p.game_id || 'null',
+            game_time: p.game_time,
+            sport: p.sport
+          })))
           
-          const filtered = timeData.filter((p: any) => {
+          // Filter picks that match this game by team names in game_title
+          // Match by game_title containing both teams (most reliable indicator)
+          timeData = timeQueryData.filter((p: any) => {
+            // Skip picks that already matched by exact game_id (to avoid duplicates)
+            if (p.game_id && p.game_id.trim() !== '' && p.game_id === gameId) {
+              return false
+            }
+            
+            // Match by game_title containing both team names
             const title = (p.game_title || p.bet_title || '').toLowerCase()
-            const hasAwayTeam = awayTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
-            const hasHomeTeam = homeTeamName.split(' ').some(word => title.includes(word.toLowerCase()))
-            return hasAwayTeam || hasHomeTeam
+            
+            // Check if game_title contains both team names (most reliable - this is what worked before)
+            const awayWords = awayTeamName.split(' ').filter(word => word.length > 2)
+            const homeWords = homeTeamName.split(' ').filter(word => word.length > 2)
+            const hasAwayInTitle = awayWords.some(word => title.includes(word.toLowerCase()))
+            const hasHomeInTitle = homeWords.some(word => title.includes(word.toLowerCase()))
+            
+            // If BOTH teams are mentioned in game_title, it's for this game
+            if (hasAwayInTitle && hasHomeInTitle) {
+              console.log(`[Game Picks] Match by both teams in game_title: "${p.bet_title}" | game_title: "${p.game_title}"`)
+              return true
+            }
+            
+            // Also check matchup pattern (e.g., "Seahawks @ 49ers")
+            const matchupPattern = `${awayTeamName.toLowerCase()} @ ${homeTeamName.toLowerCase()}`
+            const reverseMatchupPattern = `${homeTeamName.toLowerCase()} @ ${awayTeamName.toLowerCase()}`
+            const hasMatchup = title.includes(matchupPattern) || title.includes(reverseMatchupPattern)
+            
+            if (hasMatchup) {
+              console.log(`[Game Picks] Match by matchup pattern: "${p.bet_title}" | game_title: "${p.game_title}"`)
+              return true
+            }
+            
+            // If no match, return false
+            const matches = false
+            
+            // No match found
+            console.log(`[Game Picks] No match for: "${p.bet_title}" | game_title: "${p.game_title || 'none'}" | game_id: ${p.game_id || 'null'}`)
+            return false
           })
           
-          // Only use filtered results - don't fall back to all picks
-          data = filtered
+          console.log(`[Game Picks] After filtering: ${timeData.length} picks match team names`)
         }
       }
+
+      // Combine results from both queries and deduplicate by pick id
+      const allPicks = [...(gameIdData || []), ...timeData]
+      const uniquePicks = Array.from(
+        new Map(allPicks.map((p: any) => [p.id, p])).values()
+      )
+      
+      console.log(`[Game Picks] Total unique picks found: ${uniquePicks.length}`)
+      if (uniquePicks.length > 0) {
+        console.log('[Game Picks] Pick titles:', uniquePicks.map((p: any) => p.bet_title))
+      }
+      
+      const data = uniquePicks
 
       const picks = (data || []).map((p: any) => ({
         ...p,
@@ -540,8 +628,12 @@ export default function GameDetailPage() {
     setScriptError(null)
     
     try {
+      // Extract Odds API ID (same as initial fetch) - e.g., nfl_abc123 -> abc123
+      const oddsApiId = gameId.includes('_') ? gameId.split('_')[1] : gameId
+      console.log(`[Generate Script] Using oddsApiId: ${oddsApiId}`)
+      
       const res = await fetch(
-        `/api/game-scripts/free?gameId=${gameId}&sport=${gameData.sport}&homeTeam=${encodeURIComponent(gameData.homeTeam)}&awayTeam=${encodeURIComponent(gameData.awayTeam)}&gameTime=${encodeURIComponent(gameData.kickoff)}&force=true`
+        `/api/game-scripts/free?gameId=${oddsApiId}&sport=${gameData.sport.toUpperCase()}&homeTeam=${encodeURIComponent(gameData.homeTeam)}&awayTeam=${encodeURIComponent(gameData.awayTeam)}&gameTime=${encodeURIComponent(gameData.kickoff)}&force=true`
       )
       const data = await res.json()
       
@@ -677,6 +769,7 @@ export default function GameDetailPage() {
         {/* ========== SCRIPT TAB ========== */}
         {activeTab === 'script' && (
           <div className={styles.section}>
+            <div className={styles.scriptStrengthBadge}>Basic</div>
             <h2 className={styles.sectionTitle}>Game Preview & Analysis</h2>
             <p className={styles.sectionSubtitle}>Claude powered breakdown based on detailed team stats & rankings.</p>
             
@@ -696,20 +789,14 @@ export default function GameDetailPage() {
               </div>
             ) : (
               <div className={styles.generatePrompt}>
-                <div className={styles.generateIcon}>
-                  <IoSparkles size={32} />
-                </div>
-                <h3>Generate Game Analysis</h3>
-                <p>Get an AI-powered preview of this matchup based on team statistics and rankings.</p>
-                {scriptError && <p className={styles.scriptError}>{scriptError}</p>}
                 <button 
                   className={styles.generateBtn}
                   onClick={generateScript}
                   disabled={scriptLoading}
                 >
-                  <IoSparkles size={16} />
                   Generate Free Analysis
                 </button>
+                {scriptError && <p className={styles.scriptError}>{scriptError}</p>}
               </div>
             )}
           </div>
@@ -722,7 +809,12 @@ export default function GameDetailPage() {
             <p className={styles.sectionSubtitle}>Current odds & history</p>
             
             {/* Line History Section */}
-            <div className={styles.lineHistorySection}>
+            <div 
+              className={styles.lineHistorySection}
+              style={{
+                background: `linear-gradient(90deg, ${awayColor}15 0%, transparent 50%, ${homeColor}15 100%)`
+              }}
+            >
               <div className={styles.lineHistoryHeader}>
                 <h3 className={styles.subsectionTitle}>Line History</h3>
                 <div className={styles.marketTabs}>
@@ -823,8 +915,8 @@ export default function GameDetailPage() {
                       </>
                     ) : (
                       <>
-                        <span>{gameData.awayTeamAbbr || 'Away'}</span>
-                        <span>{gameData.homeTeamAbbr || 'Home'}</span>
+                    <span>{gameData.awayTeamAbbr || 'Away'}</span>
+                    <span>{gameData.homeTeamAbbr || 'Home'}</span>
                       </>
                     )}
                   </div>
@@ -848,182 +940,165 @@ export default function GameDetailPage() {
         {/* ========== PICKS TAB ========== */}
         {activeTab === 'picks' && (
           <div className={styles.section}>
-            {canViewPicks ? (
-              <>
                 <h2 className={styles.sectionTitle}>Analyst Picks</h2>
                 <p className={styles.sectionSubtitle}>Expert picks for this game</p>
                 
-                {picksLoading ? (
-                  <div className={styles.loading}>Loading picks...</div>
-                ) : gamePicks.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <p>No picks available for this game yet.</p>
-                    {!countsLoading && (
-                      <>
-                        {pickCounts.sportPickCount > 0 ? (
-                          <>
-                            <p className={styles.pickCountSubtext}>
-                              However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
-                              <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
-                              active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
-                            </p>
-                            <button 
-                              className={styles.viewPicksBtn}
-                              onClick={() => router.push('/picks')}
-                              style={{ marginTop: '12px' }}
-                            >
-                              View Now
-                            </button>
-                          </>
-                        ) : pickCounts.allPicksCount > 0 ? (
-                          <>
-                            <p className={styles.pickCountSubtext}>
-                              However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
-                              <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
-                              active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                            </p>
-                            <button 
-                              className={styles.viewPicksBtn}
-                              onClick={() => router.push('/picks')}
-                              style={{ marginTop: '12px' }}
-                            >
-                              View Now
-                            </button>
-                          </>
-                        ) : null}
-                      </>
-                    )}
+            {/* Show locked message below title if user doesn't have access */}
+            {(!isSignedIn || !canViewPicks) && gamePicks.length > 0 && (
+              <div className={styles.lockedSection} style={{ marginTop: '16px', marginBottom: '24px' }}>
+                <div className={styles.lockedSectionContent}>
+                  <GiSupersonicArrow className={styles.lockedIcon} />
+                  <div className={styles.lockedText}>
+                    <span className={styles.lockedTitle}>Unlock Analyst Picks</span>
+                    <span className={styles.lockedDesc}>Get daily expert picks and analysis for this game and all upcoming matchups</span>
                   </div>
-                ) : (
-                  <div className={styles.picksList}>
-                    {gamePicks.map((pick: any) => {
-                      const isExpanded = expandedPicks.has(pick.id)
-                      return (
-                        <div 
-                          key={pick.id} 
-                          className={styles.pickCard}
-                        >
-                          <div 
-                            className={styles.pickCardMain}
-                            onClick={() => togglePickAnalysis(pick.id)}
-                          >
-                            <div className={styles.pickBodyLeft}>
-                              {/* Line 1: Bet Title with Logo */}
-                              <div className={styles.pickTitleRow}>
-                                <div style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}>
-                                  <BetLogo pick={pick} gameData={gameData} />
-                                </div>
-                                <span 
-                                  className={styles.pickTitle}
-                                  style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                                >
-                                  {pick.bet_title || 'Pick'}
-                                </span>
-                              </div>
-                              
-                              {/* Line 2: Game Time Only */}
-                              <div 
-                                className={styles.pickGameTime}
-                                style={(!isSignedIn || !canViewPicks) ? { filter: 'blur(6px)', userSelect: 'none' } : {}}
-                              >
-                                {new Date(pick.game_time).toLocaleString('en-US', {
-                                  timeZone: 'America/New_York',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })}
-                              </div>
-                            </div>
-                            <div className={styles.pickRightSide}>
-                              <div className={styles.pickHeaderMeta}>
-                                {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
-                                {pick.odds} | {(pick.units_at_risk || pick.units || 0).toFixed(1)}u
-                              </div>
-                              <div className={styles.pickExpandIconWrapper}>
-                                <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
-                              </div>
-                            </div>
-                          </div>
-                          {pick.analysis && (
-                            <>
-                              {!isSignedIn || !canViewPicks ? (
-                                <div
-                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (!isSignedIn) {
-                                      openSignUp({ redirectUrl: '/subscribe/picks' })
-                                    } else if (!canViewPicks) {
-                                      router.push('/subscribe/picks')
-                                    }
-                                  }}
-                                  style={{ 
-                                    filter: 'blur(6px)', 
-                                    userSelect: 'none',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  {/* Capper Info Section */}
-                                  <div className={styles.pickCapperInfo}>
-                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
-                                  </div>
-                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
-                                </div>
-                              ) : (
-                                <div
-                                  className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {/* Capper Info Section */}
-                                  <div className={styles.pickCapperInfo}>
-                                    <span className={styles.pickCapperName}>{pick.bettor_name}</span>
-                                  </div>
-                                  <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className={styles.lockedSection}>
-                <div className={styles.lockedIcon}>
-                  <MdLockOutline size={32} />
                 </div>
-                <h3 className={styles.lockedTitle}>Unlock Analyst Picks</h3>
-                <p className={styles.lockedDesc}>
-                  Get daily expert picks and analysis for this game and all upcoming matchups.
-                </p>
-                {!countsLoading && (
-                  <div className={styles.pickCountInfo}>
-                    {pickCounts.gamePickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.gamePickCount}</span> active pick{pickCounts.gamePickCount !== 1 ? 's' : ''} for this game
-                      </p>
-                    ) : pickCounts.sportPickCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.sportPickCount}</span> active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
-                      </p>
-                    ) : pickCounts.allPicksCount > 0 ? (
-                      <p className={styles.pickCountText}>
-                        <span className={styles.pickCountNumber}>{pickCounts.allPicksCount}</span> active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
-                      </p>
-                    ) : null}
-                  </div>
-                )}
-                <button 
+                  <button 
                   className={styles.subscribeBtn}
                   onClick={() => handleSubscribe('picks')}
-                >
-                  <GiSupersonicArrow size={16} />
+                  >
+                  <GiSupersonicArrow size={14} />
                   Access Analyst Picks
+                  </button>
+                </div>
+            )}
+            
+            {picksLoading ? (
+              <div className={styles.loading}>Loading picks...</div>
+            ) : gamePicks.length === 0 ? (
+              <div className={styles.emptyState}>
+                <p>No picks available for this game yet.</p>
+                {!countsLoading && (
+                  <>
+                    {pickCounts.sportPickCount > 0 ? (
+                      <>
+                        <p className={styles.pickCountSubtext}>
+                          However, there {pickCounts.sportPickCount === 1 ? 'is' : 'are'}{' '}
+                          <span className={styles.pickCountHighlight}>{pickCounts.sportPickCount}</span>{' '}
+                          active {gameData?.sport.toUpperCase()} pick{pickCounts.sportPickCount !== 1 ? 's' : ''}
+                        </p>
+                  <button 
+                          className={styles.viewPicksBtn}
+                    onClick={() => router.push('/picks')}
+                          style={{ marginTop: '12px' }}
+                  >
+                          View Now
+                  </button>
+                      </>
+                    ) : pickCounts.allPicksCount > 0 ? (
+                      <>
+                        <p className={styles.pickCountSubtext}>
+                          However, there {pickCounts.allPicksCount === 1 ? 'is' : 'are'}{' '}
+                          <span className={styles.pickCountHighlight}>{pickCounts.allPicksCount}</span>{' '}
+                          active pick{pickCounts.allPicksCount !== 1 ? 's' : ''} across all sports
+                </p>
+                <button 
+                          className={styles.viewPicksBtn}
+                          onClick={() => router.push('/picks')}
+                          style={{ marginTop: '12px' }}
+                >
+                          View Now
                 </button>
+                      </>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className={`${styles.picksList} ${(!isSignedIn || !canViewPicks) ? styles.blurredContent : ''}`}>
+                {gamePicks.map((pick: any) => {
+                  const isExpanded = expandedPicks.has(pick.id)
+                  return (
+                    <div 
+                      key={pick.id} 
+                      className={styles.pickCard}
+                    >
+                      <div 
+                        className={styles.pickCardMain}
+                        onClick={() => {
+                          if (canViewPicks) {
+                            togglePickAnalysis(pick.id)
+                          } else {
+                            if (!isSignedIn) {
+                              openSignUp({ redirectUrl: '/subscribe/picks' })
+                            } else {
+                              router.push('/subscribe/picks')
+                            }
+                          }
+                        }}
+                        style={(!isSignedIn || !canViewPicks) ? { cursor: 'pointer' } : {}}
+                      >
+                        <div className={styles.pickBodyLeft}>
+                          {/* Line 1: Bet Title with Logo */}
+                          <div className={styles.pickTitleRow}>
+                            <BetLogo pick={pick} gameData={gameData} />
+                            <span className={styles.pickTitle}>
+                              {pick.bet_title || 'Pick'}
+                            </span>
+                          </div>
+                          
+                          {/* Line 2: Game Time Only */}
+                          <div className={styles.pickGameTime}>
+                            {new Date(pick.game_time).toLocaleString('en-US', {
+                              timeZone: 'America/New_York',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </div>
+                        </div>
+                        <div className={styles.pickRightSide}>
+                          <div className={styles.pickHeaderMeta}>
+                            {pick.sportsbook && <span className={styles.sportsbookDesktopOnly}>{pick.sportsbook}</span>}{' '}
+                            {pick.odds} | {(pick.units_at_risk || pick.units || 0).toFixed(1)}u
+                          </div>
+                          <div className={styles.pickExpandIconWrapper}>
+                            <FiChevronDown className={`${styles.pickExpandIcon} ${isExpanded ? styles.expanded : ''}`} />
+                          </div>
+                        </div>
+                      </div>
+                      {pick.analysis && (
+                        <>
+                          {!isSignedIn || !canViewPicks ? (
+                            <div
+                              className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (!isSignedIn) {
+                                  openSignUp({ redirectUrl: '/subscribe/picks' })
+                                } else if (!canViewPicks) {
+                                  router.push('/subscribe/picks')
+                                }
+                              }}
+                              style={{ 
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {/* Capper Info Section */}
+                              <div className={styles.pickCapperInfo}>
+                                <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                              </div>
+                              <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+                            </div>
+                          ) : (
+                            <div
+                              className={`${styles.pickAnalysisContent} ${isExpanded ? styles.expanded : ''}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Capper Info Section */}
+                              <div className={styles.pickCapperInfo}>
+                                <span className={styles.pickCapperName}>{pick.bettor_name}</span>
+                              </div>
+                              <div dangerouslySetInnerHTML={{ __html: pick.analysis }} />
+              </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1037,283 +1112,453 @@ export default function GameDetailPage() {
                 <h2 className={styles.sectionTitle}>Public Betting Data</h2>
                 <p className={styles.sectionSubtitle}>Betting splits and market indicators from 150+ sportsbooks</p>
                 
-                {/* Bet Type Filters - OUTSIDE card */}
-                <div className={styles.betTypeFilters}>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'spread' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('spread')}
-                  >
-                    Spread
-                  </button>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'total' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('total')}
-                  >
-                    O/U
-                  </button>
-                  <button
-                    className={`${styles.betTypeBtn} ${bettingMarketType === 'ml' ? styles.betTypeBtnActive : ''}`}
-                    onClick={() => setBettingMarketType('ml')}
-                  >
-                    ML
-                  </button>
-                </div>
-
-                {/* Bar Graph Card - Clean, just the graph */}
-                <div className={styles.bettingGraphCard}>
-                  {/* Bar Graph Container */}
-                  <div className={styles.barGraphSection}>
-                    <div className={styles.barGraphContainer}>
-                      {(() => {
-                        const hasData = gameData?.hasPublicBetting
-                        const awayAbbr = gameData?.awayTeamAbbr || 'AWAY'
-                        const homeAbbr = gameData?.homeTeamAbbr || 'HOME'
-                        const awayColor = gameData?.awayTeamColor || '#888888'
-                        const homeColor = gameData?.homeTeamColor || '#888888'
-
-                        // Get percentages based on bet type
-                        let awayBetPct = 50
-                        let homeBetPct = 50
-                        let awayMoneyPct = 50
-                        let homeMoneyPct = 50
-                        let labels = [awayAbbr + ' Bet%', homeAbbr + ' Bet%', awayAbbr + ' Money%', homeAbbr + ' Money%']
-
-                        if (hasData && gameData?.publicBetting) {
-                          if (bettingMarketType === 'spread') {
-                            awayBetPct = 100 - (gameData.publicBetting.spreadHomeBetPct || 50)
-                            homeBetPct = gameData.publicBetting.spreadHomeBetPct || 50
-                            awayMoneyPct = 100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)
-                            homeMoneyPct = gameData.publicBetting.spreadHomeMoneyPct || 50
-                          } else if (bettingMarketType === 'total') {
-                            awayBetPct = 100 - (gameData.publicBetting.totalOverBetPct || 50)
-                            homeBetPct = gameData.publicBetting.totalOverBetPct || 50
-                            awayMoneyPct = 100 - (gameData.publicBetting.totalOverMoneyPct || 50)
-                            homeMoneyPct = gameData.publicBetting.totalOverMoneyPct || 50
-                            labels = ['Under Bet%', 'Over Bet%', 'Under Money%', 'Over Money%']
-                          } else if (bettingMarketType === 'ml') {
-                            awayBetPct = 100 - (gameData.publicBetting.mlHomeBetPct || 50)
-                            homeBetPct = gameData.publicBetting.mlHomeBetPct || 50
-                            awayMoneyPct = 100 - (gameData.publicBetting.mlHomeMoneyPct || 50)
-                            homeMoneyPct = gameData.publicBetting.mlHomeMoneyPct || 50
-                          }
-                        }
-
-                        const bars = [
-                          { pct: awayBetPct, color: awayColor, label: labels[0] },
-                          { pct: homeBetPct, color: homeColor, label: labels[1] },
-                          { pct: awayMoneyPct, color: awayColor, label: labels[2] },
-                          { pct: homeMoneyPct, color: homeColor, label: labels[3] },
-                        ]
-
-                        return (
+                {gameData?.hasPublicBetting && gameData?.publicBetting ? (
+                  <>
+                    {/* Titles Row */}
+                    <div className={styles.publicBettingTitlesRow}>
+                      <h3 className={styles.splitsTitle}>Splits</h3>
+                      <div className={styles.signalsTitleWrapperDesktop}>
+                        <h3 className={styles.signalsTitle}>Signals</h3>
+                  <button 
+                          className={styles.signalsInfoBtn}
+                          onClick={() => setShowSignalsInfo(!showSignalsInfo)}
+                        >
+                          <FiInfo size={14} />
+                        </button>
+                        {showSignalsInfo && (
                           <>
-                            {/* Y-Axis */}
-                            <div className={styles.yAxis}>
-                              <span className={styles.yAxisLabel}>100%</span>
-                              <span className={styles.yAxisLabel}>75%</span>
-                              <span className={styles.yAxisLabel}>50%</span>
-                              <span className={styles.yAxisLabel}>25%</span>
-                              <span className={styles.yAxisLabel}>0%</span>
-                            </div>
-
-                            {/* X-Axis Line */}
-                            <div className={styles.xAxisLine} />
-
-                            {/* Bars */}
-                            <div className={styles.barsContainer}>
-                              {bars.map((bar, idx) => (
-                                <div key={idx} className={styles.barWrapper}>
-                                  {/* Percentage inside or outside based on bar height */}
-                                  {bar.pct >= 10 ? (
-                                    <div
-                                      className={styles.bar}
-                                      style={{
-                                        height: `${bar.pct}%`,
-                                        background: `linear-gradient(180deg, ${bar.color}DD 0%, ${bar.color}88 100%)`,
-                                      }}
-                                    >
-                                      <span className={styles.barPercentage}>{Math.round(bar.pct)}%</span>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <span className={styles.barPercentageOutside}>{Math.round(bar.pct)}%</span>
-                                      <div
-                                        className={styles.bar}
-                                        style={{
-                                          height: `${bar.pct}%`,
-                                          background: `linear-gradient(180deg, ${bar.color}DD 0%, ${bar.color}88 100%)`,
-                                        }}
-                                      />
-                                    </>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* X-Axis Labels */}
-                            <div className={styles.xLabelsContainer}>
-                              {labels.map((label, idx) => (
-                                <div key={idx} className={styles.xLabel}>
-                                  {label}
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* No Data Overlay */}
-                            {!hasData && (
-                              <div className={styles.noDataOverlay}>
-                                <div className={styles.noDataIcon}>
-                                  <GiCash size={40} />
-                                </div>
-                                <h3 className={styles.noDataTitle}>No data available for this game</h3>
-                                <p className={styles.noDataDesc}>
-                                  Click below to view more games with public betting data
-                                </p>
-                                <button
-                                  className={styles.noDataBtn}
-                                  onClick={() => router.push('/public-betting')}
-                                >
-                                  Go to Public Betting
-                                </button>
+                            <div className={styles.tooltipOverlay} onClick={() => setShowSignalsInfo(false)} />
+                            <div className={styles.signalsInfoTooltip}>
+                              <h4>Market Indicators</h4>
+                              <div className={styles.tooltipSection}>
+                                <strong>Public Respect</strong>
+                                <p>Majority of bets AND money backing this side, with line movement confirming the public lean.</p>
                               </div>
-                            )}
+                              <div className={styles.tooltipSection}>
+                                <strong>Vegas Backed</strong>
+                                <p>Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.</p>
+                              </div>
+                              <div className={styles.tooltipSection}>
+                                <strong>Whale Respect</strong>
+                                <p>Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.</p>
+                              </div>
+                              <p className={styles.tooltipNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</p>
+                            </div>
                           </>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Signals Section - Match /public-betting styling */}
-                {gameData?.hasPublicBetting && gameData?.signals && (() => {
-                  let homeSignals, awaySignals
-                  let homeLabel = gameData.homeTeamAbbr || 'HOME'
-                  let awayLabel = gameData.awayTeamAbbr || 'AWAY'
-
-                  if (bettingMarketType === 'spread') {
-                    homeSignals = gameData.signals.spread.home
-                    awaySignals = gameData.signals.spread.away
-                  } else if (bettingMarketType === 'total') {
-                    homeSignals = gameData.signals.total.over
-                    awaySignals = gameData.signals.total.under
-                    homeLabel = 'Over'
-                    awayLabel = 'Under'
-                  } else {
-                    homeSignals = gameData.signals.ml.home
-                    awaySignals = gameData.signals.ml.away
-                  }
-
-                  const hasHomeSignals = homeSignals.publicRespect > 0 || homeSignals.vegasBacked > 0 || homeSignals.whaleRespect > 0
-                  const hasAwaySignals = awaySignals.publicRespect > 0 || awaySignals.vegasBacked > 0 || awaySignals.whaleRespect > 0
-
-                  if (!hasHomeSignals && !hasAwaySignals) return null
-
-                  return (
-                    <div className={styles.signalsSection}>
-                      <h3 className={styles.signalsSectionTitle}>Signals</h3>
-                      <div className={styles.signalsGrid}>
-                        {/* Away/Under Signals */}
-                        {hasAwaySignals && (
-                          <div className={styles.signalCard}>
-                            <div className={styles.signalCardHeader}>
-                              {bettingMarketType !== 'total' && gameData.awayTeamLogo && (
-                                <img
-                                  src={gameData.awayTeamLogo}
-                                  alt={awayLabel}
-                                  className={styles.signalCardTeamLogo}
-                                />
-                              )}
-                              <span>{awayLabel}</span>
-                            </div>
-                            <div className={styles.signalIndicators}>
-                              {awaySignals.publicRespect > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Public Respect</span>
-                                  <span className={`${styles.signalValue} ${styles.publicColor}`}>
-                                    {awaySignals.publicRespect}%
-                                  </span>
-                                </div>
-                              )}
-                              {awaySignals.vegasBacked > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Vegas Backed</span>
-                                  <span className={`${styles.signalValue} ${styles.vegasColor}`}>
-                                    {awaySignals.vegasBacked}%
-                                  </span>
-                                </div>
-                              )}
-                              {awaySignals.whaleRespect > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Whale Respect</span>
-                                  <span className={`${styles.signalValue} ${styles.whaleColor}`}>
-                                    {awaySignals.whaleRespect}%
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Home/Over Signals */}
-                        {hasHomeSignals && (
-                          <div className={styles.signalCard}>
-                            <div className={styles.signalCardHeader}>
-                              {bettingMarketType !== 'total' && gameData.homeTeamLogo && (
-                                <img
-                                  src={gameData.homeTeamLogo}
-                                  alt={homeLabel}
-                                  className={styles.signalCardTeamLogo}
-                                />
-                              )}
-                              <span>{homeLabel}</span>
-                            </div>
-                            <div className={styles.signalIndicators}>
-                              {homeSignals.publicRespect > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Public Respect</span>
-                                  <span className={`${styles.signalValue} ${styles.publicColor}`}>
-                                    {homeSignals.publicRespect}%
-                                  </span>
-                                </div>
-                              )}
-                              {homeSignals.vegasBacked > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Vegas Backed</span>
-                                  <span className={`${styles.signalValue} ${styles.vegasColor}`}>
-                                    {homeSignals.vegasBacked}%
-                                  </span>
-                                </div>
-                              )}
-                              {homeSignals.whaleRespect > 0 && (
-                                <div className={styles.signalRow}>
-                                  <span className={styles.signalLabel}>Whale Respect</span>
-                                  <span className={`${styles.signalValue} ${styles.whaleColor}`}>
-                                    {homeSignals.whaleRespect}%
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
                         )}
                       </div>
                     </div>
-                  )
-                })()}
+
+                    {/* Container for Splits and Signals side by side */}
+                    <div className={styles.publicBettingContainer}>
+                      {/* Left side - Splits (70%) */}
+                      <div className={styles.splitsContainer}>
+                        {/* Splits Card */}
+                        <div 
+                          className={styles.splitsCard}
+                        >
+                      {/* Spread Section */}
+                      <div className={styles.splitSection}>
+                        <h4 className={styles.splitSectionTitle}>Spread</h4>
+                        
+                        {/* Bet % Bar */}
+                        <div className={styles.splitRowWrapper}>
+                          <div className={styles.splitRowLabel}>Bet %</div>
+                          <div className={styles.splitRow}>
+                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                            <div className={styles.splitBarContainer}>
+                              <div
+                                className={styles.splitBarLeft}
+                                style={{
+                                  width: `${100 - (gameData.publicBetting.spreadHomeBetPct || 50)}%`,
+                                  background: `${gameData.awayTeamColor}AA`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(100 - (gameData.publicBetting.spreadHomeBetPct || 50))}%
+                                </span>
+                              </div>
+                              <div
+                                className={styles.splitBarRight}
+                                style={{
+                                  width: `${gameData.publicBetting.spreadHomeBetPct || 50}%`,
+                                  background: `${gameData.homeTeamColor}AA`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(gameData.publicBetting.spreadHomeBetPct || 50)}%
+                                </span>
+                              </div>
+                            </div>
+                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
+                          </div>
+                        </div>
+
+                        {/* Money % Bar */}
+                        <div className={styles.splitRowWrapper}>
+                          <div className={styles.splitRowLabel}>Money %</div>
+                          <div className={styles.splitRow}>
+                            <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                            <div className={styles.splitBarContainer}>
+                              <div
+                                className={styles.splitBarLeft}
+                                style={{
+                                  width: `${100 - (gameData.publicBetting.spreadHomeMoneyPct || 50)}%`,
+                                  background: `${gameData.awayTeamColor}AA`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(100 - (gameData.publicBetting.spreadHomeMoneyPct || 50))}%
+                                </span>
+                              </div>
+                              <div
+                                className={styles.splitBarRight}
+                                style={{
+                                  width: `${gameData.publicBetting.spreadHomeMoneyPct || 50}%`,
+                                  background: `${gameData.homeTeamColor}AA`,
+                                }}
+                              >
+                                <span className={styles.splitBarText}>
+                                  {Math.round(gameData.publicBetting.spreadHomeMoneyPct || 50)}%
+                                </span>
+                              </div>
+                            </div>
+                            <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Moneyline Section */}
+                      {gameData.publicBetting.mlHomeBetPct && (
+                        <div className={styles.splitSection}>
+                          <h4 className={styles.splitSectionTitle}>Moneyline</h4>
+                          
+                          {/* Bet % Bar */}
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Bet %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.mlHomeBetPct || 50)}%`,
+                                    background: `${gameData.awayTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.mlHomeBetPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.mlHomeBetPct || 50}%`,
+                                    background: `${gameData.homeTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.mlHomeBetPct || 50)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
+                            </div>
+                          </div>
+
+                          {/* Money % Bar */}
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Money %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>{gameData.awayTeamAbbr}</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.mlHomeMoneyPct || 50)}%`,
+                                    background: `${gameData.awayTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.mlHomeMoneyPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.mlHomeMoneyPct || 50}%`,
+                                    background: `${gameData.homeTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.mlHomeMoneyPct || 50)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={styles.splitLabel}>{gameData.homeTeamAbbr}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Total Section */}
+                      {gameData.publicBetting.totalOverBetPct && (
+                        <div className={styles.splitSection}>
+                          <h4 className={styles.splitSectionTitle}>Total</h4>
+                          
+                          {/* Bet % Bar */}
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Bet %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>UNDER</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.totalOverBetPct || 50)}%`,
+                                    background: `${gameData.awayTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.totalOverBetPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.totalOverBetPct || 50}%`,
+                                    background: `${gameData.homeTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.totalOverBetPct || 50)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={styles.splitLabel}>OVER</span>
+                            </div>
+                          </div>
+
+                          {/* Money % Bar */}
+                          <div className={styles.splitRowWrapper}>
+                            <div className={styles.splitRowLabel}>Money %</div>
+                            <div className={styles.splitRow}>
+                              <span className={styles.splitLabel}>UNDER</span>
+                              <div className={styles.splitBarContainer}>
+                                <div
+                                  className={styles.splitBarLeft}
+                                  style={{
+                                    width: `${100 - (gameData.publicBetting.totalOverMoneyPct || 50)}%`,
+                                    background: `${gameData.awayTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(100 - (gameData.publicBetting.totalOverMoneyPct || 50))}%
+                                  </span>
+                                </div>
+                                <div
+                                  className={styles.splitBarRight}
+                                  style={{
+                                    width: `${gameData.publicBetting.totalOverMoneyPct || 50}%`,
+                                    background: `${gameData.homeTeamColor}AA`,
+                                  }}
+                                >
+                                  <span className={styles.splitBarText}>
+                                    {Math.round(gameData.publicBetting.totalOverMoneyPct || 50)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={styles.splitLabel}>OVER</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                        </div>
+                      </div>
+
+                      {/* Right side - Signals (30%) */}
+                      <div className={styles.signalsContainer}>
+                        {/* Signals Title - Mobile only */}
+                        <div className={styles.signalsTitleWrapperMobile}>
+                          <h3 className={styles.signalsTitle}>Signals</h3>
+                          <button 
+                            className={styles.signalsInfoBtn}
+                            onClick={() => setShowSignalsInfo(!showSignalsInfo)}
+                          >
+                            <FiInfo size={14} />
+                          </button>
+                          {showSignalsInfo && (
+                            <>
+                              <div className={styles.tooltipOverlay} onClick={() => setShowSignalsInfo(false)} />
+                              <div className={styles.signalsInfoTooltip}>
+                                <h4>Market Indicators</h4>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Public Respect</strong>
+                                  <p>Majority of bets AND money backing this side, with line movement confirming the public lean.</p>
+                                </div>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Vegas Backed</strong>
+                                  <p>Minority of bets AND money, yet line moves in their favor—classic sharp/professional action.</p>
+                                </div>
+                                <div className={styles.tooltipSection}>
+                                  <strong>Whale Respect</strong>
+                                  <p>Money % significantly exceeds bet count, indicating large individual wagers with supporting movement.</p>
+                                </div>
+                                <p className={styles.tooltipNote}>Signal strength (0-100%) reflects betting split imbalance combined with line and odds movement.</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        {/* Signals Section - Generic, showing all signals */}
+                        {gameData.signals && (() => {
+                      // Collect all signals across all bet types
+                      const allSignals: Array<{ team: string; betType: string; logo: string | null; signals: any }> = []
+                      
+                      // Spread signals
+                      const spreadHomeSignals = gameData.signals.spread.home
+                      const spreadAwaySignals = gameData.signals.spread.away
+                      if (spreadHomeSignals.publicRespect > 0 || spreadHomeSignals.vegasBacked > 0 || spreadHomeSignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: gameData.homeTeamAbbr,
+                          betType: 'Spread',
+                          logo: gameData.homeTeamLogo,
+                          signals: spreadHomeSignals,
+                        })
+                      }
+                      if (spreadAwaySignals.publicRespect > 0 || spreadAwaySignals.vegasBacked > 0 || spreadAwaySignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: gameData.awayTeamAbbr,
+                          betType: 'Spread',
+                          logo: gameData.awayTeamLogo,
+                          signals: spreadAwaySignals,
+                        })
+                      }
+
+                      // ML signals
+                      const mlHomeSignals = gameData.signals.ml.home
+                      const mlAwaySignals = gameData.signals.ml.away
+                      if (mlHomeSignals.publicRespect > 0 || mlHomeSignals.vegasBacked > 0 || mlHomeSignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: gameData.homeTeamAbbr,
+                          betType: 'ML',
+                          logo: gameData.homeTeamLogo,
+                          signals: mlHomeSignals,
+                        })
+                      }
+                      if (mlAwaySignals.publicRespect > 0 || mlAwaySignals.vegasBacked > 0 || mlAwaySignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: gameData.awayTeamAbbr,
+                          betType: 'ML',
+                          logo: gameData.awayTeamLogo,
+                          signals: mlAwaySignals,
+                        })
+                      }
+
+                      // Total signals
+                      const totalOverSignals = gameData.signals.total.over
+                      const totalUnderSignals = gameData.signals.total.under
+                      if (totalOverSignals.publicRespect > 0 || totalOverSignals.vegasBacked > 0 || totalOverSignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: 'OVER',
+                          betType: 'Total',
+                          logo: null,
+                          signals: totalOverSignals,
+                        })
+                      }
+                      if (totalUnderSignals.publicRespect > 0 || totalUnderSignals.vegasBacked > 0 || totalUnderSignals.whaleRespect > 0) {
+                        allSignals.push({
+                          team: 'UNDER',
+                          betType: 'Total',
+                          logo: null,
+                          signals: totalUnderSignals,
+                        })
+                      }
+
+                      if (allSignals.length === 0) return null
+
+                      return (
+                        <>
+                          {/* Signals Section */}
+                          <div 
+                            className={styles.signalsSection}
+                          >
+                            <div className={styles.signalsGrid}>
+                              {allSignals.map((item, idx) => (
+                                <div key={idx} className={styles.signalCard}>
+                                  <div className={styles.signalCardHeader}>
+                                    {item.logo && (
+                                      <img
+                                        src={item.logo}
+                                        alt={item.team}
+                                        className={styles.signalCardTeamLogo}
+                                      />
+                                    )}
+                                    <span>{item.team} {item.betType}</span>
+                                  </div>
+                                  <div className={styles.signalBarsV2}>
+                                    {item.signals.publicRespect > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Public Respect</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activePublic}`}>{item.signals.publicRespect}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.publicRespect, 'public')}
+                                      </div>
+                                    )}
+                                    {item.signals.vegasBacked > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Vegas Backed</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activeVegas}`}>{item.signals.vegasBacked}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.vegasBacked, 'vegas')}
+                                      </div>
+                                    )}
+                                    {item.signals.whaleRespect > 0 && (
+                                      <div className={styles.signalRowV2}>
+                                        <div className={styles.signalRowHeaderV2}>
+                                          <span className={styles.signalLabelV2}>Whale Respect</span>
+                                          <span className={`${styles.signalValueV2} ${styles.activeWhale}`}>{item.signals.whaleRespect}%</span>
+                                        </div>
+                                        {renderSegmentedBar(item.signals.whaleRespect, 'whale')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )
+                    })()}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.noDataCard}>
+                    <GiCash size={40} style={{ color: 'rgba(255, 255, 255, 0.2)' }} />
+                    <h3>No data available for this game</h3>
+                    <p>Click below to view more games with public betting data</p>
+                    <button onClick={() => router.push('/public-betting')}>
+                    Go to Public Betting
+                  </button>
+                </div>
+                )}
               </>
             ) : (
               <div className={styles.lockedSection}>
-                <div className={styles.lockedIcon}>
-                  <MdLockOutline size={32} />
+                <div className={styles.lockedSectionContent}>
+                  <GiSupersonicArrow className={styles.lockedIcon} />
+                  <div className={styles.lockedText}>
+                    <span className={styles.lockedTitle}>Unlock Public Betting Data</span>
+                    <span className={styles.lockedDesc}>Access betting splits, line movement, and market indicators from 150+ sportsbooks</span>
                 </div>
-                <h3 className={styles.lockedTitle}>Unlock Public Betting Data</h3>
-                <p className={styles.lockedDesc}>
-                  Access betting splits, line movement, and market indicators from 150+ sportsbooks.
-                </p>
+                </div>
                 <button 
                   className={styles.subscribeBtn}
                   onClick={() => handleSubscribe('publicBetting')}
                 >
-                  <GiCash size={16} />
+                  <GiSupersonicArrow size={14} />
                   Access Public Betting Data
                 </button>
               </div>
@@ -1325,3 +1570,4 @@ export default function GameDetailPage() {
     </div>
   )
 }
+

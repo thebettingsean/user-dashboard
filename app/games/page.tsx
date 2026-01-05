@@ -31,7 +31,23 @@ interface Game {
     totalOverBetPct: number | null
     totalOverMoneyPct: number | null
   } | null
+  signals?: {
+    spread: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    total: {
+      over: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      under: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+    ml: {
+      home: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+      away: { publicRespect: number; vegasBacked: number; whaleRespect: number }
+    }
+  }
   hasPublicBetting: boolean
+  pickCount?: number
+  signalCount?: number
 }
 
 const SPORTS = ['nfl', 'nba', 'nhl', 'cfb', 'cbb']
@@ -66,8 +82,11 @@ function formatGameTime(dateString: string): string {
   if (gameDate === todayEST) return `Today ${timeStr}`
   if (gameDate === tomorrowEST) return `Tomorrow ${timeStr}`
   
-  // For other dates, show full date
-  const date = new Date(dateString + ' EST')
+  // For other dates, parse the YYYY-MM-DD part and format it
+  const [datePart] = dateString.split(' ')
+  const [year, month, day] = datePart.split('-')
+  const date = new Date(`${year}-${month}-${day}T00:00:00`)
+  
   return date.toLocaleDateString('en-US', { 
     weekday: 'short',
     month: 'short', 
@@ -162,9 +181,45 @@ function FeaturedGameCard({ game, onClick }: { game: Game; onClick: () => void }
   )
 }
 
+// Count signals for a game - uses actual signal data from API
+function countSignals(game: Game): number {
+  if (!game.signals) return 0
+  
+  let signalCount = 0
+  const s = game.signals
+  
+  // Count all non-zero signals across all bet types
+  // Spread signals
+  if (s.spread.home.publicRespect > 0) signalCount++
+  if (s.spread.home.vegasBacked > 0) signalCount++
+  if (s.spread.home.whaleRespect > 0) signalCount++
+  if (s.spread.away.publicRespect > 0) signalCount++
+  if (s.spread.away.vegasBacked > 0) signalCount++
+  if (s.spread.away.whaleRespect > 0) signalCount++
+  
+  // ML signals
+  if (s.ml.home.publicRespect > 0) signalCount++
+  if (s.ml.home.vegasBacked > 0) signalCount++
+  if (s.ml.home.whaleRespect > 0) signalCount++
+  if (s.ml.away.publicRespect > 0) signalCount++
+  if (s.ml.away.vegasBacked > 0) signalCount++
+  if (s.ml.away.whaleRespect > 0) signalCount++
+  
+  // Total signals
+  if (s.total.over.publicRespect > 0) signalCount++
+  if (s.total.over.vegasBacked > 0) signalCount++
+  if (s.total.over.whaleRespect > 0) signalCount++
+  if (s.total.under.publicRespect > 0) signalCount++
+  if (s.total.under.vegasBacked > 0) signalCount++
+  if (s.total.under.whaleRespect > 0) signalCount++
+  
+  return signalCount
+}
+
 // Regular Game Card - Compact grid item
 function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
   const teamGradient = getTeamGradient(game.awayTeamColor, game.homeTeamColor)
+  const signals = countSignals(game)
   
   return (
     <div 
@@ -196,6 +251,15 @@ function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
             <span className={styles.cardSpread}>{formatSpread(game.spread.homeLine)}</span>
           )}
         </div>
+      </div>
+      
+      {/* Picks, Signals, Script info */}
+      <div className={styles.cardInfo}>
+        <span className={styles.cardInfoItem}>Picks: {game.pickCount || 0}</span>
+        <span className={styles.cardInfoDot}>•</span>
+        <span className={styles.cardInfoItem}>Signals: {signals}</span>
+        <span className={styles.cardInfoDot}>•</span>
+        <span className={styles.cardInfoItem}>Script: <span className={styles.cardInfoBadge}>Basic</span></span>
       </div>
       
       <div className={styles.cardFooter}>
@@ -234,9 +298,51 @@ export default function GamesPage() {
             const sortedGames = data.games.sort(
               (a: Game, b: Game) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime()
             )
-            setGames(sortedGames)
+            
+            // Fetch pick counts for all games in parallel
+            const gamesWithCounts = await Promise.all(
+              sortedGames.map(async (game: Game) => {
+                try {
+                  // Pass team names to API for matching
+                  const params = new URLSearchParams({
+                    gameId: game.id,
+                    sport: game.sport,
+                    awayTeam: game.awayTeam,
+                    homeTeam: game.homeTeam
+                  })
+                  const pickRes = await fetch(`/api/picks/active-counts?${params.toString()}`)
+                  if (pickRes.ok) {
+                    const pickData = await pickRes.json()
+                    console.log(`[Games] Pick count for ${game.id} (${game.awayTeam} @ ${game.homeTeam}):`, pickData.gamePickCount)
+                    return {
+                      ...game,
+                      pickCount: pickData.success ? (pickData.gamePickCount || 0) : 0
+                    }
+                  }
+                  return { ...game, pickCount: 0 }
+                } catch (err) {
+                  console.error(`[Games] Error fetching picks for ${game.id}:`, err)
+                  return { ...game, pickCount: 0 }
+                }
+              })
+            )
+            
+            // Log sample game data for debugging
+            if (gamesWithCounts.length > 0) {
+              const sample = gamesWithCounts[0]
+              console.log('[Games] Sample game data:', {
+                id: sample.id,
+                teams: `${sample.awayTeam} @ ${sample.homeTeam}`,
+                pickCount: sample.pickCount,
+                hasSignals: !!sample.signals,
+                signalCount: countSignals(sample),
+                signalsData: sample.signals
+              })
+            }
+            
+            setGames(gamesWithCounts)
             // Cache the results
-            setGamesCache(prev => ({ ...prev, [selectedSport]: sortedGames }))
+            setGamesCache(prev => ({ ...prev, [selectedSport]: gamesWithCounts }))
           } else {
             setGames([])
           }

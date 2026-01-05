@@ -232,6 +232,82 @@ export async function GET(request: Request) {
       
       if (SPORTSDATA_API_KEY && sportConfig.sport === 'nfl') {
         try {
+          // CRITICAL: NFL playoffs need different handling
+          // Regular season: Week 1-18
+          // Playoffs: WildCard, Divisional, Conference, SuperBowl (Jan-Feb)
+          
+          // First, populate nfl_games with ANY missing playoff games
+          // Check current date - if we're in Jan-Feb 2026, fetch 2025 playoff games
+          const now = new Date()
+          const currentMonth = now.getMonth() + 1 // 1-12
+          const isPlayoffSeason = currentMonth >= 1 && currentMonth <= 2 // Jan-Feb
+          
+          if (isPlayoffSeason) {
+            console.log('[NFL] Playoff season detected - checking for playoff games')
+            
+            try {
+              // Fetch playoff games from SportsDataIO for season 2025POST
+              const playoffGamesUrl = `https://api.sportsdata.io/v3/nfl/scores/json/Scores/2025POST?key=${SPORTSDATA_API_KEY}`
+              const playoffResp = await fetch(playoffGamesUrl)
+              
+              if (playoffResp.ok) {
+                const playoffGames = await playoffResp.json()
+                console.log(`[NFL] Found ${playoffGames.length} playoff games from SportsDataIO`)
+                
+                // Insert any playoff games that don't exist in nfl_games yet
+                let playoffGamesInserted = 0
+                for (const game of playoffGames) {
+                  try {
+                    // Check if game exists
+                    const exists = await clickhouseQuery<{cnt: number}>(`
+                      SELECT COUNT(*) as cnt FROM nfl_games WHERE game_id = ${game.ScoreId}
+                    `)
+                    
+                    if ((exists.data?.[0]?.cnt || 0) === 0) {
+                      // Get team IDs
+                      const homeTeamId = await clickhouseQuery<{team_id: number}>(`
+                        SELECT team_id FROM teams WHERE abbreviation = '${game.HomeTeam}' AND sport = 'nfl' LIMIT 1
+                      `)
+                      const awayTeamId = await clickhouseQuery<{team_id: number}>(`
+                        SELECT team_id FROM teams WHERE abbreviation = '${game.AwayTeam}' AND sport = 'nfl' LIMIT 1
+                      `)
+                      
+                      if (homeTeamId.data?.[0] && awayTeamId.data?.[0]) {
+                        const gameTime = new Date(game.DateTime).toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
+                        const gameDate = game.Day
+                        
+                        await clickhouseCommand(`
+                          INSERT INTO nfl_games (
+                            game_id, sportsdata_io_score_id, season, week, game_date, game_time,
+                            home_team_id, away_team_id, home_score, away_score,
+                            is_playoff, venue, is_neutral_site
+                          ) VALUES (
+                            ${game.ScoreId}, ${game.ScoreId}, ${game.Season}, ${game.Week},
+                            '${gameDate}', '${gameTime}',
+                            ${homeTeamId.data[0].team_id}, ${awayTeamId.data[0].team_id},
+                            ${game.HomeScore || 0}, ${game.AwayScore || 0},
+                            1, '${(game.StadiumDetails?.Name || '').replace(/'/g, "''")}',
+                            ${game.NeutralVenue ? 1 : 0}
+                          )
+                        `)
+                        
+                        playoffGamesInserted++
+                      }
+                    }
+                  } catch (gameError: any) {
+                    console.error(`[NFL] Error inserting playoff game ${game.ScoreId}:`, gameError.message)
+                  }
+                }
+                
+                if (playoffGamesInserted > 0) {
+                  console.log(`[NFL] Inserted ${playoffGamesInserted} new playoff games into nfl_games`)
+                }
+              }
+            } catch (playoffError: any) {
+              console.error('[NFL] Error fetching playoff games:', playoffError.message)
+            }
+          }
+          
           // Get ScoreIDs from nfl_games table in ClickHouse
           const scoreIdsQuery = `
             SELECT 
@@ -558,6 +634,20 @@ export async function GET(request: Request) {
         try {
           if (game.bookmakers.length === 0) continue
           
+          // ====================================================================
+          // CRITICAL: Skip games that have already started
+          // We should ONLY update lines for games that haven't kicked off yet
+          // Once a game starts, we want to preserve the final pre-game lines
+          // ====================================================================
+          const kickoffTime = new Date(game.commence_time)
+          const now = new Date()
+          
+          if (kickoffTime < now) {
+            // Game has already started - skip it entirely
+            // Don't update lines, signals, or anything else
+            continue
+          }
+          
           // Calculate consensus from ALL bookmakers
           const { consensus, allBooks, bookCount } = calculateConsensus(game.bookmakers, game.home_team)
           
@@ -845,34 +935,76 @@ export async function GET(request: Request) {
               `)
               const gfs = firstSeenData.data?.[0]
               
-              // Use game_first_seen for true opening, fallback to games table, then current
-              const spreadOpen = isOpening ? consensus.spread 
-                : (gfs?.opening_spread ?? existingGame.data?.[0]?.spread_open ?? consensus.spread)
-              const totalOpen = isOpening ? consensus.total 
-                : (gfs?.opening_total ?? existingGame.data?.[0]?.total_open ?? consensus.total)
-              const mlHomeOpen = isOpening ? consensus.mlHome 
-                : (gfs?.opening_ml_home ?? existingGame.data?.[0]?.home_ml_open ?? consensus.mlHome)
-              const mlAwayOpen = isOpening ? consensus.mlAway 
-                : (gfs?.opening_ml_away ?? existingGame.data?.[0]?.away_ml_open ?? consensus.mlAway)
+              // CRITICAL: If game_first_seen doesn't have opening lines (or they are 0),
+              // use the FIRST *NON-ZERO* snapshot values as the opening lines.
+              // Some books/snapshots can record 0 placeholders early; we must ignore those.
+              const openingFromSnapshots = await clickhouseQuery<any>(`
+                SELECT
+                  argMinIf(spread, snapshot_time, spread != 0) AS opening_spread,
+                  argMinIf(total, snapshot_time, total != 0) AS opening_total,
+                  argMinIf(ml_home, snapshot_time, ml_home != 0) AS opening_ml_home,
+                  argMinIf(ml_away, snapshot_time, ml_away != 0) AS opening_ml_away,
+                  argMinIf(spread_juice_home, snapshot_time, spread != 0) AS opening_spread_juice_home,
+                  argMinIf(spread_juice_away, snapshot_time, spread != 0) AS opening_spread_juice_away,
+                  argMinIf(total_juice_over, snapshot_time, total != 0) AS opening_total_juice_over,
+                  argMinIf(total_juice_under, snapshot_time, total != 0) AS opening_total_juice_under
+                FROM live_odds_snapshots
+                WHERE odds_api_game_id = '${game.id}'
+              `)
+              const snapOpen = openingFromSnapshots.data?.[0]
               
-              // Get opening juice from game_first_seen first, then games table
+              // Use game_first_seen for true opening, fallback to earliest snapshot, then games table, then current
+              const spreadOpen = isOpening ? consensus.spread 
+                : (gfs?.opening_spread && gfs.opening_spread !== 0 
+                    ? gfs.opening_spread 
+                    : snapOpen?.opening_spread && snapOpen.opening_spread !== 0
+                      ? snapOpen.opening_spread
+                      : existingGame.data?.[0]?.spread_open ?? consensus.spread)
+              const totalOpen = isOpening ? consensus.total 
+                : (gfs?.opening_total && gfs.opening_total !== 0
+                    ? gfs.opening_total
+                    : snapOpen?.opening_total && snapOpen.opening_total !== 0
+                      ? snapOpen.opening_total
+                      : existingGame.data?.[0]?.total_open ?? consensus.total)
+              const mlHomeOpen = isOpening ? consensus.mlHome 
+                : (gfs?.opening_ml_home && gfs.opening_ml_home !== 0
+                    ? gfs.opening_ml_home
+                    : snapOpen?.opening_ml_home && snapOpen.opening_ml_home !== 0
+                      ? snapOpen.opening_ml_home
+                      : existingGame.data?.[0]?.home_ml_open ?? consensus.mlHome)
+              const mlAwayOpen = isOpening ? consensus.mlAway 
+                : (gfs?.opening_ml_away && gfs.opening_ml_away !== 0
+                    ? gfs.opening_ml_away
+                    : snapOpen?.opening_ml_away && snapOpen.opening_ml_away !== 0
+                      ? snapOpen.opening_ml_away
+                      : existingGame.data?.[0]?.away_ml_open ?? consensus.mlAway)
+              
+              // Get opening juice from game_first_seen first, then earliest snapshot, then games table
               // For existing games, game_first_seen should have the TRUE opening juice
               const spreadJuiceHomeOpen = isOpening ? consensus.spreadJuiceHome 
                 : (gfs?.opening_home_spread_juice && gfs.opening_home_spread_juice !== -110 
                     ? gfs.opening_home_spread_juice 
-                    : consensus.spreadJuiceHome)
+                    : snapOpen?.opening_spread_juice_home && snapOpen.opening_spread_juice_home !== -110
+                      ? snapOpen.opening_spread_juice_home
+                      : consensus.spreadJuiceHome)
               const spreadJuiceAwayOpen = isOpening ? consensus.spreadJuiceAway 
                 : (gfs?.opening_away_spread_juice && gfs.opening_away_spread_juice !== -110 
                     ? gfs.opening_away_spread_juice 
-                    : consensus.spreadJuiceAway)
+                    : snapOpen?.opening_spread_juice_away && snapOpen.opening_spread_juice_away !== -110
+                      ? snapOpen.opening_spread_juice_away
+                      : consensus.spreadJuiceAway)
               const overJuiceOpen = isOpening ? consensus.overJuice 
                 : (gfs?.opening_over_juice && gfs.opening_over_juice !== -110 
                     ? gfs.opening_over_juice 
-                    : consensus.overJuice)
+                    : snapOpen?.opening_total_juice_over && snapOpen.opening_total_juice_over !== -110
+                      ? snapOpen.opening_total_juice_over
+                      : consensus.overJuice)
               const underJuiceOpen = isOpening ? consensus.underJuice 
                 : (gfs?.opening_under_juice && gfs.opening_under_juice !== -110 
                     ? gfs.opening_under_juice 
-                    : consensus.underJuice)
+                    : snapOpen?.opening_total_juice_under && snapOpen.opening_total_juice_under !== -110
+                      ? snapOpen.opening_total_juice_under
+                      : consensus.underJuice)
               
               // CRITICAL: Preserve existing splits if we have real data (not 50/50)
               // Check: 1) New data from SportsDataIO, 2) games table, 3) live_odds_snapshots

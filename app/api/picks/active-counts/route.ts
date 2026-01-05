@@ -20,30 +20,81 @@ const SPORT_MAP: Record<string, string[]> = {
  * Query params:
  * - gameId: Optional. The game ID to check for game-specific picks
  * - sport: Optional. The sport to check for sport-specific picks
+ * - awayTeam: Optional. Away team name for team-based matching
+ * - homeTeam: Optional. Home team name for team-based matching
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const gameId = searchParams.get('gameId')
   const sport = searchParams.get('sport')?.toLowerCase()
+  const awayTeam = searchParams.get('awayTeam')
+  const homeTeam = searchParams.get('homeTeam')
   
   try {
     // Get current time in EST
     const now = new Date()
     const estNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }))
     
-    // Count game-specific picks (if gameId provided)
+    // Count game-specific picks (if gameId or teams provided)
     let gamePickCount = 0
-    if (gameId) {
-      const { count, error } = await supabase
-        .from('picks')
-        .select('*', { count: 'exact', head: true })
-        .eq('game_id', gameId)
-        .gte('game_time', estNow.toISOString())
+    if (gameId || (awayTeam && homeTeam && sport)) {
+      // First try by game_id
+      if (gameId) {
+        const { count, error } = await supabase
+          .from('picks')
+          .select('*', { count: 'exact', head: true })
+          .eq('game_id', gameId)
+          .gte('game_time', estNow.toISOString())
+        
+        if (!error && count && count > 0) {
+          gamePickCount = count
+        }
+      }
       
-      if (error) {
-        console.error('[Active Counts] Error counting game picks:', error)
-      } else {
-        gamePickCount = count || 0
+      // If no picks found by gameId, try matching by team names
+      if (gamePickCount === 0 && awayTeam && homeTeam && sport) {
+        const sportCodes = SPORT_MAP[sport] || [sport.toUpperCase()]
+        
+        // Fetch all picks for the sport
+        const { data: sportPicks, error } = await supabase
+          .from('picks')
+          .select('*')
+          .in('sport', sportCodes)
+          .gte('game_time', estNow.toISOString())
+        
+        if (!error && sportPicks) {
+          // Extract team mascots (last word) for better matching
+          // "Arizona Cardinals" -> "cardinals", "Los Angeles Rams" -> "rams"
+          const awayWords = awayTeam.toLowerCase().trim().split(/\s+/)
+          const homeWords = homeTeam.toLowerCase().trim().split(/\s+/)
+          const awayMascot = awayWords[awayWords.length - 1]
+          const homeMascot = homeWords[homeWords.length - 1]
+          
+          console.log(`[Active Counts] Matching teams: ${awayTeam} (${awayMascot}) @ ${homeTeam} (${homeMascot})`)
+          
+          const matchingPicks = sportPicks.filter(pick => {
+            if (!pick.game_title) return false
+            const titleLower = pick.game_title.toLowerCase()
+            
+            // Try multiple matching strategies:
+            // 1. Full team names
+            if (titleLower.includes(awayTeam.toLowerCase()) && titleLower.includes(homeTeam.toLowerCase())) {
+              return true
+            }
+            
+            // 2. Team mascots (most common format in picks: "Cardinals @ Rams")
+            if (titleLower.includes(awayMascot) && titleLower.includes(homeMascot)) {
+              return true
+            }
+            
+            return false
+          })
+          
+          gamePickCount = matchingPicks.length
+          if (gamePickCount > 0) {
+            console.log(`[Active Counts] Found ${gamePickCount} picks for ${awayTeam} @ ${homeTeam}`)
+          }
+        }
       }
     }
     

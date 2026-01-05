@@ -730,6 +730,13 @@ export default function PublicBettingPage() {
     }
   }, [expandedGame, graphTimeFilter])
 
+  // Close expanded games when user logs out or loses access
+  useEffect(() => {
+    if ((!isSignedIn || !hasAccess || isLoadingEntitlements) && expandedGame) {
+      setExpandedGame(null)
+    }
+  }, [isSignedIn, hasAccess, isLoadingEntitlements, expandedGame])
+
   const fetchTimelineData = async (gameId: string) => {
     setTimelineLoading(true)
     try {
@@ -1594,8 +1601,12 @@ export default function PublicBettingPage() {
                     return (
                       <React.Fragment key={game.id}>
                         <tr 
-                          className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''}`}
-                          onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                          className={`${styles.awayRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''} ${(!isSignedIn || !hasAccess || isLoadingEntitlements) ? styles.disabled : ''}`}
+                          onClick={() => {
+                            if (isSignedIn && hasAccess && !isLoadingEntitlements) {
+                              setExpandedGame(isExpanded ? null : game.id)
+                            }
+                          }}
                           onMouseEnter={() => setHoveredGame(game.id)}
                           onMouseLeave={() => setHoveredGame(null)}
                         >
@@ -1653,8 +1664,12 @@ export default function PublicBettingPage() {
                           </td>
                         </tr>
                         <tr 
-                          className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''}`}
-                          onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                          className={`${styles.homeRow} ${isExpanded ? styles.expanded : ''} ${isHovered ? styles.hovered : ''} ${(!isSignedIn || !hasAccess || isLoadingEntitlements) ? styles.disabled : ''}`}
+                          onClick={() => {
+                            if (isSignedIn && hasAccess && !isLoadingEntitlements) {
+                              setExpandedGame(isExpanded ? null : game.id)
+                            }
+                          }}
                           onMouseEnter={() => setHoveredGame(game.id)}
                           onMouseLeave={() => setHoveredGame(null)}
                         >
@@ -1986,7 +2001,7 @@ export default function PublicBettingPage() {
                                           style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
                                         >
                                           <div className={styles.collapsibleHeader}>
-                                            <span>History</span>
+                                          <span>History</span>
                                           </div>
                                           <div className={styles.historyListV2}>
                                             {[...timelineData].reverse().sort((a, b) => {
@@ -2010,7 +2025,7 @@ export default function PublicBettingPage() {
                                               )
                                             })}
                                           </div>
-                                        </div>
+                                      </div>
 
                                         {/* Books */}
                                         <div 
@@ -2018,7 +2033,7 @@ export default function PublicBettingPage() {
                                           style={{ '--team-color': getTeamColor(game, false) } as React.CSSProperties}
                                         >
                                           <div className={styles.collapsibleHeader}>
-                                            <span>All Books</span>
+                                          <span>All Books</span>
                                           </div>
                                           <div className={styles.booksListV2}>
                                             {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
@@ -2243,7 +2258,7 @@ export default function PublicBettingPage() {
                                           style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
                                         >
                                           <div className={styles.collapsibleHeader}>
-                                            <span>History</span>
+                                          <span>History</span>
                                           </div>
                                           <div className={styles.historyListV2}>
                                             {[...timelineData].reverse().sort((a, b) => {
@@ -2267,7 +2282,7 @@ export default function PublicBettingPage() {
                                               )
                                             })}
                                           </div>
-                                        </div>
+                                      </div>
 
                                         {/* Books */}
                                         <div 
@@ -2275,7 +2290,7 @@ export default function PublicBettingPage() {
                                           style={{ '--team-color': getTeamColor(game, true) } as React.CSSProperties}
                                         >
                                           <div className={styles.collapsibleHeader}>
-                                            <span>All Books</span>
+                                          <span>All Books</span>
                                           </div>
                                           <div className={styles.booksListV2}>
                                             {getSportsbookOddsForMarket(dropdownMarketType).map((bookOdds, idx) => {
@@ -2356,8 +2371,12 @@ export default function PublicBettingPage() {
                   return (
                     <div 
                       key={game.id} 
-                      className={`${styles.mobileGameCard} ${isExpanded ? styles.expanded : ''}`}
-                      onClick={() => setExpandedGame(isExpanded ? null : game.id)}
+                      className={`${styles.mobileGameCard} ${isExpanded ? styles.expanded : ''} ${(!isSignedIn || !hasAccess || isLoadingEntitlements) ? styles.disabled : ''}`}
+                      onClick={() => {
+                        if (isSignedIn && hasAccess && !isLoadingEntitlements) {
+                          setExpandedGame(isExpanded ? null : game.id)
+                        }
+                      }}
                     >
                       <div className={styles.mobileRow}>
                         <div className={styles.mobileTeam}>

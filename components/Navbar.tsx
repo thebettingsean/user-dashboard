@@ -27,6 +27,7 @@ export default function Navbar() {
     { href: '/games', label: 'Games' },
     { href: '/odds', label: 'Odds' },
     { href: '/builder', label: 'Builder' },
+    { href: '/nfl-playoffs', label: 'Playoff Bracket' },
   ]
 
   // Find active index
@@ -114,22 +115,23 @@ export default function Navbar() {
                 const isActive = index === activeIndex
                 const isLeftAdjacent = index === activeIndex - 1
                 const isRightAdjacent = index === activeIndex + 1
+                const hasNewTag = item.href === '/nfl-playoffs'
                 
                 return (
                   <Link 
                     key={item.href} 
                     href={item.href} 
-                    style={linkStyle}
+                    style={{
+                      ...linkStyle,
+                      paddingRight: hasNewTag ? '10px' : linkStyle.paddingRight, // Reduce right padding when tag is present
+                    }}
                     data-active={isActive ? 'true' : 'false'}
                     data-adjacent-left={isLeftAdjacent ? 'true' : 'false'}
                     data-adjacent-right={isRightAdjacent ? 'true' : 'false'}
                   >
                     {item.label}
-                    {item.href === '/builder' && (
-                      <>
-                        {' '}
-                        <span style={styles.newTag}>NEW</span>
-                      </>
+                    {hasNewTag && (
+                      <span style={styles.newTag}>NEW</span>
                     )}
               </Link>
                 )
@@ -295,7 +297,11 @@ export default function Navbar() {
             </Link>
             
             <Link href="/builder" style={styles.mobileLink} onClick={closeMobileMenu}>
-              Builder{' '}
+              Builder
+            </Link>
+            
+            <Link href="/nfl-playoffs" style={styles.mobileLink} onClick={closeMobileMenu}>
+              Playoff Bracket{' '}
               <span style={styles.newTag}>NEW</span>
             </Link>
 
@@ -379,6 +385,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     position: 'relative',
+    whiteSpace: 'nowrap',
   },
   
   navLinkActive: {
@@ -688,9 +695,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   
   newTag: {
     display: 'inline-block',
-    marginLeft: '2px',
-    padding: '1px 2px',
-    fontSize: '0.4rem',
+    marginLeft: '4px',
+    padding: '1px 4px',
+    fontSize: '0.5rem',
     fontWeight: '600',
     color: '#696969',
     textTransform: 'uppercase',
@@ -700,5 +707,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     verticalAlign: 'top',
     transform: 'translateY(-2px)',
     pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   },
 }
