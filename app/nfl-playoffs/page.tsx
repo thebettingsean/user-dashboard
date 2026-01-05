@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './nfl-playoffs.module.css'
 
@@ -257,7 +257,7 @@ function populateTeams(selections: BracketSelections): BracketSelections {
   return updated
 }
 
-export default function NFLPlayoffsPage() {
+function NFLPlayoffsPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   // Initialize with populated teams so bracket shows immediately
@@ -973,6 +973,18 @@ export default function NFLPlayoffsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NFLPlayoffsPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading...</div>
+      </div>
+    }>
+      <NFLPlayoffsPageContent />
+    </Suspense>
   )
 }
 
