@@ -505,6 +505,146 @@
   margin-bottom: 0;
 }
 
+.challengeSection {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
+}
+
+.challengeTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.challengeDescription {
+  font-size: 13px;
+  color: #696969;
+  text-align: center;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.scoreDisplay {
+  margin-bottom: 24px;
+}
+
+.scoreCurrent {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: #696969;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.scoreValue {
+  font-size: 48px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.scoreMax {
+  font-size: 14px;
+  color: #696969;
+}
+
+.scoreProgress {
+  width: 100%;
+  height: 8px;
+  background: rgba(41, 47, 63, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scoreProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8) 0%, rgba(59, 130, 246, 0.6) 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.scoringRules {
+  border-top: 1px solid rgba(50, 51, 53, 0.5);
+  padding-top: 20px;
+}
+
+.scoringRulesTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0 0 16px 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scoringRulesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.scoringRuleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(41, 47, 63, 0.3);
+  border: 1px solid rgba(50, 51, 53, 0.3);
+  border-radius: 8px;
+}
+
+.scoringRuleRound {
+  font-size: 13px;
+  color: #B0B0B0;
+  font-weight: 500;
+}
+
+.scoringRulePoints {
+  font-size: 13px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.scoringRuleTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.scoringRuleTotal .scoringRuleRound {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.scoringRuleTotal .scoringRulePoints {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .bracket {
@@ -546,14 +686,14 @@
 .mobileRound {
   width: 100%;
   padding: 16px 8px;
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(30px);
   }
   to {
     opacity: 1;

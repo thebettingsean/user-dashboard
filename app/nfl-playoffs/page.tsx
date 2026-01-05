@@ -275,6 +275,7 @@ function NFLPlayoffsPageContent() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
+  const manualNavigationRef = useRef(false)
 
   // Fetch team logos
   useEffect(() => {
@@ -391,7 +392,7 @@ function NFLPlayoffsPageContent() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Check if a round is complete and auto-advance
+  // Check if a round is complete and auto-advance (only forward, not backward)
   useEffect(() => {
     if (!isMobile) return
 
@@ -402,6 +403,19 @@ function NFLPlayoffsPageContent() {
       { key: 'superbowl', games: ['sb'] },
     ]
 
+    // Find the highest completed round
+    let highestCompleteRound = -1
+    for (let i = 0; i < rounds.length; i++) {
+      const round = rounds[i]
+      const isComplete = round.games.every(gameKey => {
+        const game = selections[gameKey]
+        return game?.selected !== undefined && (game?.top || game?.bottom)
+      })
+      if (isComplete) {
+        highestCompleteRound = i
+      }
+    }
+
     const currentRound = rounds[currentRoundIndex]
     if (!currentRound) return
 
@@ -411,14 +425,36 @@ function NFLPlayoffsPageContent() {
       return game?.selected !== undefined && (game?.top || game?.bottom)
     })
 
-    // Auto-advance to next round if current is complete and not on last round
-    if (isRoundComplete && currentRoundIndex < rounds.length - 1) {
+    // Only auto-advance if:
+    // 1. Current round is complete
+    // 2. We're on the highest completed round (not a previous one)
+    // 3. We're not on the last round
+    // 4. User hasn't manually navigated
+    if (isRoundComplete && 
+        currentRoundIndex === highestCompleteRound &&
+        currentRoundIndex < rounds.length - 1 &&
+        !manualNavigationRef.current) {
       const timer = setTimeout(() => {
-        setCurrentRoundIndex(prev => Math.min(prev + 1, rounds.length - 1))
-      }, 500) // Small delay for smooth transition
+        // Double-check that user hasn't navigated away
+        if (!manualNavigationRef.current) {
+          setCurrentRoundIndex(prev => Math.min(prev + 1, rounds.length - 1))
+        }
+      }, 800) // Increased delay for smoother transition
       return () => clearTimeout(timer)
     }
   }, [selections, currentRoundIndex, isMobile])
+
+  // Reset manual navigation flag after a short delay
+  useEffect(() => {
+    if (!isMobile) return
+    
+    if (manualNavigationRef.current) {
+      const timer = setTimeout(() => {
+        manualNavigationRef.current = false
+      }, 1000) // Reset flag after 1 second
+      return () => clearTimeout(timer)
+    }
+  }, [currentRoundIndex, isMobile])
 
   // Initialize from URL serial
   useEffect(() => {
@@ -547,6 +583,63 @@ function NFLPlayoffsPageContent() {
     alert('Share URL copied to clipboard!')
   }
 
+  // Calculate bracket challenge score
+  const calculateScore = (): { current: number; max: number; breakdown: { round: string; points: number; maxPoints: number }[] } => {
+    const scoring = {
+      wildcard: 10,
+      divisional: 20,
+      conference: 40,
+      superbowl: 80,
+    }
+
+    const wildcardGames: GameKey[] = ['afc_wc_1', 'afc_wc_2', 'afc_wc_3', 'nfc_wc_1', 'nfc_wc_2', 'nfc_wc_3']
+    const divisionalGames: GameKey[] = ['afc_div_1', 'afc_div_2', 'nfc_div_1', 'nfc_div_2']
+    const conferenceGames: GameKey[] = ['afc_conf', 'nfc_conf']
+    const superbowlGames: GameKey[] = ['sb']
+
+    const countSelected = (games: GameKey[]): number => {
+      return games.filter(gameKey => {
+        const game = selections[gameKey]
+        return game?.selected !== undefined && (game?.top || game?.bottom)
+      }).length
+    }
+
+    const wildcardSelected = countSelected(wildcardGames)
+    const divisionalSelected = countSelected(divisionalGames)
+    const conferenceSelected = countSelected(conferenceGames)
+    const superbowlSelected = countSelected(superbowlGames)
+
+    const breakdown = [
+      {
+        round: 'Wild Card',
+        points: wildcardSelected * scoring.wildcard,
+        maxPoints: wildcardGames.length * scoring.wildcard,
+      },
+      {
+        round: 'Divisional',
+        points: divisionalSelected * scoring.divisional,
+        maxPoints: divisionalGames.length * scoring.divisional,
+      },
+      {
+        round: 'Conference Championship',
+        points: conferenceSelected * scoring.conference,
+        maxPoints: conferenceGames.length * scoring.conference,
+      },
+      {
+        round: 'Super Bowl',
+        points: superbowlSelected * scoring.superbowl,
+        maxPoints: superbowlGames.length * scoring.superbowl,
+      },
+    ]
+
+    const current = breakdown.reduce((sum, item) => sum + item.points, 0)
+    const max = breakdown.reduce((sum, item) => sum + item.maxPoints, 0)
+
+    return { current, max, breakdown }
+  }
+
+  const scoreData = calculateScore()
+
   // Swipe handlers for mobile carousel
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
@@ -563,6 +656,7 @@ function NFLPlayoffsPageContent() {
     const minSwipeDistance = 50
 
     if (Math.abs(distance) > minSwipeDistance) {
+      manualNavigationRef.current = true // Mark as manual navigation
       if (distance > 0) {
         // Swipe left - next round
         setCurrentRoundIndex(prev => Math.min(prev + 1, 3))
@@ -938,7 +1032,10 @@ function NFLPlayoffsPageContent() {
                 <button
                   key={index}
                   className={`${styles.mobileCarouselIndicator} ${currentRoundIndex === index ? styles.mobileCarouselIndicatorActive : ''}`}
-                  onClick={() => setCurrentRoundIndex(index)}
+                  onClick={() => {
+                    manualNavigationRef.current = true // Mark as manual navigation
+                    setCurrentRoundIndex(index)
+                  }}
                   aria-label={`Round ${index + 1}`}
                 />
               ))}
@@ -970,6 +1067,45 @@ function NFLPlayoffsPageContent() {
             className={styles.shareInput}
           />
           <button onClick={copyShareUrl} className={styles.copyButton}>Copy</button>
+        </div>
+      </div>
+
+      <div className={styles.challengeSection}>
+        <h2 className={styles.challengeTitle}>Bracket Challenge</h2>
+        <p className={styles.challengeDescription}>
+          Track your picks and see how you score! Follow along as the playoffs progress.
+        </p>
+        
+        <div className={styles.scoreDisplay}>
+          <div className={styles.scoreCurrent}>
+            <div className={styles.scoreLabel}>Your Score</div>
+            <div className={styles.scoreValue}>{scoreData.current}</div>
+            <div className={styles.scoreMax}>/ {scoreData.max} points</div>
+          </div>
+          <div className={styles.scoreProgress}>
+            <div 
+              className={styles.scoreProgressBar}
+              style={{ width: `${(scoreData.current / scoreData.max) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div className={styles.scoringRules}>
+          <h3 className={styles.scoringRulesTitle}>Scoring Rules</h3>
+          <div className={styles.scoringRulesList}>
+            {scoreData.breakdown.map((item, index) => (
+              <div key={index} className={styles.scoringRuleItem}>
+                <div className={styles.scoringRuleRound}>{item.round}:</div>
+                <div className={styles.scoringRulePoints}>
+                  {item.points} / {item.maxPoints} pts
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className={styles.scoringRuleTotal}>
+            <div className={styles.scoringRuleRound}>Perfect Bracket:</div>
+            <div className={styles.scoringRulePoints}>{scoreData.max} points</div>
+          </div>
         </div>
       </div>
     </div>
