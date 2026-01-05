@@ -82,8 +82,11 @@ function formatGameTime(dateString: string): string {
   if (gameDate === todayEST) return `Today ${timeStr}`
   if (gameDate === tomorrowEST) return `Tomorrow ${timeStr}`
   
-  // For other dates, show full date
-  const date = new Date(dateString + ' EST')
+  // For other dates, parse the YYYY-MM-DD part and format it
+  const [datePart] = dateString.split(' ')
+  const [year, month, day] = datePart.split('-')
+  const date = new Date(`${year}-${month}-${day}T00:00:00`)
+  
   return date.toLocaleDateString('en-US', { 
     weekday: 'short',
     month: 'short', 
