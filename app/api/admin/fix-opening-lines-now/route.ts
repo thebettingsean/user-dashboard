@@ -108,21 +108,61 @@ export async function GET(request: Request) {
           })
         }
         
-        // Update the game
+        // Update the game by INSERTing a new row (ReplacingMergeTree will replace old)
         if (!dryRun) {
+          // First, get the full current game data
+          const fullGame = await clickhouseQuery<any>(`
+            SELECT * FROM games FINAL WHERE game_id = '${game.game_id}' LIMIT 1
+          `)
+          
+          if (!fullGame.data || fullGame.data.length === 0) {
+            results.gamesSkipped++
+            results.errors.push(`${game.game_id}: Game not found in database`)
+            continue
+          }
+          
+          const currentGame = fullGame.data[0]
+          
+          // Insert new row with updated opening lines
           await clickhouseCommand(`
-            ALTER TABLE games
-            UPDATE 
-              spread_open = ${snapshot.first_spread},
-              total_open = ${snapshot.first_total},
-              home_ml_open = ${snapshot.first_ml_home || 0},
-              away_ml_open = ${snapshot.first_ml_away || 0},
-              opening_home_spread_juice = ${snapshot.first_juice_home || -110},
-              opening_away_spread_juice = ${snapshot.first_juice_away || -110},
-              opening_over_juice = ${snapshot.first_juice_over || -110},
-              opening_under_juice = ${snapshot.first_juice_under || -110},
-              updated_at = now()
-            WHERE game_id = '${game.game_id}'
+            INSERT INTO games (
+              game_id, sport, game_time, home_team_id, away_team_id,
+              spread_open, spread_close, total_open, total_close,
+              home_ml_open, away_ml_open, home_ml_close, away_ml_close,
+              home_spread_juice, away_spread_juice, over_juice, under_juice,
+              opening_home_spread_juice, opening_away_spread_juice, opening_over_juice, opening_under_juice,
+              public_spread_home_bet_pct, public_spread_home_money_pct,
+              public_ml_home_bet_pct, public_ml_home_money_pct,
+              public_total_over_bet_pct, public_total_over_money_pct,
+              spread_home_public_respect, spread_home_vegas_backed, spread_home_whale_respect,
+              spread_away_public_respect, spread_away_vegas_backed, spread_away_whale_respect,
+              total_over_public_respect, total_over_vegas_backed, total_over_whale_respect,
+              total_under_public_respect, total_under_vegas_backed, total_under_whale_respect,
+              ml_home_public_respect, ml_home_vegas_backed, ml_home_whale_respect,
+              ml_away_public_respect, ml_away_vegas_backed, ml_away_whale_respect,
+              status, sportsdata_io_score_id, updated_at
+            ) VALUES (
+              '${currentGame.game_id}', '${currentGame.sport}', '${currentGame.game_time}', 
+              ${currentGame.home_team_id}, ${currentGame.away_team_id},
+              ${snapshot.first_spread}, ${currentGame.spread_close}, 
+              ${snapshot.first_total}, ${currentGame.total_close},
+              ${snapshot.first_ml_home || 0}, ${snapshot.first_ml_away || 0}, 
+              ${currentGame.home_ml_close}, ${currentGame.away_ml_close},
+              ${currentGame.home_spread_juice}, ${currentGame.away_spread_juice}, 
+              ${currentGame.over_juice}, ${currentGame.under_juice},
+              ${snapshot.first_juice_home || -110}, ${snapshot.first_juice_away || -110}, 
+              ${snapshot.first_juice_over || -110}, ${snapshot.first_juice_under || -110},
+              ${currentGame.public_spread_home_bet_pct}, ${currentGame.public_spread_home_money_pct},
+              ${currentGame.public_ml_home_bet_pct}, ${currentGame.public_ml_home_money_pct},
+              ${currentGame.public_total_over_bet_pct}, ${currentGame.public_total_over_money_pct},
+              ${currentGame.spread_home_public_respect}, ${currentGame.spread_home_vegas_backed}, ${currentGame.spread_home_whale_respect},
+              ${currentGame.spread_away_public_respect}, ${currentGame.spread_away_vegas_backed}, ${currentGame.spread_away_whale_respect},
+              ${currentGame.total_over_public_respect}, ${currentGame.total_over_vegas_backed}, ${currentGame.total_over_whale_respect},
+              ${currentGame.total_under_public_respect}, ${currentGame.total_under_vegas_backed}, ${currentGame.total_under_whale_respect},
+              ${currentGame.ml_home_public_respect}, ${currentGame.ml_home_vegas_backed}, ${currentGame.ml_home_whale_respect},
+              ${currentGame.ml_away_public_respect}, ${currentGame.ml_away_vegas_backed}, ${currentGame.ml_away_whale_respect},
+              '${currentGame.status}', ${currentGame.sportsdata_io_score_id}, now()
+            )
           `)
         }
         
