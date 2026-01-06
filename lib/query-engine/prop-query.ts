@@ -1111,27 +1111,17 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
     JOIN (
-      SELECT 
+      SELECT DISTINCT
         ${sport === 'nfl' 
-          ? `player_name, game_time, prop_type, 
-             argMax(line, snapshot_time) as line,
-             argMax(bookmaker, snapshot_time) as bookmaker,
-             argMax(over_odds, snapshot_time) as over_odds,
-             argMax(under_odds, snapshot_time) as under_odds`
-          : `espn_game_id, player_name, prop_type,
-             argMax(line, snapshot_time) as line,
-             argMax(bookmaker, snapshot_time) as bookmaker,
-             argMax(over_odds, snapshot_time) as over_odds,
-             argMax(under_odds, snapshot_time) as under_odds`}
+          ? `player_name, game_time, prop_type, line, bookmaker, over_odds, under_odds`
+          : `espn_game_id, player_name, prop_type, line, bookmaker, over_odds, under_odds`}
       FROM ${sport}_prop_lines
-      WHERE ${sport === 'nfl' ? '1=1' : `espn_game_id > 0 AND prop_type = '${propType}'`}
-      ${sport === 'nfl' && propType ? `AND prop_type = '${propType}'` : ''}
-      GROUP BY ${sport === 'nfl' 
-        ? `player_name, game_time, prop_type` 
-        : `espn_game_id, player_name, prop_type`}
+      WHERE ${sport === 'nfl' ? '1=1' : `espn_game_id > 0`}
+        ${propType ? `AND prop_type = '${propType}'` : ''}
+      ${sport === 'nba' ? `GROUP BY espn_game_id, player_name, prop_type, line, bookmaker, over_odds, under_odds` : ''}
     ) pl ON ${sport === 'nfl' 
       ? `p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time) AND pl.prop_type = '${propType}'`
-      : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', ''))`}
+      : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.prop_type = '${propType}'`}
     ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
