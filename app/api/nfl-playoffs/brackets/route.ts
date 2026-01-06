@@ -155,7 +155,15 @@ export async function POST(request: NextRequest) {
 
       if (error || !bracket) {
         console.error('Error creating bracket:', error)
-        return NextResponse.json({ error: 'Failed to create bracket' }, { status: 500 })
+        // Provide more detailed error message
+        const errorMessage = error?.message || 'Unknown error'
+        const errorCode = error?.code || 'UNKNOWN'
+        console.error('Detailed error:', { errorMessage, errorCode, error })
+        return NextResponse.json({ 
+          error: 'Failed to create bracket', 
+          details: errorMessage,
+          code: errorCode
+        }, { status: 500 })
       }
 
       return NextResponse.json({ bracket, message: 'Bracket submitted successfully' })

@@ -397,11 +397,15 @@ function SubmitPageContent() {
         router.push(`/nfl-playoffs/group/${groupId}`)
       } else {
         const error = await response.json()
-        alert(`Error: ${error.error}`)
+        const errorMessage = error.details 
+          ? `${error.error}: ${error.details}` 
+          : error.error || 'Unknown error'
+        console.error('Bracket submission error:', error)
+        alert(`Error: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Error submitting bracket:', error)
-      alert('Failed to submit bracket')
+      alert('Failed to submit bracket. Please check the console for details.')
     } finally {
       setSubmitting(false)
     }
@@ -623,7 +627,7 @@ function TeamSlot({
 
   return (
     <div
-      className={`${styles.teamSlot} ${hasTeam ? styles.teamSelected : ''} ${isChampion ? styles.championSlot : ''} ${isSelected ? styles.teamSelected : ''}`}
+      className={`${styles.teamSlot} ${hasTeam ? styles.teamSelected : ''} ${isChampion ? styles.championSlot : ''} ${isSelected ? styles.teamSelected : ''} ${isSelected ? styles.teamActuallySelected : ''}`}
       onClick={onClick}
       title={teamSlug || ''}
     >
