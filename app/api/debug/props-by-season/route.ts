@@ -18,23 +18,20 @@ export async function GET() {
       ORDER BY season DESC
     `)
     
-    // Get snapshot data by season too
-    const snapshotsBySeason = await clickhouseQuery(`
+    // Get snapshot data (no season column, so just total count)
+    const snapshotsTotal = await clickhouseQuery(`
       SELECT 
-        season,
         COUNT(*) as total_snapshots,
         COUNT(DISTINCT game_id) as unique_games,
         MIN(snapshot_time) as first_snapshot,
         MAX(snapshot_time) as last_snapshot
       FROM nfl_prop_line_snapshots
-      GROUP BY season
-      ORDER BY season DESC
     `)
     
     return NextResponse.json({
       success: true,
       prop_lines_by_season: propsBySeason.data || [],
-      prop_snapshots_by_season: snapshotsBySeason.data || []
+      prop_snapshots_total: snapshotsTotal.data?.[0] || null
     })
     
   } catch (error: any) {
