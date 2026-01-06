@@ -1282,8 +1282,48 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     ${limitClause}
   `
   
+  console.log(`[PropQuery] Executing query for sport: ${sport}, stat: ${stat}, propType: ${propType}`)
+  
   const result = await clickhouseQuery(sql)
   const rows = result.data || []
+  
+  // Post-process: filter out any cross-sport contamination (safety check)
+  const filteredRows = rows.filter((row: any) => {
+    // If we detect NBA stat columns, ensure sport is nba
+    if (sport === 'nba') {
+      // NBA players should not have NFL stats
+      if (row.pass_yards !== undefined && row.pass_yards !== null) {
+        console.warn(`[PropQuery] Filtered cross-sport row: NBA query returned NFL stats for player ${row.player_name}`)
+        return false
+      }
+    } else if (sport === 'nfl') {
+      // NFL players should not have NBA stats  
+      if (row.points !== undefined && row.points !== null) {
+        console.warn(`[PropQuery] Filtered cross-sport row: NFL query returned NBA stats for player ${row.player_name}`)
+        return false
+      }
+    }
+    return true
+  })
+  
+  // Deduplicate by game_id + player_id (in case subquery didn't work)
+  const seen = new Set<string>()
+  const dedupedRows = filteredRows.filter((row: any) => {
+    const key = `${row.game_id}_${row.player_id}`
+    if (seen.has(key)) {
+      return false
+    }
+    seen.add(key)
+    return true
+  })
+  
+  if (dedupedRows.length < filteredRows.length) {
+    console.warn(`[PropQuery] Deduplicated ${filteredRows.length} rows to ${dedupedRows.length} rows (removed ${filteredRows.length - dedupedRows.length} duplicates)`)
+  }
+  
+  console.log(`[PropQuery] Returned ${rows.length} rows, filtered to ${filteredRows.length}, deduped to ${dedupedRows.length}`)
+  
+  const rowsToProcess = dedupedRows
   
   // Calculate results
   const games: GameDetail[] = []
@@ -1309,7 +1349,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   let totalProfit = 0
   const unitSize = 100 // Standard $100 unit
   
-  for (const row of rows) {
+  for (const row of rowsToProcess) {
     const value = Number(row.stat_value) || 0
     const bookLine = row.book_line !== undefined ? Number(row.book_line) : null
     const overOdds = row.over_odds ? Number(row.over_odds) : -110 // Default -110
