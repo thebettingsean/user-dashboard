@@ -884,49 +884,22 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     `
   } else if (shouldJoinRankings) {
     // Standard rankings join (NFL or NBA)
-    // For NBA: Join by season and use the latest available ranking week (rankings are cumulative)
-    // NOTE: This is a simplification - ideally we'd match the ranking week to the game's week,
-    // but NBA games don't have a week column. For now, using latest ranking per season.
-    // TODO: Improve to use game_date to determine correct week
+    // For NBA: Join by season only (no week column in games table)
+    // ReplacingMergeTree will handle deduplication, but we filter out bad pace records
     // For NFL: week column exists and we use week + 1 (rankings are "through" week, so week 2 game uses week 1 rankings)
     const paceFilter = sport === 'nba' ? 'AND opp_rank.pace_per_game >= 70' : ''
     const teamPaceFilter = sport === 'nba' ? 'AND team_rank.pace_per_game >= 70' : ''
     
-    if (sport === 'nba') {
-      // NBA: Use argMax to get latest ranking for each team/season combination
-      // This gets the ranking from the most recent week available for that season
-      // Filter out bad pace records (pace < 70) before aggregation
-      oppRankingsJoin = `
-        LEFT JOIN (
-          SELECT 
-            team_id,
-            season,
-            argMax(week, week) as week,
-            argMax(rank_pace_per_game, week) as rank_pace_per_game,
-            argMax(pace_per_game, week) as pace_per_game,
-            argMax(rank_points_allowed_per_game, week) as rank_points_allowed_per_game,
-            argMax(rank_assists_allowed_per_game, week) as rank_assists_allowed_per_game,
-            argMax(rank_rebounds_allowed_per_game, week) as rank_rebounds_allowed_per_game,
-            argMax(rank_threes_allowed_per_game, week) as rank_threes_allowed_per_game,
-            argMax(rank_steals_per_game, week) as rank_steals_per_game,
-            argMax(rank_blocks_per_game, week) as rank_blocks_per_game
-          FROM ${rankingsTable}
-          WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
-          GROUP BY team_id, season
-        ) opp_rank ON b.opponent_id = opp_rank.team_id 
-          AND g.season = opp_rank.season
-        LEFT JOIN (
-          SELECT 
-            team_id,
-            season,
-            argMax(week, week) as week,
-            argMax(pace_per_game, week) as pace_per_game
-          FROM ${rankingsTable}
-          WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
-          GROUP BY team_id, season
-        ) team_rank ON b.team_id = team_rank.team_id 
-          AND g.season = team_rank.season
-      `
+    oppRankingsJoin = `
+      LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
+        AND g.season = opp_rank.season 
+        ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
+        ${paceFilter}
+      LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
+        AND g.season = team_rank.season 
+        ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
+        ${teamPaceFilter}
+    `
     } else {
       // NFL: Simple week-based join
       oppRankingsJoin = `
