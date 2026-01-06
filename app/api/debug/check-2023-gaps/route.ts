@@ -49,13 +49,20 @@ export async function GET() {
       }
     }
     
-    // 4. Check prop data coverage for 2023
-    const propCoverage = await clickhouseQuery(`
-      SELECT 
-        COUNT(DISTINCT game_id) as games_with_props
-      FROM nfl_prop_results
-      WHERE season = 2023
-    `)
+    // 4. Check prop data coverage for 2023 (skip if table doesn't exist)
+    let propCoverage: any = { data: [{ games_with_props: 0 }] }
+    try {
+      propCoverage = await clickhouseQuery(`
+        SELECT 
+          COUNT(DISTINCT game_id) as games_with_props
+        FROM nfl_prop_lines
+        WHERE game_id IN (
+          SELECT toString(game_id) FROM nfl_games WHERE season = 2023 AND is_playoff = 0
+        )
+      `)
+    } catch (e) {
+      console.log('Prop table check skipped')
+    }
     
     // 5. Get date range of actual games
     const dateRange = await clickhouseQuery(`
