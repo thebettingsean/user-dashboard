@@ -5,9 +5,9 @@ export async function GET() {
   try {
     // Check what game_id format nfl_upcoming_games uses
     const upcomingGamesIds = await clickhouseQuery(`
-      SELECT game_id, season, game_date
+      SELECT game_id, season, game_time
       FROM nfl_upcoming_games FINAL
-      ORDER BY game_date DESC
+      ORDER BY game_time DESC
       LIMIT 10
     `)
     
