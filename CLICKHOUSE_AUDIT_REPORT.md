@@ -27,64 +27,65 @@ These tables are core to the builder functionality and are working correctly:
 
 ## ⚠️ Tables NOT Used by Builder (Candidates for Review)
 
-### Empty Tables - Can be Dropped
+### Empty Tables - ✅ DELETED
 1. **nfl_player_aggregates** (0 rows, 35 cols)
    - Purpose: Likely pre-aggregated player stats
    - Status: Never populated, not referenced in code
-   - **Recommendation:** DELETE
+   - **Action:** DELETED
 
 2. **nba_player_aggregates** (0 rows, 28 cols)
    - Purpose: Likely pre-aggregated player stats
    - Status: Never populated, not referenced in code
-   - **Recommendation:** DELETE
+   - **Action:** DELETED
 
 3. **props_with_stats** (0 rows, 12 cols)
    - Purpose: Unknown
    - Status: Empty, not referenced in builder
-   - **Recommendation:** DELETE
+   - **Action:** DELETED
 
 ### Tables with Data - Unclear Purpose
 
 4. **nfl_prop_line_snapshots** (883,415 rows)
-   - Purpose: Historical snapshots of prop lines
-   - Used by: `/api/query-engine/upcoming-props` only
-   - Builder Usage: NO - used for upcoming props display, not queries
-   - **Recommendation:** KEEP (useful for line movement history)
+   - Purpose: Snapshots of prop lines for UPCOMING games
+   - Used by: `/api/query-engine/upcoming-props` for displaying upcoming props
+   - Builder Usage: NO - builder uses `nfl_prop_lines` for historical queries
+   - **Action:** KEEP (needed for upcoming props feature)
 
-5. **nba_prop_lines_backup** (1,395,358 rows!)
+5. **nba_prop_lines_backup** (1,395,358 rows!) - ✅ DELETED
    - Purpose: Backup of nba_prop_lines
    - Used by: NOT FOUND in code
-   - **Recommendation:** DELETE or move to cold storage
+   - **Action:** DELETED (1.4M unnecessary rows freed)
 
 6. **nfl_line_snapshots** (78,456 rows)
-   - Purpose: Game line snapshots (not prop lines)
-   - Used by: NOT FOUND in builder
-   - **Recommendation:** May be legacy, check if used elsewhere
+   - Purpose: Line snapshots for UPCOMING games (spread/total movement)
+   - Used by: `/api/query-engine/upcoming` for displaying upcoming game lines
+   - Builder Usage: NO - builder uses `nfl_games` for historical game lines
+   - **Action:** KEEP (needed for upcoming games feature)
 
-7. **nfl_opening_lines** (447 rows)
-   - Purpose: Opening game lines
-   - Used by: NOT FOUND in builder
-   - **Recommendation:** May be legacy, check if used elsewhere
+7. **nfl_opening_lines** (VIEW, not a table)
+   - Purpose: VIEW that shows opening lines from `nfl_line_snapshots`
+   - Used by: Upcoming games queries
+   - **Action:** KEEP (views don't take up space)
 
-8. **nfl_current_lines** (1,275 rows)
-   - Purpose: Current game lines
-   - Used by: NOT FOUND in builder
-   - **Recommendation:** May be legacy, check if used elsewhere
+8. **nfl_current_lines** (VIEW, not a table)
+   - Purpose: VIEW that shows current lines from `nfl_line_snapshots`
+   - Used by: Upcoming games queries
+   - **Action:** KEEP (views don't take up space)
 
 9. **nfl_team_stats** (1,990 rows)
-   - Purpose: Team statistics
+   - Purpose: Team statistics (raw stats vs rankings)
    - Used by: NOT FOUND in builder (we use nfl_team_rankings)
-   - **Recommendation:** CONSOLIDATE with nfl_team_rankings or DELETE
+   - **Action:** KEEP (may be used for other features or data pipeline)
 
 10. **nba_team_stats** (9,282 rows)
-    - Purpose: Team statistics
+    - Purpose: Team statistics (raw stats vs rankings)
     - Used by: NOT FOUND in builder (we use nba_team_rankings)
-    - **Recommendation:** CONSOLIDATE with nba_team_rankings or DELETE
+    - **Action:** KEEP (may be used for other features or data pipeline)
 
 11. **nba_position_defensive_stats** (25,867 rows)
-    - Purpose: Raw defensive stats by position
+    - Purpose: Raw defensive stats by position (source data for rankings)
     - Used by: NOT FOUND in builder (we use nba_position_defensive_rankings)
-    - **Recommendation:** Keep as source for rankings, or DELETE if rankings are sourced elsewhere
+    - **Action:** KEEP (likely source data for position rankings table)
 
 12. **current_props** (1,058 rows)
     - Purpose: Unknown
