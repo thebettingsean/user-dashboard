@@ -92,6 +92,25 @@ const DEFAULT_TEAMS = {
   nfc: ['seahawks', 'bears', 'eagles', 'panthers', 'rams', 'fortyniners', 'packers'],
 }
 
+// Get seed for a team based on its position in DEFAULT_TEAMS
+function getTeamSeed(teamSlug: TeamSlug | undefined): number | null {
+  if (!teamSlug) return null
+  
+  // Check AFC teams (seeds 1-7)
+  const afcIndex = DEFAULT_TEAMS.afc.indexOf(teamSlug)
+  if (afcIndex !== -1) {
+    return afcIndex + 1 // 1-7
+  }
+  
+  // Check NFC teams (seeds 1-7)
+  const nfcIndex = DEFAULT_TEAMS.nfc.indexOf(teamSlug)
+  if (nfcIndex !== -1) {
+    return nfcIndex + 1 // 1-7
+  }
+  
+  return null
+}
+
 // Sort teams by their seed/rank order
 function sortTeams(teams: (TeamSlug | undefined)[], confRank: TeamSlug[]): TeamSlug[] {
   return teams
@@ -557,6 +576,21 @@ function SubmitPageContent() {
     }
   }
 
+  // Check if bracket is complete (all games have selections)
+  const isBracketComplete = () => {
+    for (const gameKey of GAME_KEYS) {
+      const game = selections[gameKey]
+      if (!game || !game.selected) {
+        return false
+      }
+      // For Super Bowl, also check that both teams are filled
+      if (gameKey === 'sb' && (!game.top || !game.bottom)) {
+        return false
+      }
+    }
+    return true
+  }
+
   const handleTeamClick = (gameKey: GameKey, position: 'top' | 'bottom') => {
     setSelections(prev => {
       const updated = { ...prev }
@@ -584,6 +618,12 @@ function SubmitPageContent() {
     // Require bracket name for first-time submissions
     if (!existingBracket && (!bracketName || bracketName.trim().length === 0)) {
       alert('Please enter a bracket name before submitting')
+      return
+    }
+
+    // Require complete bracket
+    if (!isBracketComplete()) {
+      alert('Please complete your bracket by selecting a winner for all games before submitting.')
       return
     }
 
@@ -822,10 +862,24 @@ function SubmitPageContent() {
             </p>
           </div>
         )}
+        {!isBracketComplete() && (
+          <p style={{ 
+            fontSize: '13px', 
+            color: '#ef4444', 
+            marginBottom: '12px', 
+            textAlign: 'center',
+            padding: '8px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '6px'
+          }}>
+            Please complete your bracket by selecting a winner for all games.
+          </p>
+        )}
         <button 
           onClick={handleSubmit} 
           className={styles.submitButton}
-          disabled={submitting || (!existingBracket && !bracketName.trim())}
+          disabled={submitting || (!existingBracket && !bracketName.trim()) || !isBracketComplete()}
         >
           {submitting ? 'Submitting...' : existingBracket ? 'Update Bracket' : 'Submit Bracket'}
         </button>
@@ -913,19 +967,23 @@ function GameSlot({
   const topSelected = game?.selected === 'top'
   const bottomSelected = game?.selected === 'bottom'
 
+  // Calculate seeds if not provided, or use provided seeds as override
+  const topSeed = seeds[0] !== null ? seeds[0] : getTeamSeed(topTeam)
+  const bottomSeed = seeds[1] !== null ? seeds[1] : getTeamSeed(bottomTeam)
+
   return (
     <div className={styles.gameSlot}>
       <TeamSlot
         teamSlug={topTeam}
         onClick={() => onTeamClick(gameKey, 'top')}
-        seed={seeds[0] ?? undefined}
+        seed={topSeed ?? undefined}
         teamLogos={teamLogos}
         isSelected={topSelected}
       />
       <TeamSlot
         teamSlug={bottomTeam}
         onClick={() => onTeamClick(gameKey, 'bottom')}
-        seed={seeds[1] ?? undefined}
+        seed={bottomSeed ?? undefined}
         teamLogos={teamLogos}
         isSelected={bottomSelected}
       />

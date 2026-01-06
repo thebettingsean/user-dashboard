@@ -1,0 +1,84 @@
+import type { Metadata } from "next";
+import { supabaseUsers } from "@/lib/supabase-users";
+
+type Props = {
+  params: { groupId: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { groupId } = params;
+
+  try {
+    // Fetch group name
+    const { data: group } = await supabaseUsers
+      .from('nfl_playoff_groups')
+      .select('name')
+      .eq('id', groupId)
+      .single();
+
+    const groupName = group?.name || 'NFL Playoff Bracket';
+    const title = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`;
+    const description = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        images: [
+          {
+            url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
+            width: 1200,
+            height: 630,
+            alt: 'The Betting Insider - Sports Betting Analytics',
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: ['https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png'],
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    // Fallback metadata
+    return {
+      title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+      description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+      openGraph: {
+        title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        type: "website",
+        url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        images: [
+          {
+            url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
+            width: 1200,
+            height: 630,
+            alt: 'The Betting Insider - Sports Betting Analytics',
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        images: ['https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png'],
+      },
+    };
+  }
+}
+
+export default function GroupLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+

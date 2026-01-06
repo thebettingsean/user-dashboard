@@ -95,6 +95,25 @@ const DEFAULT_TEAMS = {
   nfc: ['seahawks', 'bears', 'eagles', 'panthers', 'rams', 'fortyniners', 'packers'],
 }
 
+// Get seed for a team based on its position in DEFAULT_TEAMS
+function getTeamSeed(teamSlug: TeamSlug | undefined): number | null {
+  if (!teamSlug) return null
+  
+  // Check AFC teams (seeds 1-7)
+  const afcIndex = DEFAULT_TEAMS.afc.indexOf(teamSlug)
+  if (afcIndex !== -1) {
+    return afcIndex + 1 // 1-7
+  }
+  
+  // Check NFC teams (seeds 1-7)
+  const nfcIndex = DEFAULT_TEAMS.nfc.indexOf(teamSlug)
+  if (nfcIndex !== -1) {
+    return nfcIndex + 1 // 1-7
+  }
+  
+  return null
+}
+
 // Get serial number from selections (base-3 encoding like reference)
 function getSerial(selections: BracketSelections): number {
   let serial = 0
@@ -1242,12 +1261,16 @@ function GameSlot({
   const topSelected = game?.selected === 'top'
   const bottomSelected = game?.selected === 'bottom'
 
+  // Calculate seeds if not provided, or use provided seeds as override
+  const topSeed = seeds[0] !== null ? seeds[0] : getTeamSeed(topTeam)
+  const bottomSeed = seeds[1] !== null ? seeds[1] : getTeamSeed(bottomTeam)
+
   return (
     <div className={styles.gameSlot}>
       <TeamSlot
         teamSlug={topTeam}
         onClick={() => onTeamClick(gameKey, 'top')}
-        seed={seeds[0] ?? undefined}
+        seed={topSeed ?? undefined}
         teamLogos={teamLogos}
         isLocked={lockedPositions.includes('top')}
         isSelected={topSelected}
@@ -1255,7 +1278,7 @@ function GameSlot({
       <TeamSlot
         teamSlug={bottomTeam}
         onClick={() => onTeamClick(gameKey, 'bottom')}
-        seed={seeds[1] ?? undefined}
+        seed={bottomSeed ?? undefined}
         teamLogos={teamLogos}
         isLocked={lockedPositions.includes('bottom')}
         isSelected={bottomSelected}
