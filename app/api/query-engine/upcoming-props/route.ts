@@ -412,85 +412,85 @@ export async function POST(request: Request) {
     } else {
       // NFL: Use snapshots
       sql = `
-        WITH latest_lines AS (
-          SELECT 
-            game_id,
-            argMax(home_spread, snapshot_time) as home_spread,
-            argMax(total_line, snapshot_time) as total_line,
-            argMax(home_ml, snapshot_time) as home_ml,
-            argMax(away_ml, snapshot_time) as away_ml,
-            max(snapshot_time) as latest_snapshot
-          FROM nfl_line_snapshots
-          GROUP BY game_id
-        ),
-        all_latest_props AS (
-          SELECT 
-            game_id,
-            player_name,
-            prop_type,
-            bookmaker,
-            argMax(line, snapshot_time) as line,
-            argMax(over_odds, snapshot_time) as over_odds,
-            argMax(under_odds, snapshot_time) as under_odds,
-            max(snapshot_time) as latest_snapshot
-          FROM nfl_prop_line_snapshots
-          GROUP BY game_id, player_name, prop_type, bookmaker
-        ),
-        qualifying_players AS (
-          SELECT DISTINCT game_id, player_name, prop_type
-          FROM all_latest_props
-          WHERE ${lineFilterClause}
-          ${propConditions.filter(c => !c.includes('p.line')).length > 0 
-            ? 'AND ' + propConditions.filter(c => !c.includes('p.line')).join(' AND ').replace(/p\./g, '')
-            : ''}
-        )
+      WITH latest_lines AS (
         SELECT 
-          g.game_id AS game_id,
-          g.game_time AS game_time,
-          g.home_team_id AS home_team_id,
-          g.away_team_id AS away_team_id,
-          g.home_team_name AS home_team_name,
-          g.away_team_name AS away_team_name,
-          g.home_team_abbr AS home_team_abbr,
-          g.away_team_abbr AS away_team_abbr,
-          g.is_division_game AS is_division_game,
-          g.is_conference_game AS is_conference_game,
-          g.home_rank_vs_wr AS home_rank_vs_wr,
-          g.home_rank_vs_te AS home_rank_vs_te,
-          g.home_rank_vs_rb AS home_rank_vs_rb,
-          g.away_rank_vs_wr AS away_rank_vs_wr,
-          g.away_rank_vs_te AS away_rank_vs_te,
-          g.away_rank_vs_rb AS away_rank_vs_rb,
-          g.home_defense_rank AS home_defense_rank,
-          g.away_defense_rank AS away_defense_rank,
-          g.home_win_pct AS home_win_pct,
-          g.away_win_pct AS away_win_pct,
-          ll.total_line AS total_line,
-          ll.home_spread AS home_spread,
-          p.player_name AS player_name,
-          p.prop_type AS prop_type,
-          p.line AS prop_line,
-          p.over_odds AS over_odds,
-          p.under_odds AS under_odds,
-          p.bookmaker AS bookmaker,
-          IF(${lineFilterClause.replace(/line/g, 'p.line')}, 1, 0) AS in_filter_range,
-          pl.headshot_url AS player_headshot,
-          pl.espn_player_id AS player_id,
-          pl.team_id AS player_team_id,
-          IF(pl.team_id = g.home_team_id, 1, 0) AS is_home_player
-        FROM nfl_upcoming_games g
-        INNER JOIN latest_lines ll ON g.game_id = ll.game_id
-        INNER JOIN qualifying_players qp ON g.game_id = qp.game_id
-        INNER JOIN all_latest_props p ON g.game_id = p.game_id 
-          AND p.player_name = qp.player_name 
-          AND p.prop_type = qp.prop_type
-        ${positionJoinClause}
-        WHERE g.game_time > now()
-        ${gameWhereClause}
-        ${positionCondition}
-        ${playerTeamCondition}
-        ORDER BY g.game_time ASC, p.player_name, p.line
-      `
+          game_id,
+          argMax(home_spread, snapshot_time) as home_spread,
+          argMax(total_line, snapshot_time) as total_line,
+          argMax(home_ml, snapshot_time) as home_ml,
+          argMax(away_ml, snapshot_time) as away_ml,
+          max(snapshot_time) as latest_snapshot
+        FROM nfl_line_snapshots
+        GROUP BY game_id
+      ),
+      all_latest_props AS (
+        SELECT 
+          game_id,
+          player_name,
+          prop_type,
+          bookmaker,
+          argMax(line, snapshot_time) as line,
+          argMax(over_odds, snapshot_time) as over_odds,
+          argMax(under_odds, snapshot_time) as under_odds,
+          max(snapshot_time) as latest_snapshot
+        FROM nfl_prop_line_snapshots
+        GROUP BY game_id, player_name, prop_type, bookmaker
+      ),
+      qualifying_players AS (
+        SELECT DISTINCT game_id, player_name, prop_type
+        FROM all_latest_props
+        WHERE ${lineFilterClause}
+        ${propConditions.filter(c => !c.includes('p.line')).length > 0 
+          ? 'AND ' + propConditions.filter(c => !c.includes('p.line')).join(' AND ').replace(/p\./g, '')
+          : ''}
+      )
+      SELECT 
+        g.game_id AS game_id,
+        g.game_time AS game_time,
+        g.home_team_id AS home_team_id,
+        g.away_team_id AS away_team_id,
+        g.home_team_name AS home_team_name,
+        g.away_team_name AS away_team_name,
+        g.home_team_abbr AS home_team_abbr,
+        g.away_team_abbr AS away_team_abbr,
+        g.is_division_game AS is_division_game,
+        g.is_conference_game AS is_conference_game,
+        g.home_rank_vs_wr AS home_rank_vs_wr,
+        g.home_rank_vs_te AS home_rank_vs_te,
+        g.home_rank_vs_rb AS home_rank_vs_rb,
+        g.away_rank_vs_wr AS away_rank_vs_wr,
+        g.away_rank_vs_te AS away_rank_vs_te,
+        g.away_rank_vs_rb AS away_rank_vs_rb,
+        g.home_defense_rank AS home_defense_rank,
+        g.away_defense_rank AS away_defense_rank,
+        g.home_win_pct AS home_win_pct,
+        g.away_win_pct AS away_win_pct,
+        ll.total_line AS total_line,
+        ll.home_spread AS home_spread,
+        p.player_name AS player_name,
+        p.prop_type AS prop_type,
+        p.line AS prop_line,
+        p.over_odds AS over_odds,
+        p.under_odds AS under_odds,
+        p.bookmaker AS bookmaker,
+        IF(${lineFilterClause.replace(/line/g, 'p.line')}, 1, 0) AS in_filter_range,
+        pl.headshot_url AS player_headshot,
+        pl.espn_player_id AS player_id,
+        pl.team_id AS player_team_id,
+        IF(pl.team_id = g.home_team_id, 1, 0) AS is_home_player
+      FROM nfl_upcoming_games g
+      INNER JOIN latest_lines ll ON g.game_id = ll.game_id
+      INNER JOIN qualifying_players qp ON g.game_id = qp.game_id
+      INNER JOIN all_latest_props p ON g.game_id = p.game_id 
+        AND p.player_name = qp.player_name 
+        AND p.prop_type = qp.prop_type
+      ${positionJoinClause}
+      WHERE g.game_time > now()
+      ${gameWhereClause}
+      ${positionCondition}
+      ${playerTeamCondition}
+      ORDER BY g.game_time ASC, p.player_name, p.line
+    `
     }
     
     console.log('[UpcomingProps] Query:', sql.substring(0, 500) + '...')

@@ -207,42 +207,178 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   }
   
   // Defense rank filter - supports position-specific rankings
-  // defense_stat_position can be 'vs_wr', 'vs_te', 'vs_rb' for position-specific
+  // defense_stat_position can be 'vs_wr', 'vs_te', 'vs_rb' for NFL or 'vs_g', 'vs_f', 'vs_c' for NBA
+  // Also supports pace-adjusted rankings for NBA
   if (filters.vs_defense_rank && filters.vs_defense_rank !== 'any') {
     let rankCol: string
     let statLabel: string
     
     // Check for position-specific defense filter
     const positionStat = filters.defense_stat_position || filters.defense_stat
+    const usePaceAdjusted = filters.defense_stat === 'pace_adj' || filters.defense_stat_position === 'pace_adj'
     
-    if (positionStat === 'vs_wr' || positionStat === 'wr') {
-      // Use rankings table for position-specific
-      needsOppRankingsJoin = true
-      rankCol = 'opp_rank.rank_yards_allowed_to_wr'
-      statLabel = 'D vs WRs'
-    } else if (positionStat === 'vs_te' || positionStat === 'te') {
-      needsOppRankingsJoin = true
-      rankCol = 'opp_rank.rank_yards_allowed_to_te'
-      statLabel = 'D vs TEs'
-    } else if (positionStat === 'vs_rb' || positionStat === 'rb') {
-      needsOppRankingsJoin = true
-      rankCol = 'opp_rank.rank_yards_allowed_to_rb'
-      statLabel = 'D vs RBs'
-    } else if (positionStat === 'pass') {
-      rankCol = 'b.opp_def_rank_pass_yards'
-      statLabel = 'Pass D'
-    } else if (positionStat === 'rush') {
-      rankCol = 'b.opp_def_rank_rush_yards'
-      statLabel = 'Rush D'
+    if (sport === 'nba') {
+      // NBA position-specific rankings (G/F/C)
+      if (positionStat === 'vs_g' || positionStat === 'g') {
+        needsOppRankingsJoin = true
+        // Map stat to position-specific ranking column
+        if (stat === 'points') {
+          rankCol = 'opp_rank.rank_points_allowed_to_g'
+          statLabel = 'D vs Guards (Points)'
+        } else if (stat === 'assists') {
+          rankCol = 'opp_rank.rank_assists_allowed_to_g'
+          statLabel = 'D vs Guards (Assists)'
+        } else if (stat === 'rebounds') {
+          rankCol = 'opp_rank.rank_rebounds_allowed_to_g'
+          statLabel = 'D vs Guards (Rebounds)'
+        } else if (stat === 'steals') {
+          rankCol = 'opp_rank.rank_steals_allowed_to_g'
+          statLabel = 'D vs Guards (Steals)'
+        } else if (stat === 'blocks') {
+          rankCol = 'opp_rank.rank_blocks_allowed_to_g'
+          statLabel = 'D vs Guards (Blocks)'
+        } else if (stat === 'threes') {
+          rankCol = 'opp_rank.rank_threes_allowed_to_g'
+          statLabel = 'D vs Guards (3PT)'
+        } else {
+          rankCol = 'opp_rank.rank_points_allowed_to_g'
+          statLabel = 'D vs Guards'
+        }
+      } else if (positionStat === 'vs_f' || positionStat === 'f') {
+        needsOppRankingsJoin = true
+        if (stat === 'points') {
+          rankCol = 'opp_rank.rank_points_allowed_to_f'
+          statLabel = 'D vs Forwards (Points)'
+        } else if (stat === 'assists') {
+          rankCol = 'opp_rank.rank_assists_allowed_to_f'
+          statLabel = 'D vs Forwards (Assists)'
+        } else if (stat === 'rebounds') {
+          rankCol = 'opp_rank.rank_rebounds_allowed_to_f'
+          statLabel = 'D vs Forwards (Rebounds)'
+        } else if (stat === 'steals') {
+          rankCol = 'opp_rank.rank_steals_allowed_to_f'
+          statLabel = 'D vs Forwards (Steals)'
+        } else if (stat === 'blocks') {
+          rankCol = 'opp_rank.rank_blocks_allowed_to_f'
+          statLabel = 'D vs Forwards (Blocks)'
+        } else if (stat === 'threes') {
+          rankCol = 'opp_rank.rank_threes_allowed_to_f'
+          statLabel = 'D vs Forwards (3PT)'
+        } else {
+          rankCol = 'opp_rank.rank_points_allowed_to_f'
+          statLabel = 'D vs Forwards'
+        }
+      } else if (positionStat === 'vs_c' || positionStat === 'c') {
+        needsOppRankingsJoin = true
+        if (stat === 'points') {
+          rankCol = 'opp_rank.rank_points_allowed_to_c'
+          statLabel = 'D vs Centers (Points)'
+        } else if (stat === 'assists') {
+          rankCol = 'opp_rank.rank_assists_allowed_to_c'
+          statLabel = 'D vs Centers (Assists)'
+        } else if (stat === 'rebounds') {
+          rankCol = 'opp_rank.rank_rebounds_allowed_to_c'
+          statLabel = 'D vs Centers (Rebounds)'
+        } else if (stat === 'steals') {
+          rankCol = 'opp_rank.rank_steals_allowed_to_c'
+          statLabel = 'D vs Centers (Steals)'
+        } else if (stat === 'blocks') {
+          rankCol = 'opp_rank.rank_blocks_allowed_to_c'
+          statLabel = 'D vs Centers (Blocks)'
+        } else if (stat === 'threes') {
+          rankCol = 'opp_rank.rank_threes_allowed_to_c'
+          statLabel = 'D vs Centers (3PT)'
+        } else {
+          rankCol = 'opp_rank.rank_points_allowed_to_c'
+          statLabel = 'D vs Centers'
+        }
+      } else if (usePaceAdjusted) {
+        // Pace-adjusted rankings
+        needsOppRankingsJoin = true
+        if (stat === 'points') {
+          rankCol = 'opp_rank.rank_points_allowed_per_100'
+          statLabel = 'D (Points/100 poss)'
+        } else if (stat === 'assists') {
+          rankCol = 'opp_rank.rank_assists_allowed_per_100'
+          statLabel = 'D (Assists/100 poss)'
+        } else if (stat === 'rebounds') {
+          rankCol = 'opp_rank.rank_rebounds_allowed_per_100'
+          statLabel = 'D (Rebounds/100 poss)'
+        } else if (stat === 'steals') {
+          rankCol = 'opp_rank.rank_steals_allowed_per_100'
+          statLabel = 'D (Steals/100 poss)'
+        } else if (stat === 'blocks') {
+          rankCol = 'opp_rank.rank_blocks_allowed_per_100'
+          statLabel = 'D (Blocks/100 poss)'
+        } else if (stat === 'threes') {
+          rankCol = 'opp_rank.rank_threes_allowed_per_100'
+          statLabel = 'D (3PT/100 poss)'
+        } else {
+          rankCol = 'opp_rank.rank_points_allowed_per_100'
+          statLabel = 'D (Pace-Adj)'
+        }
+      } else {
+        // Default NBA defensive rankings (overall per game from nba_team_rankings)
+        needsOppRankingsJoin = true
+        if (stat === 'points') {
+          rankCol = 'opp_rank.rank_points_allowed_per_game'
+          statLabel = 'Points Allowed'
+        } else if (stat === 'assists') {
+          rankCol = 'opp_rank.rank_assists_allowed_per_game'
+          statLabel = 'Assists Allowed'
+        } else if (stat === 'rebounds') {
+          rankCol = 'opp_rank.rank_rebounds_allowed_per_game'
+          statLabel = 'Rebounds Allowed'
+        } else if (stat === 'threes') {
+          rankCol = 'opp_rank.rank_threes_allowed_per_game'
+          statLabel = '3PT Allowed'
+        } else if (stat === 'steals') {
+          rankCol = 'opp_rank.rank_steals_per_game'
+          statLabel = 'Steals'
+        } else if (stat === 'blocks') {
+          rankCol = 'opp_rank.rank_blocks_per_game'
+          statLabel = 'Blocks'
+        } else {
+          rankCol = 'opp_rank.rank_points_allowed_per_game'
+          statLabel = 'Points Allowed'
+        }
+      }
     } else {
-      // Default based on player position's stat type
-      rankCol = defenseStat === 'pass' ? 'b.opp_def_rank_pass_yards'
-        : defenseStat === 'rush' ? 'b.opp_def_rank_rush_yards'
-        : 'b.opp_def_rank_receiving_yards'
-      statLabel = 'Defense'
+      // NFL position-specific rankings
+      if (positionStat === 'vs_wr' || positionStat === 'wr') {
+        needsOppRankingsJoin = true
+        rankCol = 'opp_rank.rank_yards_allowed_to_wr'
+        statLabel = 'D vs WRs'
+      } else if (positionStat === 'vs_te' || positionStat === 'te') {
+        needsOppRankingsJoin = true
+        rankCol = 'opp_rank.rank_yards_allowed_to_te'
+        statLabel = 'D vs TEs'
+      } else if (positionStat === 'vs_rb' || positionStat === 'rb') {
+        needsOppRankingsJoin = true
+        rankCol = 'opp_rank.rank_yards_allowed_to_rb'
+        statLabel = 'D vs RBs'
+      } else if (positionStat === 'pass') {
+        rankCol = 'b.opp_def_rank_pass_yards'
+        statLabel = 'Pass D'
+      } else if (positionStat === 'rush') {
+        rankCol = 'b.opp_def_rank_rush_yards'
+        statLabel = 'Rush D'
+      } else {
+        // Default based on player position's stat type
+        rankCol = defenseStat === 'pass' ? 'b.opp_def_rank_pass_yards'
+          : defenseStat === 'rush' ? 'b.opp_def_rank_rush_yards'
+          : 'b.opp_def_rank_receiving_yards'
+        statLabel = 'Defense'
+      }
     }
     
     const rankCondition = rankCol.startsWith('opp_rank.') ? rankCol : rankCol
+    
+    // NBA has 30 teams, NFL has 32 teams
+    const maxRank = sport === 'nba' ? 30 : 32
+    const bottom5Start = maxRank - 4  // 26 for NBA, 28 for NFL
+    const bottom10Start = maxRank - 9  // 21 for NBA, 23 for NFL
+    const bottom16Start = maxRank - 15 // 15 for NBA, 17 for NFL
     
     switch (filters.vs_defense_rank) {
       case 'top_5':
@@ -258,15 +394,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         appliedFilters.push(`vs Top 16 ${statLabel}`)
         break
       case 'bottom_5':
-        boxConditions.push(`${rankCondition} >= 28`)
+        boxConditions.push(`${rankCondition} >= ${bottom5Start} AND ${rankCondition} <= ${maxRank}`)
         appliedFilters.push(`vs Bottom 5 ${statLabel}`)
         break
       case 'bottom_10':
-        boxConditions.push(`${rankCondition} >= 23`)
+        boxConditions.push(`${rankCondition} >= ${bottom10Start} AND ${rankCondition} <= ${maxRank}`)
         appliedFilters.push(`vs Bottom 10 ${statLabel}`)
         break
       case 'bottom_16':
-        boxConditions.push(`${rankCondition} >= 17`)
+        boxConditions.push(`${rankCondition} >= ${bottom16Start} AND ${rankCondition} <= ${maxRank}`)
         appliedFilters.push(`vs Bottom 16 ${statLabel}`)
         break
     }
@@ -562,15 +698,53 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   if (filters.own_defense_rank && filters.own_defense_rank !== 'any') {
     needsOppRankingsJoin = true
     const stat = (filters.own_defense_stat as string) || 'points'
-    const column = stat === 'points' ? 'rank_points_allowed_per_game'
-      : stat === 'passing' ? 'rank_passing_yards_allowed_per_game'
-      : stat === 'rushing' ? 'rank_rushing_yards_allowed_per_game'
-      : 'rank_points_allowed_per_game'
     
-    const statLabel = stat === 'points' ? 'Points Allowed' 
-      : stat === 'passing' ? 'Pass D' 
-      : stat === 'rushing' ? 'Rush D' 
-      : 'Defense'
+    // Sport-aware column mapping
+    let column: string
+    let statLabel: string
+    
+    if (sport === 'nba') {
+      // NBA defensive rankings
+      if (stat === 'points') {
+        column = 'rank_points_allowed_per_game'
+        statLabel = 'Points Allowed'
+      } else if (stat === 'assists') {
+        column = 'rank_assists_allowed_per_game'
+        statLabel = 'Assists Allowed'
+      } else if (stat === 'rebounds') {
+        column = 'rank_rebounds_allowed_per_game'
+        statLabel = 'Rebounds Allowed'
+      } else if (stat === 'threes') {
+        column = 'rank_threes_allowed_per_game'
+        statLabel = '3PT Allowed'
+      } else if (stat === 'steals') {
+        column = 'rank_steals_per_game'
+        statLabel = 'Steals'
+      } else if (stat === 'blocks') {
+        column = 'rank_blocks_per_game'
+        statLabel = 'Blocks'
+      } else {
+        column = 'rank_points_allowed_per_game'
+        statLabel = 'Points Allowed'
+      }
+    } else {
+      // NFL defensive rankings
+      column = stat === 'points' ? 'rank_points_allowed_per_game'
+        : stat === 'passing' ? 'rank_passing_yards_allowed_per_game'
+        : stat === 'rushing' ? 'rank_rushing_yards_allowed_per_game'
+        : 'rank_points_allowed_per_game'
+      
+      statLabel = stat === 'points' ? 'Points Allowed' 
+        : stat === 'passing' ? 'Pass D' 
+        : stat === 'rushing' ? 'Rush D' 
+        : 'Defense'
+    }
+    
+    // NBA has 30 teams, NFL has 32 teams
+    const maxRank = sport === 'nba' ? 30 : 32
+    const bottom5Start = maxRank - 4  // 26 for NBA, 28 for NFL
+    const bottom10Start = maxRank - 9  // 21 for NBA, 23 for NFL
+    const bottom16Start = maxRank - 15 // 15 for NBA, 17 for NFL
     
     switch (filters.own_defense_rank) {
       case 'top_5':
@@ -586,15 +760,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         appliedFilters.push(`Team Top 16 ${statLabel}`)
         break
       case 'bottom_5':
-        oppRankConditions.push(`team_rank.${column} >= 28 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom5Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 5 ${statLabel}`)
         break
       case 'bottom_10':
-        oppRankConditions.push(`team_rank.${column} >= 23 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom10Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 10 ${statLabel}`)
         break
       case 'bottom_16':
-        oppRankConditions.push(`team_rank.${column} >= 17 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom16Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 16 ${statLabel}`)
         break
     }
@@ -639,19 +813,49 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   appliedFilters.push(...playerDescriptions)
   
   // Build opponent rankings JOIN clause if needed (includes team's own ranking for team_win_pct)
-  // Note: NBA doesn't have team_rankings table yet, so skip for NBA
-  const rankingsTable = sport === 'nfl' ? 'nfl_team_rankings' : null
+  // For NBA: Use nba_team_rankings for pace-adjusted stats, nba_position_defensive_rankings for position-specific
+  const rankingsTable = sport === 'nfl' ? 'nfl_team_rankings' : (sport === 'nba' ? 'nba_team_rankings' : null)
   const weekColumn = sport === 'nfl' ? 'week' : null
-  // Only join rankings if we have a rankings table (NFL only for now)
   const shouldJoinRankings = needsOppRankingsJoin && rankingsTable
-  const oppRankingsJoin = shouldJoinRankings ? `
-    LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
-      AND g.season = opp_rank.season 
-      ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
-    LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
-      AND g.season = team_rank.season 
-      ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
-  ` : ''
+  
+  // For NBA position-specific rankings, we need a different join
+  // We'll determine the position from the player's position or the filter
+  const needsPositionRankings = sport === 'nba' && needsOppRankingsJoin && 
+    (filters.defense_stat_position === 'vs_g' || filters.defense_stat_position === 'vs_f' || filters.defense_stat_position === 'vs_c' ||
+     filters.defense_stat === 'vs_g' || filters.defense_stat === 'vs_f' || filters.defense_stat === 'vs_c')
+  
+  let oppRankingsJoin = ''
+  if (needsPositionRankings) {
+    // Join with position-specific defensive rankings
+    // The position is determined by the filter (vs_g, vs_f, vs_c) or player's position
+    // We'll use a subquery to get the latest ranking for the opponent
+    oppRankingsJoin = `
+      LEFT JOIN nba_position_defensive_rankings opp_rank ON b.opponent_id = opp_rank.team_id 
+        AND g.season = opp_rank.season 
+        AND opp_rank.game_date = (
+          SELECT MAX(game_date)
+          FROM nba_position_defensive_rankings
+          WHERE team_id = b.opponent_id
+            AND season = g.season
+            AND game_date <= toDate(g.game_time)
+        )
+    `
+  } else if (shouldJoinRankings) {
+    // Standard rankings join (NFL or NBA pace-adjusted)
+    // For NBA, filter out rankings with pace < 70 (bad/incomplete data)
+    const paceFilter = sport === 'nba' ? 'AND opp_rank.pace_per_game >= 70' : ''
+    const teamPaceFilter = sport === 'nba' ? 'AND team_rank.pace_per_game >= 70' : ''
+    oppRankingsJoin = `
+      LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
+        AND g.season = opp_rank.season 
+        ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
+        ${paceFilter}
+      LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
+        AND g.season = team_rank.season 
+        ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
+        ${teamPaceFilter}
+    `
+  }
   
   // Add book line conditions if using book lines
   if (use_book_lines && propType) {
