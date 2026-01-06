@@ -475,9 +475,31 @@ export async function GET(request: Request) {
                 // 3. Normalized full name if available
                 const keys: string[] = []
                 
+                // CRITICAL: SportsDataIO uses different abbreviations than our TEAM_ABBREV_MAP
+                // Example: SportsDataIO uses "NO" but we use "NOP", "GS" vs "GSW", etc.
+                // Need to normalize to our standard abbreviations
+                const normalizeAbbrev = (sdioAbbrev: string) => {
+                  const abbrevMap: Record<string, string> = {
+                    // NBA mismatches
+                    'NO': 'NOP',   // New Orleans Pelicans
+                    'NY': 'NYK',   // New York Knicks
+                    'GS': 'GSW',   // Golden State Warriors
+                    'SA': 'SAS',   // San Antonio Spurs
+                    'PHO': 'PHX',  // Phoenix Suns
+                    // NHL mismatches (if any)
+                    'MON': 'MTL',  // Montreal Canadiens
+                    'NAS': 'NSH',  // Nashville Predators
+                    'VEG': 'VGK',  // Vegas Golden Knights
+                    'WAS': 'WSH'   // Washington Capitals (NHL)
+                  }
+                  return abbrevMap[sdioAbbrev] || sdioAbbrev
+                }
+                
                 // Abbreviation-based keys (most reliable for NBA/NHL)
-                const abbrevKey = `${game.homeAbbr}_${game.awayAbbr}`.toUpperCase()
-                const abbrevKeyReverse = `${game.awayAbbr}_${game.homeAbbr}`.toUpperCase()
+                const homeStandardAbbr = normalizeAbbrev(game.homeAbbr)
+                const awayStandardAbbr = normalizeAbbrev(game.awayAbbr)
+                const abbrevKey = `${homeStandardAbbr}_${awayStandardAbbr}`.toUpperCase()
+                const abbrevKeyReverse = `${awayStandardAbbr}_${homeStandardAbbr}`.toUpperCase()
                 keys.push(abbrevKey, abbrevKeyReverse)
                 
                 // Normalized short name keys (from SportsDataIO team names)
