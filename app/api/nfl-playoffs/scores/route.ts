@@ -37,8 +37,84 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!gameKey || !winner) {
-      return NextResponse.json({ error: 'Game key and winner are required' }, { status: 400 })
+    if (!gameKey) {
+      return NextResponse.json({ error: 'Game key is required' }, { status: 400 })
+    }
+
+    // If winner is empty/null, delete the game result
+    if (!winner || winner.trim() === '') {
+      const { error: deleteError } = await supabaseUsers
+        .from('nfl_playoff_game_results')
+        .delete()
+        .eq('game_key', gameKey)
+
+      if (deleteError) {
+        console.error('Error deleting game result:', deleteError)
+        return NextResponse.json({ error: 'Failed to delete game result' }, { status: 500 })
+      }
+
+      // Recalculate all bracket scores after deletion
+      const { data: allBrackets, error: bracketsError } = await supabaseUsers
+        .from('nfl_playoff_brackets')
+        .select('*')
+
+      if (bracketsError) {
+        console.error('Error fetching brackets:', bracketsError)
+        return NextResponse.json({ error: 'Failed to fetch brackets' }, { status: 500 })
+      }
+
+      // Get all remaining game results
+      const { data: gameResults, error: resultsError } = await supabaseUsers
+        .from('nfl_playoff_game_results')
+        .select('*')
+
+      if (resultsError) {
+        console.error('Error fetching game results:', resultsError)
+        return NextResponse.json({ error: 'Failed to fetch game results' }, { status: 500 })
+      }
+
+      // Create a map of game results
+      const resultsMap: Record<string, string> = {}
+      gameResults?.forEach(result => {
+        resultsMap[result.game_key] = result.winner
+      })
+
+      // Calculate scores for each bracket
+      const updates = []
+      for (const bracket of allBrackets || []) {
+        let score = 0
+        const selections = bracket.selections as Record<string, { selected?: 'top' | 'bottom', top?: string, bottom?: string }>
+
+        for (const [gameKey, result] of Object.entries(resultsMap)) {
+          const game = selections[gameKey]
+          if (!game || !game.selected) continue
+
+          const predictedWinner = game.selected === 'top' ? game.top : game.bottom
+          if (predictedWinner === result) {
+            // Correct prediction
+            const round = GAME_ROUNDS[gameKey]
+            if (round) {
+              score += SCORING[round]
+            }
+          }
+        }
+
+        // Update bracket score
+        updates.push(
+          supabaseUsers
+            .from('nfl_playoff_brackets')
+            .update({ score })
+            .eq('id', bracket.id)
+        )
+      }
+
+      // Execute all updates
+      await Promise.all(updates)
+
+      return NextResponse.json({ 
+        message: 'Game result cleared and scores updated',
+        gameResult: null,
+      })
     }
 
     // Upsert game result

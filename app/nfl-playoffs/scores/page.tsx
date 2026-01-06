@@ -222,13 +222,23 @@ export default function ScoresPage() {
       const response = await fetch('/api/nfl-playoffs/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameKey, winner, password: 'sean' }),
+        body: JSON.stringify({ gameKey, winner: winner || '', password: 'sean' }),
       })
 
       if (response.ok) {
         const data = await response.json()
-        setGameResults(prev => ({ ...prev, [gameKey]: winner }))
-        alert('Game result saved and scores updated!')
+        if (winner) {
+          setGameResults(prev => ({ ...prev, [gameKey]: winner }))
+          alert('Game result saved and scores updated!')
+        } else {
+          // Clear the selection
+          setGameResults(prev => {
+            const updated = { ...prev }
+            delete updated[gameKey]
+            return updated
+          })
+          alert('Game result cleared and scores updated!')
+        }
       } else {
         const error = await response.json()
         alert(`Error: ${error.error}`)
@@ -314,14 +324,12 @@ export default function ScoresPage() {
                   <select
                     value={currentWinner || ''}
                     onChange={(e) => {
-                      if (e.target.value) {
-                        handleSubmitResult(gameKey, e.target.value)
-                      }
+                      handleSubmitResult(gameKey, e.target.value)
                     }}
                     disabled={saving}
                     className={styles.teamSelect}
                   >
-                    <option value="">-- Select Team --</option>
+                    <option value="">-- No Selection --</option>
                     {/* Show matchup teams first if available */}
                     {matchupTeams.length > 0 && matchupTeams.map((team) => (
                       <option key={team} value={team}>
