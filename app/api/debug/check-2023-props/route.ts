@@ -23,8 +23,9 @@ export async function GET() {
       SELECT 
         toYYYYMM(g.game_date) as year_month,
         COUNT(DISTINCT p.game_id) as games_with_prop_lines,
-        COUNT(*) as total_prop_lines
-      FROM nfl_prop_lines p
+        COUNT(*) as total_prop_lines,
+        COUNT(DISTINCT p.player_name) as unique_players
+      FROM nfl_prop_lines p FINAL
       INNER JOIN nfl_games g FINAL ON toString(g.game_id) = p.game_id
       WHERE g.season = 2023
         AND g.is_playoff = 0
@@ -32,14 +33,14 @@ export async function GET() {
       ORDER BY year_month
     `)
     
-    // 3. Check prop results by month
-    const resultsPerMonth = await clickhouseQuery(`
+    // 3. Check prop snapshots by month (historical lines)
+    const snapshotsPerMonth = await clickhouseQuery(`
       SELECT 
         toYYYYMM(g.game_date) as year_month,
-        COUNT(DISTINCT p.game_id) as games_with_prop_results,
-        COUNT(*) as total_prop_results
-      FROM nfl_prop_results p
-      INNER JOIN nfl_games g FINAL ON toString(g.game_id) = p.game_id
+        COUNT(DISTINCT s.game_id) as games_with_snapshots,
+        COUNT(*) as total_snapshots
+      FROM nfl_prop_line_snapshots s
+      INNER JOIN nfl_games g FINAL ON toString(g.game_id) = s.game_id
       WHERE g.season = 2023
         AND g.is_playoff = 0
       GROUP BY year_month
@@ -50,7 +51,7 @@ export async function GET() {
     const monthlyReport: any[] = []
     for (const month of (gamesPerMonth.data || [])) {
       const propLines = (propsPerMonth.data || []).find((p: any) => p.year_month === month.year_month)
-      const propResults = (resultsPerMonth.data || []).find((r: any) => r.year_month === month.year_month)
+      const propSnapshots = (snapshotsPerMonth.data || []).find((s: any) => s.year_month === month.year_month)
       
       monthlyReport.push({
         month: month.year_month,
@@ -58,8 +59,9 @@ export async function GET() {
         total_games: month.total_games,
         games_with_prop_lines: propLines?.games_with_prop_lines || 0,
         total_prop_lines: propLines?.total_prop_lines || 0,
-        games_with_prop_results: propResults?.games_with_prop_results || 0,
-        total_prop_results: propResults?.total_prop_results || 0,
+        unique_players: propLines?.unique_players || 0,
+        games_with_snapshots: propSnapshots?.games_with_snapshots || 0,
+        total_snapshots: propSnapshots?.total_snapshots || 0,
         prop_coverage_pct: propLines 
           ? Math.round((propLines.games_with_prop_lines / month.total_games) * 100)
           : 0
