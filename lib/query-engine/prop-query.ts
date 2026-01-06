@@ -908,8 +908,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
             argMax(rank_rebounds_allowed_per_game, week) as rank_rebounds_allowed_per_game,
             argMax(rank_threes_allowed_per_game, week) as rank_threes_allowed_per_game,
             argMax(rank_steals_per_game, week) as rank_steals_per_game,
-            argMax(rank_blocks_per_game, week) as rank_blocks_per_game,
-            argMax(win_pct, week) as win_pct
+            argMax(rank_blocks_per_game, week) as rank_blocks_per_game
           FROM ${rankingsTable}
           WHERE pace_per_game >= 70 OR pace_per_game IS NULL
           GROUP BY team_id, season
@@ -921,7 +920,6 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
             team_id,
             season,
             argMax(week, week) as week,
-            argMax(win_pct, week) as win_pct,
             argMax(pace_per_game, week) as pace_per_game
           FROM ${rankingsTable}
           WHERE pace_per_game >= 70 OR pace_per_game IS NULL
