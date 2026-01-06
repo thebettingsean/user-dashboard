@@ -295,6 +295,9 @@ function GroupPageContent() {
           <button onClick={copyGroupLink} className={styles.shareButton}>
             Copy Link
           </button>
+          <Link href="/nfl-playoffs/groups" className={styles.viewGroupsButton}>
+            View My Groups
+          </Link>
           {!isMember && isSignedIn && (
             <button onClick={handleJoinGroup} disabled={joining} className={styles.joinButton}>
               {joining ? 'Joining...' : 'Join Group'}

@@ -44,7 +44,8 @@
 }
 
 .shareButton,
-.joinButton {
+.joinButton,
+.viewGroupsButton {
   padding: 10px 20px;
   background: rgba(41, 47, 63, 0.6);
   border: 1px solid rgba(50, 51, 53, 0.5);
@@ -56,10 +57,13 @@
   transition: all 0.15s ease;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .shareButton:hover,
-.joinButton:hover:not(:disabled) {
+.joinButton:hover:not(:disabled),
+.viewGroupsButton:hover {
   background: rgba(41, 47, 63, 0.8);
   border-color: rgba(50, 51, 53, 0.7);
 }

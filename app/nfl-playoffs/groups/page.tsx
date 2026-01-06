@@ -105,10 +105,12 @@ function GroupsPageContent() {
         </div>
         <div className={styles.headerActions}>
           <button 
-            onClick={() => router.push('/nfl-playoffs')}
-            className={styles.backButton}
+            onClick={() => {
+              router.push('/nfl-playoffs')
+            }}
+            className={styles.createButton}
           >
-            Back to Bracket
+            Create Group
           </button>
         </div>
       </div>
@@ -119,7 +121,7 @@ function GroupsPageContent() {
           <p>Create a group to get started!</p>
           <button 
             onClick={() => router.push('/nfl-playoffs')}
-            className={styles.createButton}
+            className={styles.emptyStateCreateButton}
           >
             Create a Group
           </button>
@@ -128,7 +130,6 @@ function GroupsPageContent() {
         <>
           {createdGroups.length > 0 && (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Groups I Created</h2>
               <div className={styles.groupsGrid}>
                 {createdGroups.map((group) => (
                   <div key={group.id} className={styles.groupCard}>
@@ -160,7 +161,6 @@ function GroupsPageContent() {
 
           {joinedGroups.length > 0 && (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Groups I Joined</h2>
               <div className={styles.groupsGrid}>
                 {joinedGroups.map((group) => (
                   <div key={group.id} className={styles.groupCard}>
