@@ -970,8 +970,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   const needsPlayerJoin = position && position !== 'any' && (!player_id || player_id === 0)
   
   // Different queries for book line mode vs any line mode
+  // Group by key columns and use any() for prop line columns to handle multiple bookmakers
   const sql = use_book_lines ? `
-    SELECT DISTINCT
+    SELECT
       b.game_id,
       b.player_id,
       toString(b.game_date) as game_date,
@@ -979,10 +980,10 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.opponent_id,
       b.is_home,
       ${statColumn} as stat_value,
-      pl.line as book_line,
-      pl.bookmaker as bookmaker,
-      pl.over_odds as over_odds,
-      pl.under_odds as under_odds,
+      any(pl.line) as book_line,
+      any(pl.bookmaker) as bookmaker,
+      any(pl.over_odds) as over_odds,
+      any(pl.under_odds) as under_odds,
       -- Full box score stats for expanded view
       ${sport === 'nfl' ? `
       b.pass_attempts,
@@ -1110,20 +1111,21 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
-    JOIN (
-      SELECT DISTINCT
-        ${sport === 'nfl' 
-          ? `player_name, game_time, prop_type, line, bookmaker, over_odds, under_odds`
-          : `espn_game_id, player_name, prop_type, line, bookmaker, over_odds, under_odds`}
-      FROM ${sport}_prop_lines
-      WHERE ${sport === 'nfl' ? '1=1' : `espn_game_id > 0`}
-        ${propType ? `AND prop_type = '${propType}'` : ''}
-      ${sport === 'nba' ? `GROUP BY espn_game_id, player_name, prop_type, line, bookmaker, over_odds, under_odds` : ''}
-    ) pl ON ${sport === 'nfl' 
+    JOIN ${sport}_prop_lines pl ON ${sport === 'nfl' 
       ? `p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time) AND pl.prop_type = '${propType}'`
-      : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.prop_type = '${propType}'`}
+      : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.espn_game_id > 0 AND pl.prop_type = '${propType}'`}
     ${oppRankingsJoin}
     ${whereClause}
+    GROUP BY b.game_id, b.player_id, b.game_date, g.game_time, b.opponent_id, b.is_home, ${statColumn}
+      ${sport === 'nfl' ? ', b.pass_attempts, b.pass_completions, b.pass_yards, b.pass_tds, b.interceptions, b.sacks, b.qb_rating, b.rush_attempts, b.rush_yards, b.rush_tds, b.rush_long, b.yards_per_carry, b.targets, b.receptions, b.receiving_yards, b.receiving_tds, b.receiving_long, b.yards_per_reception' : ', b.points, b.total_rebounds, b.assists, b.steals, b.blocks, b.turnovers, b.three_pointers_made, b.minutes_played, b.field_goals_made, b.field_goals_attempted, b.free_throws_made, b.free_throws_attempted, b.offensive_rebounds, b.defensive_rebounds, b.plus_minus'}
+      , g.spread_close, g.total_close, g.spread_open, g.total_open, g.spread_movement, g.total_movement, g.home_won, g.home_team_id, g.away_team_id, g.home_score, g.away_score, g.total_points, g.is_division_game, g.is_conference_game, g.venue
+      ${sport === 'nfl' ? ', g.referee_name, g.home_streak, g.away_streak, g.home_prev_margin, g.away_prev_margin, g.public_ml_home_bet_pct, g.public_ml_home_money_pct, g.public_spread_home_bet_pct, g.public_spread_home_money_pct, g.public_total_over_bet_pct, g.public_total_over_money_pct' : ''}
+      , t.name, t.abbreviation, t.division, t.conference
+      , p.name, p.position, p.headshot_url
+      , ht.abbreviation, at.abbreviation, ht.division, ht.conference, at.division, at.conference
+      ${sport === 'nfl' ? ', b.opp_def_rank_pass_yards, b.opp_def_rank_rush_yards, b.opp_def_rank_receiving_yards' : ', b.opp_def_rank_points, b.opp_def_rank_fg_pct, b.opp_def_rank_three_pt_pct'}
+      ${shouldJoinRankings ? ', opp_rank.rank_points_per_game' : ''}
+      ${shouldJoinRankings && sport === 'nfl' ? ', opp_rank.rank_passing_yards_per_game, opp_rank.rank_rushing_yards_per_game, opp_rank.rank_yards_allowed_to_wr, opp_rank.rank_yards_allowed_to_te, opp_rank.rank_yards_allowed_to_rb, team_rank.win_pct, opp_rank.win_pct' : ''}
     ORDER BY b.game_date DESC, b.player_id
     ${limitClause}
   ` : `
