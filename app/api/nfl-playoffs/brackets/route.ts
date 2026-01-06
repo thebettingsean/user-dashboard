@@ -113,14 +113,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'You must be a member of this group' }, { status: 403 })
     }
 
-    // Check if bracket already exists
-    const { data: existingBracket } = await supabaseUsers
-      .from('nfl_playoff_brackets')
-      .select('id')
-      .eq('group_id', groupId)
-      .eq('user_id', userId)
-      .single()
-
     if (existingBracket) {
       // Update existing bracket
       const updateData: any = {
