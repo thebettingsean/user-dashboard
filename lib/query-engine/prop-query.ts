@@ -895,6 +895,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     if (sport === 'nba') {
       // NBA: Use argMax to get latest ranking for each team/season combination
       // This gets the ranking from the most recent week available for that season
+      // Filter out bad pace records (pace < 70) before aggregation
       oppRankingsJoin = `
         LEFT JOIN (
           SELECT 
@@ -910,11 +911,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
             argMax(rank_steals_per_game, week) as rank_steals_per_game,
             argMax(rank_blocks_per_game, week) as rank_blocks_per_game
           FROM ${rankingsTable}
-          WHERE pace_per_game >= 70 OR pace_per_game IS NULL
+          WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
           GROUP BY team_id, season
+          HAVING argMax(pace_per_game, week) >= 70 OR argMax(pace_per_game, week) IS NULL
         ) opp_rank ON b.opponent_id = opp_rank.team_id 
           AND g.season = opp_rank.season
-          ${paceFilter}
         LEFT JOIN (
           SELECT 
             team_id,
@@ -922,11 +923,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
             argMax(week, week) as week,
             argMax(pace_per_game, week) as pace_per_game
           FROM ${rankingsTable}
-          WHERE pace_per_game >= 70 OR pace_per_game IS NULL
+          WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
           GROUP BY team_id, season
+          HAVING argMax(pace_per_game, week) >= 70 OR argMax(pace_per_game, week) IS NULL
         ) team_rank ON b.team_id = team_rank.team_id 
           AND g.season = team_rank.season
-          ${teamPaceFilter}
       `
     } else {
       // NFL: Simple week-based join
