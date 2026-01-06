@@ -73,13 +73,11 @@ export async function GET() {
       SELECT 
         g.game_id,
         g.game_date,
-        g.week,
-        g.away_team,
-        g.home_team
+        g.week
       FROM nfl_games g FINAL
       LEFT JOIN (
         SELECT DISTINCT game_id 
-        FROM nfl_prop_lines
+        FROM nfl_prop_lines FINAL
       ) pl ON toString(g.game_id) = pl.game_id
       WHERE g.season = 2023
         AND g.is_playoff = 0
