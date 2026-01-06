@@ -282,8 +282,6 @@ function NFLPlayoffsPageContent() {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
   const [groupName, setGroupName] = useState('')
   const [creatingGroup, setCreatingGroup] = useState(false)
-  const [userGroups, setUserGroups] = useState<any[]>([])
-  const [loadingGroups, setLoadingGroups] = useState(false)
   const [submittingBracket, setSubmittingBracket] = useState(false)
 
   // Fetch team logos
@@ -592,19 +590,6 @@ function NFLPlayoffsPageContent() {
     alert('Share URL copied to clipboard!')
   }
 
-  // Fetch user's groups on mount if signed in
-  useEffect(() => {
-    if (isSignedIn && user?.id) {
-      fetch(`/api/nfl-playoffs/groups?userId=${user.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.groups) {
-            setUserGroups(data.groups)
-          }
-        })
-        .catch(err => console.error('Error fetching groups:', err))
-    }
-  }, [isSignedIn, user?.id])
 
   const handleCreateGroup = async () => {
     if (!groupName.trim() || creatingGroup) return
@@ -880,37 +865,15 @@ function NFLPlayoffsPageContent() {
           </button>
           <button 
             className={styles.groupButton}
-            onClick={async () => {
+            onClick={() => {
               if (!isSignedIn) {
                 openSignIn()
               } else {
-                // Show user's groups or redirect to first group
-                if (userGroups.length > 0) {
-                  router.push(`/nfl-playoffs/group/${userGroups[0].nfl_playoff_groups.id}`)
-                } else {
-                  // Fetch groups first
-                  setLoadingGroups(true)
-                  try {
-                    const response = await fetch(`/api/nfl-playoffs/groups?userId=${user?.id}`)
-                    if (response.ok) {
-                      const data = await response.json()
-                      if (data.groups && data.groups.length > 0) {
-                        router.push(`/nfl-playoffs/group/${data.groups[0].nfl_playoff_groups.id}`)
-                      } else {
-                        alert('You are not in any groups yet. Create a group to get started!')
-                      }
-                    }
-                  } catch (error) {
-                    console.error('Error fetching groups:', error)
-                  } finally {
-                    setLoadingGroups(false)
-                  }
-                }
+                router.push('/nfl-playoffs/groups')
               }
             }}
-            disabled={loadingGroups}
           >
-            {loadingGroups ? 'Loading...' : 'View My Group'}
+            View My Groups
           </button>
         </div>
       </div>

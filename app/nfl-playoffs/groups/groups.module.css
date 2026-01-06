@@ -1,0 +1,189 @@
+.container {
+  min-height: 100vh;
+  background: #0C0E12;
+  padding: 40px 20px;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #696969;
+}
+
+.header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #696969;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.backButton {
+  padding: 10px 20px;
+  background: rgba(41, 47, 63, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  white-space: nowrap;
+}
+
+.backButton:hover {
+  background: rgba(41, 47, 63, 0.8);
+  border-color: rgba(50, 51, 53, 0.7);
+}
+
+.emptyState {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.emptyState p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 8px 0;
+}
+
+.createButton {
+  margin-top: 24px;
+  padding: 12px 24px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.createButton:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.section {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  color: #ffffff;
+}
+
+.groupsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.groupCard {
+  padding: 20px;
+  background: rgba(22, 31, 43, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.groupCard:hover {
+  background: rgba(22, 31, 43, 0.8);
+  border-color: rgba(50, 51, 53, 0.7);
+}
+
+.groupLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.groupName {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+}
+
+.groupMeta {
+  font-size: 14px;
+  color: #696969;
+  margin: 0;
+}
+
+.deleteButton {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .backButton {
+    width: 100%;
+  }
+
+  .groupsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

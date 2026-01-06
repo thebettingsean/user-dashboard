@@ -171,7 +171,7 @@ function GroupPageContent() {
             <div>
               <p>You have submitted a bracket. Score: {userBracket.score} points</p>
               <Link 
-                href={`/nfl-playoffs?groupId=${groupId}`}
+                href={`/nfl-playoffs/submit?groupId=${groupId}`}
                 className={styles.editBracketButton}
               >
                 Edit Your Bracket
@@ -181,7 +181,7 @@ function GroupPageContent() {
             <div>
               <p>You haven't submitted a bracket yet.</p>
               <Link 
-                href={`/nfl-playoffs?groupId=${groupId}`}
+                href={`/nfl-playoffs/submit?groupId=${groupId}`}
                 className={styles.editBracketButton}
               >
                 Create Your Bracket
