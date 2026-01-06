@@ -16,18 +16,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .eq('id', groupId)
       .single();
 
-    const groupName = group?.name || 'NFL Playoff Bracket';
-    const title = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`;
-    const description = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`;
+    const groupName = group?.name || '';
+    const title = groupName 
+      ? `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`
+      : 'Join And Make Your Picks For The 2026 NFL Playoffs!';
+    const description = groupName
+      ? `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`
+      : 'Join And Make Your Picks For The 2026 NFL Playoffs!';
 
     return {
-      title,
+      title: {
+        absolute: title, // Use absolute to override the template
+      },
       description,
       openGraph: {
         title,
         description,
         type: "website",
         url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        siteName: 'The Betting Insider',
         images: [
           {
             url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
@@ -47,14 +54,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch (error) {
     console.error('Error generating metadata:', error);
     // Fallback metadata
+    const fallbackTitle = "Join And Make Your Picks For The 2026 NFL Playoffs!";
     return {
-      title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
-      description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+      title: {
+        absolute: fallbackTitle, // Use absolute to override the template
+      },
+      description: fallbackTitle,
       openGraph: {
-        title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
-        description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        title: fallbackTitle,
+        description: fallbackTitle,
         type: "website",
         url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        siteName: 'The Betting Insider',
         images: [
           {
             url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
@@ -66,8 +77,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
       twitter: {
         card: "summary_large_image",
-        title: "Join And Make Your Picks For The 2026 NFL Playoffs!",
-        description: "Join And Make Your Picks For The 2026 NFL Playoffs!",
+        title: fallbackTitle,
+        description: fallbackTitle,
         images: ['https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png'],
       },
     };
