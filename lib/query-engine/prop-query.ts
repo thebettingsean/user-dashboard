@@ -942,14 +942,18 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   
   // Add book line conditions if using book lines
   if (use_book_lines && propType) {
-    allConditions.push(`pl.prop_type = '${propType}'`)
+    const propLineAlias = sport === 'nba' && use_book_lines ? 'lpl' : 'pl'
+    // prop_type filter is handled in the CTE for NBA, but we still need it for NFL
+    if (sport === 'nfl') {
+      allConditions.push(`${propLineAlias}.prop_type = '${propType}'`)
+    }
     
     if (book_line_min !== undefined && book_line_min !== null) {
-      allConditions.push(`pl.line >= ${book_line_min}`)
+      allConditions.push(`${propLineAlias}.line >= ${book_line_min}`)
       appliedFilters.push(`Book Line ${book_line_min}+`)
     }
     if (book_line_max !== undefined && book_line_max !== null) {
-      allConditions.push(`pl.line <= ${book_line_max}`)
+      allConditions.push(`${propLineAlias}.line <= ${book_line_max}`)
       if (book_line_min === undefined || book_line_min === null) {
         appliedFilters.push(`Book Line ≤${book_line_max}`)
       }
@@ -967,7 +971,37 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   const needsPlayerJoin = position && position !== 'any' && (!player_id || player_id === 0)
   
   // Different queries for book line mode vs any line mode
+  // For NBA: Use a subquery to get latest prop line per player/game/prop_type to avoid duplicates
+  const nbaPropLinesSubquery = sport === 'nba' && use_book_lines ? `
+    WITH latest_prop_lines AS (
+      SELECT 
+        espn_game_id,
+        player_name,
+        prop_type,
+        line,
+        bookmaker,
+        over_odds,
+        under_odds,
+        ROW_NUMBER() OVER (
+          PARTITION BY espn_game_id, player_name, prop_type 
+          ORDER BY snapshot_time DESC, 
+            multiIf(
+              bookmaker = 'fanduel', 1,
+              bookmaker = 'draftkings', 2,
+              bookmaker = 'betmgm', 3,
+              bookmaker = 'williamhill_us', 4,
+              bookmaker = 'betrivers', 5,
+              99
+            ) ASC
+        ) as rn
+      FROM nba_prop_lines
+      WHERE espn_game_id > 0
+        AND prop_type = '${propType}'
+    )
+  ` : ''
+  
   const sql = use_book_lines ? `
+    ${nbaPropLinesSubquery}
     SELECT DISTINCT
       b.game_id,
       b.player_id,
@@ -976,10 +1010,7 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       b.opponent_id,
       b.is_home,
       ${statColumn} as stat_value,
-      pl.line as book_line,
-      pl.bookmaker as bookmaker,
-      pl.over_odds as over_odds,
-      pl.under_odds as under_odds,
+      ${sport === 'nba' ? 'lpl.line as book_line, lpl.bookmaker as bookmaker, lpl.over_odds as over_odds, lpl.under_odds as under_odds,' : 'pl.line as book_line, pl.bookmaker as bookmaker, pl.over_odds as over_odds, pl.under_odds as under_odds,'}
       -- Full box score stats for expanded view
       ${sport === 'nfl' ? `
       b.pass_attempts,
@@ -1107,9 +1138,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
     LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
     JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
+    ${sport === 'nba' && use_book_lines ? `
+    JOIN latest_prop_lines lpl ON g.espn_game_id = toString(lpl.espn_game_id) 
+      AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(lpl.player_name, '.', ''))
+      AND lpl.rn = 1
+    ` : `
     JOIN ${sport}_prop_lines pl ON ${sport === 'nfl' 
       ? `p.name = pl.player_name AND toDate(g.game_time) = toDate(pl.game_time)`
       : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', '')) AND pl.espn_game_id > 0`}
+    `}
     ${oppRankingsJoin}
     ${whereClause}
     ORDER BY b.game_date DESC, b.player_id
