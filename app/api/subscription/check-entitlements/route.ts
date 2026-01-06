@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Legacy users with a subscription ID get access regardless of new subscription status fields
+    // Legacy users with a subscription ID OR just a plan field get access
     // They don't have the new status fields in their metadata
-    const hasStripeSubscription = Boolean(privateMeta.stripeSubscriptionId || privateMeta.subscriptionId)
+    const hasStripeSubscription = Boolean(privateMeta.stripeSubscriptionId || privateMeta.subscriptionId || privateMeta.plan)
     const legacyUserHasAccess = isLegacyUser && hasStripeSubscription
 
     // For new users, check subscription status
