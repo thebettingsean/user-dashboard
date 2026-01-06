@@ -1151,22 +1151,25 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       : `g.espn_game_id = toString(pl.espn_game_id) AND LOWER(REPLACE(p.name, '.', '')) = LOWER(REPLACE(pl.player_name, '.', ''))`}
     ${oppRankingsJoin}
     ${whereClause}
-    GROUP BY b.game_id, b.player_id, b.game_date, b.opponent_id, b.is_home, 
+    GROUP BY b.game_id, b.player_id, b.game_date, b.opponent_id, b.is_home, b.team_id,
+      ${sport === 'nfl' ? `
       b.pass_attempts, b.pass_completions, b.pass_yards, b.pass_tds, b.interceptions,
       b.sacks, b.qb_rating, b.rush_attempts, b.rush_yards, b.rush_tds, b.rush_long,
       b.yards_per_carry, b.targets, b.receptions, b.receiving_yards, b.receiving_tds,
-      b.receiving_long, b.yards_per_reception, b.points, b.total_rebounds, b.assists,
-      b.steals, b.blocks, b.turnovers, b.three_pointers_made, b.minutes_played,
-      b.field_goals_made, b.field_goals_attempted, b.free_throws_made, b.free_throws_attempted,
-      b.offensive_rebounds, b.defensive_rebounds, b.plus_minus, b.opp_def_rank_pass_yards,
-      b.opp_def_rank_rush_yards, b.opp_def_rank_receiving_yards, b.opp_def_rank_points,
-      b.opp_def_rank_fg_pct, b.opp_def_rank_three_pt_pct, b.team_id,
+      b.receiving_long, b.yards_per_reception, b.opp_def_rank_pass_yards,
+      b.opp_def_rank_rush_yards, b.opp_def_rank_receiving_yards,
+      ` : `
+      b.points, b.total_rebounds, b.assists, b.steals, b.blocks, b.turnovers,
+      b.three_pointers_made, b.minutes_played, b.field_goals_made, b.field_goals_attempted,
+      b.free_throws_made, b.free_throws_attempted, b.offensive_rebounds, b.defensive_rebounds,
+      b.plus_minus, b.opp_def_rank_points, b.opp_def_rank_fg_pct, b.opp_def_rank_three_pt_pct,
+      `}
       g.game_time, g.spread_close, g.total_close, g.spread_open, g.total_open,
       g.spread_movement, g.total_movement, g.home_won, g.home_team_id, g.away_team_id,
       g.home_score, g.away_score, g.total_points, g.is_division_game, g.is_conference_game,
-      g.venue, g.referee_name, g.home_streak, g.away_streak, g.home_prev_margin, g.away_prev_margin,
-      g.public_ml_home_bet_pct, g.public_ml_home_money_pct, g.public_spread_home_bet_pct,
-      g.public_spread_home_money_pct, g.public_total_over_bet_pct, g.public_total_over_money_pct,
+      g.venue, ${sport === 'nfl' ? `g.referee_name, g.home_streak, g.away_streak, g.home_prev_margin, g.away_prev_margin,` : ''}
+      ${sport === 'nfl' ? `g.public_ml_home_bet_pct, g.public_ml_home_money_pct, g.public_spread_home_bet_pct,
+      g.public_spread_home_money_pct, g.public_total_over_bet_pct, g.public_total_over_money_pct,` : ''}
       g.espn_game_id, g.season,
       t.name, t.abbreviation, t.division, t.conference,
       p.name, p.position, p.headshot_url,
