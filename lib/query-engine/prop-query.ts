@@ -913,7 +913,6 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
           FROM ${rankingsTable}
           WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
           GROUP BY team_id, season
-          HAVING argMax(pace_per_game, week) >= 70 OR argMax(pace_per_game, week) IS NULL
         ) opp_rank ON b.opponent_id = opp_rank.team_id 
           AND g.season = opp_rank.season
         LEFT JOIN (
@@ -925,7 +924,6 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
           FROM ${rankingsTable}
           WHERE (pace_per_game >= 70 OR pace_per_game IS NULL)
           GROUP BY team_id, season
-          HAVING argMax(pace_per_game, week) >= 70 OR argMax(pace_per_game, week) IS NULL
         ) team_rank ON b.team_id = team_rank.team_id 
           AND g.season = team_rank.season
       `
