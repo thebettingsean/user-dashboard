@@ -5392,27 +5392,28 @@ function SportsEngineContent() {
                       <option value="bottom_5">Bottom 5</option>
                     </select>
                     {defenseRank !== 'any' && (
-                      <select value={defenseStat} onChange={(e) => setDefenseStat(e.target.value)}>
-                        {queryType === 'prop' && selectedSport === 'nba' ? (
-                          <>
-                            <option value="points">vs Points</option>
-                            <option value="assists">vs Assists</option>
-                            <option value="rebounds">vs Rebounds</option>
-                            <option value="threes">vs 3PT</option>
-                            <option value="steals">vs Steals</option>
-                            <option value="blocks">vs Blocks</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="points">vs Points</option>
-                            <option value="pass">vs Pass</option>
-                            <option value="rush">vs Rush</option>
-                            <option value="wr">vs WRs</option>
-                            <option value="te">vs TEs</option>
-                            <option value="rb">vs RBs</option>
-                          </>
-                        )}
-                      </select>
+                      <>
+                        <select value={defenseStat} onChange={(e) => setDefenseStat(e.target.value)}>
+                          {queryType === 'prop' && selectedSport === 'nba' ? (
+                            <>
+                              <option value="points">vs Points</option>
+                              <option value="assists">vs Assists</option>
+                              <option value="rebounds">vs Rebounds</option>
+                              <option value="threes">vs 3PT</option>
+                              <option value="steals">vs Steals</option>
+                              <option value="blocks">vs Blocks</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="points">vs Points</option>
+                              <option value="pass">vs Pass</option>
+                              <option value="rush">vs Rush</option>
+                              <option value="wr">vs WRs</option>
+                              <option value="te">vs TEs</option>
+                              <option value="rb">vs RBs</option>
+                            </>
+                          )}
+                        </select>
                         {queryType === 'prop' && selectedSport === 'nba' && (
                           <select value={defenseStatPosition} onChange={(e) => setDefenseStatPosition(e.target.value)}>
                             <option value="">Overall</option>
@@ -5422,6 +5423,7 @@ function SportsEngineContent() {
                             <option value="pace_adj">Pace-Adjusted (per 100)</option>
                           </select>
                         )}
+                      </>
                     )}
                   </div>
                   <div>
