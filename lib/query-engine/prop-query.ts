@@ -900,17 +900,6 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
         ${teamPaceFilter}
     `
-    } else {
-      // NFL: Simple week-based join
-      oppRankingsJoin = `
-        LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
-          AND g.season = opp_rank.season 
-          AND g.${weekColumn} = opp_rank.${weekColumn} + 1
-        LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
-          AND g.season = team_rank.season 
-          AND g.${weekColumn} = team_rank.${weekColumn} + 1
-      `
-    }
   }
   
   // Add book line conditions if using book lines
