@@ -46,11 +46,11 @@ export async function GET() {
       try {
         // Check if game exists
         const exists = await clickhouseQuery<{cnt: number}>(`
-          SELECT COUNT(*) as cnt FROM nfl_games WHERE game_id = ${game.ScoreId}
+          SELECT COUNT(*) as cnt FROM nfl_games WHERE game_id = ${game.ScoreID}
         `)
         
         if ((exists.data?.[0]?.cnt || 0) > 0) {
-          console.log(`[DEBUG] Game ${game.ScoreId} already exists (${game.AwayTeam}@${game.HomeTeam})`)
+          console.log(`[DEBUG] Game ${game.ScoreID} already exists (${game.AwayTeam}@${game.HomeTeam})`)
           playoffGamesSkipped++
           continue
         }
@@ -69,7 +69,7 @@ export async function GET() {
         }
         
         const gameTime = new Date(game.DateTime).toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
-        const gameDate = game.Day
+        const gameDate = game.Day.split('T')[0]
         
         await clickhouseCommand(`
           INSERT INTO nfl_games (
@@ -77,28 +77,28 @@ export async function GET() {
             home_team_id, away_team_id, home_score, away_score,
             is_playoff, venue, is_neutral_site
           ) VALUES (
-            ${game.ScoreId}, ${game.ScoreId}, ${game.Season}, ${game.Week},
+            ${game.ScoreID}, ${game.ScoreID}, ${game.Season}, ${game.Week},
             '${gameDate}', '${gameTime}',
             ${homeTeamId.data[0].team_id}, ${awayTeamId.data[0].team_id},
-            ${game.HomeScore || 0}, ${game.AwayScore || 0},
+            0, 0,
             1, '${(game.StadiumDetails?.Name || '').replace(/'/g, "''")}',
-            ${game.NeutralVenue ? 1 : 0}
+            0
           )
         `)
         
         playoffGamesInserted++
         inserted.push({
-          scoreId: game.ScoreId,
+          scoreId: game.ScoreID,
           matchup: `${game.AwayTeam}@${game.HomeTeam}`,
           week: game.Week,
           date: gameDate
         })
         
-        console.log(`[DEBUG] Inserted playoff game ${game.ScoreId}: ${game.AwayTeam}@${game.HomeTeam}`)
+        console.log(`[DEBUG] Inserted playoff game ${game.ScoreID}: ${game.AwayTeam}@${game.HomeTeam}`)
         
       } catch (gameError: any) {
-        console.error(`[DEBUG] Error inserting playoff game ${game.ScoreId}:`, gameError.message)
-        errors.push(`Game ${game.ScoreId}: ${gameError.message}`)
+        console.error(`[DEBUG] Error inserting playoff game ${game.ScoreID}:`, gameError.message)
+        errors.push(`Game ${game.ScoreID}: ${gameError.message}`)
       }
     }
     

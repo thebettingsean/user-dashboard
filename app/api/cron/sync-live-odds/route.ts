@@ -260,7 +260,7 @@ export async function GET(request: Request) {
                   try {
                     // Check if game exists
                     const exists = await clickhouseQuery<{cnt: number}>(`
-                      SELECT COUNT(*) as cnt FROM nfl_games WHERE game_id = ${game.ScoreId}
+                      SELECT COUNT(*) as cnt FROM nfl_games WHERE game_id = ${game.ScoreID}
                     `)
                     
                     if ((exists.data?.[0]?.cnt || 0) === 0) {
@@ -274,7 +274,7 @@ export async function GET(request: Request) {
                       
                       if (homeTeamId.data?.[0] && awayTeamId.data?.[0]) {
                         const gameTime = new Date(game.DateTime).toISOString().replace('T', ' ').replace('Z', '').slice(0, 19)
-                        const gameDate = game.Day
+                        const gameDate = game.Day.split('T')[0]
                         
                         await clickhouseCommand(`
                           INSERT INTO nfl_games (
@@ -282,12 +282,12 @@ export async function GET(request: Request) {
                             home_team_id, away_team_id, home_score, away_score,
                             is_playoff, venue, is_neutral_site
                           ) VALUES (
-                            ${game.ScoreId}, ${game.ScoreId}, ${game.Season}, ${game.Week},
+                            ${game.ScoreID}, ${game.ScoreID}, ${game.Season}, ${game.Week},
                             '${gameDate}', '${gameTime}',
                             ${homeTeamId.data[0].team_id}, ${awayTeamId.data[0].team_id},
-                            ${game.HomeScore || 0}, ${game.AwayScore || 0},
+                            0, 0,
                             1, '${(game.StadiumDetails?.Name || '').replace(/'/g, "''")}',
-                            ${game.NeutralVenue ? 1 : 0}
+                            0
                           )
                         `)
                         
@@ -295,7 +295,7 @@ export async function GET(request: Request) {
                       }
                     }
                   } catch (gameError: any) {
-                    console.error(`[NFL] Error inserting playoff game ${game.ScoreId}:`, gameError.message)
+                    console.error(`[NFL] Error inserting playoff game ${game.ScoreID}:`, gameError.message)
                   }
                 }
                 
