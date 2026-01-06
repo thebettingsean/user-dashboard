@@ -1,0 +1,158 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0C0E12 0%, #12151B 50%, #0C0E12 100%);
+  padding: 40px 20px;
+  color: #ffffff;
+}
+
+.loginBox {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 40px;
+  background: rgba(22, 31, 43, 0.8);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.loginBox h1 {
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+.passwordInput {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  background: rgba(12, 14, 18, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.passwordInput:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.loginButton {
+  width: 100%;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.loginButton:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.backButton {
+  padding: 10px 20px;
+  background: rgba(41, 47, 63, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: rgba(41, 47, 63, 0.8);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+}
+
+.gamesList {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.gameCard {
+  padding: 20px;
+  background: rgba(22, 31, 43, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+}
+
+.gameCard h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  text-transform: capitalize;
+}
+
+.round {
+  margin: 5px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: capitalize;
+}
+
+.currentWinner {
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.teamSelector {
+  margin-top: 15px;
+}
+
+.teamSelector label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.teamSelect {
+  width: 100%;
+  padding: 10px;
+  background: rgba(12, 14, 18, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.teamSelect:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.teamSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

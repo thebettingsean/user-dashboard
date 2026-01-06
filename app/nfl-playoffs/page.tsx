@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useUser, useClerk } from '@clerk/nextjs'
 import styles from './nfl-playoffs.module.css'
 
 type TeamSlug = string
@@ -260,6 +261,8 @@ function populateTeams(selections: BracketSelections): BracketSelections {
 function NFLPlayoffsPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user, isSignedIn } = useUser()
+  const { openSignIn } = useClerk()
   // Initialize with populated teams so bracket shows immediately
   const [selections, setSelections] = useState<BracketSelections>(() => populateTeams({}))
   const [shareUrl, setShareUrl] = useState('')
@@ -276,6 +279,12 @@ function NFLPlayoffsPageContent() {
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
   const manualNavigationRef = useRef(false)
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
+  const [groupName, setGroupName] = useState('')
+  const [creatingGroup, setCreatingGroup] = useState(false)
+  const [userGroups, setUserGroups] = useState<any[]>([])
+  const [loadingGroups, setLoadingGroups] = useState(false)
+  const [submittingBracket, setSubmittingBracket] = useState(false)
 
   // Fetch team logos
   useEffect(() => {
@@ -583,6 +592,79 @@ function NFLPlayoffsPageContent() {
     alert('Share URL copied to clipboard!')
   }
 
+  // Fetch user's groups on mount if signed in
+  useEffect(() => {
+    if (isSignedIn && user?.id) {
+      fetch(`/api/nfl-playoffs/groups?userId=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.groups) {
+            setUserGroups(data.groups)
+          }
+        })
+        .catch(err => console.error('Error fetching groups:', err))
+    }
+  }, [isSignedIn, user?.id])
+
+  const handleCreateGroup = async () => {
+    if (!groupName.trim() || creatingGroup) return
+
+    setCreatingGroup(true)
+    try {
+      const response = await fetch('/api/nfl-playoffs/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: groupName.trim() }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setShowCreateGroupModal(false)
+        setGroupName('')
+        // Redirect to group page
+        router.push(`/nfl-playoffs/group/${data.group.id}`)
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error creating group:', error)
+      alert('Failed to create group')
+    } finally {
+      setCreatingGroup(false)
+    }
+  }
+
+  const handleSubmitBracket = async () => {
+    const groupId = searchParams.get('groupId')
+    if (!groupId || !isSignedIn || submittingBracket) return
+
+    setSubmittingBracket(true)
+    try {
+      const response = await fetch('/api/nfl-playoffs/brackets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupId,
+          selections,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert('Bracket submitted successfully!')
+        router.push(`/nfl-playoffs/group/${groupId}`)
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error submitting bracket:', error)
+      alert('Failed to submit bracket')
+    } finally {
+      setSubmittingBracket(false)
+    }
+  }
 
   // Swipe handlers for mobile carousel
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -783,7 +865,88 @@ function NFLPlayoffsPageContent() {
           </div>
           <p className={styles.subtitle}>Make your picks for the 2026 NFL Playoffs</p>
         </div>
+        <div className={styles.headerButtons}>
+          <button 
+            className={styles.groupButton}
+            onClick={() => {
+              if (!isSignedIn) {
+                openSignIn()
+              } else {
+                setShowCreateGroupModal(true)
+              }
+            }}
+          >
+            Create Group
+          </button>
+          <button 
+            className={styles.groupButton}
+            onClick={async () => {
+              if (!isSignedIn) {
+                openSignIn()
+              } else {
+                // Show user's groups or redirect to first group
+                if (userGroups.length > 0) {
+                  router.push(`/nfl-playoffs/group/${userGroups[0].nfl_playoff_groups.id}`)
+                } else {
+                  // Fetch groups first
+                  setLoadingGroups(true)
+                  try {
+                    const response = await fetch(`/api/nfl-playoffs/groups?userId=${user?.id}`)
+                    if (response.ok) {
+                      const data = await response.json()
+                      if (data.groups && data.groups.length > 0) {
+                        router.push(`/nfl-playoffs/group/${data.groups[0].nfl_playoff_groups.id}`)
+                      } else {
+                        alert('You are not in any groups yet. Create a group to get started!')
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error fetching groups:', error)
+                  } finally {
+                    setLoadingGroups(false)
+                  }
+                }
+              }
+            }}
+            disabled={loadingGroups}
+          >
+            {loadingGroups ? 'Loading...' : 'View My Group'}
+          </button>
+        </div>
       </div>
+
+      {/* Create Group Modal */}
+      {showCreateGroupModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowCreateGroupModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2>Create a Group</h2>
+            <p>Enter a unique name for your bracket competition group:</p>
+            <input
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="Group name"
+              className={styles.modalInput}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateGroup()
+                }
+              }}
+            />
+            <div className={styles.modalButtons}>
+              <button onClick={handleCreateGroup} disabled={creatingGroup || !groupName.trim()}>
+                {creatingGroup ? 'Creating...' : 'Create'}
+              </button>
+              <button onClick={() => {
+                setShowCreateGroupModal(false)
+                setGroupName('')
+              }} disabled={creatingGroup}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={styles.bracketWrapper} style={bracketWrapperStyle}>
         <div 
