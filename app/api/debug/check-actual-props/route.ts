@@ -15,17 +15,11 @@ export async function GET() {
       INNER JOIN nfl_upcoming_games u FINAL ON p.game_id = u.game_id
     `)
     
-    // 2. Get date distribution of prop data by extracting timestamp from game_id if possible
+    // 2. Get sample of prop data (wait for schema first)
     const propSample = await clickhouseQuery(`
-      SELECT 
-        game_id,
-        player_name,
-        prop_type,
-        line,
-        created_at
+      SELECT *
       FROM nfl_prop_lines FINAL
-      ORDER BY created_at DESC
-      LIMIT 20
+      LIMIT 5
     `)
     
     // 3. Check if there's a season field directly in prop_lines
