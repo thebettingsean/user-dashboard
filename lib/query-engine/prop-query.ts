@@ -1188,7 +1188,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       t.name, t.abbreviation, t.division, t.conference,
       p.name, p.position, p.headshot_url,
       ht.abbreviation, ht.division, ht.conference,
-      at.abbreviation, at.division, at.conference
+      at.abbreviation, at.division, at.conference${shouldJoinRankings ? `,
+      opp_rank.rank_points_per_game` : ''}${shouldJoinRankings && sport === 'nfl' ? `,
+      opp_rank.rank_passing_yards_per_game,
+      opp_rank.rank_rushing_yards_per_game,
+      opp_rank.rank_yards_allowed_to_wr,
+      opp_rank.rank_yards_allowed_to_te,
+      opp_rank.rank_yards_allowed_to_rb,
+      team_rank.win_pct,
+      opp_rank.win_pct` : ''}
     ORDER BY b.game_date DESC, b.player_id
     ${limitClause}
   ` : `
