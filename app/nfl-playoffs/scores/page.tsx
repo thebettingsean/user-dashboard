@@ -58,6 +58,117 @@ const DEFAULT_TEAMS = {
   nfc: ['seahawks', 'bears', 'eagles', 'panthers', 'rams', 'fortyniners', 'packers'],
 }
 
+// Sort teams by their seed/rank order
+function sortTeams(teams: (string | undefined)[], confRank: string[]): string[] {
+  return teams
+    .filter((t): t is string => !!t)
+    .sort((a, b) => {
+      const aIndex = confRank.indexOf(a)
+      const bIndex = confRank.indexOf(b)
+      return aIndex - bIndex
+    })
+}
+
+// Get matchup for a game based on game results
+function getGameMatchup(gameKey: string, gameResults: Record<string, string>): { top: string | null; bottom: string | null } {
+  // Wildcard games - use default matchups
+  if (gameKey === 'afc_wc_1') {
+    return { top: DEFAULT_TEAMS.afc[6], bottom: DEFAULT_TEAMS.afc[1] } // 7 vs 2
+  }
+  if (gameKey === 'afc_wc_2') {
+    return { top: DEFAULT_TEAMS.afc[5], bottom: DEFAULT_TEAMS.afc[2] } // 6 vs 3
+  }
+  if (gameKey === 'afc_wc_3') {
+    return { top: DEFAULT_TEAMS.afc[4], bottom: DEFAULT_TEAMS.afc[3] } // 5 vs 4
+  }
+  if (gameKey === 'nfc_wc_1') {
+    return { top: DEFAULT_TEAMS.nfc[6], bottom: DEFAULT_TEAMS.nfc[1] } // 7 vs 2
+  }
+  if (gameKey === 'nfc_wc_2') {
+    return { top: DEFAULT_TEAMS.nfc[5], bottom: DEFAULT_TEAMS.nfc[2] } // 6 vs 3
+  }
+  if (gameKey === 'nfc_wc_3') {
+    return { top: DEFAULT_TEAMS.nfc[4], bottom: DEFAULT_TEAMS.nfc[3] } // 5 vs 4
+  }
+
+  // AFC Divisional
+  if (gameKey === 'afc_div_1') {
+    const wc1Winner = gameResults['afc_wc_1']
+    const wc2Winner = gameResults['afc_wc_2']
+    const wc3Winner = gameResults['afc_wc_3']
+    const divTeams = sortTeams([
+      DEFAULT_TEAMS.afc[0], // #1 seed
+      wc1Winner,
+      wc2Winner,
+      wc3Winner,
+    ], DEFAULT_TEAMS.afc)
+    return { top: divTeams[3] || null, bottom: DEFAULT_TEAMS.afc[0] } // #1 seed always at bottom
+  }
+  if (gameKey === 'afc_div_2') {
+    const wc1Winner = gameResults['afc_wc_1']
+    const wc2Winner = gameResults['afc_wc_2']
+    const wc3Winner = gameResults['afc_wc_3']
+    const divTeams = sortTeams([
+      DEFAULT_TEAMS.afc[0], // #1 seed
+      wc1Winner,
+      wc2Winner,
+      wc3Winner,
+    ], DEFAULT_TEAMS.afc)
+    return { top: divTeams[2] || null, bottom: divTeams[1] || null }
+  }
+
+  // NFC Divisional
+  if (gameKey === 'nfc_div_1') {
+    const wc1Winner = gameResults['nfc_wc_1']
+    const wc2Winner = gameResults['nfc_wc_2']
+    const wc3Winner = gameResults['nfc_wc_3']
+    const divTeams = sortTeams([
+      DEFAULT_TEAMS.nfc[0], // #1 seed
+      wc1Winner,
+      wc2Winner,
+      wc3Winner,
+    ], DEFAULT_TEAMS.nfc)
+    return { top: divTeams[3] || null, bottom: DEFAULT_TEAMS.nfc[0] } // #1 seed always at bottom
+  }
+  if (gameKey === 'nfc_div_2') {
+    const wc1Winner = gameResults['nfc_wc_1']
+    const wc2Winner = gameResults['nfc_wc_2']
+    const wc3Winner = gameResults['nfc_wc_3']
+    const divTeams = sortTeams([
+      DEFAULT_TEAMS.nfc[0], // #1 seed
+      wc1Winner,
+      wc2Winner,
+      wc3Winner,
+    ], DEFAULT_TEAMS.nfc)
+    return { top: divTeams[2] || null, bottom: divTeams[1] || null }
+  }
+
+  // AFC Conference
+  if (gameKey === 'afc_conf') {
+    const div1Winner = gameResults['afc_div_1']
+    const div2Winner = gameResults['afc_div_2']
+    const confTeams = sortTeams([div1Winner, div2Winner], DEFAULT_TEAMS.afc)
+    return { top: confTeams[1] || null, bottom: confTeams[0] || null }
+  }
+
+  // NFC Conference
+  if (gameKey === 'nfc_conf') {
+    const div1Winner = gameResults['nfc_div_1']
+    const div2Winner = gameResults['nfc_div_2']
+    const confTeams = sortTeams([div1Winner, div2Winner], DEFAULT_TEAMS.nfc)
+    return { top: confTeams[1] || null, bottom: confTeams[0] || null }
+  }
+
+  // Super Bowl
+  if (gameKey === 'sb') {
+    const afcWinner = gameResults['afc_conf']
+    const nfcWinner = gameResults['nfc_conf']
+    return { top: afcWinner || null, bottom: nfcWinner || null }
+  }
+
+  return { top: null, bottom: null }
+}
+
 export default function ScoresPage() {
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -172,12 +283,26 @@ export default function ScoresPage() {
                          gameKey.includes('div') ? 'divisional' :
                          gameKey.includes('conf') ? 'conference' : 'superbowl'
             
-            // Get teams for this game (simplified - you may want to fetch actual matchups)
-            const allTeams = [...DEFAULT_TEAMS.afc, ...DEFAULT_TEAMS.nfc]
+            // Get actual matchup for this game
+            const matchup = getGameMatchup(gameKey, gameResults)
+            const matchupTeams = [matchup.top, matchup.bottom].filter(Boolean) as string[]
+            
+            // Get all possible teams for this conference/round
+            const isAFC = gameKey.startsWith('afc') || gameKey === 'sb'
+            const isNFC = gameKey.startsWith('nfc') || gameKey === 'sb'
+            const allTeams = gameKey === 'sb' 
+              ? [...DEFAULT_TEAMS.afc, ...DEFAULT_TEAMS.nfc]
+              : isAFC 
+                ? DEFAULT_TEAMS.afc 
+                : DEFAULT_TEAMS.nfc
             
             return (
               <div key={gameKey} className={styles.gameCard}>
-                <h3>{gameKey.replace(/_/g, ' ').toUpperCase()}</h3>
+                <h3>
+                  {matchup.top && matchup.bottom 
+                    ? `${TEAM_NAMES[matchup.top] || matchup.top} vs ${TEAM_NAMES[matchup.bottom] || matchup.bottom}`
+                    : gameKey.replace(/_/g, ' ').toUpperCase()}
+                </h3>
                 <p className={styles.round}>Round: {round}</p>
                 {currentWinner && (
                   <p className={styles.currentWinner}>
@@ -197,11 +322,21 @@ export default function ScoresPage() {
                     className={styles.teamSelect}
                   >
                     <option value="">-- Select Team --</option>
-                    {allTeams.map((team) => (
+                    {/* Show matchup teams first if available */}
+                    {matchupTeams.length > 0 && matchupTeams.map((team) => (
                       <option key={team} value={team}>
                         {TEAM_NAMES[team] || team}
                       </option>
                     ))}
+                    {/* Show all teams as fallback */}
+                    {allTeams.map((team) => {
+                      if (matchupTeams.includes(team)) return null // Already shown above
+                      return (
+                        <option key={team} value={team}>
+                          {TEAM_NAMES[team] || team}
+                        </option>
+                      )
+                    })}
                   </select>
                 </div>
               </div>

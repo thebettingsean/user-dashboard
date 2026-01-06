@@ -199,7 +199,7 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
 }
 
@@ -233,7 +233,7 @@
   z-index: 1;
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
 }
 
 .desktopBracket {
@@ -1015,13 +1015,13 @@
 @media (min-width: 769px) {
   .bracketWrapper {
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
   }
   
   .bracketContent {
     min-width: 1200px; /* Ensure bracket maintains its width */
-    overflow-y: hidden;
+    overflow-y: visible;
   }
 }
 

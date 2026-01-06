@@ -10,11 +10,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     // Fetch group name
-    const { data: group } = await supabaseUsers
+    const { data: group, error } = await supabaseUsers
       .from('nfl_playoff_groups')
       .select('name')
       .eq('id', groupId)
       .single();
+
+    if (error) {
+      console.error('Error fetching group for metadata:', error);
+    }
 
     const groupName = group?.name || '';
     const title = groupName 

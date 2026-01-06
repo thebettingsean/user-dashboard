@@ -191,6 +191,41 @@ function GroupPageContent() {
     fetchTeamLogos()
   }, [])
 
+  // Update document title and meta tags when group loads
+  useEffect(() => {
+    if (group?.name) {
+      const groupName = group.name
+      const title = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`
+      const description = `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`
+      
+      // Update document title
+      document.title = title
+      
+      // Update or create meta tags
+      const updateMetaTag = (name: string, content: string, attribute: string = 'name') => {
+        let meta = document.querySelector(`meta[${attribute}="${name}"]`)
+        if (!meta) {
+          meta = document.createElement('meta')
+          meta.setAttribute(attribute, name)
+          document.head.appendChild(meta)
+        }
+        meta.setAttribute('content', content)
+      }
+      
+      // Update standard meta tags
+      updateMetaTag('description', description)
+      
+      // Update Open Graph tags
+      updateMetaTag('og:title', title, 'property')
+      updateMetaTag('og:description', description, 'property')
+      updateMetaTag('og:url', window.location.href, 'property')
+      
+      // Update Twitter Card tags
+      updateMetaTag('twitter:title', title)
+      updateMetaTag('twitter:description', description)
+    }
+  }, [group])
+
   const fetchGroupData = async () => {
     setLoading(true)
     try {
