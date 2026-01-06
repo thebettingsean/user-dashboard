@@ -5,7 +5,7 @@ import { supabaseUsers } from '@/lib/supabase-users'
 // DELETE /api/nfl-playoffs/groups/[groupId] - Delete a group (only if user is creator)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { groupId: string } }
+  { params }: { params: Promise<{ groupId: string }> | { groupId: string } }
 ) {
   try {
     const { userId } = await auth()
@@ -14,7 +14,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { groupId } = params
+    // Handle both sync and async params (Next.js 14 vs 15+)
+    const resolvedParams = await Promise.resolve(params)
+    const { groupId } = resolvedParams
 
     if (!groupId) {
       return NextResponse.json({ error: 'Group ID is required' }, { status: 400 })
