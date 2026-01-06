@@ -122,6 +122,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Use requested sport or detect from stat type
   const sport = requestedSport || getSportFromStat(stat)
   
+  // Validate sport is correct
+  if (!sport || (sport !== 'nfl' && sport !== 'nba')) {
+    throw new Error(`Invalid sport: ${sport}. Must be 'nfl' or 'nba'`)
+  }
+  
   // Log sport detection for debugging
   console.log(`[PropQuery] Sport detected: ${sport} (requested: ${requestedSport}, stat: ${stat})`)
   
@@ -962,6 +967,10 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     }
   }
   
+  // CRITICAL: Add explicit sport filter to prevent cross-sport contamination
+  const sportFilter = `b.game_id IN (SELECT game_id FROM ${sport}_games)`
+  allConditions.push(sportFilter)
+  
   const whereClause = allConditions.length > 0 
     ? 'WHERE ' + allConditions.join(' AND ')
     : ''
@@ -1289,17 +1298,47 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   
   // Post-process: filter out any cross-sport contamination (safety check)
   const filteredRows = rows.filter((row: any) => {
-    // If we detect NBA stat columns, ensure sport is nba
+    // CRITICAL: Check if team names/abbreviations match the sport
     if (sport === 'nba') {
+      // NBA teams should not be NFL team names
+      const nflTeams = ['49ers', 'Raiders', 'Chargers', 'Rams', 'Seahawks', 'Cardinals', 'Cowboys', 'Giants', 'Eagles', 'Commanders', 'Bears', 'Lions', 'Packers', 'Vikings', 'Falcons', 'Panthers', 'Saints', 'Buccaneers', 'Bills', 'Dolphins', 'Patriots', 'Jets', 'Ravens', 'Bengals', 'Browns', 'Steelers', 'Texans', 'Colts', 'Jaguars', 'Titans', 'Broncos', 'Chiefs', 'Raiders', 'Chargers']
+      const opponentName = row.opponent_name || row.opponent_abbr || ''
+      const homeTeam = row.home_abbr || ''
+      const awayTeam = row.away_abbr || ''
+      
+      if (nflTeams.some(nflTeam => 
+        opponentName.includes(nflTeam) || 
+        homeTeam.includes(nflTeam) || 
+        awayTeam.includes(nflTeam)
+      )) {
+        console.error(`[PropQuery] CRITICAL: NBA query returned NFL team! Player: ${row.player_name}, Opponent: ${opponentName}`)
+        return false
+      }
+      
       // NBA players should not have NFL stats
-      if (row.pass_yards !== undefined && row.pass_yards !== null) {
-        console.warn(`[PropQuery] Filtered cross-sport row: NBA query returned NFL stats for player ${row.player_name}`)
+      if (row.pass_yards !== undefined && row.pass_yards !== null && row.pass_yards > 0) {
+        console.error(`[PropQuery] CRITICAL: NBA query returned NFL stats! Player: ${row.player_name}, pass_yards: ${row.pass_yards}`)
         return false
       }
     } else if (sport === 'nfl') {
+      // NFL teams should not be NBA team names
+      const nbaTeams = ['Lakers', 'Warriors', 'Celtics', 'Heat', 'Nuggets', 'Bucks', 'Suns', 'Mavericks', 'Clippers', '76ers', 'Nets', 'Knicks', 'Bulls', 'Raptors', 'Hawks', 'Hornets', 'Cavaliers', 'Pistons', 'Pacers', 'Rockets', 'Grizzlies', 'Pelicans', 'Thunder', 'Magic', 'Trail Blazers', 'Kings', 'Spurs', 'Jazz', 'Wizards', 'Timberwolves']
+      const opponentName = row.opponent_name || row.opponent_abbr || ''
+      const homeTeam = row.home_abbr || ''
+      const awayTeam = row.away_abbr || ''
+      
+      if (nbaTeams.some(nbaTeam => 
+        opponentName.includes(nbaTeam) || 
+        homeTeam.includes(nbaTeam) || 
+        awayTeam.includes(nbaTeam)
+      )) {
+        console.error(`[PropQuery] CRITICAL: NFL query returned NBA team! Player: ${row.player_name}, Opponent: ${opponentName}`)
+        return false
+      }
+      
       // NFL players should not have NBA stats  
-      if (row.points !== undefined && row.points !== null) {
-        console.warn(`[PropQuery] Filtered cross-sport row: NFL query returned NBA stats for player ${row.player_name}`)
+      if (row.points !== undefined && row.points !== null && row.points > 0) {
+        console.error(`[PropQuery] CRITICAL: NFL query returned NBA stats! Player: ${row.player_name}, points: ${row.points}`)
         return false
       }
     }
