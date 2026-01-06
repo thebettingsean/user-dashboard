@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { supabaseUsers } from "@/lib/supabase-users";
 
 type Props = {
-  params: { groupId: string };
+  params: Promise<{ groupId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { groupId } = params;
+  const { groupId } = await params;
 
   try {
     // Fetch group name
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       console.error('Error fetching group for metadata:', error);
     }
 
-    const groupName = group?.name || '';
+    const groupName = group?.name?.trim() || '';
     const title = groupName 
       ? `Join ${groupName} And Make Your Picks For The 2026 NFL Playoffs!`
       : 'Join And Make Your Picks For The 2026 NFL Playoffs!';
