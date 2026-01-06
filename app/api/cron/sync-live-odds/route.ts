@@ -614,8 +614,20 @@ export async function GET(request: Request) {
           const normalizeTeam = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
           
           // Get abbreviations from our map
-          const homeAbbr = TEAM_ABBREV_MAP[game.home_team] || ''
-          const awayAbbr = TEAM_ABBREV_MAP[game.away_team] || ''
+          // For NBA/NHL, prefer dynamic sportsDataAbbrevMap (from actual API response)
+          // For NFL/CFB, use hardcoded TEAM_ABBREV_MAP
+          let homeAbbr = ''
+          let awayAbbr = ''
+          
+          if (sportConfig.sport === 'nba' || sportConfig.sport === 'nhl') {
+            // Use dynamic map built from SportsDataIO Games endpoint
+            homeAbbr = sportsDataAbbrevMap.get(game.home_team) || ''
+            awayAbbr = sportsDataAbbrevMap.get(game.away_team) || ''
+          } else {
+            // Use hardcoded map for NFL/CFB
+            homeAbbr = TEAM_ABBREV_MAP[game.home_team] || ''
+            awayAbbr = TEAM_ABBREV_MAP[game.away_team] || ''
+          }
           
           let publicData = null
           
