@@ -122,6 +122,9 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Use requested sport or detect from stat type
   const sport = requestedSport || getSportFromStat(stat)
   
+  // Log sport detection for debugging
+  console.log(`[PropQuery] Sport detected: ${sport} (requested: ${requestedSport}, stat: ${stat})`)
+  
   // Get the prop type for book lines
   const propType = STAT_TO_PROP_TYPE[stat]
   
@@ -1115,15 +1118,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       SELECT 
         ${sport === 'nfl' 
           ? `player_name, game_time, prop_type,
-             argMax(line, COALESCE(snapshot_time, toDateTime(0))) as line,
-             argMax(bookmaker, COALESCE(snapshot_time, toDateTime(0))) as bookmaker,
-             argMax(over_odds, COALESCE(snapshot_time, toDateTime(0))) as over_odds,
-             argMax(under_odds, COALESCE(snapshot_time, toDateTime(0))) as under_odds`
+             any(line) as line,
+             any(bookmaker) as bookmaker,
+             any(over_odds) as over_odds,
+             any(under_odds) as under_odds`
           : `espn_game_id, player_name, prop_type,
-             argMax(line, COALESCE(snapshot_time, toDateTime(0))) as line,
-             argMax(bookmaker, COALESCE(snapshot_time, toDateTime(0))) as bookmaker,
-             argMax(over_odds, COALESCE(snapshot_time, toDateTime(0))) as over_odds,
-             argMax(under_odds, COALESCE(snapshot_time, toDateTime(0))) as under_odds`}
+             any(line) as line,
+             any(bookmaker) as bookmaker,
+             any(over_odds) as over_odds,
+             any(under_odds) as under_odds`}
       FROM ${sport}_prop_lines
       WHERE prop_type = '${propType}'
         ${sport === 'nba' ? 'AND espn_game_id > 0' : ''}
