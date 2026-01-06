@@ -317,6 +317,11 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
           rankCol = 'opp_rank.rank_points_allowed_per_100'
           statLabel = 'D (Pace-Adj)'
         }
+      } else if (stat === 'pace') {
+        // Pace filter - opponent's pace ranking
+        needsOppRankingsJoin = true
+        rankCol = 'opp_rank.rank_pace_per_game'
+        statLabel = 'Pace (Possessions/Game)'
       } else {
         // Default NBA defensive rankings (overall per game from nba_team_rankings)
         needsOppRankingsJoin = true
@@ -609,6 +614,43 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     }
   }
   
+  // Opponent Pace filter (NBA only - filter by how fast/slow opponent plays)
+  if (sport === 'nba' && filters.opp_pace_rank && filters.opp_pace_rank !== 'any') {
+    needsOppRankingsJoin = true
+    // NBA has 30 teams, top = fast pace (more possessions), bottom = slow pace (fewer possessions)
+    const maxRank = 30
+    const bottom5Start = maxRank - 4  // 26
+    const bottom10Start = maxRank - 9  // 21
+    const bottom16Start = maxRank - 15 // 15
+    
+    switch (filters.opp_pace_rank) {
+      case 'top_5':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game <= 5 AND opp_rank.rank_pace_per_game > 0`)
+        appliedFilters.push('Opponent Top 5 Pace (Fastest)')
+        break
+      case 'top_10':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game <= 10 AND opp_rank.rank_pace_per_game > 0`)
+        appliedFilters.push('Opponent Top 10 Pace (Fast)')
+        break
+      case 'top_16':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game <= 16 AND opp_rank.rank_pace_per_game > 0`)
+        appliedFilters.push('Opponent Top 16 Pace (Above Avg)')
+        break
+      case 'bottom_5':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game >= ${bottom5Start} AND opp_rank.rank_pace_per_game <= ${maxRank}`)
+        appliedFilters.push('Opponent Bottom 5 Pace (Slowest)')
+        break
+      case 'bottom_10':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game >= ${bottom10Start} AND opp_rank.rank_pace_per_game <= ${maxRank}`)
+        appliedFilters.push('Opponent Bottom 10 Pace (Slow)')
+        break
+      case 'bottom_16':
+        oppRankConditions.push(`opp_rank.rank_pace_per_game >= ${bottom16Start} AND opp_rank.rank_pace_per_game <= ${maxRank}`)
+        appliedFilters.push('Opponent Bottom 16 Pace (Below Avg)')
+        break
+    }
+  }
+  
   // vs Offense filter - opponent's offensive ranking
   if (filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
     needsOppRankingsJoin = true
@@ -841,20 +883,64 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         )
     `
   } else if (shouldJoinRankings) {
-    // Standard rankings join (NFL or NBA pace-adjusted)
-    // For NBA, filter out rankings with pace < 70 (bad/incomplete data)
+    // Standard rankings join (NFL or NBA)
+    // For NBA: Join by season and use the latest available ranking week (rankings are cumulative)
+    // NOTE: This is a simplification - ideally we'd match the ranking week to the game's week,
+    // but NBA games don't have a week column. For now, using latest ranking per season.
+    // TODO: Improve to use game_date to determine correct week
+    // For NFL: week column exists and we use week + 1 (rankings are "through" week, so week 2 game uses week 1 rankings)
     const paceFilter = sport === 'nba' ? 'AND opp_rank.pace_per_game >= 70' : ''
     const teamPaceFilter = sport === 'nba' ? 'AND team_rank.pace_per_game >= 70' : ''
-    oppRankingsJoin = `
-      LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
-        AND g.season = opp_rank.season 
-        ${weekColumn ? `AND g.${weekColumn} = opp_rank.${weekColumn} + 1` : ''}
-        ${paceFilter}
-      LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
-        AND g.season = team_rank.season 
-        ${weekColumn ? `AND g.${weekColumn} = team_rank.${weekColumn} + 1` : ''}
-        ${teamPaceFilter}
-    `
+    
+    if (sport === 'nba') {
+      // NBA: Use argMax to get latest ranking for each team/season combination
+      // This gets the ranking from the most recent week available for that season
+      oppRankingsJoin = `
+        LEFT JOIN (
+          SELECT 
+            team_id,
+            season,
+            argMax(week, week) as week,
+            argMax(rank_pace_per_game, week) as rank_pace_per_game,
+            argMax(pace_per_game, week) as pace_per_game,
+            argMax(rank_points_allowed_per_game, week) as rank_points_allowed_per_game,
+            argMax(rank_assists_allowed_per_game, week) as rank_assists_allowed_per_game,
+            argMax(rank_rebounds_allowed_per_game, week) as rank_rebounds_allowed_per_game,
+            argMax(rank_threes_allowed_per_game, week) as rank_threes_allowed_per_game,
+            argMax(rank_steals_per_game, week) as rank_steals_per_game,
+            argMax(rank_blocks_per_game, week) as rank_blocks_per_game,
+            argMax(win_pct, week) as win_pct
+          FROM ${rankingsTable}
+          WHERE pace_per_game >= 70 OR pace_per_game IS NULL
+          GROUP BY team_id, season
+        ) opp_rank ON b.opponent_id = opp_rank.team_id 
+          AND g.season = opp_rank.season
+          ${paceFilter}
+        LEFT JOIN (
+          SELECT 
+            team_id,
+            season,
+            argMax(week, week) as week,
+            argMax(win_pct, week) as win_pct,
+            argMax(pace_per_game, week) as pace_per_game
+          FROM ${rankingsTable}
+          WHERE pace_per_game >= 70 OR pace_per_game IS NULL
+          GROUP BY team_id, season
+        ) team_rank ON b.team_id = team_rank.team_id 
+          AND g.season = team_rank.season
+          ${teamPaceFilter}
+      `
+    } else {
+      // NFL: Simple week-based join
+      oppRankingsJoin = `
+        LEFT JOIN ${rankingsTable} opp_rank ON b.opponent_id = opp_rank.team_id 
+          AND g.season = opp_rank.season 
+          AND g.${weekColumn} = opp_rank.${weekColumn} + 1
+        LEFT JOIN ${rankingsTable} team_rank ON b.team_id = team_rank.team_id 
+          AND g.season = team_rank.season 
+          AND g.${weekColumn} = team_rank.${weekColumn} + 1
+      `
+    }
   }
   
   // Add book line conditions if using book lines
