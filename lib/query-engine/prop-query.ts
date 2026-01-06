@@ -1054,15 +1054,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       `}
       -- Opponent offensive rankings from rankings join (if available)
       ${shouldJoinRankings ? 'opp_rank.rank_points_per_game as opp_off_rank_points,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_points,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_pass,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_rush,'}
-      -- Position-specific defensive rankings (vs WR/TE/RB)
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_wr,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_te,'}
-      ${shouldJoinRankings ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_rb,'}
-      -- Win percentages
-      ${shouldJoinRankings ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
-      ${shouldJoinRankings ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.rank_passing_yards_per_game as opp_off_rank_pass,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_pass,'}
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.rank_rushing_yards_per_game as opp_off_rank_rush,' : 'CAST(NULL as Nullable(Float32)) as opp_off_rank_rush,'}
+      -- Position-specific defensive rankings (vs WR/TE/RB) - NFL only
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.rank_yards_allowed_to_wr as opp_def_rank_vs_wr,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_wr,'}
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.rank_yards_allowed_to_te as opp_def_rank_vs_te,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_te,'}
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.rank_yards_allowed_to_rb as opp_def_rank_vs_rb,' : 'CAST(NULL as Nullable(UInt8)) as opp_def_rank_vs_rb,'}
+      -- Win percentages - NFL only
+      ${shouldJoinRankings && sport === 'nfl' ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
+      ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
     JOIN ${sport}_games g ON b.game_id = g.game_id
     LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
