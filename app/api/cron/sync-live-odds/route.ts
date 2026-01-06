@@ -389,8 +389,11 @@ export async function GET(request: Request) {
             }
             
             // CFB needs both REG and POST season games (bowl games)
+            // CRITICAL: In Jan/Feb, playoff games are in PREVIOUS year's POST season
             const seasonsToQuery = sportConfig.sport === 'cfb' 
-              ? [season.toString(), `${season}POST`]
+              ? currentMonth <= 2 
+                ? [`${currentYear - 1}POST`, season.toString()] // Jan-Feb: use last year's POST + current year
+                : [season.toString(), `${season}POST`] // Rest of year: use current year + POST
               : [season.toString()]
             
             for (const seasonStr of seasonsToQuery) {
