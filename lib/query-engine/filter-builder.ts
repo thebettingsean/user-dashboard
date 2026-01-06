@@ -419,19 +419,24 @@ export function buildMLMovementFilter(
 /**
  * Build public bet percentage filter
  * Filters games where public betting % on the relevant side falls within range
+ * @param isHomeTeam - True if filtering from home team's perspective, false for away
  */
 export function buildPublicBetPctFilter(
   range: { min?: number; max?: number } | undefined,
   tableAlias: string,
-  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+  betType: 'spread' | 'total' | 'moneyline' = 'spread',
+  isHomeTeam: boolean = true
 ): string | null {
   if (!range) return null
   
-  const column = betType === 'total' 
+  const homeColumn = betType === 'total' 
     ? `${tableAlias}.public_total_over_bet_pct`
     : betType === 'moneyline'
       ? `${tableAlias}.public_ml_home_bet_pct`
       : `${tableAlias}.public_spread_home_bet_pct`
+  
+  // If querying away team, use inverse (100 - home%)
+  const column = isHomeTeam ? homeColumn : `(100 - ${homeColumn})`
   
   if (range.min !== undefined && range.max !== undefined) {
     return `${column} BETWEEN ${range.min} AND ${range.max}`
@@ -445,19 +450,24 @@ export function buildPublicBetPctFilter(
 
 /**
  * Build public money percentage filter
+ * @param isHomeTeam - True if filtering from home team's perspective, false for away
  */
 export function buildPublicMoneyPctFilter(
   range: { min?: number; max?: number } | undefined,
   tableAlias: string,
-  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+  betType: 'spread' | 'total' | 'moneyline' = 'spread',
+  isHomeTeam: boolean = true
 ): string | null {
   if (!range) return null
   
-  const column = betType === 'total' 
+  const homeColumn = betType === 'total' 
     ? `${tableAlias}.public_total_over_money_pct`
     : betType === 'moneyline'
       ? `${tableAlias}.public_ml_home_money_pct`
       : `${tableAlias}.public_spread_home_money_pct`
+  
+  // If querying away team, use inverse (100 - home%)
+  const column = isHomeTeam ? homeColumn : `(100 - ${homeColumn})`
   
   if (range.min !== undefined && range.max !== undefined) {
     return `${column} BETWEEN ${range.min} AND ${range.max}`
@@ -473,11 +483,13 @@ export function buildPublicMoneyPctFilter(
  * Build public betting diff % filter (Money% - Bet%)
  * Positive = more money than bets (sharp)
  * Negative = more bets than money (square)
+ * @param isHomeTeam - True if filtering from home team's perspective, false for away
  */
 export function buildPublicDiffPctFilter(
   range: { min?: number; max?: number } | undefined,
   tableAlias: string,
-  betType: 'spread' | 'total' | 'moneyline' = 'spread'
+  betType: 'spread' | 'total' | 'moneyline' = 'spread',
+  isHomeTeam: boolean = true
 ): string | null {
   if (!range) return null
   
@@ -493,8 +505,11 @@ export function buildPublicDiffPctFilter(
       ? `${tableAlias}.public_ml_home_money_pct`
       : `${tableAlias}.public_spread_home_money_pct`
   
-  // diff = money% - bet%
-  const diffExpr = `(${moneyCol} - ${betCol})`
+  // For home team: diff = money% - bet%
+  // For away team: diff = (100-money%) - (100-bet%) = bet% - money% = -(money% - bet%)
+  const diffExpr = isHomeTeam 
+    ? `(${moneyCol} - ${betCol})`
+    : `(${betCol} - ${moneyCol})`
   
   if (range.min !== undefined && range.max !== undefined) {
     return `${diffExpr} BETWEEN ${range.min} AND ${range.max}`
@@ -1265,7 +1280,7 @@ export function buildFilterConditions(
   
   // Public Betting filters
   if (filters.public_bet_pct) {
-    const betPctFilter = buildPublicBetPctFilter(filters.public_bet_pct, tableAlias)
+    const betPctFilter = buildPublicBetPctFilter(filters.public_bet_pct, tableAlias, betType, isHomeTeam)
     if (betPctFilter) {
       conditions.push(betPctFilter)
       const min = filters.public_bet_pct.min
@@ -1275,7 +1290,7 @@ export function buildFilterConditions(
   }
   
   if (filters.public_money_pct) {
-    const moneyPctFilter = buildPublicMoneyPctFilter(filters.public_money_pct, tableAlias)
+    const moneyPctFilter = buildPublicMoneyPctFilter(filters.public_money_pct, tableAlias, betType, isHomeTeam)
     if (moneyPctFilter) {
       conditions.push(moneyPctFilter)
       const min = filters.public_money_pct.min
@@ -1285,7 +1300,7 @@ export function buildFilterConditions(
   }
   
   if (filters.public_diff_pct) {
-    const diffFilter = buildPublicDiffPctFilter(filters.public_diff_pct, tableAlias)
+    const diffFilter = buildPublicDiffPctFilter(filters.public_diff_pct, tableAlias, betType, isHomeTeam)
     if (diffFilter) {
       conditions.push(diffFilter)
       const min = filters.public_diff_pct.min
