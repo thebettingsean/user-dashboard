@@ -855,7 +855,9 @@ function NFLPlayoffsPageContent() {
             className={styles.groupButton}
             onClick={() => {
               if (!isSignedIn) {
-                openSignIn()
+                openSignIn({
+                  redirectUrl: window.location.href
+                })
               } else {
                 setShowCreateGroupModal(true)
               }
@@ -867,7 +869,9 @@ function NFLPlayoffsPageContent() {
             className={styles.groupButton}
             onClick={() => {
               if (!isSignedIn) {
-                openSignIn()
+                openSignIn({
+                  redirectUrl: window.location.href
+                })
               } else {
                 router.push('/nfl-playoffs/groups')
               }

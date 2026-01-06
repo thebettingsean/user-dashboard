@@ -169,6 +169,107 @@
   cursor: not-allowed;
 }
 
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 16px 36px rgba(3, 7, 18, 0.5);
+}
+
+.modal h2 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.modal p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modalInput {
+  width: 100%;
+  padding: 12px;
+  background: rgba(12, 14, 18, 0.6);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.modalInput:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.modalInput::placeholder {
+  color: #696969;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modalButtons button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  border: 1px solid rgba(50, 51, 53, 0.5);
+}
+
+.modalButtons button:first-child {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #ffffff;
+}
+
+.modalButtons button:first-child:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.modalButtons button:last-child {
+  background: rgba(41, 47, 63, 0.6);
+  color: #ffffff;
+}
+
+.modalButtons button:last-child:hover:not(:disabled) {
+  background: rgba(41, 47, 63, 0.8);
+}
+
+.modalButtons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .header {
     flex-direction: column;

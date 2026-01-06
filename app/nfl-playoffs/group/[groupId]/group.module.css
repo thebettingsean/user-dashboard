@@ -45,7 +45,8 @@
 
 .shareButton,
 .joinButton,
-.viewGroupsButton {
+.viewGroupsButton,
+.leaveButton {
   padding: 10px 20px;
   background: rgba(41, 47, 63, 0.6);
   border: 1px solid rgba(50, 51, 53, 0.5);
@@ -66,6 +67,22 @@
 .viewGroupsButton:hover {
   background: rgba(41, 47, 63, 0.8);
   border-color: rgba(50, 51, 53, 0.7);
+}
+
+.leaveButton {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.leaveButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.leaveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .joinButton:disabled {

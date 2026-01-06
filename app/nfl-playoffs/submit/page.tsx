@@ -237,7 +237,9 @@ function SubmitPageContent() {
   // Redirect if not signed in
   useEffect(() => {
     if (!isSignedIn) {
-      openSignIn()
+      openSignIn({
+        redirectUrl: window.location.href
+      })
     }
   }, [isSignedIn, openSignIn])
 

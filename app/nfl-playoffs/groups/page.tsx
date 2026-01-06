@@ -13,10 +13,15 @@ function GroupsPageContent() {
   const [groups, setGroups] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null)
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false)
+  const [groupName, setGroupName] = useState('')
+  const [creatingGroup, setCreatingGroup] = useState(false)
 
   useEffect(() => {
     if (!isSignedIn) {
-      openSignIn()
+      openSignIn({
+        redirectUrl: window.location.href
+      })
       return
     }
 
@@ -75,6 +80,35 @@ function GroupsPageContent() {
     }
   }
 
+  const handleCreateGroup = async () => {
+    if (!groupName.trim() || creatingGroup) return
+
+    setCreatingGroup(true)
+    try {
+      const response = await fetch('/api/nfl-playoffs/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: groupName.trim() }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setShowCreateGroupModal(false)
+        setGroupName('')
+        // Redirect to group page
+        router.push(`/nfl-playoffs/group/${data.group.id}`)
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error creating group:', error)
+      alert('Failed to create group')
+    } finally {
+      setCreatingGroup(false)
+    }
+  }
+
   if (!isSignedIn) {
     return (
       <div className={styles.container}>
@@ -106,7 +140,13 @@ function GroupsPageContent() {
         <div className={styles.headerActions}>
           <button 
             onClick={() => {
-              router.push('/nfl-playoffs')
+              if (!isSignedIn) {
+                openSignIn({
+                  redirectUrl: window.location.href
+                })
+              } else {
+                setShowCreateGroupModal(true)
+              }
             }}
             className={styles.createButton}
           >
@@ -120,7 +160,15 @@ function GroupsPageContent() {
           <p>You haven't created or joined any groups yet.</p>
           <p>Create a group to get started!</p>
           <button 
-            onClick={() => router.push('/nfl-playoffs')}
+            onClick={() => {
+              if (!isSignedIn) {
+                openSignIn({
+                  redirectUrl: window.location.href
+                })
+              } else {
+                setShowCreateGroupModal(true)
+              }
+            }}
             className={styles.emptyStateCreateButton}
           >
             Create a Group
@@ -179,6 +227,39 @@ function GroupsPageContent() {
             </div>
           )}
         </>
+      )}
+
+      {/* Create Group Modal */}
+      {showCreateGroupModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowCreateGroupModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2>Create a Group</h2>
+            <p>Enter a unique name for your bracket competition group:</p>
+            <input
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="Group name"
+              className={styles.modalInput}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateGroup()
+                }
+              }}
+            />
+            <div className={styles.modalButtons}>
+              <button onClick={handleCreateGroup} disabled={creatingGroup || !groupName.trim()}>
+                {creatingGroup ? 'Creating...' : 'Create'}
+              </button>
+              <button onClick={() => {
+                setShowCreateGroupModal(false)
+                setGroupName('')
+              }} disabled={creatingGroup}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -75,6 +75,7 @@ function GroupPageContent() {
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const [userBracket, setUserBracket] = useState<any>(null)
   const [teamLogos, setTeamLogos] = useState<Record<string, string | null>>({})
 
@@ -225,7 +226,9 @@ function GroupPageContent() {
 
   const handleJoinGroup = async () => {
     if (!isSignedIn) {
-      openSignIn()
+      openSignIn({
+        redirectUrl: window.location.href
+      })
       return
     }
 
@@ -251,6 +254,36 @@ function GroupPageContent() {
       alert('Failed to join group')
     } finally {
       setJoining(false)
+    }
+  }
+
+  const handleLeaveGroup = async () => {
+    if (!isSignedIn || !isMember) return
+
+    if (!confirm('Are you sure you want to leave this group? Your bracket will also be removed.')) {
+      return
+    }
+
+    setLeaving(true)
+    try {
+      const response = await fetch('/api/nfl-playoffs/groups/leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId }),
+      })
+
+      if (response.ok) {
+        alert('Left group successfully')
+        router.push('/nfl-playoffs/groups')
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error leaving group:', error)
+      alert('Failed to leave group')
+    } finally {
+      setLeaving(false)
     }
   }
 
@@ -298,13 +331,20 @@ function GroupPageContent() {
           <Link href="/nfl-playoffs/groups" className={styles.viewGroupsButton}>
             View My Groups
           </Link>
+          {isMember && !isCreator && (
+            <button onClick={handleLeaveGroup} disabled={leaving} className={styles.leaveButton}>
+              {leaving ? 'Leaving...' : 'Leave Group'}
+            </button>
+          )}
           {!isMember && isSignedIn && (
             <button onClick={handleJoinGroup} disabled={joining} className={styles.joinButton}>
               {joining ? 'Joining...' : 'Join Group'}
             </button>
           )}
           {!isSignedIn && (
-            <button onClick={() => openSignIn()} className={styles.joinButton}>
+            <button onClick={() => openSignIn({
+              redirectUrl: window.location.href
+            })} className={styles.joinButton}>
               Sign In to Join
             </button>
           )}
