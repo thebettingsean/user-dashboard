@@ -1115,7 +1115,21 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
     FROM (
       -- CTE: Pre-filter box scores by sport to ensure isolation
-      SELECT b.*
+      -- Only select columns we actually use to avoid GROUP BY issues
+      SELECT 
+        b.game_id, b.player_id, b.game_date, b.opponent_id, b.is_home, b.team_id,
+        ${sport === 'nfl' ? `
+        b.pass_attempts, b.pass_completions, b.pass_yards, b.pass_tds, b.interceptions,
+        b.sacks, b.qb_rating, b.rush_attempts, b.rush_yards, b.rush_tds, b.rush_long,
+        b.yards_per_carry, b.targets, b.receptions, b.receiving_yards, b.receiving_tds,
+        b.receiving_long, b.yards_per_reception, b.opp_def_rank_pass_yards,
+        b.opp_def_rank_rush_yards, b.opp_def_rank_receiving_yards
+        ` : `
+        b.points, b.total_rebounds, b.assists, b.steals, b.blocks, b.turnovers,
+        b.three_pointers_made, b.minutes_played, b.field_goals_made, b.field_goals_attempted,
+        b.free_throws_made, b.free_throws_attempted, b.offensive_rebounds, b.defensive_rebounds,
+        b.plus_minus, b.opp_def_rank_points, b.opp_def_rank_fg_pct, b.opp_def_rank_three_pt_pct
+        `}
       FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
       WHERE EXISTS (
         SELECT 1 FROM ${sport}_games g2 
