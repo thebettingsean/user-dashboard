@@ -5334,60 +5334,49 @@ function SportsEngineContent() {
             {/* Non-O/U: Team Rankings + vs Opponent Rankings + Streak */}
             {expandedSections.teamStats && !isOUQuery && (
               <>
-                {/* Row 1: Team Defense & Team Offense (Subject team's own rankings) */}
-                <div className={styles.filterGrid}>
-                  <div>
-                    <span>Team Defense</span>
-                    <select value={ownDefenseRank} onChange={(e) => setOwnDefenseRank(e.target.value)}>
-                      <option value="any">Any</option>
-                      <option value="top_5">Top 5</option>
-                      <option value="top_10">Top 10</option>
-                      <option value="top_16">Top 16</option>
-                      <option value="bottom_16">Bottom 16</option>
-                      <option value="bottom_10">Bottom 10</option>
-                      <option value="bottom_5">Bottom 5</option>
-                    </select>
-                    {ownDefenseRank !== 'any' && (
-                      <select value={ownDefenseStat} onChange={(e) => setOwnDefenseStat(e.target.value)}>
-                        {queryType === 'prop' && selectedSport === 'nba' ? (
-                          <>
-                            <option value="points">Points Allowed</option>
-                            <option value="assists">Assists Allowed</option>
-                            <option value="rebounds">Rebounds Allowed</option>
-                            <option value="threes">3PT Allowed</option>
-                            <option value="steals">Steals</option>
-                            <option value="blocks">Blocks</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="points">Points Allowed</option>
-                            <option value="pass">Pass D</option>
-                            <option value="rush">Rush D</option>
-                          </>
-                        )}
+                {/* Row 1: Team Defense & Team Offense (Subject team's own rankings) - Only for NFL */}
+                {!(queryType === 'prop' && selectedSport === 'nba') && (
+                  <div className={styles.filterGrid}>
+                    <div>
+                      <span>Team Defense</span>
+                      <select value={ownDefenseRank} onChange={(e) => setOwnDefenseRank(e.target.value)}>
+                        <option value="any">Any</option>
+                        <option value="top_5">Top 5</option>
+                        <option value="top_10">Top 10</option>
+                        <option value="top_16">Top 16</option>
+                        <option value="bottom_16">Bottom 16</option>
+                        <option value="bottom_10">Bottom 10</option>
+                        <option value="bottom_5">Bottom 5</option>
                       </select>
-                    )}
-                  </div>
-                  <div>
-                    <span>Team Offense</span>
-                    <select value={ownOffenseRank} onChange={(e) => setOwnOffenseRank(e.target.value)}>
-                      <option value="any">Any</option>
-                      <option value="top_5">Top 5</option>
-                      <option value="top_10">Top 10</option>
-                      <option value="top_16">Top 16</option>
-                      <option value="bottom_16">Bottom 16</option>
-                      <option value="bottom_10">Bottom 10</option>
-                      <option value="bottom_5">Bottom 5</option>
-                    </select>
-                    {ownOffenseRank !== 'any' && (
-                      <select value={ownOffenseStat} onChange={(e) => setOwnOffenseStat(e.target.value)}>
-                        <option value="points">Points</option>
-                        <option value="pass">Passing</option>
-                        <option value="rush">Rushing</option>
+                      {ownDefenseRank !== 'any' && (
+                        <select value={ownDefenseStat} onChange={(e) => setOwnDefenseStat(e.target.value)}>
+                          <option value="points">Points Allowed</option>
+                          <option value="pass">Pass D</option>
+                          <option value="rush">Rush D</option>
+                        </select>
+                      )}
+                    </div>
+                    <div>
+                      <span>Team Offense</span>
+                      <select value={ownOffenseRank} onChange={(e) => setOwnOffenseRank(e.target.value)}>
+                        <option value="any">Any</option>
+                        <option value="top_5">Top 5</option>
+                        <option value="top_10">Top 10</option>
+                        <option value="top_16">Top 16</option>
+                        <option value="bottom_16">Bottom 16</option>
+                        <option value="bottom_10">Bottom 10</option>
+                        <option value="bottom_5">Bottom 5</option>
                       </select>
-                    )}
+                      {ownOffenseRank !== 'any' && (
+                        <select value={ownOffenseStat} onChange={(e) => setOwnOffenseStat(e.target.value)}>
+                          <option value="points">Points</option>
+                          <option value="pass">Passing</option>
+                          <option value="rush">Rushing</option>
+                        </select>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 {/* Row 2: vs Defense & vs Offense (Opponent rankings) */}
                 <div className={styles.filterGrid}>
@@ -5424,6 +5413,15 @@ function SportsEngineContent() {
                           </>
                         )}
                       </select>
+                        {queryType === 'prop' && selectedSport === 'nba' && (
+                          <select value={defenseStatPosition} onChange={(e) => setDefenseStatPosition(e.target.value)}>
+                            <option value="">Overall</option>
+                            <option value="vs_g">vs Guards</option>
+                            <option value="vs_f">vs Forwards</option>
+                            <option value="vs_c">vs Centers</option>
+                            <option value="pace_adj">Pace-Adjusted (per 100)</option>
+                          </select>
+                        )}
                     )}
                   </div>
                   <div>
