@@ -578,8 +578,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // WIN PERCENTAGE FILTERS
   // ============================================
   
-  // Team's win percentage (player's team) - requires team_rank join
-  if (filters.team_win_pct) {
+  // Team's win percentage (player's team) - requires team_rank join (NFL only - NBA doesn't have win_pct)
+  if (filters.team_win_pct && sport === 'nfl') {
     needsOppRankingsJoin = true
     const { min, max } = filters.team_win_pct
     // For player's team, if player is home use home rankings, else away
@@ -597,8 +597,8 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     }
   }
   
-  // Opponent's win percentage
-  if (filters.opp_win_pct) {
+  // Opponent's win percentage (NFL only - NBA doesn't have win_pct)
+  if (filters.opp_win_pct && sport === 'nfl') {
     needsOppRankingsJoin = true
     const { min, max } = filters.opp_win_pct
     
@@ -655,11 +655,25 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   if (filters.vs_offense_rank && filters.vs_offense_rank !== 'any') {
     needsOppRankingsJoin = true
     const stat = (filters.offense_stat as string) || 'overall'
-    const column = stat === 'points' ? 'rank_points_per_game'
-      : stat === 'passing' ? 'rank_passing_yards_per_game'
-      : stat === 'rushing' ? 'rank_rushing_yards_per_game'
-      : stat === 'total_yards' ? 'rank_total_yards_per_game'
-      : 'rank_total_yards_per_game'
+    
+    // Sport-aware column mapping
+    let column: string
+    const maxRank = sport === 'nba' ? 30 : 32
+    const bottom5Start = maxRank - 4
+    const bottom10Start = maxRank - 9
+    const bottom16Start = maxRank - 15
+    
+    if (sport === 'nba') {
+      // NBA only has rank_points_per_game for offense
+      column = 'rank_points_per_game'
+    } else {
+      // NFL has multiple offensive stat columns
+      column = stat === 'points' ? 'rank_points_per_game'
+        : stat === 'passing' ? 'rank_passing_yards_per_game'
+        : stat === 'rushing' ? 'rank_rushing_yards_per_game'
+        : stat === 'total_yards' ? 'rank_total_yards_per_game'
+        : 'rank_total_yards_per_game'
+    }
     
     switch (filters.vs_offense_rank) {
       case 'top_5':
@@ -675,15 +689,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         appliedFilters.push('vs Top 16 Offense')
         break
       case 'bottom_5':
-        oppRankConditions.push(`opp_rank.${column} >= 28 AND opp_rank.${column} <= 32`)
+        oppRankConditions.push(`opp_rank.${column} >= ${bottom5Start} AND opp_rank.${column} <= ${maxRank}`)
         appliedFilters.push('vs Bottom 5 Offense')
         break
       case 'bottom_10':
-        oppRankConditions.push(`opp_rank.${column} >= 23 AND opp_rank.${column} <= 32`)
+        oppRankConditions.push(`opp_rank.${column} >= ${bottom10Start} AND opp_rank.${column} <= ${maxRank}`)
         appliedFilters.push('vs Bottom 10 Offense')
         break
       case 'bottom_16':
-        oppRankConditions.push(`opp_rank.${column} >= 17 AND opp_rank.${column} <= 32`)
+        oppRankConditions.push(`opp_rank.${column} >= ${bottom16Start} AND opp_rank.${column} <= ${maxRank}`)
         appliedFilters.push('vs Bottom 16 Offense')
         break
     }
@@ -697,11 +711,25 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   if (filters.own_offense_rank && filters.own_offense_rank !== 'any') {
     needsOppRankingsJoin = true
     const stat = (filters.own_offense_stat as string) || 'points'
-    const column = stat === 'points' ? 'rank_points_per_game'
-      : stat === 'passing' ? 'rank_passing_yards_per_game'
-      : stat === 'rushing' ? 'rank_rushing_yards_per_game'
-      : stat === 'total_yards' ? 'rank_total_yards_per_game'
-      : 'rank_points_per_game'
+    
+    // Sport-aware column mapping
+    let column: string
+    const maxRank = sport === 'nba' ? 30 : 32
+    const bottom5Start = maxRank - 4
+    const bottom10Start = maxRank - 9
+    const bottom16Start = maxRank - 15
+    
+    if (sport === 'nba') {
+      // NBA only has rank_points_per_game for offense
+      column = 'rank_points_per_game'
+    } else {
+      // NFL has multiple offensive stat columns
+      column = stat === 'points' ? 'rank_points_per_game'
+        : stat === 'passing' ? 'rank_passing_yards_per_game'
+        : stat === 'rushing' ? 'rank_rushing_yards_per_game'
+        : stat === 'total_yards' ? 'rank_total_yards_per_game'
+        : 'rank_points_per_game'
+    }
     
     const statLabel = stat === 'points' ? 'Points' 
       : stat === 'passing' ? 'Pass O' 
@@ -722,15 +750,15 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
         appliedFilters.push(`Team Top 16 ${statLabel}`)
         break
       case 'bottom_5':
-        oppRankConditions.push(`team_rank.${column} >= 28 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom5Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 5 ${statLabel}`)
         break
       case 'bottom_10':
-        oppRankConditions.push(`team_rank.${column} >= 23 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom10Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 10 ${statLabel}`)
         break
       case 'bottom_16':
-        oppRankConditions.push(`team_rank.${column} >= 17 AND team_rank.${column} <= 32`)
+        oppRankConditions.push(`team_rank.${column} >= ${bottom16Start} AND team_rank.${column} <= ${maxRank}`)
         appliedFilters.push(`Team Bottom 16 ${statLabel}`)
         break
     }
