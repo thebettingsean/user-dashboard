@@ -60,6 +60,7 @@
   white-space: nowrap;
   text-decoration: none;
   display: inline-block;
+  text-align: center;
 }
 
 .shareButton:hover,
@@ -99,11 +100,89 @@
   border-radius: 12px;
 }
 
-.leaderboardSection,
-.membersSection {
+.leaderboardSection {
   max-width: 1200px;
   margin: 0 auto 40px;
   padding: 0;
+}
+
+.rulesSection {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 24px;
+  background: linear-gradient(135deg, #161F2B 0%, #0C0E12 50%, #161F2B 100%);
+  border: 1px solid rgba(50, 51, 53, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
+}
+
+.rulesSection h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  color: #ffffff;
+}
+
+.rulesContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ruleItem {
+  padding: 20px;
+  background: rgba(12, 14, 18, 0.4);
+  border: 1px solid rgba(50, 51, 53, 0.3);
+  border-radius: 8px;
+}
+
+.ruleItem h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+}
+
+.ruleItem p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.ruleItem ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.ruleItem li {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.ruleItem li:last-child {
+  margin-bottom: 0;
+}
+
+.ruleItem li strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.perfectBracket {
+  margin-top: 16px !important;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  color: #ffffff !important;
+}
+
+.perfectBracket strong {
+  color: #ffffff;
 }
 
 .bracketSection h2,
@@ -327,7 +406,9 @@
   }
 
   .shareButton,
-  .joinButton {
+  .joinButton,
+  .viewGroupsButton,
+  .leaveButton {
     width: 100%;
   }
 
@@ -404,6 +485,33 @@
 
   .maxPoints {
     font-size: 11px;
+  }
+
+  .rulesSection {
+    padding: 16px;
+  }
+
+  .rulesSection h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .rulesContent {
+    gap: 16px;
+  }
+
+  .ruleItem {
+    padding: 16px;
+  }
+
+  .ruleItem h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .ruleItem p,
+  .ruleItem li {
+    font-size: 13px;
   }
 }
 

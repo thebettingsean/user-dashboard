@@ -71,12 +71,12 @@ function GroupPageContent() {
   const groupId = params.groupId as string
 
   const [group, setGroup] = useState<any>(null)
-  const [members, setMembers] = useState<any[]>([])
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [userBracket, setUserBracket] = useState<any>(null)
+  const [isMember, setIsMember] = useState(false)
   const [teamLogos, setTeamLogos] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
@@ -194,12 +194,11 @@ function GroupPageContent() {
   const fetchGroupData = async () => {
     setLoading(true)
     try {
-      // Fetch group and members
+      // Fetch group
       const groupResponse = await fetch(`/api/nfl-playoffs/groups?groupId=${groupId}`)
       if (groupResponse.ok) {
         const groupData = await groupResponse.json()
         setGroup(groupData.group)
-        setMembers(groupData.members || [])
       }
 
       // Fetch leaderboard
@@ -209,13 +208,24 @@ function GroupPageContent() {
         setLeaderboard(leaderboardData.leaderboard || [])
       }
 
-      // Fetch user's bracket if signed in
+      // Fetch user's bracket and membership status if signed in
       if (isSignedIn && user?.id) {
         const bracketResponse = await fetch(`/api/nfl-playoffs/brackets?groupId=${groupId}&userId=${user.id}`)
         if (bracketResponse.ok) {
           const bracketData = await bracketResponse.json()
-          setUserBracket(bracketData.bracket)
+          setUserBracket(bracketData.bracket || null)
         }
+        
+        // Check membership by checking if user is in group_members table
+        const groupResponse = await fetch(`/api/nfl-playoffs/groups?groupId=${groupId}`)
+        if (groupResponse.ok) {
+          const groupData = await groupResponse.json()
+          const memberIds = (groupData.members || []).map((m: any) => m.user_id)
+          setIsMember(memberIds.includes(user.id))
+        }
+      } else {
+        setUserBracket(null)
+        setIsMember(false)
       }
     } catch (error) {
       console.error('Error fetching group data:', error)
@@ -293,7 +303,6 @@ function GroupPageContent() {
     alert('Group link copied to clipboard!')
   }
 
-  const isMember = isSignedIn && user?.id && members.some(m => m.user_id === user.id)
   const isCreator = group && isSignedIn && user?.id && group.created_by === user.id
 
   if (loading) {
@@ -320,9 +329,6 @@ function GroupPageContent() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.groupName}>{group.name}</h1>
-          <p className={styles.groupInfo}>
-            {members.length} {members.length === 1 ? 'member' : 'members'}
-          </p>
         </div>
         <div className={styles.headerActions}>
           <button onClick={copyGroupLink} className={styles.shareButton}>
@@ -465,19 +471,39 @@ function GroupPageContent() {
         )}
       </div>
 
-      <div className={styles.membersSection}>
-        <h2>Members</h2>
-        <div className={styles.membersList}>
-          {members.map((member) => (
-            <div key={member.id} className={styles.member}>
-              <div className={styles.memberId}>
-                {member.user_id === user?.id ? 'You' : (member.userDisplayName || `User ${member.user_id.slice(0, 8)}...`)}
-              </div>
-              {member.user_id === group.created_by && (
-                <span className={styles.creatorBadge}>Creator</span>
-              )}
-            </div>
-          ))}
+      <div className={styles.rulesSection}>
+        <h2>How It Works</h2>
+        <div className={styles.rulesContent}>
+          <div className={styles.ruleItem}>
+            <h3>Scoring System</h3>
+            <p>Points are awarded for correctly predicting game winners:</p>
+            <ul>
+              <li><strong>Wild Card Round:</strong> 10 points per game (6 games)</li>
+              <li><strong>Divisional Round:</strong> 20 points per game (4 games)</li>
+              <li><strong>Conference Championship:</strong> 40 points per game (2 games)</li>
+              <li><strong>Super Bowl:</strong> 80 points (1 game)</li>
+            </ul>
+            <p className={styles.perfectBracket}>
+              <strong>Perfect Bracket Bonus:</strong> 190 total points if you correctly predict every game!
+            </p>
+          </div>
+          <div className={styles.ruleItem}>
+            <h3>Bracket Submission</h3>
+            <ul>
+              <li>Each user can submit one bracket per group</li>
+              <li>Brackets must be submitted before the first game kicks off (1:00 PM EST on Saturday)</li>
+              <li>You can edit your bracket until the deadline</li>
+              <li>Give your bracket a unique name to identify it</li>
+            </ul>
+          </div>
+          <div className={styles.ruleItem}>
+            <h3>Leaderboard</h3>
+            <ul>
+              <li>Scores update automatically as games finish</li>
+              <li>The leaderboard ranks all participants by total points</li>
+              <li>Your champion pick is displayed next to your bracket name</li>
+            </ul>
+          </div>
         </div>
       </div>
 

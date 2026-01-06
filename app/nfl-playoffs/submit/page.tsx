@@ -233,6 +233,12 @@ function SubmitPageContent() {
   const [group, setGroup] = useState<any>(null)
   const [existingBracket, setExistingBracket] = useState<any>(null)
   const [bracketName, setBracketName] = useState('')
+  const [currentRoundIndex, setCurrentRoundIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const carouselRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef<number | null>(null)
+  const touchEndX = useRef<number | null>(null)
+  const manualNavigationRef = useRef(false)
 
   // Redirect if not signed in
   useEffect(() => {
@@ -352,6 +358,205 @@ function SubmitPageContent() {
     fetchTeamLogos()
   }, [])
 
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Check if a round is complete and auto-advance (only forward, not backward)
+  useEffect(() => {
+    if (!isMobile) return
+
+    const rounds = [
+      { key: 'wildcard', games: ['afc_wc_1', 'afc_wc_2', 'afc_wc_3', 'nfc_wc_1', 'nfc_wc_2', 'nfc_wc_3'] },
+      { key: 'divisional', games: ['afc_div_1', 'afc_div_2', 'nfc_div_1', 'nfc_div_2'] },
+      { key: 'conference', games: ['afc_conf', 'nfc_conf'] },
+      { key: 'superbowl', games: ['sb'] },
+    ]
+
+    // Find the highest completed round
+    let highestCompleteRound = -1
+    for (let i = 0; i < rounds.length; i++) {
+      const round = rounds[i]
+      const isComplete = round.games.every(gameKey => {
+        const game = selections[gameKey]
+        return game?.selected !== undefined && (game?.top || game?.bottom)
+      })
+      if (isComplete) {
+        highestCompleteRound = i
+      }
+    }
+
+    const currentRound = rounds[currentRoundIndex]
+    if (!currentRound) return
+
+    // Check if all games in current round have selections
+    const isRoundComplete = currentRound.games.every(gameKey => {
+      const game = selections[gameKey]
+      return game?.selected !== undefined && (game?.top || game?.bottom)
+    })
+
+    // Only auto-advance if:
+    // 1. Current round is complete
+    // 2. We're on the highest completed round (not a previous one)
+    // 3. We're not on the last round
+    // 4. User hasn't manually navigated
+    if (isRoundComplete && 
+        currentRoundIndex === highestCompleteRound &&
+        currentRoundIndex < rounds.length - 1 &&
+        !manualNavigationRef.current) {
+      const timer = setTimeout(() => {
+        // Double-check that user hasn't navigated away
+        if (!manualNavigationRef.current) {
+          setCurrentRoundIndex(prev => Math.min(prev + 1, rounds.length - 1))
+        }
+      }, 800) // Increased delay for smoother transition
+      return () => clearTimeout(timer)
+    }
+  }, [selections, currentRoundIndex, isMobile])
+
+  // Reset manual navigation flag after a short delay
+  useEffect(() => {
+    if (!isMobile) return
+    
+    if (manualNavigationRef.current) {
+      const timer = setTimeout(() => {
+        manualNavigationRef.current = false
+      }, 1000) // Reset flag after 1 second
+      return () => clearTimeout(timer)
+    }
+  }, [currentRoundIndex, isMobile])
+
+  // Initialize round index based on existing bracket
+  useEffect(() => {
+    if (existingBracket && selections) {
+      const rounds = [
+        { key: 'wildcard', games: ['afc_wc_1', 'afc_wc_2', 'afc_wc_3', 'nfc_wc_1', 'nfc_wc_2', 'nfc_wc_3'] },
+        { key: 'divisional', games: ['afc_div_1', 'afc_div_2', 'nfc_div_1', 'nfc_div_2'] },
+        { key: 'conference', games: ['afc_conf', 'nfc_conf'] },
+        { key: 'superbowl', games: ['sb'] },
+      ]
+      
+      let highestCompleteRound = 0
+      for (let i = 0; i < rounds.length; i++) {
+        const isComplete = rounds[i].games.every(gameKey => {
+          const game = selections[gameKey]
+          return game?.selected !== undefined && (game?.top || game?.bottom)
+        })
+        if (isComplete && i < rounds.length - 1) {
+          highestCompleteRound = i + 1
+        } else if (isComplete) {
+          highestCompleteRound = i
+        }
+      }
+      setCurrentRoundIndex(highestCompleteRound)
+    }
+  }, [existingBracket, selections])
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return
+    
+    const distance = touchStartX.current - touchEndX.current
+    const minSwipeDistance = 50
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) {
+        // Swipe left - go to next round
+        setCurrentRoundIndex(prev => Math.min(prev + 1, 3))
+      } else {
+        // Swipe right - go to previous round
+        setCurrentRoundIndex(prev => Math.max(prev - 1, 0))
+      }
+      manualNavigationRef.current = true
+    }
+
+    touchStartX.current = null
+    touchEndX.current = null
+  }
+
+  const renderMobileRound = (roundIndex: number) => {
+    switch (roundIndex) {
+      case 0: // Wildcard
+        return (
+          <div className={styles.mobileRound}>
+            <div className={styles.mobileRoundLabel}>Wildcard Round</div>
+            <div className={styles.mobileRoundContent}>
+              <div className={styles.mobileConferenceLabel}>AFC</div>
+              <GameSlot gameKey="afc_wc_1" game={selections.afc_wc_1} onTeamClick={handleTeamClick} seeds={[7, 2]} teamLogos={teamLogos} />
+              <GameSlot gameKey="afc_wc_2" game={selections.afc_wc_2} onTeamClick={handleTeamClick} seeds={[6, 3]} teamLogos={teamLogos} />
+              <GameSlot gameKey="afc_wc_3" game={selections.afc_wc_3} onTeamClick={handleTeamClick} seeds={[5, 4]} teamLogos={teamLogos} />
+              <div className={styles.mobileConferenceLabel}>NFC</div>
+              <GameSlot gameKey="nfc_wc_1" game={selections.nfc_wc_1} onTeamClick={handleTeamClick} seeds={[7, 2]} teamLogos={teamLogos} />
+              <GameSlot gameKey="nfc_wc_2" game={selections.nfc_wc_2} onTeamClick={handleTeamClick} seeds={[6, 3]} teamLogos={teamLogos} />
+              <GameSlot gameKey="nfc_wc_3" game={selections.nfc_wc_3} onTeamClick={handleTeamClick} seeds={[5, 4]} teamLogos={teamLogos} />
+            </div>
+          </div>
+        )
+      case 1: // Divisional
+        return (
+          <div className={styles.mobileRound}>
+            <div className={styles.mobileRoundLabel}>Divisional Round</div>
+            <div className={styles.mobileRoundContent}>
+              <div className={styles.mobileConferenceLabel}>AFC</div>
+              <GameSlot gameKey="afc_div_1" game={selections.afc_div_1} onTeamClick={handleTeamClick} seeds={[null, 1]} teamLogos={teamLogos} />
+              <GameSlot gameKey="afc_div_2" game={selections.afc_div_2} onTeamClick={handleTeamClick} teamLogos={teamLogos} />
+              <div className={styles.mobileConferenceLabel}>NFC</div>
+              <GameSlot gameKey="nfc_div_1" game={selections.nfc_div_1} onTeamClick={handleTeamClick} seeds={[null, 1]} teamLogos={teamLogos} />
+              <GameSlot gameKey="nfc_div_2" game={selections.nfc_div_2} onTeamClick={handleTeamClick} teamLogos={teamLogos} />
+            </div>
+          </div>
+        )
+      case 2: // Conference
+        return (
+          <div className={styles.mobileRound}>
+            <div className={styles.mobileRoundLabel}>Conference Championship</div>
+            <div className={styles.mobileRoundContent}>
+              <div className={styles.mobileConferenceLabel}>AFC</div>
+              <GameSlot
+                gameKey="afc_conf"
+                game={selections.afc_conf}
+                onTeamClick={handleTeamClick}
+                teamLogos={teamLogos}
+              />
+              <div className={styles.mobileConferenceLabel}>NFC</div>
+              <GameSlot
+                gameKey="nfc_conf"
+                game={selections.nfc_conf}
+                onTeamClick={handleTeamClick}
+                teamLogos={teamLogos}
+              />
+            </div>
+          </div>
+        )
+      case 3: // Super Bowl
+        return (
+          <div className={styles.mobileRound}>
+            <div className={styles.mobileRoundLabel}>Super Bowl</div>
+            <div className={styles.mobileRoundContent}>
+              <div className={styles.mobileSuperBowl}>
+                <GameSlot gameKey="sb" game={selections.sb} onTeamClick={handleTeamClick} teamLogos={teamLogos} />
+              </div>
+            </div>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
   const handleTeamClick = (gameKey: GameKey, position: 'top' | 'bottom') => {
     setSelections(prev => {
       const updated = { ...prev }
@@ -459,13 +664,14 @@ function SubmitPageContent() {
             <p className={styles.subtitle}>Group: {group.name}</p>
           )}
         </div>
-        <Link href={`/nfl-playoffs/group/${groupId}`} style={{ padding: '10px 20px', background: 'rgba(41, 47, 63, 0.6)', border: '1px solid rgba(50, 51, 53, 0.5)', borderRadius: '8px', color: '#ffffff', fontSize: '14px', fontWeight: '500', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        <Link href={`/nfl-playoffs/group/${groupId}`} className={styles.groupButton}>
           Back to Group
         </Link>
       </div>
 
       <div className={styles.bracketWrapper}>
         <div className={styles.bracketContent}>
+          {/* Desktop View */}
           <div className={styles.desktopBracket}>
             <div className={styles.topRow}>
               <div className={styles.afcLogo}>AFC</div>
@@ -548,6 +754,30 @@ function SubmitPageContent() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile Carousel View */}
+          <div 
+            className={styles.mobileCarousel}
+            ref={carouselRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {renderMobileRound(currentRoundIndex)}
+            <div className={styles.mobileCarouselIndicators}>
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  className={`${styles.mobileCarouselIndicator} ${currentRoundIndex === index ? styles.mobileCarouselIndicatorActive : ''}`}
+                  onClick={() => {
+                    manualNavigationRef.current = true // Mark as manual navigation
+                    setCurrentRoundIndex(index)
+                  }}
+                  aria-label={`Round ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>

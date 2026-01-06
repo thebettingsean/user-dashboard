@@ -199,6 +199,7 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 16px 36px rgba(3, 7, 18, 0.35);
 }
 
@@ -878,6 +879,21 @@
 /* Desktop bracket styles moved above */
 
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .headerButtons {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .groupButton {
+    width: 100%;
+  }
+
   .desktopBracket {
     display: none !important;
   }
