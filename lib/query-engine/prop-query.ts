@@ -457,13 +457,14 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // Favorite/Underdog filter - from player's team perspective
   // If player is home and spread < 0, player's team is favorite
   // If player is away and spread > 0, player's team is favorite
+  // Exclude pick'em games (spread_close = 0) and games with NULL betting data
   if (filters.is_favorite && filters.is_favorite !== 'any') {
     if (filters.is_favorite === 'favorite') {
       // Player's team was favorite
-      gameConditions.push(`((b.is_home = 1 AND g.spread_close < 0) OR (b.is_home = 0 AND g.spread_close > 0))`)
+      gameConditions.push(`(g.spread_close IS NOT NULL AND g.spread_close != 0 AND ((b.is_home = 1 AND g.spread_close < 0) OR (b.is_home = 0 AND g.spread_close > 0)))`)
     } else {
       // Player's team was underdog
-      gameConditions.push(`((b.is_home = 1 AND g.spread_close > 0) OR (b.is_home = 0 AND g.spread_close < 0))`)
+      gameConditions.push(`(g.spread_close IS NOT NULL AND g.spread_close != 0 AND ((b.is_home = 1 AND g.spread_close > 0) OR (b.is_home = 0 AND g.spread_close < 0)))`)
     }
     appliedFilters.push(filters.is_favorite === 'favorite' ? 'Player Team Favorite' : 'Player Team Underdog')
   }
@@ -472,25 +473,29 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   // We need to calculate the spread from the player's team viewpoint
   // If home: spread_close is already from home perspective
   // If away: negate the spread
+  // Exclude games with NULL betting data
   if (filters.spread_range && (filters.spread_range.min !== undefined || filters.spread_range.max !== undefined)) {
     const { min, max } = filters.spread_range
     const spreadExpr = `IF(b.is_home = 1, g.spread_close, -g.spread_close)`
     
+    // Ensure spread_close is not NULL
+    const nullCheck = `g.spread_close IS NOT NULL`
+    
     if (min !== undefined && max !== undefined) {
       const minVal = Math.min(min, max)
       const maxVal = Math.max(min, max)
-      gameConditions.push(`${spreadExpr} BETWEEN ${minVal} AND ${maxVal}`)
+      gameConditions.push(`(${nullCheck} AND ${spreadExpr} BETWEEN ${minVal} AND ${maxVal})`)
     } else if (min !== undefined) {
       if (min >= 0) {
-        gameConditions.push(`${spreadExpr} >= ${min}`)
+        gameConditions.push(`(${nullCheck} AND ${spreadExpr} >= ${min})`)
       } else {
-        gameConditions.push(`${spreadExpr} <= ${min}`)
+        gameConditions.push(`(${nullCheck} AND ${spreadExpr} <= ${min})`)
       }
     } else if (max !== undefined) {
       if (max >= 0) {
-        gameConditions.push(`${spreadExpr} <= ${max}`)
+        gameConditions.push(`(${nullCheck} AND ${spreadExpr} <= ${max})`)
       } else {
-        gameConditions.push(`${spreadExpr} >= ${max}`)
+        gameConditions.push(`(${nullCheck} AND ${spreadExpr} >= ${max})`)
       }
     }
     
@@ -506,14 +511,19 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
   }
   
   // Total range filter - same for both teams (game-level)
+  // Exclude games with NULL betting data
   if (filters.total_range && (filters.total_range.min !== undefined || filters.total_range.max !== undefined)) {
     const { min, max } = filters.total_range
+    
+    // Ensure total_close is not NULL
+    const nullCheck = `g.total_close IS NOT NULL`
+    
     if (min !== undefined && max !== undefined) {
-      gameConditions.push(`g.total_close BETWEEN ${min} AND ${max}`)
+      gameConditions.push(`(${nullCheck} AND g.total_close BETWEEN ${min} AND ${max})`)
     } else if (min !== undefined) {
-      gameConditions.push(`g.total_close >= ${min}`)
+      gameConditions.push(`(${nullCheck} AND g.total_close >= ${min})`)
     } else if (max !== undefined) {
-      gameConditions.push(`g.total_close <= ${max}`)
+      gameConditions.push(`(${nullCheck} AND g.total_close <= ${max})`)
     }
     
     let desc = 'Total '
