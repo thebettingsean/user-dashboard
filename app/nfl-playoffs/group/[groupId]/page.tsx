@@ -350,7 +350,7 @@ function GroupPageContent() {
           {!isSignedIn && (
             <button onClick={() => openSignIn({
               redirectUrl: window.location.href
-            })} className={styles.joinButton}>
+            })} className={styles.signInButton}>
               Sign In to Join
             </button>
           )}
@@ -398,6 +398,11 @@ function GroupPageContent() {
 
       <div className={styles.leaderboardSection}>
         <h2>Leaderboard</h2>
+        {leaderboard.length > 0 && (
+          <p className={styles.bracketsNotice}>
+            Brackets will be viewable once the games start.
+          </p>
+        )}
         {leaderboard.length === 0 ? (
           <p className={styles.noBrackets}>No brackets submitted yet.</p>
         ) : (
@@ -414,7 +419,7 @@ function GroupPageContent() {
                   <div className={styles.rank}>#{index + 1}</div>
                   <div className={styles.mobileContent}>
                     <div className={styles.mobileTopRow}>
-                      {champion && (
+                      {false && champion && (
                         <div className={styles.championPick}>
                           {championLogo ? (
                             <img 
@@ -438,7 +443,7 @@ function GroupPageContent() {
                     </div>
                   </div>
                   <div className={styles.desktopContent}>
-                    {champion && (
+                    {false && champion && (
                       <div className={styles.championPick}>
                         {championLogo ? (
                           <img 
@@ -506,8 +511,6 @@ function GroupPageContent() {
           </div>
         </div>
       </div>
-
-      <Link href="/nfl-playoffs" className={styles.backLink}>Back to Bracket</Link>
     </div>
   )
 }

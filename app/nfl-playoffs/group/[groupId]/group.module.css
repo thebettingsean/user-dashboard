@@ -91,6 +91,31 @@
   cursor: not-allowed;
 }
 
+.signInButton {
+  padding: 12px 24px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.signInButton:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
 .bracketSection {
   max-width: 1200px;
   margin: 0 auto 40px;
@@ -104,6 +129,17 @@
   max-width: 1200px;
   margin: 0 auto 40px;
   padding: 0;
+}
+
+.bracketsNotice {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px 0;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  text-align: center;
 }
 
 .rulesSection {
@@ -408,7 +444,8 @@
   .shareButton,
   .joinButton,
   .viewGroupsButton,
-  .leaveButton {
+  .leaveButton,
+  .signInButton {
     width: 100%;
   }
 
