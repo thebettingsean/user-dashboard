@@ -17,7 +17,11 @@ export async function GET() {
       })
     })
     
-    const data = await response.json()
+    const text = await response.text()
+    console.log('[Test 2023 Query] Response status:', response.status)
+    console.log('[Test 2023 Query] Response text:', text.substring(0, 500))
+    
+    const data = text ? JSON.parse(text) : {}
     
     // Group results by season to see distribution
     const bySeason: Record<number, number> = {}
