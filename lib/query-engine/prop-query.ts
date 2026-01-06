@@ -967,10 +967,6 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
     }
   }
   
-  // CRITICAL: Add explicit sport filter to prevent cross-sport contamination
-  const sportFilter = `b.game_id IN (SELECT game_id FROM ${sport}_games)`
-  allConditions.push(sportFilter)
-  
   const whereClause = allConditions.length > 0 
     ? 'WHERE ' + allConditions.join(' AND ')
     : ''
@@ -1117,12 +1113,20 @@ export async function executePropQuery(request: PropQueryRequest): Promise<Query
       -- Win percentages - NFL only
       ${shouldJoinRankings && sport === 'nfl' ? 'team_rank.win_pct as team_win_pct,' : 'CAST(NULL as Nullable(Float32)) as team_win_pct,'}
       ${shouldJoinRankings && sport === 'nfl' ? 'opp_rank.win_pct as opp_win_pct' : 'CAST(NULL as Nullable(Float32)) as opp_win_pct'}
-    FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
-    JOIN ${sport}_games g ON b.game_id = g.game_id
-    LEFT JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
-    LEFT JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
-    LEFT JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
-    JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
+    FROM (
+      -- CTE: Pre-filter box scores by sport to ensure isolation
+      SELECT b.*
+      FROM ${sport === 'nfl' ? 'nfl_box_scores_v2' : 'nba_box_scores_v2'} b
+      WHERE EXISTS (
+        SELECT 1 FROM ${sport}_games g2 
+        WHERE g2.game_id = b.game_id
+      )
+    ) b
+    INNER JOIN ${sport}_games g ON b.game_id = g.game_id
+    INNER JOIN teams t ON b.opponent_id = t.espn_team_id AND t.sport = '${sport}'
+    INNER JOIN teams ht ON g.home_team_id = ht.espn_team_id AND ht.sport = '${sport}'
+    INNER JOIN teams at ON g.away_team_id = at.espn_team_id AND at.sport = '${sport}'
+    INNER JOIN players p ON b.player_id = p.espn_player_id AND p.sport = '${sport}'
     JOIN (
       SELECT 
         ${sport === 'nfl' 
