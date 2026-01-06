@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { groupId, selections } = body
+    const { groupId, selections, name } = body
 
     if (!groupId || typeof groupId !== 'string') {
       return NextResponse.json({ error: 'Group ID is required' }, { status: 400 })
@@ -65,6 +65,35 @@ export async function POST(request: NextRequest) {
 
     if (!selections || typeof selections !== 'object') {
       return NextResponse.json({ error: 'Selections are required' }, { status: 400 })
+    }
+
+    // Check if bracket already exists
+    const { data: existingBracket } = await supabaseUsers
+      .from('nfl_playoff_brackets')
+      .select('id, name')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .single()
+
+    // Name is required for new brackets, optional for updates
+    if (!existingBracket && (!name || typeof name !== 'string' || name.trim().length === 0)) {
+      return NextResponse.json({ error: 'Bracket name is required' }, { status: 400 })
+    }
+
+    // If name is provided, check uniqueness within the group
+    if (name && name.trim().length > 0) {
+      const bracketName = name.trim()
+      const { data: nameConflict } = await supabaseUsers
+        .from('nfl_playoff_brackets')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('name', bracketName)
+        .neq('user_id', userId) // Exclude current user's bracket
+        .single()
+
+      if (nameConflict) {
+        return NextResponse.json({ error: 'Bracket name already exists in this group' }, { status: 409 })
+      }
     }
 
     // Check if deadline has passed
@@ -94,12 +123,19 @@ export async function POST(request: NextRequest) {
 
     if (existingBracket) {
       // Update existing bracket
+      const updateData: any = {
+        selections,
+        updated_at: new Date().toISOString(),
+      }
+      
+      // Update name if provided
+      if (name && name.trim().length > 0) {
+        updateData.name = name.trim()
+      }
+
       const { data: bracket, error } = await supabaseUsers
         .from('nfl_playoff_brackets')
-        .update({
-          selections,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', existingBracket.id)
         .select()
         .single()
@@ -111,12 +147,14 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ bracket, message: 'Bracket updated successfully' })
     } else {
-      // Create new bracket
+      // Create new bracket - name is required
+      const bracketName = name.trim()
       const { data: bracket, error } = await supabaseUsers
         .from('nfl_playoff_brackets')
         .insert({
           user_id: userId,
           group_id: groupId,
+          name: bracketName,
           selections,
           score: 0,
         })

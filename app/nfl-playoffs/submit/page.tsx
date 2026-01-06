@@ -232,6 +232,7 @@ function SubmitPageContent() {
   const [submitting, setSubmitting] = useState(false)
   const [group, setGroup] = useState<any>(null)
   const [existingBracket, setExistingBracket] = useState<any>(null)
+  const [bracketName, setBracketName] = useState('')
 
   // Redirect if not signed in
   useEffect(() => {
@@ -267,6 +268,7 @@ function SubmitPageContent() {
           if (bracketData.bracket) {
             setExistingBracket(bracketData.bracket)
             setSelections(bracketData.bracket.selections)
+            setBracketName(bracketData.bracket.name || '')
           }
         }
       } catch (error) {
@@ -372,6 +374,12 @@ function SubmitPageContent() {
   const handleSubmit = async () => {
     if (!groupId || !isSignedIn || submitting) return
 
+    // Require bracket name for first-time submissions
+    if (!existingBracket && (!bracketName || bracketName.trim().length === 0)) {
+      alert('Please enter a bracket name before submitting')
+      return
+    }
+
     setSubmitting(true)
     try {
       const response = await fetch('/api/nfl-playoffs/brackets', {
@@ -380,6 +388,7 @@ function SubmitPageContent() {
         body: JSON.stringify({
           groupId,
           selections,
+          name: bracketName.trim(),
         }),
       })
 
@@ -539,10 +548,48 @@ function SubmitPageContent() {
       </div>
 
       <div className={styles.shareSection}>
+        {!existingBracket && (
+          <div style={{ marginBottom: '20px' }}>
+            <label htmlFor="bracket_name" style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: '#696969', marginBottom: '12px' }}>
+              Bracket Name (required, unique per group):
+            </label>
+            <input
+              id="bracket_name"
+              type="text"
+              value={bracketName}
+              onChange={(e) => setBracketName(e.target.value)}
+              placeholder="Enter bracket name"
+              style={{
+                width: '100%',
+                maxWidth: '600px',
+                padding: '12px',
+                background: 'rgba(41, 47, 63, 0.5)',
+                border: '1px solid rgba(50, 51, 53, 0.5)',
+                borderRadius: '8px',
+                color: '#FFFFFF',
+                fontSize: '14px',
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                boxSizing: 'border-box',
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && bracketName.trim()) {
+                  handleSubmit()
+                }
+              }}
+            />
+          </div>
+        )}
+        {existingBracket && (
+          <div style={{ marginBottom: '20px', padding: '12px', background: 'rgba(41, 47, 63, 0.3)', borderRadius: '8px' }}>
+            <p style={{ margin: 0, fontSize: '14px', color: '#ffffff' }}>
+              <strong>Bracket Name:</strong> {existingBracket.name}
+            </p>
+          </div>
+        )}
         <button 
           onClick={handleSubmit} 
           className={styles.submitButton}
-          disabled={submitting}
+          disabled={submitting || (!existingBracket && !bracketName.trim())}
         >
           {submitting ? 'Submitting...' : existingBracket ? 'Update Bracket' : 'Submit Bracket'}
         </button>

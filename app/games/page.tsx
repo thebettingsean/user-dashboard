@@ -277,7 +277,7 @@ export default function GamesPage() {
   const [isLoading, setIsLoading] = useState(true)
   // Cache to avoid refetching already loaded sports
   const [gamesCache, setGamesCache] = useState<Record<string, Game[]>>({})
-  
+
   useEffect(() => {
     async function fetchGamesForSport() {
       // Check if we already have this sport cached
@@ -356,7 +356,7 @@ export default function GamesPage() {
         setIsLoading(false)
       }
     }
-    
+
     fetchGamesForSport()
   }, [selectedSport]) // Re-fetch when sport changes
   
@@ -366,11 +366,11 @@ export default function GamesPage() {
   // Featured game is the first game (soonest)
   const featuredGame = filteredGames[0]
   const remainingGames = filteredGames.slice(1)
-  
+
   const handleGameClick = (game: Game) => {
     router.push(`/games/${game.id}?sport=${game.sport.toLowerCase()}`)
   }
-  
+
   return (
     <div className={styles.container}>
       <div className={styles.headerSpacer} />
@@ -405,7 +405,7 @@ export default function GamesPage() {
           </div>
         </div>
       </header>
-      
+
       {/* Games Content */}
       <div className={styles.gamesContent}>
         {isLoading ? (
@@ -429,9 +429,9 @@ export default function GamesPage() {
               <div className={styles.gamesGrid}>
                 {remainingGames.map(game => (
                   <GameCard 
-                    key={game.id} 
+                      key={game.id}
                     game={game}
-                    onClick={() => handleGameClick(game)}
+                      onClick={() => handleGameClick(game)}
                   />
                 ))}
               </div>

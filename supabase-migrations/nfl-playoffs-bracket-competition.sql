@@ -24,11 +24,13 @@ CREATE TABLE IF NOT EXISTS nfl_playoff_brackets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL, -- Clerk user ID
   group_id UUID NOT NULL REFERENCES nfl_playoff_groups(id) ON DELETE CASCADE,
+  name TEXT NOT NULL, -- Bracket name (unique per group)
   selections JSONB NOT NULL, -- Stores the bracket selections
   score INTEGER DEFAULT 0, -- Calculated score based on game results
   submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, group_id) -- One bracket per user per group
+  UNIQUE(user_id, group_id), -- One bracket per user per group
+  UNIQUE(group_id, name) -- Bracket names must be unique per group
 );
 
 -- Game results table: stores actual game outcomes (entered by admin)

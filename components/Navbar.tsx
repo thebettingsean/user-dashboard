@@ -131,7 +131,7 @@ export default function Navbar() {
                   >
                     {item.label}
                     {hasNewTag && (
-                      <span style={styles.newTag}>NEW</span>
+                        <span style={styles.newTag}>NEW</span>
                     )}
               </Link>
                 )
@@ -139,8 +139,8 @@ export default function Navbar() {
 
               {/* Tools Link */}
               <Link href="/tools" style={styles.navLink}>
-                Tools
-              </Link>
+                  Tools
+                    </Link>
             </div>
           </div>
 
@@ -307,7 +307,7 @@ export default function Navbar() {
 
             {/* Tools */}
             <Link href="/tools" style={styles.mobileLink} onClick={closeMobileMenu}>
-              Tools
+                Tools
             </Link>
 
             {/* Sign In link for non-signed in users */}

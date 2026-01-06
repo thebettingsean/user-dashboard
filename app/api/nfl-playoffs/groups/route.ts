@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth, currentUser, clerkClient } from '@clerk/nextjs/server'
 import { supabaseUsers } from '@/lib/supabase-users'
+
+// Helper function to get display name from Clerk user
+function getDisplayName(user: any): string {
+  // Try to get full name first
+  if (user.firstName || user.lastName) {
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ')
+    if (fullName.trim()) return fullName.trim()
+  }
+  
+  // Fallback to email prefix (before @)
+  if (user.emailAddresses && user.emailAddresses.length > 0) {
+    const email = user.emailAddresses[0]?.emailAddress
+    if (email) {
+      const emailPrefix = email.split('@')[0]
+      return emailPrefix
+    }
+  }
+  
+  return 'Unknown User'
+}
 
 // GET /api/nfl-playoffs/groups?groupId=xxx - Get group info
 // GET /api/nfl-playoffs/groups?userId=xxx - Get user's groups
@@ -34,9 +54,30 @@ export async function GET(request: NextRequest) {
         console.error('Error fetching members:', membersError)
       }
 
+      // Fetch user display names from Clerk
+      const clerk = await clerkClient()
+      const membersWithNames = await Promise.all(
+        (members || []).map(async (member) => {
+          try {
+            const user = await clerk.users.getUser(member.user_id)
+            const displayName = getDisplayName(user)
+            return {
+              ...member,
+              userDisplayName: displayName,
+            }
+          } catch (error) {
+            console.error(`Error fetching user ${member.user_id}:`, error)
+            return {
+              ...member,
+              userDisplayName: `User ${member.user_id.slice(0, 8)}...`,
+            }
+          }
+        })
+      )
+
       return NextResponse.json({
         group,
-        members: members || [],
+        members: membersWithNames,
       })
     } else if (userIdParam || userId) {
       // Get user's groups
