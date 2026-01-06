@@ -5416,11 +5416,11 @@ function SportsEngineContent() {
                         </select>
                         {queryType === 'prop' && selectedSport === 'nba' && (
                           <select value={defenseStatPosition} onChange={(e) => setDefenseStatPosition(e.target.value)}>
-                            <option value="">Overall</option>
-                            <option value="vs_g">vs Guards</option>
-                            <option value="vs_f">vs Forwards</option>
-                            <option value="vs_c">vs Centers</option>
-                            <option value="pace_adj">Pace-Adjusted (per 100)</option>
+                            <option value="">Overall (per game)</option>
+                            <option value="vs_g">Position: vs Guards</option>
+                            <option value="vs_f">Position: vs Forwards</option>
+                            <option value="vs_c">Position: vs Centers</option>
+                            <option value="pace_adj">Pace-Adjusted (stat per 100 poss)</option>
                           </select>
                         )}
                       </>
