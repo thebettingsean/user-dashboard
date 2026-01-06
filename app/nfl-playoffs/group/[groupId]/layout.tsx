@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : 'Join And Make Your Picks For The 2026 NFL Playoffs!';
 
     return {
+      metadataBase: new URL('https://thebettinginsider.com'),
       title: {
         absolute: title, // Use absolute to override the template
       },
@@ -37,14 +38,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title,
         description,
         type: "website",
-        url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        url: `/nfl-playoffs/group/${groupId}`,
         siteName: 'The Betting Insider',
+        locale: 'en_US',
         images: [
           {
             url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
             width: 1200,
             height: 630,
-            alt: 'The Betting Insider - Sports Betting Analytics',
+            alt: title,
           },
         ],
       },
@@ -60,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Fallback metadata
     const fallbackTitle = "Join And Make Your Picks For The 2026 NFL Playoffs!";
     return {
+      metadataBase: new URL('https://thebettinginsider.com'),
       title: {
         absolute: fallbackTitle, // Use absolute to override the template
       },
@@ -68,14 +71,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: fallbackTitle,
         description: fallbackTitle,
         type: "website",
-        url: `https://thebettinginsider.com/nfl-playoffs/group/${groupId}`,
+        url: `/nfl-playoffs/group/${groupId}`,
         siteName: 'The Betting Insider',
+        locale: 'en_US',
         images: [
           {
             url: 'https://cdn.prod.website-files.com/670bfa1fd9c3c20a149fa6a7/6926245c49e1dc624bdc7317_insidertextlogo2.png',
             width: 1200,
             height: 630,
-            alt: 'The Betting Insider - Sports Betting Analytics',
+            alt: fallbackTitle,
           },
         ],
       },
